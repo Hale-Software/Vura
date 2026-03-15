@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>images/vura.png</file>
+        <file>images/vura_macos.png</file>
+        <file>images/vura256x256.png</file>
+        <file>images/advanced-tools.svg</file>
+        <file>images/back.svg</file>
+        <file>images/fullscreen.svg</file>
+        <file>images/fullscreen-exit.svg</file>
+        <file>images/loop.svg</file>
+        <file>images/loop-one.svg</file>
+        <file>images/mute.svg</file>
+        <file>images/next.svg</file>
+        <file>images/pause.svg</file>
+        <file>images/play.svg</file>
+        <file>images/playlist.svg</file>
+        <file>images/shuffle.svg</file>
+        <file>images/stop.svg</file>
+        <file>images/volume-low.svg</file>
+        <file>images/volume-medium.svg</file>
+        <file>images/volume-high.svg</file>
+    </qresource>
+</RCC>

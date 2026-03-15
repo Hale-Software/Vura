@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WhatsNewDialog</class>
+ <widget class="QDialog" name="WhatsNewDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>WhatsNewDialog</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="vura.qrc">
+    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
+  </property>
+ </widget>
+ <resources>
+  <include location="vura.qrc"/>
+ </resources>
+ <connections/>
+</ui>

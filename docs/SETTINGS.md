@@ -1,0 +1,5 @@
+# Settings
+
+| Setting | Default | Type |
+|---------|---------|------|
+|         |         |      |
