@@ -7,7 +7,7 @@ HData::HData(QObject *parent)
 {
     QSettings settings;
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
-    if (VURA_BUILD_TYPE == "Debug" || VURA_BUILD_TYPE == "Release") {
+    if (VURA_BUILD_TYPE == "Debug") {
         defaultMarkerFile = "C:/Users/halea/vura-debug/markers.json";
     }
 
