@@ -7,7 +7,6 @@
 !/build-aux
 !/cmake
 !/deps
-!/docs
 !/src
 !/scripts
 !/tests
@@ -26,6 +25,11 @@
 !COPYING
 !INSTALL
 !README.md
+
+# Exclude docs
+!/docs/HOTKEYS.md
+!/docs/SETTINGS.md
+!/docs/TODO.md
 
 # Exclude lock files
 *.lock.json
