@@ -19,6 +19,7 @@ target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOUR
 target_link_libraries(
         vura PRIVATE
         xxhash
+        VURA::qBreakpad
 )
 
 include(cmake/ui-components.cmake)
