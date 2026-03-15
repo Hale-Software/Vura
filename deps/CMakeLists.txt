@@ -5,3 +5,5 @@ if (OS_WINDOWS)
     add_subdirectory(blake2)
     add_subdirectory(json11)
 endif ()
+
+add_subdirectory(qBreakpad/handler)

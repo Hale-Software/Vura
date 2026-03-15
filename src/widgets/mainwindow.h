@@ -60,7 +60,6 @@
 
 #include <xxHash/xxhash.h>
 
-
 #include "../models/playlistmodel.h"
 #include "../components/markerslider.h"
 #include "../components/videoslider.h"

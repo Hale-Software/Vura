@@ -42,6 +42,25 @@ static int run_program(int argc, char* argv[])
     int ret = -1;
 
     VuraApp program(argc, argv);
+
+#ifdef Q_OS_WIN
+    // write the dumps in the user's desktop:
+    QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    if (VURA_BUILD_TYPE == "Debug") {
+        defaultCrashFileLocation = "C:/Users/halea/vura-debug/crashes";
+    }
+
+    if (!QDir(defaultCrashFileLocation).exists()) {
+        if (!QDir().mkpath(defaultCrashFileLocation)) {
+            QMessageBox::critical(nullptr, "Error", "Failed to configure Windows crash handler directory.");
+            return -1;
+        }
+    }
+
+    QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
+
+#endif
+
     program.AppInit(argc, argv);
     ret = program.exec();
 
