@@ -1,0 +1,3 @@
+files:
+  - source: /src/data/locale/en-US.ini
+    translation: /src/data/locale/%locale%
