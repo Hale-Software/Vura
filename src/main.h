@@ -6,6 +6,8 @@
 #include <QString>
 #include <QMessageBox>
 
+#include <qBreakpad/handler/QBreakpadHandler.h>
+
 #include "widgets/mainwindow.h"
 #include "widgets/testwindow.h"
 
