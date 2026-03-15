@@ -1,0 +1,3 @@
+[submodule "deps/QCrashHandler"]
+	path = deps/QCrashHandler
+	url = https://github.com/juangburgos/QCrashHandler.git
