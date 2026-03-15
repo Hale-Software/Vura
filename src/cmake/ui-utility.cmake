@@ -1,0 +1,25 @@
+target_sources(
+        vura PRIVATE
+        utility/qt-wrappers.cpp
+        utility/qt-wrappers.h
+        utility/filemanager.cpp
+        utility/filemanager.h
+        utility/hdata.cpp
+        utility/hdata.h
+        utility/qplaylistfileparser.cpp
+        utility/qplaylistfileparser.h
+        utility/startup.cpp
+        utility/startup.h
+        utility/logger.cpp
+        utility/logger.h
+        utility/playlist.cpp
+        utility/playlist.h
+        utility/playlist_p.cpp
+        utility/playlist_p.h
+        utility/playlistfileparser.cpp
+        utility/playlistfileparser.h
+        utility/update.cpp
+        utility/update.h
+        utility/hotkeys.cpp
+        utility/hotkeys.h
+)

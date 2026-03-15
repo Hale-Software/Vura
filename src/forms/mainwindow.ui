@@ -1,0 +1,1603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1004</width>
+    <height>608</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Vura</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="vura.qrc">
+    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,1">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="HVideoWidget" name="videoWidget" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>500</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListView" name="playlistView">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+            </property>
+            <property name="acceptDrops">
+             <bool>true</bool>
+            </property>
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="dragDropMode">
+             <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
+            </property>
+            <property name="defaultDropAction">
+             <enum>Qt::DropAction::MoveAction</enum>
+            </property>
+            <property name="resizeMode">
+             <enum>QListView::ResizeMode::Adjust</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <property name="leftMargin">
+           <number>12</number>
+          </property>
+          <property name="rightMargin">
+           <number>12</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="m_playbackRate">
+            <property name="text">
+             <string>x1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="m_labelDuration">
+            <property name="text">
+             <string>--:-- / --:--</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1004</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuExport">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="actionMedia"/>
+     <addaction name="actionClips"/>
+     <addaction name="actionCaptions"/>
+     <addaction name="actionMarkers"/>
+    </widget>
+    <addaction name="actionOpen"/>
+    <addaction name="actionOpen_Multiple_Media_Files"/>
+    <addaction name="actionOpen_Media_Folder"/>
+    <addaction name="actionOpen_Network_Stream"/>
+    <addaction name="menuOpen_Recent"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+    <addaction name="actionClose_All"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_As"/>
+    <addaction name="actionSave_Playlist"/>
+    <addaction name="actionSave_a_Copy"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionEmergency_Collapse"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuSequence">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionMake_Subclip"/>
+    <addaction name="separator"/>
+    <addaction name="actionStream_Stash_Video"/>
+    <addaction name="separator"/>
+    <addaction name="actionTestFunction"/>
+   </widget>
+   <widget class="QMenu" name="menuMarkers">
+    <property name="title">
+     <string>Markers</string>
+    </property>
+    <addaction name="actionMark_In"/>
+    <addaction name="actionMark_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionGo_to_In"/>
+    <addaction name="actionGo_to_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionClear_In"/>
+    <addaction name="actionClear_Out"/>
+    <addaction name="actionClear_In_and_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Marker"/>
+    <addaction name="actionGo_to_Next_Marker"/>
+    <addaction name="actionGo_to_Previous_Marker"/>
+    <addaction name="separator"/>
+    <addaction name="actionClear_Selected_Marker"/>
+    <addaction name="actionClear_Markers"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit_Marker"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Scene_Transition_Marker"/>
+    <addaction name="actionAdd_Cumshot_Marker"/>
+    <addaction name="actionAdd_Strip_Marker"/>
+    <addaction name="actionAdd_Dialog_Marker"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Cyan_Marker"/>
+    <addaction name="actionAdd_Magenta_Marker"/>
+    <addaction name="actionAdd_Orange_Marker"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="menuToggle_Markers">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>Toggle Markers</string>
+     </property>
+     <addaction name="actionShow_Markers"/>
+     <addaction name="actionShow_Scene_Transition_Markers"/>
+     <addaction name="actionShow_Strip_Markers"/>
+     <addaction name="actionShow_Cumshot_Markers"/>
+     <addaction name="actionShow_Dialog_Markers"/>
+     <addaction name="actionShow_Cyan_Markers"/>
+     <addaction name="actionShow_Magenta_Markers"/>
+     <addaction name="actionShow_Orange_Markers"/>
+    </widget>
+    <addaction name="actionToggle_Playlist"/>
+    <addaction name="actionToggle_Tags"/>
+    <addaction name="actionToggle_Status_Bar"/>
+    <addaction name="actionToggle_Video_Controls"/>
+    <addaction name="separator"/>
+    <addaction name="menuToggle_Markers"/>
+    <addaction name="separator"/>
+    <addaction name="actionMedia_Information"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_Log_Files"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp"/>
+    <addaction name="actionProvide_Feedback"/>
+    <addaction name="separator"/>
+    <addaction name="actionUpdates"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuPlayback">
+    <property name="title">
+     <string>Playback</string>
+    </property>
+    <widget class="QMenu" name="menuSpeed">
+     <property name="title">
+      <string>Speed</string>
+     </property>
+     <addaction name="actionFaster"/>
+     <addaction name="actionFaster_fine"/>
+     <addaction name="actionNormal_Speed"/>
+     <addaction name="actionSlower_fine"/>
+     <addaction name="actionSlower"/>
+    </widget>
+    <widget class="QMenu" name="menuJump_Forward">
+     <property name="title">
+      <string>Jump Forward</string>
+     </property>
+     <addaction name="actionJumpForwardSmall"/>
+     <addaction name="actionJumpForwardMedium"/>
+     <addaction name="actionJumpForwardLarge"/>
+     <addaction name="actionJumpForwardExtraLarge"/>
+    </widget>
+    <widget class="QMenu" name="menuJump_Backward">
+     <property name="title">
+      <string>Jump Backward</string>
+     </property>
+     <addaction name="actionJumpBackwardSmall"/>
+     <addaction name="actionJumpBackwardMedium"/>
+     <addaction name="actionJumpBackwardLarge"/>
+     <addaction name="actionJumpBackwardExtraLarge"/>
+    </widget>
+    <addaction name="menuSpeed"/>
+    <addaction name="separator"/>
+    <addaction name="actionNext_Frame_2"/>
+    <addaction name="actionPrevious_Frame_2"/>
+    <addaction name="separator"/>
+    <addaction name="menuJump_Forward"/>
+    <addaction name="menuJump_Backward"/>
+    <addaction name="actionJump_to_Specific_Time"/>
+    <addaction name="separator"/>
+    <addaction name="actionPlay_Pause_2"/>
+    <addaction name="actionNext"/>
+    <addaction name="actionPrevious"/>
+    <addaction name="separator"/>
+    <addaction name="actionRestart_Video"/>
+   </widget>
+   <widget class="QMenu" name="menuAudio">
+    <property name="title">
+     <string>Audio</string>
+    </property>
+    <widget class="QMenu" name="menuAudio_Track">
+     <property name="title">
+      <string>Audio Track</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuAudio_Device">
+     <property name="title">
+      <string>Audio Device</string>
+     </property>
+    </widget>
+    <addaction name="menuAudio_Device"/>
+    <addaction name="menuAudio_Track"/>
+    <addaction name="separator"/>
+    <addaction name="actionIncrease_Volume_2"/>
+    <addaction name="actionDecrease_Volume_2"/>
+    <addaction name="actionMute"/>
+   </widget>
+   <widget class="QMenu" name="menuVideo">
+    <property name="title">
+     <string>Video</string>
+    </property>
+    <widget class="QMenu" name="menuVideo_Track">
+     <property name="title">
+      <string>Video Track</string>
+     </property>
+    </widget>
+    <addaction name="menuVideo_Track"/>
+    <addaction name="separator"/>
+    <addaction name="actionFullscreen"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="actionTake_Snapshot"/>
+   </widget>
+   <widget class="QMenu" name="menuSubtitle">
+    <property name="title">
+     <string>Subtitle</string>
+    </property>
+    <widget class="QMenu" name="menuSubtitle_Track">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Subtitle Track</string>
+     </property>
+    </widget>
+    <addaction name="actionOpen_Subtitle_File"/>
+    <addaction name="menuSubtitle_Track"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggle_Subtitles"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuPlayback"/>
+   <addaction name="menuAudio"/>
+   <addaction name="menuVideo"/>
+   <addaction name="menuMarkers"/>
+   <addaction name="menuSequence"/>
+   <addaction name="menuSubtitle"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen_Media">
+   <property name="text">
+    <string>Open Media...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Media_Folder">
+   <property name="text">
+    <string>Open Media Folder...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Playlist">
+   <property name="text">
+    <string>Open Playlist...</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionClose_All">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Close All</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_As">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+  </action>
+  <action name="actionSave_Playlist_As">
+   <property name="text">
+    <string>Save Playlist As...</string>
+   </property>
+  </action>
+  <action name="actionSave_a_Copy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save a Copy...</string>
+   </property>
+  </action>
+  <action name="actionSave_All">
+   <property name="text">
+    <string>Save All</string>
+   </property>
+  </action>
+  <action name="actionRevert">
+   <property name="text">
+    <string>Revert</string>
+   </property>
+  </action>
+  <action name="actionSave_Playlist">
+   <property name="text">
+    <string>Save Playlist</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionLink_Media">
+   <property name="text">
+    <string>Link Media...</string>
+   </property>
+  </action>
+  <action name="actionMake_Offline">
+   <property name="text">
+    <string>Make Offline...</string>
+   </property>
+  </action>
+  <action name="actionSequence">
+   <property name="text">
+    <string>Sequence...</string>
+   </property>
+  </action>
+  <action name="actionPlaylist">
+   <property name="text">
+    <string>Playlist...</string>
+   </property>
+  </action>
+  <action name="actionTemp">
+   <property name="text">
+    <string>Temp</string>
+   </property>
+  </action>
+  <action name="actionTemp_2">
+   <property name="text">
+    <string>Temp</string>
+   </property>
+  </action>
+  <action name="actionMedia">
+   <property name="text">
+    <string>Media...</string>
+   </property>
+  </action>
+  <action name="actionCaptions">
+   <property name="text">
+    <string>Captions...</string>
+   </property>
+  </action>
+  <action name="actionMarkers">
+   <property name="text">
+    <string>Markers...</string>
+   </property>
+  </action>
+  <action name="actionClips">
+   <property name="text">
+    <string>Clips...</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionDuplicate">
+   <property name="text">
+    <string>Duplicate</string>
+   </property>
+  </action>
+  <action name="actionSelect_All">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+  </action>
+  <action name="actionDeselect_All">
+   <property name="text">
+    <string>Deselect All</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="text">
+    <string>Find...</string>
+   </property>
+  </action>
+  <action name="actionFind_Next">
+   <property name="text">
+    <string>Find Next</string>
+   </property>
+  </action>
+  <action name="actionRemove_Unused">
+   <property name="text">
+    <string>Remove Unused</string>
+   </property>
+  </action>
+  <action name="actionConsolidate_Duplicates">
+   <property name="text">
+    <string>Consolidate Duplicates</string>
+   </property>
+  </action>
+  <action name="actionKeyboard_Shortcuts">
+   <property name="text">
+    <string>Keyboard Shortcuts...</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionCheck_Spelling">
+   <property name="text">
+    <string>Check Spelling</string>
+   </property>
+  </action>
+  <action name="actionSpell_Check_Settings">
+   <property name="text">
+    <string>Spell Check Settings...</string>
+   </property>
+  </action>
+  <action name="actionSelect_Label_Group">
+   <property name="text">
+    <string>Select Label Group</string>
+   </property>
+  </action>
+  <action name="actionRed">
+   <property name="text">
+    <string>Red</string>
+   </property>
+  </action>
+  <action name="actionYellow">
+   <property name="text">
+    <string>Yellow</string>
+   </property>
+  </action>
+  <action name="actionGreen">
+   <property name="text">
+    <string>Green</string>
+   </property>
+  </action>
+  <action name="actionHigh_Quality_Playback">
+   <property name="text">
+    <string>High Quality Playback</string>
+   </property>
+  </action>
+  <action name="actionShow_Rulers">
+   <property name="text">
+    <string>Show Rulers</string>
+   </property>
+  </action>
+  <action name="actionShow_Guides">
+   <property name="text">
+    <string>Show Guides</string>
+   </property>
+  </action>
+  <action name="actionLock_Guides">
+   <property name="text">
+    <string>Lock Guides</string>
+   </property>
+  </action>
+  <action name="actionAdd_Guide">
+   <property name="text">
+    <string>Add Guide...</string>
+   </property>
+  </action>
+  <action name="actionClear_Guides">
+   <property name="text">
+    <string>Clear Guides...</string>
+   </property>
+  </action>
+  <action name="actionToggle_Playlist">
+   <property name="text">
+    <string>Toggle Playlist</string>
+   </property>
+  </action>
+  <action name="actionToggle_Tags">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Tags</string>
+   </property>
+  </action>
+  <action name="actionFull">
+   <property name="text">
+    <string>Full</string>
+   </property>
+  </action>
+  <action name="actionFull_2">
+   <property name="text">
+    <string>Full</string>
+   </property>
+  </action>
+  <action name="actionComposite_Video">
+   <property name="text">
+    <string>Composite Video</string>
+   </property>
+  </action>
+  <action name="actionFit">
+   <property name="text">
+    <string>Fit</string>
+   </property>
+  </action>
+  <action name="action10">
+   <property name="text">
+    <string>10%</string>
+   </property>
+  </action>
+  <action name="action25">
+   <property name="text">
+    <string>25%</string>
+   </property>
+  </action>
+  <action name="action50">
+   <property name="text">
+    <string>50%</string>
+   </property>
+  </action>
+  <action name="action75">
+   <property name="text">
+    <string>75%</string>
+   </property>
+  </action>
+  <action name="action100">
+   <property name="text">
+    <string>100%</string>
+   </property>
+  </action>
+  <action name="action150">
+   <property name="text">
+    <string>150%</string>
+   </property>
+  </action>
+  <action name="action200">
+   <property name="text">
+    <string>200%</string>
+   </property>
+  </action>
+  <action name="action400">
+   <property name="text">
+    <string>400%</string>
+   </property>
+  </action>
+  <action name="action800">
+   <property name="text">
+    <string>800%</string>
+   </property>
+  </action>
+  <action name="action1600">
+   <property name="text">
+    <string>1600%</string>
+   </property>
+  </action>
+  <action name="actionSave_Guides_as_Template">
+   <property name="text">
+    <string>Save Guides as Template...</string>
+   </property>
+  </action>
+  <action name="actionManage_Guides">
+   <property name="text">
+    <string>Manage Guides...</string>
+   </property>
+  </action>
+  <action name="actionPlay_Pause">
+   <property name="text">
+    <string>Play / Pause</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionNext_Frame">
+   <property name="text">
+    <string>Next Frame</string>
+   </property>
+  </action>
+  <action name="actionPrevious_Frame">
+   <property name="text">
+    <string>Previous Frame</string>
+   </property>
+  </action>
+  <action name="actionsmallJumpBackwards">
+   <property name="text">
+    <string>smallJumpBackwards</string>
+   </property>
+  </action>
+  <action name="actionsmallJumpForwards">
+   <property name="text">
+    <string>smallJumpForwards</string>
+   </property>
+  </action>
+  <action name="actionmediumJumpBackwards">
+   <property name="text">
+    <string>mediumJumpBackwards</string>
+   </property>
+  </action>
+  <action name="actionmediumJumpForwards">
+   <property name="text">
+    <string>mediumJumpForwards</string>
+   </property>
+  </action>
+  <action name="actionlargeJumpBackwards">
+   <property name="text">
+    <string>largeJumpBackwards</string>
+   </property>
+  </action>
+  <action name="actionlargeJumpForwards">
+   <property name="text">
+    <string>largeJumpForwards</string>
+   </property>
+  </action>
+  <action name="actionToggle_Fullscreen">
+   <property name="text">
+    <string>Toggle Fullscreen</string>
+   </property>
+  </action>
+  <action name="actionIncrease_Volume">
+   <property name="text">
+    <string>Increase Volume</string>
+   </property>
+  </action>
+  <action name="actionDecrease_Volume">
+   <property name="text">
+    <string>Decrease Volume</string>
+   </property>
+  </action>
+  <action name="actionToggle_Mute">
+   <property name="text">
+    <string>Toggle Mute</string>
+   </property>
+  </action>
+  <action name="actionQuickly_Collapse">
+   <property name="text">
+    <string>Quickly Collapse</string>
+   </property>
+  </action>
+  <action name="actionFast_Forward">
+   <property name="text">
+    <string>Fast Forward</string>
+   </property>
+  </action>
+  <action name="actionRewind">
+   <property name="text">
+    <string>Rewind</string>
+   </property>
+  </action>
+  <action name="actionIncrease_Playback_Speed">
+   <property name="text">
+    <string>Increase Playback Speed</string>
+   </property>
+  </action>
+  <action name="actionDecrease_Playback_Speed">
+   <property name="text">
+    <string>Decrease Playback Speed</string>
+   </property>
+  </action>
+  <action name="actionReset_Playback_Speed">
+   <property name="text">
+    <string>Reset Playback Speed</string>
+   </property>
+  </action>
+  <action name="actionRename">
+   <property name="text">
+    <string>Rename...</string>
+   </property>
+  </action>
+  <action name="actionSequence_Settings">
+   <property name="text">
+    <string>Sequence Settings...</string>
+   </property>
+  </action>
+  <action name="actionMark_In">
+   <property name="text">
+    <string>Mark In</string>
+   </property>
+  </action>
+  <action name="actionMark_Out">
+   <property name="text">
+    <string>Mark Out</string>
+   </property>
+  </action>
+  <action name="actionGo_to_In">
+   <property name="text">
+    <string>Go to In</string>
+   </property>
+  </action>
+  <action name="actionGo_to_Out">
+   <property name="text">
+    <string>Go to Out</string>
+   </property>
+  </action>
+  <action name="actionClear_In">
+   <property name="text">
+    <string>Clear In</string>
+   </property>
+  </action>
+  <action name="actionClear_Out">
+   <property name="text">
+    <string>Clear Out</string>
+   </property>
+  </action>
+  <action name="actionClear_In_and_Out">
+   <property name="text">
+    <string>Clear In and Out</string>
+   </property>
+  </action>
+  <action name="actionAdd_Marker">
+   <property name="text">
+    <string>Add Marker</string>
+   </property>
+  </action>
+  <action name="actionGo_to_Next_Marker">
+   <property name="text">
+    <string>Go to Next Marker</string>
+   </property>
+  </action>
+  <action name="actionGo_to_Previous_Marker">
+   <property name="text">
+    <string>Go to Previous Marker</string>
+   </property>
+  </action>
+  <action name="actionClear_Selected_Marker">
+   <property name="text">
+    <string>Clear Selected Marker</string>
+   </property>
+  </action>
+  <action name="actionClear_Markers">
+   <property name="text">
+    <string>Clear Markers</string>
+   </property>
+  </action>
+  <action name="actionEdit_Marker">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Edit Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Chapter_Marker">
+   <property name="text">
+    <string>Add Chapter Marker...</string>
+   </property>
+  </action>
+  <action name="actionAdd_Dialog_Marker">
+   <property name="text">
+    <string>Add Dialog Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Scene_Transition_Marker">
+   <property name="text">
+    <string>Add Scene Transition Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Blue_Marker">
+   <property name="text">
+    <string>Add Blue Marker...</string>
+   </property>
+  </action>
+  <action name="actionAdd_Orange_Marker">
+   <property name="text">
+    <string>Add Orange Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Red_Marker">
+   <property name="text">
+    <string>Add Red Marker...</string>
+   </property>
+  </action>
+  <action name="actionAdd_White_Marker">
+   <property name="text">
+    <string>Add White Marker...</string>
+   </property>
+  </action>
+  <action name="actionAdd_Yellow_Marker">
+   <property name="text">
+    <string>Add Yellow Marker...</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionShow_Log_Files">
+   <property name="text">
+    <string>Show Log Viewer</string>
+   </property>
+  </action>
+  <action name="actionProvide_Feedback">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Provide Feedback</string>
+   </property>
+  </action>
+  <action name="actionSystem_Compatibility_Report">
+   <property name="text">
+    <string>System Compatibility Report...</string>
+   </property>
+  </action>
+  <action name="actionKeyboard">
+   <property name="text">
+    <string>Keyboard...</string>
+   </property>
+  </action>
+  <action name="actionUpdates">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Check for Updates...</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionhashFile">
+   <property name="text">
+    <string>hashFile</string>
+   </property>
+  </action>
+  <action name="actionOpen_Multiple_Media_Files">
+   <property name="text">
+    <string>Open Multiple Media Files...</string>
+   </property>
+  </action>
+  <action name="actionTitle">
+   <property name="text">
+    <string>Title</string>
+   </property>
+  </action>
+  <action name="actionChapter">
+   <property name="text">
+    <string>Chapter</string>
+   </property>
+  </action>
+  <action name="actionProgram">
+   <property name="text">
+    <string>Program</string>
+   </property>
+  </action>
+  <action name="actionJump_to_Specific_Time">
+   <property name="text">
+    <string>Jump to Specific Time</string>
+   </property>
+  </action>
+  <action name="actionPlay">
+   <property name="text">
+    <string>Play</string>
+   </property>
+  </action>
+  <action name="actionStop_2">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionPrevious">
+   <property name="text">
+    <string>Previous</string>
+   </property>
+  </action>
+  <action name="actionNext">
+   <property name="text">
+    <string>Next</string>
+   </property>
+  </action>
+  <action name="actionRecord">
+   <property name="text">
+    <string>Record</string>
+   </property>
+  </action>
+  <action name="actionLocal">
+   <property name="text">
+    <string>Local</string>
+   </property>
+  </action>
+  <action name="actionFaster">
+   <property name="text">
+    <string>Faster</string>
+   </property>
+  </action>
+  <action name="actionFaster_fine">
+   <property name="text">
+    <string>Faster (fine)</string>
+   </property>
+  </action>
+  <action name="actionNormal_Speed">
+   <property name="text">
+    <string>Normal Speed</string>
+   </property>
+  </action>
+  <action name="actionSlower_fine">
+   <property name="text">
+    <string>Slower (fine)</string>
+   </property>
+  </action>
+  <action name="actionSlower">
+   <property name="text">
+    <string>Slower</string>
+   </property>
+  </action>
+  <action name="actionJumpForward1s">
+   <property name="text">
+    <string>1s</string>
+   </property>
+  </action>
+  <action name="actionJumpForward5s">
+   <property name="text">
+    <string>5s</string>
+   </property>
+  </action>
+  <action name="actionJumpForward15s">
+   <property name="text">
+    <string>15s</string>
+   </property>
+  </action>
+  <action name="actionJumpForward30s">
+   <property name="text">
+    <string>30s</string>
+   </property>
+  </action>
+  <action name="actionJumpForward45s">
+   <property name="text">
+    <string>45s</string>
+   </property>
+  </action>
+  <action name="actionJumpForward60s">
+   <property name="text">
+    <string>60s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward1s">
+   <property name="text">
+    <string>1s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward5s">
+   <property name="text">
+    <string>5s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward15s">
+   <property name="text">
+    <string>15s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward30s">
+   <property name="text">
+    <string>30s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward45s">
+   <property name="text">
+    <string>45s</string>
+   </property>
+  </action>
+  <action name="actionJumpBackward60s">
+   <property name="text">
+    <string>60s</string>
+   </property>
+  </action>
+  <action name="actionIncrease_Volume_2">
+   <property name="text">
+    <string>Increase Volume</string>
+   </property>
+  </action>
+  <action name="actionDecrease_Volume_2">
+   <property name="text">
+    <string>Decrease Volume</string>
+   </property>
+  </action>
+  <action name="actionMute">
+   <property name="text">
+    <string>Mute</string>
+   </property>
+  </action>
+  <action name="actionDisable">
+   <property name="text">
+    <string>Disable</string>
+   </property>
+  </action>
+  <action name="actionTrack_1">
+   <property name="text">
+    <string>Track 1</string>
+   </property>
+  </action>
+  <action name="actionDefault">
+   <property name="text">
+    <string>Default</string>
+   </property>
+  </action>
+  <action name="actionMono">
+   <property name="text">
+    <string>Mono</string>
+   </property>
+  </action>
+  <action name="actionStereo">
+   <property name="text">
+    <string>Stereo</string>
+   </property>
+  </action>
+  <action name="actionLeft">
+   <property name="text">
+    <string>Left</string>
+   </property>
+  </action>
+  <action name="actionRight">
+   <property name="text">
+    <string>Right</string>
+   </property>
+  </action>
+  <action name="actionReverse_stereo">
+   <property name="text">
+    <string>Reverse stereo</string>
+   </property>
+  </action>
+  <action name="actionFullscreen">
+   <property name="text">
+    <string>Fullscreen</string>
+   </property>
+  </action>
+  <action name="actionAlways_Fit_Window">
+   <property name="text">
+    <string>Always Fit Window</string>
+   </property>
+  </action>
+  <action name="actionTake_Snapshot">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Take Snapshot</string>
+   </property>
+  </action>
+  <action name="actionDisable_2">
+   <property name="text">
+    <string>Disable</string>
+   </property>
+  </action>
+  <action name="actionTrack_2">
+   <property name="text">
+    <string>Track 1</string>
+   </property>
+  </action>
+  <action name="action1_4_Quarter">
+   <property name="text">
+    <string>1:4 Quarter</string>
+   </property>
+  </action>
+  <action name="action1_2_Half">
+   <property name="text">
+    <string>1:2 Half</string>
+   </property>
+  </action>
+  <action name="action1_1_Original">
+   <property name="text">
+    <string>1:1 Original</string>
+   </property>
+  </action>
+  <action name="action2_1_Double">
+   <property name="text">
+    <string>2:1 Double</string>
+   </property>
+  </action>
+  <action name="actionDefault_2">
+   <property name="text">
+    <string>Default</string>
+   </property>
+  </action>
+  <action name="action16_9">
+   <property name="text">
+    <string>16:9</string>
+   </property>
+  </action>
+  <action name="action4_3">
+   <property name="text">
+    <string>4:3</string>
+   </property>
+  </action>
+  <action name="action1_1">
+   <property name="text">
+    <string>1:1</string>
+   </property>
+  </action>
+  <action name="action16_10">
+   <property name="text">
+    <string>16:10</string>
+   </property>
+  </action>
+  <action name="action2_21_1">
+   <property name="text">
+    <string>2.21:1</string>
+   </property>
+  </action>
+  <action name="action2_35_1">
+   <property name="text">
+    <string>2.35:1</string>
+   </property>
+  </action>
+  <action name="action2_39_1">
+   <property name="text">
+    <string>2.39:1</string>
+   </property>
+  </action>
+  <action name="action5_4">
+   <property name="text">
+    <string>5:4</string>
+   </property>
+  </action>
+  <action name="actionDefault_3">
+   <property name="text">
+    <string>Default</string>
+   </property>
+  </action>
+  <action name="actionOff">
+   <property name="text">
+    <string>Off</string>
+   </property>
+  </action>
+  <action name="actionAutomatic">
+   <property name="text">
+    <string>Automatic</string>
+   </property>
+  </action>
+  <action name="actionOn">
+   <property name="text">
+    <string>On</string>
+   </property>
+  </action>
+  <action name="actionAuto">
+   <property name="text">
+    <string>Auto</string>
+   </property>
+  </action>
+  <action name="actionNext_Frame_2">
+   <property name="text">
+    <string>Next Frame</string>
+   </property>
+  </action>
+  <action name="actionPrevious_Frame_2">
+   <property name="text">
+    <string>Previous Frame</string>
+   </property>
+  </action>
+  <action name="actionEmergency_Collapse">
+   <property name="text">
+    <string>Emergency Collapse</string>
+   </property>
+  </action>
+  <action name="actionPlay_Pause_2">
+   <property name="text">
+    <string>Play / Pause</string>
+   </property>
+  </action>
+  <action name="actionAdd_Cumshot_Marker">
+   <property name="text">
+    <string>Add Cumshot Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Strip_Marker">
+   <property name="text">
+    <string>Add Strip Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Cyan_Marker">
+   <property name="text">
+    <string>Add Cyan Marker</string>
+   </property>
+  </action>
+  <action name="actionAdd_Magenta_Marker">
+   <property name="text">
+    <string>Add Magenta Marker</string>
+   </property>
+  </action>
+  <action name="actionJumpForwardSmall">
+   <property name="text">
+    <string>Jump Fwd Small</string>
+   </property>
+  </action>
+  <action name="actionJumpForwardMedium">
+   <property name="text">
+    <string>Jump Fwd Medium</string>
+   </property>
+  </action>
+  <action name="actionJumpForwardLarge">
+   <property name="text">
+    <string>Jump Fwd Large</string>
+   </property>
+  </action>
+  <action name="actionJumpBackwardSmall">
+   <property name="text">
+    <string>Jump Back Small</string>
+   </property>
+  </action>
+  <action name="actionJumpBackwardMedium">
+   <property name="text">
+    <string>Jump Back Medium</string>
+   </property>
+  </action>
+  <action name="actionJumpBackwardLarge">
+   <property name="text">
+    <string>Jump Back Large</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+  </action>
+  <action name="actionToggle_Status_Bar">
+   <property name="text">
+    <string>Toggle Status Bar</string>
+   </property>
+  </action>
+  <action name="actionMake_Subclip">
+   <property name="text">
+    <string>Make Subclip...</string>
+   </property>
+  </action>
+  <action name="actionShow_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Scene_Transition_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Scene Transition Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Strip_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Strip Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Cumshot_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Cumshot Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Dialog_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Dialog Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Cyan_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Cyan Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Magenta_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Magenta Markers</string>
+   </property>
+  </action>
+  <action name="actionShow_Orange_Markers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Orange Markers</string>
+   </property>
+  </action>
+  <action name="actionOpen_Subtitle_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open Subtitle File...</string>
+   </property>
+  </action>
+  <action name="actionToggle_Subtitles">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Subtitles</string>
+   </property>
+  </action>
+  <action name="actionMedia_Information">
+   <property name="text">
+    <string>Media Information</string>
+   </property>
+  </action>
+  <action name="actiontemp">
+   <property name="text">
+    <string>temp</string>
+   </property>
+  </action>
+  <action name="actiontemp_2">
+   <property name="text">
+    <string>temp</string>
+   </property>
+  </action>
+  <action name="actiontemp_3">
+   <property name="text">
+    <string>temp</string>
+   </property>
+  </action>
+  <action name="actionOpen_Network_Stream">
+   <property name="text">
+    <string>Open Network Stream...</string>
+   </property>
+  </action>
+  <action name="actionGraphics_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Graphics View</string>
+   </property>
+  </action>
+  <action name="actionVideo_Widget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Video Widget</string>
+   </property>
+  </action>
+  <action name="actionToggle_Video_Controls">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Video Controls</string>
+   </property>
+  </action>
+  <action name="actionRestart_Video">
+   <property name="text">
+    <string>Restart Video</string>
+   </property>
+  </action>
+  <action name="actionStream_Stash_Video">
+   <property name="text">
+    <string>Stream Stash Video</string>
+   </property>
+  </action>
+  <action name="actionCalculate_Video_Hash">
+   <property name="text">
+    <string>Calculate Video Hash</string>
+   </property>
+  </action>
+  <action name="actionJumpForwardExtraLarge">
+   <property name="text">
+    <string>Jump Fwd Extra Large</string>
+   </property>
+  </action>
+  <action name="actionJumpBackwardExtraLarge">
+   <property name="text">
+    <string>Jump Back Extra Large</string>
+   </property>
+  </action>
+  <action name="actionTestFunction">
+   <property name="text">
+    <string>Test Function</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HVideoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">widgets/hvideowidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="vura.qrc"/>
+ </resources>
+ <connections/>
+</ui>
