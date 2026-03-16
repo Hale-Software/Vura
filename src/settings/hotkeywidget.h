@@ -2,6 +2,7 @@
 #define HPLAYER_HOTKEYWIDGET_H
 
 #include <QWidget>
+#include <QString>
 #include <QLabel>
 #include <QKeySequenceEdit>
 #include <QKeySequence>
@@ -20,15 +21,16 @@ class HotkeyWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit HotkeyWidget(QString action, QString defaultHotkey, QString hotkey, QWidget *parent = nullptr);
+    explicit HotkeyWidget(int id, QString action, QString defaultHotkey, QString hotkey, QWidget *parent = nullptr);
     ~HotkeyWidget() override;
 
+    QString getAction();
     QString getHotkey();
     void setHotkey(QString hotkey);
     void clearHotkey();
 
 signals:
-    void hotkeyChanged(QString action, QString oldHotkey, QString newHotkey);
+    void hotkeyChanged(int id, QString action, QString oldHotkey, QString newHotkey);
 
 private slots:
     void keySequence_Changed(const QKeySequence &keySequence);
@@ -37,9 +39,11 @@ private slots:
 
 private:
     Ui::HotkeyWidget *ui;
-    QString h_action;
-    QString h_defaultHotkey;
-    QString h_hotkey;
+    int m_id;
+    QString m_name;
+    QString m_action;
+    QString m_defaultHotkey;
+    QString m_hotkey;
 
 };
 

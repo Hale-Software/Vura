@@ -11,12 +11,15 @@ static Logger* globalRedirector = nullptr;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setMouseTracking(true);
 
     // Set the global redirector and install the custom message handler
     qInstallMessageHandler(Logger::messageHandler);
     globalRedirector = Logger::instance();
     qInfo() << "Starting application...";
 
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
 
     // Application startup initialization
     Startup startup;
@@ -173,10 +176,50 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 }
 
-
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::hideCursor()
+{
+    ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
+    timer->stop();
+}
+
+bool MainWindow::event(QEvent *e)
+{
+    switch (e->type()) {
+        case QEvent::HoverMove:
+            if (m_hideCursorWhenPlaying) {
+                if (ui->videoWidget->rect().contains(QCursor::pos())) {
+                    if (m_playing) {
+                        timer->stop();
+                        ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
+                        timer->start(m_hideCursorTime);
+
+                    } else {
+                        timer->stop();
+                        ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
+                    }
+
+                } else {
+                    timer->stop();
+                    ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
+                }
+            } else {
+                timer->stop();
+                ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
+            }
+
+        case QEvent::HoverEnter:
+            if (m_playing)
+                timer->start(m_hideCursorTime);
+
+
+        default:
+            return QMainWindow::event(e);
+    }
 }
 
 void MainWindow::openedWithFile(QString file)
@@ -217,6 +260,11 @@ void MainWindow::loadSettings()
     m_jumpLarge = settings.value("jumpLarge", 30).toInt();
     m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
+    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
+    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
+
+    if (timer->isActive())
+        timer->stop();
 
     emit refreshSettings();
 }
@@ -798,8 +846,10 @@ void MainWindow::toggleFullscreen()
 {
     if (ui->videoWidget->isFullScreen()) {
         ui->videoWidget->setFullScreen(false);
+        ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
     } else {
         ui->videoWidget->setFullScreen(true);
+        ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
     }
 }
 

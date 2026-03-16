@@ -19,5 +19,12 @@
         <file>images/volume-low.svg</file>
         <file>images/volume-medium.svg</file>
         <file>images/volume-high.svg</file>
+        <file>images/advanced-settings.svg</file>
+        <file>images/appearance-settings.svg</file>
+        <file>images/audio-settings.svg</file>
+        <file>images/general-settings.svg</file>
+        <file>images/hotkeys-settings.svg</file>
+        <file>images/video-settings.svg</file>
+        <file>images/undo.svg</file>
     </qresource>
 </RCC>

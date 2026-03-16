@@ -57,6 +57,8 @@
 #include <QDesktopServices>
 #include <QStandardItemModel>
 #include <QAbstractItemModel>
+#include <QMouseEvent>
+#include <QHoverEvent>
 
 #include <xxHash/xxhash.h>
 
@@ -342,14 +344,21 @@ private slots:
     void playlistContextMenu_ShowFolderVideoAction();
     void playlistContextMenu_RemoveSelectedVideoAction();
 
+    void hideCursor();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+    bool event(QEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
     Logger* m_hLogger;
     MenuBar *m_menuBar = nullptr;
+    QTimer *timer;
+    int m_x = 0;
+    int m_y = 0;
+    bool m_showingCursor = true;
 
     // WINDOWS
     // =======================================================================================================
@@ -404,6 +413,8 @@ private:
     int m_jumpLarge = 0;
     int m_jumpExtraLarge = 0;
     int m_maxRecentFiles = 0;
+    bool m_hideCursorWhenPlaying = false;
+    int m_hideCursorTime = 0;
 
     //
     // =======================================================================================================
