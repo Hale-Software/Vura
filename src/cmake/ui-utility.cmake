@@ -4,10 +4,6 @@ target_sources(
         utility/qt-wrappers.h
         utility/filemanager.cpp
         utility/filemanager.h
-        utility/hdata.cpp
-        utility/hdata.h
-        utility/qplaylistfileparser.cpp
-        utility/qplaylistfileparser.h
         utility/startup.cpp
         utility/startup.h
         utility/logger.cpp
@@ -22,4 +18,6 @@ target_sources(
         utility/update.h
         utility/hotkeys.cpp
         utility/hotkeys.h
+        utility/videomarkers.cpp
+        utility/videomarkers.h
 )

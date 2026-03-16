@@ -1,6 +1,3 @@
-#include "hvideowidget.h"
-#include "../utility/logger.h"
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -11,54 +8,171 @@
 // Global pointer to Logger for use in messageHandler
 static Logger* globalRedirector = nullptr;
 
-using namespace Qt::Literals;
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    //QSettings settings;
-    //settings.beginGroup("Hotkeys");
-    //settings.remove("");
-    //settings.endGroup();
-    //settings.sync();
 
     // Set the global redirector and install the custom message handler
     qInstallMessageHandler(Logger::messageHandler);
     globalRedirector = Logger::instance();
     qInfo() << "Starting application...";
 
+
+    // Application startup initialization
     Startup startup;
     startup.Initialize();
 
-    hData = new HData;
-
     loadSettings();
-    configureApplication();
-    configureStatusBar();
-    configureVideoWidget();
-    configureVideoWidgetConnections();
-    configureUI();
-    configureMenuItems();
-    configureHotkeys();
-    createRecentFileActions();
-    updateRecentFileActions();
-    createAudioOutputActions();
-    createAudioTrackActions();
-    createVideoTrackActions();
-    createSubtitleTrackActions();
-    updateAudioOutputActions();
+    m_videoMarkers = new VideoMarkers;
+
+
+    // Configure menu bar
+    m_menuBar = new MenuBar(this);
+    connect(this, &MainWindow::setPlayerStatus, m_menuBar, &MenuBar::setPlayerStatus);
+    connect(this, &MainWindow::refreshSettings, m_menuBar, &MenuBar::refreshSettings);
+    connect(this, &MainWindow::setActiveAudioDevice, m_menuBar, &MenuBar::setActiveAudioDevice);
+    connect(this, &MainWindow::setActiveAudioTrack, m_menuBar, &MenuBar::setActiveAudioTrack);
+    connect(this, &MainWindow::setActiveVideoTrack, m_menuBar, &MenuBar::setActiveVideoTrack);
+    connect(this, &MainWindow::setActiveSubtitleTrack, m_menuBar, &MenuBar::setActiveSubtitleTrack);
+    connect(this, &MainWindow::updateAudioOutputs, m_menuBar, &MenuBar::updateAudioOutputs);
+    connect(this, &MainWindow::updateAudioTracks, m_menuBar, &MenuBar::updateAudioTracks);
+    connect(this, &MainWindow::updateVideoTracks, m_menuBar, &MenuBar::updateVideoTracks);
+    connect(this, &MainWindow::updateSubtitleTracks, m_menuBar, &MenuBar::updateSubtitleTracks);
+    connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
+    // connect(this, &MainWindow::, m_menuBar, &MenuBar::);
+
+    connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
+    connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
+    connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
+    connect(m_menuBar, &MenuBar::showUpdates, this, &MainWindow::showUpdates);
+    connect(m_menuBar, &MenuBar::showFeedback, this, &MainWindow::showFeedback);
+    connect(m_menuBar, &MenuBar::emergencyCollapse, this, &MainWindow::emergencyCollapse);
+    connect(m_menuBar, &MenuBar::exitApplication, this, &MainWindow::exitApplication);
+    connect(m_menuBar, &MenuBar::openFiles, this, &MainWindow::openFiles);
+    connect(m_menuBar, &MenuBar::closeFiles, this, &MainWindow::closeFiles);
+    connect(m_menuBar, &MenuBar::openFolder, this, &MainWindow::openFolder);
+    connect(m_menuBar, &MenuBar::saveFile, this, &MainWindow::saveFile);
+    connect(m_menuBar, &MenuBar::savePlaylist, this, &MainWindow::savePlaylist);
+    connect(m_menuBar, &MenuBar::togglePlaylist, this, &MainWindow::togglePlaylist);
+    connect(m_menuBar, &MenuBar::toggleStatusBar, this, &MainWindow::toggleStatusBar);
+    connect(m_menuBar, &MenuBar::toggleMarkers, this, &MainWindow::toggleMarkers);
+    connect(m_menuBar, &MenuBar::toggleCumshotMarkers, this, &MainWindow::toggleCumshotMarkers);
+    connect(m_menuBar, &MenuBar::toggleCyanMarkers, this, &MainWindow::toggleCyanMarkers);
+    connect(m_menuBar, &MenuBar::toggleDialogMarkers, this, &MainWindow::toggleDialogMarkers);
+    connect(m_menuBar, &MenuBar::toggleMagentaMarkers, this, &MainWindow::toggleMagentaMarkers);
+    connect(m_menuBar, &MenuBar::toggleOrangeMarkers, this, &MainWindow::toggleOrangeMarkers);
+    connect(m_menuBar, &MenuBar::toggleSceneTransitionMarkers, this, &MainWindow::toggleSceneTransitionMarkers);
+    connect(m_menuBar, &MenuBar::toggleStripMarkers, this, &MainWindow::toggleStripMarkers);
+    connect(m_menuBar, &MenuBar::showLogFileViewer, this, &MainWindow::showLogFileViewer);
+    connect(m_menuBar, &MenuBar::toggleVideoControls, this, &MainWindow::toggleVideoControls);
+    connect(m_menuBar, &MenuBar::togglePlayPause, this, &MainWindow::togglePlayPause);
+    connect(m_menuBar, &MenuBar::nextVideo, this, &MainWindow::nextVideo);
+    connect(m_menuBar, &MenuBar::previousVideo, this, &MainWindow::previousVideo);
+    connect(m_menuBar, &MenuBar::changePlaybackSpeed, this, &MainWindow::changePlaybackSpeed);
+    connect(m_menuBar, &MenuBar::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
+    connect(m_menuBar, &MenuBar::videoSeek, this, &MainWindow::videoSeek);
+    connect(m_menuBar, &MenuBar::videoJumpToTime, this, &MainWindow::videoJumpToTime);
+    connect(m_menuBar, &MenuBar::restartVideo, this, &MainWindow::restartVideo);
+    connect(m_menuBar, &MenuBar::changeVolume, this, &MainWindow::changeVolume);
+    connect(m_menuBar, &MenuBar::toggleMute, this, &MainWindow::toggleMute);
+    connect(m_menuBar, &MenuBar::toggleFullscreen, this, &MainWindow::toggleFullscreen);
+    connect(m_menuBar, &MenuBar::setAudioOutput, this, &MainWindow::setAudioOutput);
+    connect(m_menuBar, &MenuBar::setAudioTrack, this, &MainWindow::setAudioTrack);
+    connect(m_menuBar, &MenuBar::setVideoTrack, this, &MainWindow::setVideoTrack);
+    connect(m_menuBar, &MenuBar::setSubtitleTrack, this, &MainWindow::setSubtitleTrack);
+    connect(m_menuBar, &MenuBar::addMarker, this, &MainWindow::addMarker);
+    connect(m_menuBar, &MenuBar::nextMarker, this, &MainWindow::nextMarker);
+    connect(m_menuBar, &MenuBar::previousMarker, this, &MainWindow::previousMarker);
+    connect(m_menuBar, &MenuBar::clearSelectedMarker, this, &MainWindow::clearSelectedMarker);
+    connect(m_menuBar, &MenuBar::clearMarkers, this, &MainWindow::clearMarkers);
+    connect(m_menuBar, &MenuBar::clearInMarker, this, &MainWindow::clearInMarker);
+    connect(m_menuBar, &MenuBar::clearOutMarker, this, &MainWindow::clearOutMarker);
+    connect(m_menuBar, &MenuBar::goToInMarker, this, &MainWindow::goToInMarker);
+    connect(m_menuBar, &MenuBar::goToOutMarker, this, &MainWindow::goToOutMarker);
+    connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
+    connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
+    // connect(m_menuBar, &MenuBar::, this, &MainWindow::);
+
+    this->setMenuBar(m_menuBar);
+
+
+    // Configure status bar
+    m_statusLabel = new QLabel;
+    ui->statusBar->addPermanentWidget(m_statusLabel);
+    ui->statusBar->setSizeGripEnabled(false);
+    ui->statusBar->setVisible(m_showStatusBarOnStart);
+    m_showingStatusBar = m_showStatusBarOnStart;
+    emit setStatusBarShowing(m_showingStatusBar);
+
+
+    // Configure Video Controls
+    if (m_showVideoControlsOnStart)
+        toggleVideoControls();
+
+
+    // Configure Video Player
+    m_player = new QMediaPlayer(this);
+    m_audioOutput = new QAudioOutput(this);
+    m_player->setAudioOutput(m_audioOutput);
+    m_player->setVideoOutput(ui->videoWidget);
+
+    connect(m_player, &QMediaPlayer::durationChanged, this, &MainWindow::durationChanged);
+    connect(m_player, &QMediaPlayer::positionChanged, this, &MainWindow::positionChanged);
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::statusChanged);
+    connect(m_player, &QMediaPlayer::bufferProgressChanged, this, &MainWindow::bufferingProgress);
+    connect(m_player, &QMediaPlayer::errorChanged, this, &MainWindow::displayErrorMessage);
+    connect(m_player, &QMediaPlayer::sourceChanged, this, &MainWindow::sourceChanged);
+    connect(m_player, &QMediaPlayer::tracksChanged, this, &MainWindow::tracksChanged);
+    connect(m_player, &QMediaPlayer::playbackRateChanged, this, &MainWindow::playbackRateChanged);
+
+
+    // Configure UI items
+    m_videoSlider = new VideoSlider(this);
+    ui->horizontalLayout_3->insertWidget(0, m_videoSlider);
+    ui->horizontalLayout_3->setStretch(0, 2);
+    m_playlistModel = new PlaylistModel(this);
+    m_playlist = m_playlistModel->playlist();
+    ui->playlistView->setModel(m_playlistModel);
+    ui->playlistView->setCurrentIndex(m_playlistModel->index(m_playlist->currentIndex(), 0));
+
+    if (!m_showPlaylistOnStart)
+        ui->playlistView->hide();
+    m_showingPlaylist = m_showPlaylistOnStart;
+    emit setPlaylistShowing(m_showingPlaylist);
+
+    connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::seek);
+    connect(m_videoSlider, &VideoSlider::sliderClicked, this, &MainWindow::seek);
+    connect(m_videoSlider, &VideoSlider::markerSelected, this, &MainWindow::seek);
+    connect(m_playlist, &Playlist::currentIndexChanged, this, &MainWindow::playlistPositionChanged);
+    connect(ui->playlistView, &QListView::activated, this, &MainWindow::jump);
+    connect(ui->playlistView, &QListView::customContextMenuRequested, this, &MainWindow::showPlaylistContextMenu);
+
+
+
+    //
+    QList<QAudioDevice> audioDevices;
+    audioDevices.append(QAudioDevice());
+    for (auto &device : QMediaDevices::audioOutputs()) {
+        audioDevices.append(device);
+    }
+    emit updateAudioOutputs(audioDevices);
+    emit setActiveAudioDevice(m_audioOutput->device());
 
     QObject::connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, [this] {
-        updateAudioOutputActions();
+        QList<QAudioDevice> audioDevices;
+        audioDevices.append(QAudioDevice());
+        for (auto &device : QMediaDevices::audioOutputs()) {
+            audioDevices.append(device);
+        }
+        emit updateAudioOutputs(audioDevices);
+        emit setActiveAudioDevice(m_audioOutput->device());
     });
 
     if (!isPlayerAvailable()) {
         qWarning() << "The QMediaPlayer object does not have a valid service. Please check the media service plugins are installed.";
     }
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -93,12 +207,16 @@ void MainWindow::loadSettings()
 {
     QSettings settings;
 
-    m_rememberWindowSize = settings.value("rememberWindowSize", true).toBool();
+    m_locale = settings.value("language", "en-US").toString();
+    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
+    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
+    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
     m_hashFile = settings.value("hashFile", false).toBool();
     m_jumpSmall = settings.value("jumpSmall", 5).toInt();
     m_jumpMedium = settings.value("jumpMedium", 15).toInt();
-    m_jumpLarge = settings.value("jumpLarge", 45).toInt();
-    m_jumpExtraLarge = settings.value("jumpExtraLarge", 45).toInt();
+    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
+    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
+    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
 
     emit refreshSettings();
 }
@@ -210,9 +328,12 @@ QString MainWindow::trackName(const QMediaMetaData &metaData, int index)
 
 void MainWindow::tracksChanged()
 {
-    updateAudioTrackActions();
-    updateVideoTrackActions();
-    updateSubtitleTrackActions();
+    //updateAudioTrackActions();
+    //updateVideoTrackActions();
+    //updateSubtitleTrackActions();
+    emit updateAudioTracks(m_player->audioTracks());
+    emit updateVideoTracks(m_player->videoTracks());
+    emit updateSubtitleTracks(m_player->subtitleTracks());
 }
 
 void MainWindow::playlistPositionChanged(int currentItem)
@@ -223,34 +344,30 @@ void MainWindow::playlistPositionChanged(int currentItem)
 
 void MainWindow::sourceChanged(const QUrl &media)
 {
-    qDebug() << "Media source changed.";
     if (m_hashFile) {
-        if (!currentFileHash.isEmpty()) {
-            hData->saveMarkers(currentFileHash, markerMap);
-        }
-        currentFileHash = QString::number(fileHash(media.toLocalFile()));
-        markerMap = hData->getMarkers(currentFileHash);
+        if (!m_currentFileHash.isEmpty())
+            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
+
+        m_currentFileHash = QString::number(fileHash(media.toLocalFile()));
+        m_videoMarkersList = m_videoMarkers->getMarkers(m_currentFileHash);
     } else {
-        if (!currentFile.isEmpty())
-            hData->saveMarkers(currentFile, markerMap);
-        markerMap = hData->getMarkers(media.toString());
+        if (!m_currentFile.isEmpty())
+            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
+
+        m_videoMarkersList = m_videoMarkers->getMarkers(media.toString());
     }
-    currentFile = media.toString();
-    qInfo() << "New media source loaded: " << currentFile;
-    m_videoSlider->setMarkers(markerMap);
-    setWindowTitle(currentFile);
-    QByteArray byteArray = currentFile.toUtf8();
-    if (h_playing)
-    {
+    m_currentFile = media.toString();
+    qInfo() << "New media source loaded: " << m_currentFile;
+    m_videoSlider->setMarkers(m_videoMarkersList);
+    setWindowTitle(m_currentFile);
+    QByteArray byteArray = m_currentFile.toUtf8();
+    if (m_playing) {
         m_player->play();
-    }
-    else
-    {
+    } else {
         m_player->pause();
     }
-    h_inMarker = 0;
-    h_outMarker = 0;
-    //m_videoSlider->setVideoLoaded(true);
+    m_inMarker = 0;
+    m_outMarker = 0;
 }
 
 void MainWindow::statusChanged(QMediaPlayer::MediaStatus status)
@@ -260,9 +377,10 @@ void MainWindow::statusChanged(QMediaPlayer::MediaStatus status)
     // handle status message
     switch (status) {
         case QMediaPlayer::NoMedia:
+            emit setPlayerStatus(false);
         case QMediaPlayer::LoadedMedia:
             setStatusInfo(QString());
-            //m_videoSlider->videoLoaded = true;
+            emit setPlayerStatus(true);
             break;
         case QMediaPlayer::LoadingMedia:
             setStatusInfo(tr("Loading..."));
@@ -292,7 +410,501 @@ void MainWindow::bufferingProgress(float progress)
         setStatusInfo(tr("Buffering %1%").arg(qRound(progress * 100.)));
 }
 
+void MainWindow::playbackRateChanged(qreal rate)
+{
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
+}
+
 #pragma endregion
+
+
+
+#pragma region PUBLIC SLOTS
+
+void MainWindow::showPreferences()
+{
+    if (m_settingsWindow)
+        m_settingsWindow->close();
+
+    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow->show();
+    m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
+    connect(m_settingsWindow, &SettingsWindow::updateSettings, this, &MainWindow::loadSettings);
+}
+
+void MainWindow::showAbout()
+{
+    if (m_aboutDialog)
+        m_aboutDialog->close();
+
+    m_aboutDialog = new AboutDialog(this);
+    m_aboutDialog->show();
+    m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::showHelp() {}
+
+void MainWindow::showUpdates()
+{
+    if (m_updateDialog)
+        m_updateDialog->close();
+
+    m_updateDialog = new UpdateDialog(this);
+    m_updateDialog->show();
+    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::showFeedback() {}
+
+void MainWindow::emergencyCollapse()
+{
+    if (m_player->isPlaying()) {
+        m_player->pause();
+    }
+
+    this->setWindowState(Qt::WindowMinimized);
+}
+
+void MainWindow::exitApplication()
+{
+    QMessageBox::StandardButton confirmationBox;
+    confirmationBox = QMessageBox::question(this, "Exit Application", "Are you sure you want to exit?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (confirmationBox == QMessageBox::Yes) {
+        qInfo() << "Exitting Application";
+        this->close();
+    }
+}
+
+void MainWindow::openFiles(const QStringList &fileList)
+{
+    QSettings settings;
+
+    QStringList files = settings.value("recentFileList").toStringList();
+
+    const int previousMediaCount = m_playlist->mediaCount();
+    bool loadedNewPlaylist = false;
+
+    for (const QString& fileName : fileList) {
+        files.removeAll(fileName);
+        files.prepend(fileName);
+
+        QUrl url = QUrl::fromLocalFile(fileName);
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+        } else {
+            loadedNewPlaylist = loadPlaylist(url);
+        }
+    }
+
+    if (!loadedNewPlaylist) {
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
+        }
+    } else {
+        // Added opened playlist code
+    }
+
+    while (files.size() > m_maxRecentFiles) {
+        files.removeLast();
+    }
+    settings.setValue("recentFileList", files);
+    emit updateRecentFiles();
+}
+
+void MainWindow::closeFiles(const QStringList &fileList) {}
+
+void MainWindow::openFolder(const QString &folderPath)
+{
+    const int previousMediaCount = m_playlist->mediaCount();
+
+    if (!folderPath.isEmpty()) {
+        QList<QUrl> filesList;
+        QDirIterator folderIterator(folderPath, QDir::Files | QDir::NoDotAndDotDot);
+        while (folderIterator.hasNext()) {
+            folderIterator.next();
+            filesList.append(QUrl::fromLocalFile(folderIterator.filePath()));
+        }
+
+        for (auto &fileUrl : filesList) {
+            if (!isPlaylist(fileUrl)) {
+                m_playlist->addMedia(fileUrl);
+            } else {
+                VuraMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
+            }
+        }
+
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
+        }
+    }
+}
+
+void MainWindow::saveFile(const QString &filePath) {}
+
+void MainWindow::savePlaylist(const QString &filePath, const QString &type) {}
+
+void MainWindow::togglePlaylist()
+{
+    if (m_showingPlaylist) {
+        ui->playlistView->hide();
+        m_showingPlaylist = false;
+    } else {
+        ui->playlistView->show();
+        m_showingPlaylist = true;
+    }
+    emit setPlaylistShowing(m_showingPlaylist);
+}
+
+void MainWindow::toggleStatusBar()
+{
+    if (m_showingStatusBar) {
+        ui->statusBar->setVisible(false);
+        m_showingStatusBar = false;
+    } else {
+        ui->statusBar->setVisible(true);
+        m_showingStatusBar = true;
+    }
+    emit setStatusBarShowing(m_showingStatusBar);
+}
+
+void MainWindow::toggleMarkers()
+{
+    if (m_videoSlider->showMarkers) {
+        m_videoSlider->showMarkers = false;
+    } else {
+        m_videoSlider->showMarkers = true;
+    }
+    emit setMarkerShowing("marker", m_videoSlider->showMarkers);
+}
+
+void MainWindow::toggleCumshotMarkers()
+{
+    if (m_videoSlider->showCumshotMarkers) {
+        m_videoSlider->showCumshotMarkers = false;
+    } else {
+        m_videoSlider->showCumshotMarkers = true;
+    }
+    emit setMarkerShowing("cumshot", m_videoSlider->showCumshotMarkers);
+}
+
+void MainWindow::toggleCyanMarkers()
+{
+    if (m_videoSlider->showCyanMarkers) {
+        m_videoSlider->showCyanMarkers = false;
+    } else {
+        m_videoSlider->showCyanMarkers = true;
+    }
+    emit setMarkerShowing("cyan", m_videoSlider->showCyanMarkers);
+}
+
+void MainWindow::toggleDialogMarkers()
+{
+    if (m_videoSlider->showDialogMarkers) {
+        m_videoSlider->showDialogMarkers = false;
+    } else {
+        m_videoSlider->showDialogMarkers = true;
+    }
+    emit setMarkerShowing("dialog", m_videoSlider->showDialogMarkers);
+}
+
+void MainWindow::toggleMagentaMarkers()
+{
+    if (m_videoSlider->showMagentaMarkers) {
+        m_videoSlider->showMagentaMarkers = false;
+    } else {
+        m_videoSlider->showMagentaMarkers = true;
+    }
+    emit setMarkerShowing("magenta", m_videoSlider->showMagentaMarkers);
+}
+
+void MainWindow::toggleOrangeMarkers()
+{
+    if (m_videoSlider->showOrangeMarkers) {
+        m_videoSlider->showOrangeMarkers = false;
+    } else {
+        m_videoSlider->showOrangeMarkers = true;
+    }
+    emit setMarkerShowing("orange", m_videoSlider->showOrangeMarkers);
+}
+
+void MainWindow::toggleSceneTransitionMarkers()
+{
+    if (m_videoSlider->showSceneMarkers) {
+        m_videoSlider->showSceneMarkers = false;
+    } else {
+        m_videoSlider->showSceneMarkers = true;
+    }
+    emit setMarkerShowing("scene", m_videoSlider->showSceneMarkers);
+}
+
+void MainWindow::toggleStripMarkers()
+{
+    if (m_videoSlider->showStripMarkers) {
+        m_videoSlider->showStripMarkers = false;
+    } else {
+        m_videoSlider->showStripMarkers = true;
+    }
+    emit setMarkerShowing("strip", m_videoSlider->showStripMarkers);
+}
+
+void MainWindow::showLogFileViewer()
+{
+    if (m_logViewer)
+        m_logViewer->close();
+
+    m_logViewer = new LogViewer(this);
+    m_logViewer->show();
+    m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::toggleVideoControls()
+{
+    if (m_showingVideoControls) {
+        ui->verticalLayout->removeWidget(m_videoControlWidget);
+        delete m_videoControlWidget;
+        m_showingVideoControls = false;
+    } else {
+        m_videoControlWidget = new VideoControlWidget(this);
+        m_videoControlWidget->setMuted(m_isMuted);
+        m_videoControlWidget->setVolume(m_volume);
+        ui->verticalLayout->addWidget(m_videoControlWidget);
+        connect(m_player, &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
+        connect(m_videoControlWidget, &VideoControlWidget::play, m_player, &QMediaPlayer::play);
+        connect(m_videoControlWidget, &VideoControlWidget::pause, m_player, &QMediaPlayer::pause);
+        connect(m_videoControlWidget, &VideoControlWidget::stop, m_player, &QMediaPlayer::stop);
+        connect(m_videoControlWidget, &VideoControlWidget::next, m_playlist, &Playlist::next);
+        connect(m_videoControlWidget, &VideoControlWidget::previous, this, &MainWindow::previousVideo);
+        connect(m_videoControlWidget, &VideoControlWidget::fullScreen, this, &MainWindow::toggleFullscreen);
+        connect(m_videoControlWidget, &VideoControlWidget::togglePlaylist, this, &MainWindow::togglePlaylist);
+        connect(m_videoControlWidget, &VideoControlWidget::loopAll, this, &MainWindow::videoControl_LoopAll);
+        connect(m_videoControlWidget, &VideoControlWidget::loopOne, this, &MainWindow::videoControl_LoopOne);
+        connect(m_videoControlWidget, &VideoControlWidget::loopNone, this, &MainWindow::videoControl_LoopNone);
+        connect(m_videoControlWidget, &VideoControlWidget::shuffle, this, &MainWindow::videoControl_Shuffle);
+        connect(m_videoControlWidget, &VideoControlWidget::changeVolume, m_audioOutput, &QAudioOutput::setVolume);
+        connect(m_videoControlWidget, &VideoControlWidget::changeMuting, m_audioOutput, &QAudioOutput::setMuted);
+        connect(m_audioOutput, &QAudioOutput::volumeChanged, m_videoControlWidget, &VideoControlWidget::setVolume);
+        connect(m_audioOutput, &QAudioOutput::mutedChanged, m_videoControlWidget, &VideoControlWidget::setMuted);
+        connect(this, &MainWindow::refreshSettings, m_videoControlWidget, &VideoControlWidget::refreshUI);
+        m_showingVideoControls = true;
+    }
+    emit setVideoControlsShowing(m_showingVideoControls);
+}
+
+void MainWindow::togglePlayPause()
+{
+    if (m_player->isAvailable()) {
+        if (m_player->isPlaying()) {
+            m_player->pause();
+            m_playing = false;
+        } else {
+            m_player->play();
+            m_playing = true;
+        }
+    }
+}
+
+void MainWindow::nextVideo()
+{
+    m_playlist->next();
+}
+
+void MainWindow::previousVideo()
+{
+    // Go to previous track if we are within the first 5 seconds of playback
+    // Otherwise, seek to the beginning.
+    if (m_player->position() <= 5000) {
+        m_playlist->previous();
+    } else {
+        m_player->setPosition(0);
+    }
+}
+
+void MainWindow::changePlaybackSpeed(double mrate)
+{
+    float newSpeed = m_playbackSpeed + mrate;
+    m_player->setPlaybackRate(newSpeed);
+    m_playbackSpeed = m_player->playbackRate();
+}
+
+void MainWindow::setPlaybackSpeedNormal()
+{
+    m_player->setPlaybackRate(1.0);
+    m_playbackSpeed = m_player->playbackRate();
+}
+
+void MainWindow::videoSeek(int mseconds)
+{
+    qint64 zeroNum = 0;
+    if (m_player->isAvailable()) {
+        qint64 hduration = m_player->duration();
+        qint64 newPosition = m_player->position() + mseconds;
+
+        if (newPosition < hduration && newPosition > zeroNum) {
+            m_player->setPosition(newPosition);
+
+        } else if (newPosition >= hduration) {
+            m_player->setPosition(hduration);
+
+        } else if (newPosition <= zeroNum) {
+            m_player->setPosition(zeroNum);
+        }
+    }
+}
+
+void MainWindow::videoJumpToTime(int position)
+{
+    if (position <= m_player->duration()) {
+        m_player->setPosition(position);
+    } else if (position > m_player->duration()) {
+        m_player->setPosition(m_player->duration());
+    }
+}
+
+void MainWindow::restartVideo()
+{
+    m_player->setPosition(0);
+}
+
+void MainWindow::changeVolume(double mvolume)
+{
+    float n_volume = m_audioOutput->volume() + mvolume;
+    if (n_volume > 1.0) {
+        n_volume = 1.0;
+    } else if (n_volume < 0.0) {
+        n_volume = 0.0;
+    }
+    m_audioOutput->setVolume(n_volume);
+    m_volume = m_audioOutput->volume();
+}
+
+void MainWindow::toggleMute()
+{
+    if (m_audioOutput->isMuted()) {
+        m_audioOutput->setMuted(false);
+    } else {
+        m_audioOutput->setMuted(true);
+    }
+    m_isMuted = m_audioOutput->isMuted();
+    emit setMuted(m_isMuted);
+}
+
+void MainWindow::toggleFullscreen()
+{
+    if (ui->videoWidget->isFullScreen()) {
+        ui->videoWidget->setFullScreen(false);
+    } else {
+        ui->videoWidget->setFullScreen(true);
+    }
+}
+
+void MainWindow::setAudioOutput(const QAudioDevice &moutput)
+{
+    m_player->audioOutput()->setDevice(moutput);
+}
+
+void MainWindow::setAudioTrack(const int mtrack)
+{
+    m_player->setActiveAudioTrack(mtrack);
+    emit setActiveAudioTrack(mtrack);
+}
+
+void MainWindow::setVideoTrack(const int mtrack)
+{
+    m_player->setActiveVideoTrack(mtrack);
+    emit setActiveVideoTrack(mtrack);
+}
+
+void MainWindow::setSubtitleTrack(const int mtrack)
+{
+    m_player->setActiveSubtitleTrack(mtrack);
+    emit setActiveSubtitleTrack(mtrack);
+}
+
+void MainWindow::addMarker(const QString &markerType)
+{
+    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    double sliderPercent = (distanceFromMin / sliderRange);
+
+    QList<double> marker = m_videoMarkersList.value(markerType);
+    marker.append(sliderPercent);
+    m_videoMarkersList.insert(markerType, marker);
+
+    m_videoSlider->setMarkers(m_videoMarkersList);
+}
+
+void MainWindow::nextMarker()
+{
+    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    double sliderPercent = (distanceFromMin / sliderRange);
+    m_videoSlider->jumpToNextMarker(sliderPercent);
+}
+
+void MainWindow::previousMarker()
+{
+    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    double sliderPercent = (distanceFromMin / sliderRange);
+    m_videoSlider->jumpToPreviousMarker(sliderPercent);
+}
+
+void MainWindow::clearSelectedMarker() {}
+
+void MainWindow::clearMarkers()
+{
+    m_videoMarkersList.clear();
+    m_videoSlider->setMarkers(m_videoMarkersList);
+}
+
+void MainWindow::clearInMarker()
+{
+    m_inMarker = 0;
+}
+
+void MainWindow::clearOutMarker()
+{
+    m_outMarker = 0;
+}
+
+void MainWindow::goToInMarker()
+{
+    if (m_inMarker > 0)
+        m_player->setPosition(m_inMarker);
+}
+
+void MainWindow::goToOutMarker()
+{
+    if (m_outMarker > 0)
+        m_player->setPosition(m_outMarker);
+}
+
+void MainWindow::addInMarker()
+{
+    m_inMarker = m_player->position();
+}
+
+void MainWindow::addOutMarker()
+{
+    m_outMarker = m_player->position();
+}
+
+void MainWindow::createSubclip()
+{
+    extractSubclipFromVideo();
+}
+
+
+#pragma endregion
+
+
+
 
 
 #pragma region VIDEO CONTROLS
@@ -316,9 +928,8 @@ void MainWindow::handleCursor(QMediaPlayer::MediaStatus status)
 
 void MainWindow::jump(const QModelIndex &index)
 {
-    if (index.isValid()) {
+    if (index.isValid())
         m_playlist->setCurrentIndex(index.row());
-    }
 }
 
 void MainWindow::jumpTo(int mseconds)
@@ -353,18 +964,18 @@ void MainWindow::showErrorMessage(const QString &message)
 
 void MainWindow::extractSubclipFromVideo()
 {
-    if (h_inMarker <= 0 || h_outMarker <= 0) {
+    if (m_inMarker <= 0 || m_outMarker <= 0) {
         showErrorMessage("Missing In Marker or Out Marker");
         return;
     }
 
-    QString startTimestamp = createTimestampString(h_inMarker);
-    QString endTimestamp = createTimestampString(h_outMarker);
+    QString startTimestamp = createTimestampString(m_inMarker);
+    QString endTimestamp = createTimestampString(m_outMarker);
 
     // Get the user's documents location as a QString
     QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     QString applicationFolder = "vura";
-    QFileInfo fileInfo(currentFile);
+    QFileInfo fileInfo(m_currentFile);
     QString projectFolder = fileInfo.baseName();
     QString fileName = "subclip";
     QString dirPath = QDir::cleanPath(documentsPath + QDir::separator() + applicationFolder + QDir::separator() + projectFolder);
@@ -380,14 +991,14 @@ void MainWindow::extractSubclipFromVideo()
 
     QString outputFile = generateSubclipFilenameWithIncrement(dirPath, fileName, "mp4");
 
-    qDebug() << "Input file: " << currentFile;
+    qDebug() << "Input file: " << m_currentFile;
     qDebug() << "Output file: " << outputFile;
     qDebug() << "Start timestamp: " << startTimestamp;
     qDebug() << "End timestamp: " << endTimestamp;
 
     QProcess *ffmpegProc = new QProcess(this);
     QStringList arguments;
-    arguments << "-ss" << startTimestamp << "-to" << endTimestamp << "-i" << currentFile << "-c" << "copy" << outputFile;
+    arguments << "-ss" << startTimestamp << "-to" << endTimestamp << "-i" << m_currentFile << "-c" << "copy" << outputFile;
 
     // Optional: Connect signals to handle output/errors
     connect(ffmpegProc, &QProcess::readyReadStandardError, [=]() {
@@ -448,7 +1059,7 @@ void MainWindow::setTrackInfo(const QString &info)
         if (!m_statusInfo.isEmpty())
             setWindowTitle(QStringLiteral("%1 | %2").arg(m_trackInfo).arg(m_statusInfo));
         else
-            setWindowTitle(m_trackInfo);
+            setWindowTitle("Vura - " + m_trackInfo);
     }
 }
 
@@ -473,7 +1084,7 @@ void MainWindow::updateDurationInfo(qint64 currentInfo)
         tStr = currentTime.toString(format) + " / " + totalTime.toString(format);
     }
     ui->m_labelDuration->setText(tStr);
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
     if (currentInfo > 0) {
         m_videoSlider->setVideoLoaded(true);
     }
@@ -489,11 +1100,11 @@ void MainWindow::displayErrorMessage()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (m_hashFile) {
-        if (!currentFileHash.isEmpty())
-            hData->saveMarkers(currentFileHash, markerMap);
+        if (!m_currentFileHash.isEmpty())
+            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
     } else {
-        if (!currentFile.isEmpty())
-            hData->saveMarkers(currentFile, markerMap);
+        if (!m_currentFile.isEmpty())
+            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
     }
 
     event->accept();
@@ -507,7 +1118,6 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr
         MSG *msg = static_cast<MSG *>(message);
         if (msg->message == WM_NCLBUTTONDBLCLK)
         {
-            qDebug() << "WM_NCLBUTTONDBLCLK";
             this->resize(1200, 700);
             return true;
         }
@@ -523,72 +1133,10 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr
 
 #pragma region STARTUP FUNCTIONS
 
-void MainWindow::configureApplication()
-{
-    QSettings settings;
-    if (m_rememberWindowSize) {
-        restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
-        restoreState(settings.value("mainWindowState").toByteArray());
-    }
-}
-
-void MainWindow::configureStatusBar()
-{
-    m_statusLabel = new QLabel;
-    ui->statusBar->addPermanentWidget(m_statusLabel);
-    ui->statusBar->setSizeGripEnabled(false);
-    ui->statusBar->setVisible(false);
-    h_showingStatusBar = false;
-}
-
-void MainWindow::configureVideoWidget()
-{
-    // Video Player
-    m_player = new QMediaPlayer(this);
-    m_audioOutput = new QAudioOutput(this);
-    m_player->setAudioOutput(m_audioOutput);
-    m_player->setVideoOutput(ui->videoWidget);
-}
-
-void MainWindow::configureVideoWidgetConnections()
-{
-    // Media Player
-    connect(m_player, &QMediaPlayer::durationChanged, this, &MainWindow::durationChanged);
-    connect(m_player, &QMediaPlayer::positionChanged, this, &MainWindow::positionChanged);
-    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::statusChanged);
-    connect(m_player, &QMediaPlayer::bufferProgressChanged, this, &MainWindow::bufferingProgress);
-    connect(m_player, &QMediaPlayer::errorChanged, this, &MainWindow::displayErrorMessage);
-    connect(m_player, &QMediaPlayer::sourceChanged, this, &MainWindow::sourceChanged);
-    connect(m_player, &QMediaPlayer::tracksChanged, this, &MainWindow::tracksChanged);
-}
-
-void MainWindow::configureUI()
-{
-    m_videoSlider = new VideoSlider(this);
-    ui->horizontalLayout_3->insertWidget(0, m_videoSlider);
-    ui->horizontalLayout_3->setStretch(0, 2);
-
-    connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::seek);
-    connect(m_videoSlider, &VideoSlider::sliderClicked, this, &MainWindow::seek);
-    connect(m_videoSlider, &VideoSlider::markerSelected, this, &MainWindow::seek);
-
-    //m_videoSlider->hide();
-
-    m_playlistModel = new PlaylistModel(this);
-    m_playlist = m_playlistModel->playlist();
-    connect(m_playlist, &Playlist::currentIndexChanged, this, &MainWindow::playlistPositionChanged);
-
-    // display
-    ui->playlistView->setModel(m_playlistModel);
-    ui->playlistView->setCurrentIndex(m_playlistModel->index(m_playlist->currentIndex(), 0));
-    connect(ui->playlistView, &QListView::activated, this, &MainWindow::jump);
-    connect(ui->playlistView, &QListView::customContextMenuRequested, this, &MainWindow::showPlaylistContextMenu);
-    ui->playlistView->hide();
-    h_showingPlaylist = false;
-}
 
 void MainWindow::configureMenuItems()
 {
+    /*
     // File
     connect(ui->actionEmergency_Collapse, &QAction::triggered, this, &MainWindow::emergencyCollapse);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::exit);
@@ -689,10 +1237,12 @@ void MainWindow::configureMenuItems()
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAbout);
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::showHelp);
     connect(ui->actionUpdates, &QAction::triggered, this, &MainWindow::showUpdates);
+*/
 }
 
 void MainWindow::createRecentFileActions()
 {
+    /*
     QSettings settings;
 
     for (int i = 0; i < settings.value("maxRecentFiles", 9).toInt(); ++i) {
@@ -710,10 +1260,12 @@ void MainWindow::createRecentFileActions()
     h_clearRecentFilesAction->setVisible(true);
     connect(h_clearRecentFilesAction, &QAction::triggered, this, &MainWindow::clearRecentFiles);
     ui->menuOpen_Recent->addAction(h_clearRecentFilesAction);
+    */
 }
 
 void MainWindow::createAudioOutputActions()
 {
+    /*
     for (int i = 0; i < 15; ++i) {
         h_audioOutputActions[i] = new QAction(this);
         h_audioOutputActions[i]->setCheckable(true);
@@ -722,10 +1274,12 @@ void MainWindow::createAudioOutputActions()
         connect(h_audioOutputActions[i], &QAction::triggered, this, &MainWindow::selectAudioOutput);
         ui->menuAudio_Device->addAction(h_audioOutputActions[i]);
     }
+    */
 }
 
 void MainWindow::createAudioTrackActions()
 {
+    /*
     for (int i = 0; i < 15; ++i) {
         h_audioTrackActions[i] = new QAction(this);
         h_audioTrackActions[i]->setCheckable(true);
@@ -735,10 +1289,12 @@ void MainWindow::createAudioTrackActions()
         ui->menuAudio_Track->addAction(h_audioTrackActions[i]);
     }
     ui->menuAudio_Track->setEnabled(false);
+    */
 }
 
 void MainWindow::createVideoTrackActions()
 {
+    /*
     for (int i = 0; i < 15; ++i) {
         h_videoTrackActions[i] = new QAction(this);
         h_videoTrackActions[i]->setCheckable(true);
@@ -748,10 +1304,12 @@ void MainWindow::createVideoTrackActions()
         ui->menuVideo_Track->addAction(h_videoTrackActions[i]);
     }
     ui->menuVideo_Track->setEnabled(false);
+    */
 }
 
 void MainWindow::createSubtitleTrackActions()
 {
+    /*
     for (int i = 0; i < 15; ++i) {
         h_subtitleTrackActions[i] = new QAction(this);
         h_subtitleTrackActions[i]->setCheckable(true);
@@ -761,7 +1319,9 @@ void MainWindow::createSubtitleTrackActions()
         ui->menuSubtitle_Track->addAction(h_subtitleTrackActions[i]);
     }
     ui->menuSubtitle_Track->setEnabled(false);
+    */
 }
+
 
 #pragma endregion
 
@@ -924,38 +1484,29 @@ void MainWindow::configureDefaultHotkeys()
 
 bool MainWindow::isPlaylist(const QUrl &url)
 {
-    qDebug() << "Checking if file is playlist: " << url.toString();
     QFileInfo fileInfo(url.toString());
     QString fileExtension = fileInfo.suffix();
 
-    qDebug() << "fileExtension: " << fileExtension;
-    if (fileExtension == "hlist") {
+    if (fileExtension == "hlist")
         return true;
-    } else {
-        return false;
-    }
+
+    return false;
 }
 
 bool MainWindow::loadPlaylist(const QUrl &url)
 {
-    qDebug() << "Load playlist function called.";
-    if (h_playlistLoaded) {
-        qDebug() << "Playlist already loaded. Asking for user confirmation to load selected one.";
+    if (m_playlistLoaded) {
         QMessageBox::StandardButton confirmationBox;
         confirmationBox = QMessageBox::question(this, "Close Playlist", "Are you sure you want to close the current playlist and load the selected one?",
                                       QMessageBox::Yes | QMessageBox::No);
 
         if (confirmationBox == QMessageBox::Yes) {
-            qDebug() << "User confirmed close current playlist and load selected one.";
             m_playlist->load(url);
             return true;
-        } else {
-            qDebug() << "User declined to close current playlist and load selected one.";
         }
     } else {
-        qDebug() << "No playlist loaded. Loading selected playlist";
         m_playlist->load(url);
-        h_playlistLoaded = true;
+        m_playlistLoaded = true;
         return true;
     }
     return false;
@@ -970,7 +1521,7 @@ QString MainWindow::getMarker(const double &markerTime)
     double m_time;
     double markerDif;
 
-    for (QMap<QString, QList<double>>::iterator i = markerMap.begin(); i != markerMap.end(); ++i)
+    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
     {
         QString m_key = i.key();
         foreach (const double marker, i.value())
@@ -1003,27 +1554,27 @@ void MainWindow::markersChanged(const QString &markerName, const double &markerT
 {
     if (markerType == m_markerValue)
     {
-        QList<double> markers = markerMap.value(m_markerValue).toList();
+        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
 
         if (!markers.isEmpty())
         {
-            markers.replace(markerIndex, markerTime);
-            markerMap.insert(m_markerValue, markers);
+            markers.replace(m_markerIndex, markerTime);
+            m_videoMarkersList.insert(m_markerValue, markers);
         }
     }
     else
     {
-        QList<double> markers = markerMap.value(m_markerValue).toList();
+        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
 
         if (!markers.isEmpty())
         {
-            markers.removeAt(markerIndex);
-            QList<double> marker = markerMap.value(markerType).toList();
+            markers.removeAt(m_markerIndex);
+            QList<double> marker = m_videoMarkersList.value(markerType).toList();
             marker.append(markerTime);
-            markerMap.insert(markerType, marker);
+            m_videoMarkersList.insert(markerType, marker);
         }
     }
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::markerDeleted(const double &markerTime)
@@ -1035,7 +1586,7 @@ void MainWindow::markerDeleted(const double &markerTime)
     double m_time;
     double markerDif;
 
-    for (QMap<QString, QList<double>>::iterator i = markerMap.begin(); i != markerMap.end(); ++i)
+    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
     {
         QString m_key = i.key();
         foreach (const double marker, i.value())
@@ -1063,9 +1614,9 @@ void MainWindow::markerDeleted(const double &markerTime)
 
     if (!markerKey.isEmpty())
     {
-        if (markerMap.contains(markerKey))
+        if (m_videoMarkersList.contains(markerKey))
         {
-            QList<double>& m_list = markerMap[markerKey];
+            QList<double>& m_list = m_videoMarkersList[markerKey];
             bool removed = m_list.removeAll(m_time);
 
             if (removed)
@@ -1079,7 +1630,7 @@ void MainWindow::markerDeleted(const double &markerTime)
         }
     }
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::saveMediaFilterList(const QStringList& filterList)
@@ -1111,6 +1662,7 @@ void MainWindow::showNotImplemented_Message()
 
 void MainWindow::updateRecentFileActions()
 {
+    /*
     QSettings settings;
     QStringList files = settings.value("recentFileList").toStringList();
 
@@ -1127,6 +1679,7 @@ void MainWindow::updateRecentFileActions()
 
     h_recentFilesSeparator->setVisible(numRecentFiles > 0);
     ui->menuOpen_Recent->setEnabled(numRecentFiles > 0);
+    */
 }
 
 void MainWindow::loadFile(const QString &fileName)
@@ -1164,6 +1717,7 @@ QString MainWindow::timestampString(qint64 position)
 
 void MainWindow::updateAudioOutputActions()
 {
+    /*
     for (int j = 0; j < 15; ++j)
         h_audioOutputActions[j]->setVisible(false);
 
@@ -1188,10 +1742,12 @@ void MainWindow::updateAudioOutputActions()
         h_audioOutputActions[j]->setVisible(false);
 
     ui->menuAudio_Device->setEnabled(i > 1);
+    */
 }
 
 void MainWindow::updateAudioTrackActions()
 {
+    /*
     for (int j = 0; j < 15; ++j)
         h_audioTrackActions[j]->setVisible(false);
 
@@ -1216,10 +1772,12 @@ void MainWindow::updateAudioTrackActions()
         h_audioTrackActions[j+1]->setVisible(false);
 
     ui->menuAudio_Track->setEnabled(audioTracks.size() > 0);
+    */
 }
 
 void MainWindow::updateVideoTrackActions()
 {
+    /*
     for (int j = 0; j < 15; ++j)
         h_videoTrackActions[j]->setVisible(false);
 
@@ -1244,10 +1802,12 @@ void MainWindow::updateVideoTrackActions()
         h_videoTrackActions[j+1]->setVisible(false);
 
     ui->menuVideo_Track->setEnabled(videoTracks.size() > 0);
+    */
 }
 
 void MainWindow::updateSubtitleTrackActions()
 {
+    /*
     for (int j = 0; j < 15; ++j)
         h_subtitleTrackActions[j]->setVisible(false);
 
@@ -1272,6 +1832,7 @@ void MainWindow::updateSubtitleTrackActions()
         h_subtitleTrackActions[j+1]->setVisible(false);
 
     ui->menuSubtitle_Track->setEnabled(subtitleTracks.size() > 0);
+    */
 }
 
 qint64 MainWindow::fileHash(const QString& filePath)
@@ -1298,7 +1859,7 @@ qint64 MainWindow::fileHash(const QString& filePath)
 
 
 #pragma region MENU ITEM SLOTS
-
+/*
 // File Menu
 void MainWindow::closeFile()
 {
@@ -1506,13 +2067,13 @@ void MainWindow::savePlaylist()
 void MainWindow::showPreferences()
 {
     qDebug() << "Open Preferences command called.";
-    if (h_settingsWindow)
-        h_settingsWindow->close();
+    if (m_settingsWindow)
+        m_settingsWindow->close();
 
-    h_settingsWindow = new SettingsWindow(this);
-    h_settingsWindow->show();
-    h_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
-    connect(h_settingsWindow, &SettingsWindow::updateSettings, this, &MainWindow::loadSettings);
+    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow->show();
+    m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
+    connect(m_settingsWindow, &SettingsWindow::updateSettings, this, &MainWindow::loadSettings);
 }
 
 void MainWindow::openRecentFile()
@@ -1603,59 +2164,59 @@ void MainWindow::openNetworkStream()
 void MainWindow::togglePlaylist()
 {
     qDebug() << "Toggle Playlist View command called.";
-    if (h_showingPlaylist) {
+    if (m_showingPlaylist) {
         qDebug() << "Hiding playlist view.";
         ui->playlistView->hide();
-        h_showingPlaylist = false;
+        m_showingPlaylist = false;
     } else {
         qDebug() << "Showing playlist view.";
         ui->playlistView->show();
-        h_showingPlaylist = true;
+        m_showingPlaylist = true;
     }
 }
 
 void MainWindow::toggleStatusBar()
 {
-    if (h_showingStatusBar) {
+    if (m_showingStatusBar) {
         ui->statusBar->setVisible(false);
-        h_showingStatusBar = false;
+        m_showingStatusBar = false;
     } else {
         ui->statusBar->setVisible(true);
-        h_showingStatusBar = true;
+        m_showingStatusBar = true;
     }
 }
 
 void MainWindow::toggleVideoControls()
 {
-    if (h_showingVideoControls) {
-        ui->verticalLayout->removeWidget(h_videoControlWidget);
-        delete h_videoControlWidget;
-        h_showingVideoControls = false;
+    if (m_showingVideoControls) {
+        ui->verticalLayout->removeWidget(m_videoControlWidget);
+        delete m_videoControlWidget;
+        m_showingVideoControls = false;
     } else {
-        h_videoControlWidget = new VideoControlWidget(this);
-        h_videoControlWidget->setMuted(h_isMuted);
-        h_videoControlWidget->setVolume(h_volume);
-        ui->verticalLayout->addWidget(h_videoControlWidget);
-        connect(m_player, &QMediaPlayer::playbackStateChanged, h_videoControlWidget, &VideoControlWidget::setState);
-        connect(h_videoControlWidget, &VideoControlWidget::play, m_player, &QMediaPlayer::play);
-        connect(h_videoControlWidget, &VideoControlWidget::pause, m_player, &QMediaPlayer::pause);
-        connect(h_videoControlWidget, &VideoControlWidget::stop, m_player, &QMediaPlayer::stop);
-        connect(h_videoControlWidget, &VideoControlWidget::next, m_playlist, &Playlist::next);
-        connect(h_videoControlWidget, &VideoControlWidget::previous, this, &MainWindow::previousVideo);
-        connect(h_videoControlWidget, &VideoControlWidget::fullScreen, this, &MainWindow::toggleFullscreen);
-        connect(h_videoControlWidget, &VideoControlWidget::togglePlaylist, this, &MainWindow::togglePlaylist);
-        connect(h_videoControlWidget, &VideoControlWidget::loopAll, this, &MainWindow::videoControl_LoopAll);
-        connect(h_videoControlWidget, &VideoControlWidget::loopOne, this, &MainWindow::videoControl_LoopOne);
-        connect(h_videoControlWidget, &VideoControlWidget::loopNone, this, &MainWindow::videoControl_LoopNone);
-        connect(h_videoControlWidget, &VideoControlWidget::shuffle, this, &MainWindow::videoControl_Shuffle);
-        connect(h_videoControlWidget, &VideoControlWidget::changeVolume, m_audioOutput, &QAudioOutput::setVolume);
-        connect(h_videoControlWidget, &VideoControlWidget::changeMuting, m_audioOutput, &QAudioOutput::setMuted);
-        connect(m_audioOutput, &QAudioOutput::volumeChanged, h_videoControlWidget, &VideoControlWidget::setVolume);
-        connect(m_audioOutput, &QAudioOutput::mutedChanged, h_videoControlWidget, &VideoControlWidget::setMuted);
-        connect(this, &MainWindow::refreshSettings, h_videoControlWidget, &VideoControlWidget::refreshUI);
-        h_showingVideoControls = true;
+        m_videoControlWidget = new VideoControlWidget(this);
+        m_videoControlWidget->setMuted(m_isMuted);
+        m_videoControlWidget->setVolume(m_volume);
+        ui->verticalLayout->addWidget(m_videoControlWidget);
+        connect(m_player, &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
+        connect(m_videoControlWidget, &VideoControlWidget::play, m_player, &QMediaPlayer::play);
+        connect(m_videoControlWidget, &VideoControlWidget::pause, m_player, &QMediaPlayer::pause);
+        connect(m_videoControlWidget, &VideoControlWidget::stop, m_player, &QMediaPlayer::stop);
+        connect(m_videoControlWidget, &VideoControlWidget::next, m_playlist, &Playlist::next);
+        connect(m_videoControlWidget, &VideoControlWidget::previous, this, &MainWindow::previousVideo);
+        connect(m_videoControlWidget, &VideoControlWidget::fullScreen, this, &MainWindow::toggleFullscreen);
+        connect(m_videoControlWidget, &VideoControlWidget::togglePlaylist, this, &MainWindow::togglePlaylist);
+        connect(m_videoControlWidget, &VideoControlWidget::loopAll, this, &MainWindow::videoControl_LoopAll);
+        connect(m_videoControlWidget, &VideoControlWidget::loopOne, this, &MainWindow::videoControl_LoopOne);
+        connect(m_videoControlWidget, &VideoControlWidget::loopNone, this, &MainWindow::videoControl_LoopNone);
+        connect(m_videoControlWidget, &VideoControlWidget::shuffle, this, &MainWindow::videoControl_Shuffle);
+        connect(m_videoControlWidget, &VideoControlWidget::changeVolume, m_audioOutput, &QAudioOutput::setVolume);
+        connect(m_videoControlWidget, &VideoControlWidget::changeMuting, m_audioOutput, &QAudioOutput::setMuted);
+        connect(m_audioOutput, &QAudioOutput::volumeChanged, m_videoControlWidget, &VideoControlWidget::setVolume);
+        connect(m_audioOutput, &QAudioOutput::mutedChanged, m_videoControlWidget, &VideoControlWidget::setMuted);
+        connect(this, &MainWindow::refreshSettings, m_videoControlWidget, &VideoControlWidget::refreshUI);
+        m_showingVideoControls = true;
     }
-    ui->actionToggle_Video_Controls->setChecked(h_showingVideoControls);
+    ui->actionToggle_Video_Controls->setChecked(m_showingVideoControls);
 }
 
 void MainWindow::toggleMarkers()
@@ -1749,12 +2310,12 @@ void MainWindow::toggleStripMarkers()
 void MainWindow::showLogFileViewer()
 {
     //qInfo() << "Show Log Viewer Window";
-    if (h_logviewer)
-        h_logviewer->close();
+    if (m_logViewer)
+        m_logViewer->close();
 
-    h_logviewer = new LogViewer(this);
-    h_logviewer->show();
-    h_logviewer->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_logViewer = new LogViewer(this);
+    m_logViewer->show();
+    m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 
@@ -1766,11 +2327,11 @@ void MainWindow::togglePlayPause()
         if (m_player->isPlaying()) {
             qDebug() << "Pausing media player.";
             m_player->pause();
-            h_playing = false;
+            m_playing = false;
         } else {
             qDebug() << "Playing media player.";
             m_player->play();
-            h_playing = true;
+            m_playing = true;
         }
     } else {
         qDebug() << "Media Player is unavailable.";
@@ -1845,48 +2406,48 @@ void MainWindow::fasterSpeed()
 {
     qDebug() << "Change Playback command called.";
     double mrate = 0.5;
-    float newSpeed = h_playbackSpeed + mrate;
+    float newSpeed = m_playbackSpeed + mrate;
     m_player->setPlaybackRate(newSpeed);
-    h_playbackSpeed = m_player->playbackRate();
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    m_playbackSpeed = m_player->playbackRate();
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void MainWindow::fasterFineSpeed()
 {
     qDebug() << "Change Playback command called.";
     double mrate = 0.25;
-    float newSpeed = h_playbackSpeed + mrate;
+    float newSpeed = m_playbackSpeed + mrate;
     m_player->setPlaybackRate(newSpeed);
-    h_playbackSpeed = m_player->playbackRate();
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    m_playbackSpeed = m_player->playbackRate();
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void MainWindow::normalSpeed()
 {
     qDebug() << "Playback Normal command called.";
     m_player->setPlaybackRate(1.0);
-    h_playbackSpeed = m_player->playbackRate();
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    m_playbackSpeed = m_player->playbackRate();
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void MainWindow::slowerSpeed()
 {
     qDebug() << "Change Playback command called.";
     double mrate = -0.5;
-    float newSpeed = h_playbackSpeed + mrate;
+    float newSpeed = m_playbackSpeed + mrate;
     m_player->setPlaybackRate(newSpeed);
-    h_playbackSpeed = m_player->playbackRate();
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    m_playbackSpeed = m_player->playbackRate();
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void MainWindow::slowerFineSpeed()
 {
     qDebug() << "Change Playback command called.";
     double mrate = -0.25;
-    float newSpeed = h_playbackSpeed + mrate;
+    float newSpeed = m_playbackSpeed + mrate;
     m_player->setPlaybackRate(newSpeed);
-    h_playbackSpeed = m_player->playbackRate();
-    ui->m_playbackRate->setText("x" + QString::number(h_playbackSpeed));
+    m_playbackSpeed = m_player->playbackRate();
+    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void MainWindow::jumpBackwardSmall()
@@ -2002,7 +2563,7 @@ void MainWindow::increaseVolume()
         n_volume = 1.0;
     }
     m_audioOutput->setVolume(n_volume);
-    h_volume = m_audioOutput->volume();
+    m_volume = m_audioOutput->volume();
 }
 
 void MainWindow::decreaseVolume()
@@ -2012,7 +2573,7 @@ void MainWindow::decreaseVolume()
         n_volume = 0.0;
     }
     m_audioOutput->setVolume(n_volume);
-    h_volume = m_audioOutput->volume();
+    m_volume = m_audioOutput->volume();
 }
 
 void MainWindow::toggleMute()
@@ -2022,7 +2583,7 @@ void MainWindow::toggleMute()
     } else {
         m_audioOutput->setMuted(true);
     }
-    h_isMuted = m_audioOutput->isMuted();
+    m_isMuted = m_audioOutput->isMuted();
 }
 
 
@@ -2060,46 +2621,46 @@ void MainWindow::selectVideoTrack()
 void MainWindow::editMarker()
 {
     showNotImplemented_Message();
-    /*
-    qDebug() << "Edit Selected Marker command called.";
-    if (hMarkerEditDialog)
-        hMarkerEditDialog->close();
-    hMarkerEditDialog = new HMarkerEditDialog(this);
+
+    //qDebug() << "Edit Selected Marker command called.";
+    //if (hMarkerEditDialog)
+    //    hMarkerEditDialog->close();
+    //hMarkerEditDialog = new HMarkerEditDialog(this);
     //hMarkerEditDialog->setMarkerInfo()
-    connect(hMarkerEditDialog, &HMarkerEditDialog::markerDeleted, this, &MainWindow::markerDeleted);
-    connect(hMarkerEditDialog, &HMarkerEditDialog::markerSaved, this, &MainWindow::markersChanged);
-    hMarkerEditDialog->show();
-    hMarkerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
-    */
+    //connect(hMarkerEditDialog, &HMarkerEditDialog::markerDeleted, this, &MainWindow::markerDeleted);
+    //connect(hMarkerEditDialog, &HMarkerEditDialog::markerSaved, this, &MainWindow::markersChanged);
+    //hMarkerEditDialog->show();
+    //hMarkerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+
 }
 
 void MainWindow::clearInMarker()
 {
-    h_inMarker = 0;
+    m_inMarker = 0;
 }
 
 void MainWindow::clearOutMarker()
 {
-    h_outMarker = 0;
+    m_outMarker = 0;
 }
 
 void MainWindow::clearInAndOutMarker()
 {
-    h_inMarker = 0;
-    h_outMarker = 0;
+    m_inMarker = 0;
+    m_outMarker = 0;
 }
 
 void MainWindow::goToInMarker()
 {
-    if (h_inMarker > 0) {
-        m_player->setPosition(h_inMarker);
+    if (m_inMarker > 0) {
+        m_player->setPosition(m_inMarker);
     }
 }
 
 void MainWindow::goToOutMarker()
 {
-    if (h_outMarker > 0) {
-        m_player->setPosition(h_outMarker);
+    if (m_outMarker > 0) {
+        m_player->setPosition(m_outMarker);
     }
 }
 
@@ -2110,11 +2671,11 @@ void MainWindow::addMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("marker");
+    QList<double> marker = m_videoMarkersList.value("marker");
     marker.append(sliderPercent);
-    markerMap.insert("marker", marker);
+    m_videoMarkersList.insert("marker", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::goToNextMarker()
@@ -2141,14 +2702,14 @@ void MainWindow::clearSelectedMarker()
 
 
     QList<double> markerList;
-    QList<double> markers = markerMap.value("marker").toList();
-    QList<double> sceneMarkers = markerMap.value("scene").toList();
-    QList<double> cumshotMarkers = markerMap.value("cumshot").toList();
-    QList<double> stripMarkers = markerMap.value("strip").toList();
-    QList<double> dialogMarkers = markerMap.value("dialog").toList();
-    QList<double> cyanMarkers = markerMap.value("cyan").toList();
-    QList<double> magentaMarkers = markerMap.value("magenta").toList();
-    QList<double> orangeMarkers = markerMap.value("orange").toList();
+    QList<double> markers = m_videoMarkersList.value("marker").toList();
+    QList<double> sceneMarkers = m_videoMarkersList.value("scene").toList();
+    QList<double> cumshotMarkers = m_videoMarkersList.value("cumshot").toList();
+    QList<double> stripMarkers = m_videoMarkersList.value("strip").toList();
+    QList<double> dialogMarkers = m_videoMarkersList.value("dialog").toList();
+    QList<double> cyanMarkers = m_videoMarkersList.value("cyan").toList();
+    QList<double> magentaMarkers = m_videoMarkersList.value("magenta").toList();
+    QList<double> orangeMarkers = m_videoMarkersList.value("orange").toList();
 
     foreach(const double marker, markers)
     {
@@ -2202,7 +2763,7 @@ void MainWindow::clearSelectedMarker()
             ++it;
         }
     }
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::clearAllMarkers()
@@ -2215,8 +2776,8 @@ void MainWindow::clearAllMarkers()
 
     if (confirmationBox == QMessageBox::Yes) {
         qDebug() << "User confirmed clear the markers";
-        markerMap.clear();
-        m_videoSlider->setMarkers(markerMap);
+        m_videoMarkersList.clear();
+        m_videoSlider->setMarkers(m_videoMarkersList);
     } else {
         qDebug() << "User declined to clear the markers";
     }
@@ -2229,11 +2790,11 @@ void MainWindow::addSceneTransitionMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("scene");
+    QList<double> marker = m_videoMarkersList.value("scene");
     marker.append(sliderPercent);
-    markerMap.insert("scene", marker);
+    m_videoMarkersList.insert("scene", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addCumshotMarker()
@@ -2243,11 +2804,11 @@ void MainWindow::addCumshotMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("cumshot");
+    QList<double> marker = m_videoMarkersList.value("cumshot");
     marker.append(sliderPercent);
-    markerMap.insert("cumshot", marker);
+    m_videoMarkersList.insert("cumshot", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addStripMarker()
@@ -2257,11 +2818,11 @@ void MainWindow::addStripMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("strip");
+    QList<double> marker = m_videoMarkersList.value("strip");
     marker.append(sliderPercent);
-    markerMap.insert("strip", marker);
+    m_videoMarkersList.insert("strip", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addDialogMarker()
@@ -2271,11 +2832,11 @@ void MainWindow::addDialogMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("dialog");
+    QList<double> marker = m_videoMarkersList.value("dialog");
     marker.append(sliderPercent);
-    markerMap.insert("dialog", marker);
+    m_videoMarkersList.insert("dialog", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addCyanMarker()
@@ -2285,11 +2846,11 @@ void MainWindow::addCyanMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("cyan");
+    QList<double> marker = m_videoMarkersList.value("cyan");
     marker.append(sliderPercent);
-    markerMap.insert("cyan", marker);
+    m_videoMarkersList.insert("cyan", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addMagentaMarker()
@@ -2299,11 +2860,11 @@ void MainWindow::addMagentaMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("magenta");
+    QList<double> marker = m_videoMarkersList.value("magenta");
     marker.append(sliderPercent);
-    markerMap.insert("magenta", marker);
+    m_videoMarkersList.insert("magenta", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addOrangeMarker()
@@ -2313,23 +2874,23 @@ void MainWindow::addOrangeMarker()
     double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
     double sliderPercent = (distanceFromMin / sliderRange);
 
-    QList<double> marker = markerMap.value("orange");
+    QList<double> marker = m_videoMarkersList.value("orange");
     marker.append(sliderPercent);
-    markerMap.insert("orange", marker);
+    m_videoMarkersList.insert("orange", marker);
 
-    m_videoSlider->setMarkers(markerMap);
+    m_videoSlider->setMarkers(m_videoMarkersList);
 }
 
 void MainWindow::addInMarker()
 {
-    h_inMarker = m_player->position();
-    qDebug() << "Mark In Set to: " << h_inMarker;
+    m_inMarker = m_player->position();
+    qDebug() << "Mark In Set to: " << m_inMarker;
 }
 
 void MainWindow::addOutMarker()
 {
-    h_outMarker = m_player->position();
-    qDebug() << "Mark Out Set to: " << h_outMarker;
+    m_outMarker = m_player->position();
+    qDebug() << "Mark Out Set to: " << m_outMarker;
 }
 
 
@@ -2404,24 +2965,24 @@ void MainWindow::showHelp()
 
 void MainWindow::showUpdates()
 {
-    if (h_updateDialog)
-        h_updateDialog->close();
+    if (m_updateDialog)
+        m_updateDialog->close();
 
-    h_updateDialog = new UpdateDialog(this);
-    h_updateDialog->show();
-    h_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_updateDialog = new UpdateDialog(this);
+    m_updateDialog->show();
+    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void MainWindow::showAbout()
 {
-    if (h_aboutDialog)
-        h_aboutDialog->close();
+    if (m_aboutDialog)
+        m_aboutDialog->close();
 
-    h_aboutDialog = new AboutDialog(this);
-    h_aboutDialog->show();
-    h_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_aboutDialog = new AboutDialog(this);
+    m_aboutDialog->show();
+    m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
-
+*/
 #pragma endregion
 
 
@@ -2546,19 +3107,19 @@ void MainWindow::showPlaylistContextMenu(const QPoint &pos)
 
 void MainWindow::playlistContextMenu_AddFileAction()
 {
-    openFile();
+    //openFile();
 }
 
 void MainWindow::playlistContextMenu_AddFolderAction()
 {
-    openFolder();
+    //openFolder();
 }
 
 void MainWindow::playlistContextMenu_AdvancedOpenAction() {}
 
 void MainWindow::playlistContextMenu_SaveAction()
 {
-    savePlaylist();
+    //savePlaylist();
 }
 
 void MainWindow::playlistContextMenu_ClearAction()

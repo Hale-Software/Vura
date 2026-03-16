@@ -61,20 +61,20 @@
 #include <xxHash/xxhash.h>
 
 #include "../models/playlistmodel.h"
+#include "../components/menubar.h"
 #include "../components/markerslider.h"
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
 #include "../utility/logger.h"
-#include "../utility/hdata.h"
 #include "../utility/playlist.h"
 #include "../utility/qt-wrappers.h"
 #include "../utility/startup.h"
+#include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/editmarker.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
 #include "../dialogs/updatewindow.h"
-#include "hvideowidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -117,11 +117,81 @@ public slots:
     void markersChanged(const QString &markerName, const double &markerTime, const QString &markerType);
     void markerDeleted(const double &markerTime);
 
+
+    void showPreferences();
+    void showAbout();
+    void showHelp();
+    void showUpdates();
+    void showFeedback();
+    void emergencyCollapse();
+    void exitApplication();
+    void openFiles(const QStringList &fileList);
+    void closeFiles(const QStringList &fileList);
+    void openFolder(const QString &folderPath);
+    void saveFile(const QString &filePath);
+    void savePlaylist(const QString &filePath, const QString &type);
+    void togglePlaylist();
+    void toggleStatusBar();
+    void toggleMarkers();
+    void toggleCumshotMarkers();
+    void toggleCyanMarkers();
+    void toggleDialogMarkers();
+    void toggleMagentaMarkers();
+    void toggleOrangeMarkers();
+    void toggleSceneTransitionMarkers();
+    void toggleStripMarkers();
+    void showLogFileViewer();
+    void toggleVideoControls();
+    void togglePlayPause();
+    void nextVideo();
+    void previousVideo();
+    void changePlaybackSpeed(double mrate);
+    void setPlaybackSpeedNormal();
+    void videoSeek(int mseconds);
+    void videoJumpToTime(int position);
+    void restartVideo();
+    void changeVolume(double mvolume);
+    void toggleMute();
+    void toggleFullscreen();
+    void setAudioOutput(const QAudioDevice &moutput);
+    void setAudioTrack(int mtrack);
+    void setVideoTrack(int mtrack);
+    void setSubtitleTrack(int mtrack);
+    void addMarker(const QString &markerType);
+    void nextMarker();
+    void previousMarker();
+    void clearSelectedMarker();
+    void clearMarkers();
+    void clearInMarker();
+    void clearOutMarker();
+    void goToInMarker();
+    void goToOutMarker();
+    void addInMarker();
+    void addOutMarker();
+    void createSubclip();
+    void testFunction();
+
+
 signals:
-    void h_keyPress(QKeyEvent *event);
-    void fullScreenChanged(bool fullScreen);
     void refreshSettings();
     void quitProgram();
+
+    void setActiveAudioDevice(const QAudioDevice &audioDevice);
+    void setActiveAudioTrack(int track);
+    void setActiveVideoTrack(int track);
+    void setActiveSubtitleTrack(int track);
+    void updateAudioOutputs(QList<QAudioDevice> audioDevices);
+    void updateAudioTracks(QList<QMediaMetaData> audioTracks);
+    void updateVideoTracks(QList<QMediaMetaData> videoTracks);
+    void updateSubtitleTracks(QList<QMediaMetaData> subtitleTracks);
+    void updateRecentFiles();
+    void setPlayerStatus(bool loaded);
+    void setMuted(bool mute);
+    void setMarkerShowing(QString type, bool showing);
+    void setPlaylistShowing(bool showing);
+    void setStatusBarShowing(bool showing);
+    void setVideoControlsShowing(bool showing);
+
 
 private slots:
     void loadSettings();
@@ -137,9 +207,10 @@ private slots:
     void bufferingProgress(float progress);
     void displayErrorMessage();
     void sourceChanged(const QUrl &media);
+    void playbackRateChanged(qreal rate);
 
 #pragma region Menu Item Slots
-
+/*
     // File Menu
     void closeFile();
     void closeAll();
@@ -247,7 +318,7 @@ private slots:
     void showAbout();
     void showHelp();
     void showUpdates();
-
+*/
 #pragma endregion
 
     void videoControl_Fullscreen();
@@ -278,64 +349,67 @@ protected:
 private:
     Ui::MainWindow *ui;
     Logger* m_hLogger;
-    QByteArray h_geometry;
-    Qt::WindowStates h_windowState;
-    QTimer *h_onScreenMessageTimer;
+    MenuBar *m_menuBar = nullptr;
 
     // WINDOWS
     // =======================================================================================================
-    QPointer<LogViewer> h_logviewer;
-    QPointer<SettingsWindow> h_settingsWindow;
-    QPointer<EditMarkerDialog> h_editMarkerDialog;
-    QPointer<AboutDialog> h_aboutDialog;
-    QPointer<UpdateDialog> h_updateDialog;
+    QPointer<LogViewer> m_logViewer;
+    QPointer<SettingsWindow> m_settingsWindow;
+    QPointer<AboutDialog> m_aboutDialog;
+    QPointer<UpdateDialog> m_updateDialog;
 
     // VARIABLES
     // =======================================================================================================
-    QPointer<VideoControlWidget> h_videoControlWidget;
+    QPointer<VideoControlWidget> m_videoControlWidget;
     VideoSlider *m_videoSlider;
-    //QTableWidget *h_playlistWidget;
-    bool h_playing = false;
-    bool h_showingPlaylist = false;
-    bool h_showingStatusBar = true;
-    bool h_showingVideoControls = false;
-    bool h_showingSubtitles = false;
-    bool h_isMuted = false;
-    bool h_playlistLoaded = false;
-    bool h_subtitlesLoaded = false;
-    float h_volume = 50;
-    float h_playbackSpeed = 1.0;
-    QString currentFile;
-    QString currentFileHash;
-    QMap<QString,QList<double>> markerMap;
+    bool m_playing = false;
+    bool m_showingPlaylist = false;
+    bool m_showingStatusBar = true;
+    bool m_showingVideoControls = false;
+    bool m_showingSubtitles = false;
+    bool m_isMuted = false;
+    bool m_playlistLoaded = false;
+    bool m_subtitlesLoaded = false;
+    float m_volume = 50;
+    float m_playbackSpeed = 1.0;
+    QString m_currentFile;
+    QString m_currentFileHash;
+    VideoMarkers *m_videoMarkers;
+    QMap<QString,QList<double>> m_videoMarkersList;
     QString m_markerValue;
-    int markerIndex;
-    HData *hData;
-    int h_inMarker;
-    int h_outMarker;
-    bool h_showingMarkers = true;
-    bool h_showingCumshotMarkers = true;
-    bool h_showingCyanMarkers = true;
-    bool h_showingDialogMarkers = true;
-    bool h_showingMagentaMarkers = true;
-    bool h_showingOrangeMarkers = true;
-    bool h_showingSceneMarkers = true;
-    bool h_showingStripMarkers = true;
+    int m_markerIndex;
+    int m_inMarker;
+    int m_outMarker;
+    bool m_showingMarkers = true;
+    bool m_showingCumshotMarkers = true;
+    bool m_showingCyanMarkers = true;
+    bool m_showingDialogMarkers = true;
+    bool m_showingMagentaMarkers = true;
+    bool m_showingOrangeMarkers = true;
+    bool m_showingSceneMarkers = true;
+    bool m_showingStripMarkers = true;
+    bool m_playlistLoopAll = true;
+    bool m_playlistLoopOne = false;
+    bool m_playlistLoopNone = false;
 
     // SETTINGS
-    bool m_rememberWindowSize = true;
+    // =======================================================================================================
+    QString m_locale = "en-US";
+    bool m_showStatusBarOnStart = false;
+    bool m_showPlaylistOnStart = false;
+    bool m_showVideoControlsOnStart = false;
     bool m_hashFile = false;
     int m_jumpSmall = 0;
     int m_jumpMedium = 0;
     int m_jumpLarge = 0;
     int m_jumpExtraLarge = 0;
+    int m_maxRecentFiles = 0;
 
+    //
+    // =======================================================================================================
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     Playlist *m_playlist = nullptr;
-    bool m_playlistLoopAll = true;
-    bool m_playlistLoopOne = false;
-    bool m_playlistLoopNone = false;
     QLabel *m_statusLabel = nullptr;
     QStatusBar *m_statusBar = nullptr;
     PlaylistModel *m_playlistModel = nullptr;
@@ -344,15 +418,6 @@ private:
     QString m_statusInfo;
     qint64 m_duration;
     QMediaDevices m_mediaDevices;
-
-    AudioLevelMeter *m_audioLevelMeter = nullptr;
-    QAudioBufferOutput *m_audioBufferOutput = nullptr;
-    QPushButton *m_fullScreenButton = nullptr;
-    QPushButton *m_pitchCompensationButton = nullptr;
-    QComboBox *m_audioOutputCombo = nullptr;
-    QComboBox *m_audioTracks = nullptr;
-    QComboBox *m_videoTracks = nullptr;
-    QComboBox *m_subtitleTracks = nullptr;
     QMenu *h_audioMenu = nullptr;
     QAction *h_recentFileActions[10];
     QAction *h_clearRecentFilesAction;
@@ -367,14 +432,8 @@ private:
     int subtitleTrack;
     QPoint m_pos;
 
-
     // STARTUP FUNCTIONS
     // =======================================================================================================
-    void configureApplication();
-    void configureStatusBar();
-    void configureVideoWidget();
-    void configureVideoWidgetConnections();
-    void configureUI();
     void configureMenuItems();
     void configureHotkeys();
     void configureDefaultHotkeys();

@@ -24,8 +24,6 @@
 #include <QStandardPaths>
 
 #include "hotkeywidget.h"
-#include "../models/application.h"
-#include "../models/actionmanager.h"
 
 namespace Ui {
 class SettingsWindow;

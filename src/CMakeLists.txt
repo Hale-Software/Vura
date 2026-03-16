@@ -37,6 +37,7 @@ target_sources(
         main.cpp
         main.h
         config.h
+        constants.h
 )
 
 if (OS_WINDOWS)
