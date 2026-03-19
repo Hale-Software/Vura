@@ -138,7 +138,7 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-570</y>
+              <y>0</y>
               <width>686</width>
               <height>1410</height>
              </rect>
@@ -182,7 +182,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QComboBox" name="language">
+                 <widget class="ComboBoxIgnoreWheel" name="language">
                   <item>
                    <property name="text">
                     <string>English</string>
@@ -419,7 +419,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QComboBox" name="updateChannel">
+                 <widget class="ComboBoxIgnoreWheel" name="updateChannel">
                   <item>
                    <property name="text">
                     <string>Stable (Default)</string>
@@ -490,7 +490,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QComboBox" name="mediaChangeNotification">
+                 <widget class="ComboBoxIgnoreWheel" name="mediaChangeNotification">
                   <property name="currentIndex">
                    <number>0</number>
                   </property>
@@ -519,7 +519,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QComboBox" name="continuePlayback">
+                 <widget class="ComboBoxIgnoreWheel" name="continuePlayback">
                   <item>
                    <property name="text">
                     <string>Never</string>
@@ -791,7 +791,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="theme">
+             <widget class="ComboBoxIgnoreWheel" name="theme">
               <item>
                <property name="text">
                 <string>Use System</string>
@@ -1095,8 +1095,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>84</width>
-              <height>20</height>
+              <width>682</width>
+              <height>546</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1143,8 +1143,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>287</width>
-              <height>133</height>
+              <width>694</width>
+              <height>650</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1303,6 +1303,11 @@
    <class>AbsoluteSlider</class>
    <extends>QSlider</extends>
    <header>components/AbsoluteSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBoxIgnoreWheel</class>
+   <extends>QComboBox</extends>
+   <header>components/ComboBoxIgnoreWheel.h</header>
   </customwidget>
  </customwidgets>
  <resources>

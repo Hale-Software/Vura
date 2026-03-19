@@ -1,5 +1,6 @@
 target_sources(
         vura PRIVATE
+        components/ComboBoxIgnoreWheel.h
         components/markerslider.cpp
         components/markerslider.h
         components/AbsoluteSlider.cpp
