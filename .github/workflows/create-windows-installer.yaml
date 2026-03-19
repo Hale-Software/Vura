@@ -1,0 +1,28 @@
+name: Create Windows Installer
+run-name: Create Windows Installer
+on:
+  release:
+    types:
+      - published
+    branches:
+      - master
+      - 'release/**'
+
+jobs:
+  build:
+    name: Build the Inno Setup Installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile .ISS to .EXE Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: installer/installer.iss
+          options: /O+
+
+      - name: Upload Release Asset
+        run: gh release upload ${{ github.event.release.tag_name }} ${{ github.workspace }}installer/vura-${{ github.event.release.tag_name }}-win64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
