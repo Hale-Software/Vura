@@ -15,4 +15,6 @@ target_sources(
         components/menubar.h
         components/videoplayer.cpp
         components/videoplayer.h
+        components/RangeSlider.cpp
+        components/RangeSlider.h
 )

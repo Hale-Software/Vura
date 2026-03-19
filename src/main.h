@@ -43,7 +43,6 @@ private:
 
 public:
     VuraApp(int& argc, char** argv);
-    ~VuraApp();
 
     void AppInit(int argc, char* argv[]);
 

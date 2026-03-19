@@ -1,3 +1,20 @@
+/*******************************************************************************
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #include "settingswindow.h"
 #include "../forms/ui_settingswindow.h"
 
@@ -28,6 +45,15 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->maxRecentFiles, &QSpinBox::valueChanged, this, &SettingsWindow::maxRecentFiles_Changed);
     connect(ui->updateChannel, &QComboBox::currentIndexChanged, this, &SettingsWindow::updateChannel_Changed);
     connect(ui->autoUpdate, &QCheckBox::checkStateChanged, this, &SettingsWindow::automaticUpdates_Checked);
+    connect(ui->systemTray, &QCheckBox::checkStateChanged, this, &SettingsWindow::systemTray_Checked);
+    connect(ui->mediaChangeNotification, &QComboBox::currentIndexChanged, this, &SettingsWindow::mediaChangeNotification_Changed);
+    connect(ui->showVideoControlsWhenFullscreen, &QCheckBox::checkStateChanged, this, &SettingsWindow::showVideoControlsWhenFullscreen_Checked);
+    connect(ui->startInMinimalViewMode, &QCheckBox::checkStateChanged, this, &SettingsWindow::startInMinimalViewMode_Checked);
+    connect(ui->pausePlaybackWhenMinimized, &QCheckBox::checkStateChanged, this, &SettingsWindow::pausePlaybackWhenMinimized_Checked);
+    connect(ui->allowOnlyOneInstance, &QCheckBox::checkStateChanged, this, &SettingsWindow::allowOnlyOneInstance_Checked);
+    connect(ui->oneInstanceFromFileManager, &QCheckBox::checkStateChanged, this, &SettingsWindow::oneInstanceFromFileManager_Checked);
+    connect(ui->continuePlayback, &QComboBox::currentIndexChanged, this, &SettingsWindow::continuePlayback_Changed);
+    connect(ui->pauseOnLastFrameOfVideo, &QCheckBox::checkStateChanged, this, &SettingsWindow::pauseOnLastFrameOfVideo_Checked);
     connect(ui->playbackSpeedAdjustment, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustment_TextChanged);
     connect(ui->playbackSpeedAdjustmentFine, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustmentFine_TextChanged);
     connect(ui->volumeStep, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::volumeStep_Changed);
@@ -43,6 +69,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->filterTextBox, &QLineEdit::textChanged, this, &SettingsWindow::filterTextBox_TextChanged);
     connect(ui->hotkeyFilterTextBox, &QKeySequenceEdit::keySequenceChanged, this, &SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged);
     connect(ui->hotkeyFilterClearButton, &QPushButton::clicked, this, &SettingsWindow::hotkeyFilterClearButton_Clicked);
+
+    connect(ui->stashServer, &QLineEdit::textChanged, this, &SettingsWindow::stashServer_TextChanged);
 
     loadSettings();
     loadHotkeys();
@@ -88,11 +116,20 @@ void SettingsWindow::loadSettings()
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
     m_updateChannel = settings.value("updateChannel", "stable").toString();
     m_autoUpdate = settings.value("autoUpdate", true).toBool();
+    m_systemTray = settings.value("systemTray", true).toBool();
+    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
+    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
+    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
+    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
+    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
+    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
+    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
+    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
     m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
     m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt() * 1000;
-
     m_theme = settings.value("theme", "System").toString();
     m_fontSize = settings.value("fontSize", 10).toInt();
+    m_stashServerUrl = settings.value("stashServerUrl", "http://127.0.0.1:9999").toString();
 
     // Populate UI Values
     if (m_language == "en-US") {
@@ -125,6 +162,15 @@ void SettingsWindow::loadSettings()
     ui->volumeStep->setValue(m_volumeStep);
     ui->hideCursorWhenPlaying->setChecked(m_hideCursorWhenPlaying);
     ui->hideCursorTime->setValue(m_hideCursorTime);
+    ui->systemTray->setChecked(m_systemTray);
+    ui->mediaChangeNotification->setCurrentIndex(m_mediaChangeNotification);
+    ui->showVideoControlsWhenFullscreen->setChecked(m_showVideoControlsWhenFullscreen);
+    ui->startInMinimalViewMode->setChecked(m_startInMinimalViewMode);
+    ui->pausePlaybackWhenMinimized->setChecked(m_pausePlaybackWhenMinimized);
+    ui->allowOnlyOneInstance->setChecked(m_allowOnlyOneInstance);
+    ui->oneInstanceFromFileManager->setChecked(m_oneInstanceFromFileManager);
+    ui->continuePlayback->setCurrentIndex(m_continuePlayback);
+    ui->pauseOnLastFrameOfVideo->setChecked(m_pauseOnLastFrameOfVideo);
 
     if (m_theme == "System") {
         ui->theme->setCurrentIndex(0);
@@ -135,6 +181,7 @@ void SettingsWindow::loadSettings()
     }
 
     ui->appearanceFontScaleText->setText(QString::number(m_fontSize));
+    ui->stashServer->setText(m_stashServerUrl);
 }
 
 void SettingsWindow::loadHotkeys()
@@ -325,9 +372,18 @@ void SettingsWindow::saveSettings()
     settings.setValue("hideCursorWhenPlaying", m_hideCursorWhenPlaying);
     int cursorTime = m_hideCursorTime / 1000;
     settings.setValue("hideCursorTime", cursorTime);
-
     settings.setValue("theme", m_theme);
     settings.setValue("fontSize", m_fontSize);
+    settings.setValue("stashServerUrl", m_stashServerUrl);
+    settings.setValue("systemTray", m_systemTray);
+    settings.setValue("mediaChangeNotification", m_mediaChangeNotification);
+    settings.setValue("showVideoControlsWhenFullscreen", m_showVideoControlsWhenFullscreen);
+    settings.setValue("startInMinimalViewMode", m_startInMinimalViewMode);
+    settings.setValue("pausePlaybackWhenMinimized", m_pausePlaybackWhenMinimized);
+    settings.setValue("allowOnlyOneInstance", m_allowOnlyOneInstance);
+    settings.setValue("oneInstanceFromFileManager", m_oneInstanceFromFileManager);
+    settings.setValue("continuePlayback", m_continuePlayback);
+    settings.setValue("pauseOnLastFrameOfVideo", m_pauseOnLastFrameOfVideo);
 
     settings.beginGroup("Hotkeys");
     settings.remove("");
@@ -536,6 +592,92 @@ void SettingsWindow::automaticUpdates_Checked(int state)
     settingsChanged();
 }
 
+void SettingsWindow::systemTray_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_systemTray = true;
+    } else {
+        m_systemTray = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::mediaChangeNotification_Changed(int i)
+{
+    if (i != m_mediaChangeNotification) {
+        m_mediaChangeNotification = i;
+        settingsChanged();
+    }
+}
+
+void SettingsWindow::showVideoControlsWhenFullscreen_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_showVideoControlsWhenFullscreen = true;
+    } else {
+        m_showVideoControlsWhenFullscreen = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::startInMinimalViewMode_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_startInMinimalViewMode = true;
+    } else {
+        m_startInMinimalViewMode = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::pausePlaybackWhenMinimized_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_pausePlaybackWhenMinimized = true;
+    } else {
+        m_pausePlaybackWhenMinimized = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::allowOnlyOneInstance_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_allowOnlyOneInstance = true;
+    } else {
+        m_allowOnlyOneInstance = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::oneInstanceFromFileManager_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_oneInstanceFromFileManager = true;
+    } else {
+        m_oneInstanceFromFileManager = false;
+    }
+    settingsChanged();
+}
+
+void SettingsWindow::continuePlayback_Changed(int i)
+{
+    if (i != m_continuePlayback) {
+        m_continuePlayback = i;
+        settingsChanged();
+    }
+}
+
+void SettingsWindow::pauseOnLastFrameOfVideo_Checked(int state)
+{
+    if (state == Qt::Checked) {
+        m_pauseOnLastFrameOfVideo = true;
+    } else {
+        m_pauseOnLastFrameOfVideo = false;
+    }
+    settingsChanged();
+}
+
 void SettingsWindow::playbackSpeedAdjustment_TextChanged(const QString &text)
 {
     if (!text.isEmpty()) {
@@ -651,6 +793,16 @@ void SettingsWindow::filterTextBox_TextChanged(const QString &text) {}
 void SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged(const QKeySequence &keySequence) {}
 
 void SettingsWindow::hotkeyFilterClearButton_Clicked() {}
+
+void SettingsWindow::stashServer_TextChanged(const QString &text)
+{
+    if (!text.isEmpty()) {
+        if (text != m_stashServerUrl) {
+            m_stashServerUrl = text;
+            settingsChanged();
+        }
+    }
+}
 
 void SettingsWindow::closeEvent(QCloseEvent *event)
 {

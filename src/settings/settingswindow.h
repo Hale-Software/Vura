@@ -1,3 +1,20 @@
+/*******************************************************************************
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 
@@ -62,6 +79,16 @@ public slots:
     void updateChannel_Changed(int index);
     void automaticUpdates_Checked(int state);
 
+    void systemTray_Checked(int state);
+    void mediaChangeNotification_Changed(int i);
+    void showVideoControlsWhenFullscreen_Checked(int state);
+    void startInMinimalViewMode_Checked(int state);
+    void pausePlaybackWhenMinimized_Checked(int state);
+    void allowOnlyOneInstance_Checked(int state);
+    void oneInstanceFromFileManager_Checked(int state);
+    void continuePlayback_Changed(int i);
+    void pauseOnLastFrameOfVideo_Checked(int state);
+
     void playbackSpeedAdjustment_TextChanged(const QString &text);
     void playbackSpeedAdjustmentFine_TextChanged(const QString &text);
     void volumeStep_Changed(double value);
@@ -87,6 +114,7 @@ public slots:
     void hotkey_Changed(int id, QString action, QString oldHotkey, QString newHotkey);
 
     // Advanced Settings
+    void stashServer_TextChanged(const QString &text);
 
 signals:
     void updateSettings();
@@ -131,6 +159,16 @@ private:
     bool m_autoUpdate;
     bool m_hideCursorWhenPlaying;
     double m_hideCursorTime;
+    QString m_stashServerUrl;
+    bool m_systemTray;
+    int m_mediaChangeNotification;
+    bool m_showVideoControlsWhenFullscreen;
+    bool m_startInMinimalViewMode;
+    bool m_pausePlaybackWhenMinimized;
+    bool m_allowOnlyOneInstance;
+    bool m_oneInstanceFromFileManager;
+    int m_continuePlayback;
+    bool m_pauseOnLastFrameOfVideo;
 
     // Appearance Settings
     QString m_theme;

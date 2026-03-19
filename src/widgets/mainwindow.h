@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@
 #include <QAbstractItemModel>
 #include <QMouseEvent>
 #include <QHoverEvent>
+#include <QSystemTrayIcon>
 
 #include <xxHash/xxhash.h>
 
@@ -136,7 +137,6 @@ public slots:
     void markersChanged(const QString &markerName, const double &markerTime, const QString &markerType);
     void markerDeleted(const double &markerTime);
 
-
     void showPreferences();
     void showAbout();
     void showHelp();
@@ -145,7 +145,8 @@ public slots:
     void emergencyCollapse();
     void exitApplication();
     void openFiles(const QStringList &fileList);
-    void closeFiles(const QStringList &fileList);
+    void closeFile();
+    void closeAllFiles();
     void openFolder(const QString &folderPath);
     void saveFile(const QString &filePath);
     void savePlaylist(const QString &filePath, const QString &type);
@@ -195,9 +196,6 @@ public slots:
 
 
 signals:
-    void refreshSettings();
-    void quitProgram();
-
     void setActiveAudioDevice(const QAudioDevice &audioDevice);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
@@ -213,6 +211,8 @@ signals:
     void setPlaylistShowing(bool showing);
     void setStatusBarShowing(bool showing);
     void setVideoControlsShowing(bool showing);
+    void refreshSettings();
+    void quitProgram();
 
 
 private slots:
@@ -231,132 +231,11 @@ private slots:
     void sourceChanged(const QUrl &media);
     void playbackRateChanged(qreal rate);
 
-#pragma region Menu Item Slots
-/*
-    // File Menu
-    void closeFile();
-    void closeAll();
-    void emergencyCollapse();
-    void exit();
-    void openFile();
-    void openMultipleFiles();
-    void openFolder();
-    void openNetworkStream();
-    void save();
-    void saveAll();
-    void saveAs();
-    void savePlaylist();
-    void saveACopy();
-    void exportCaptions();
-    void exportClips();
-    void exportMarkers();
-    void exportMedia();
-    void openRecent();
-    void showPreferences();
-    void openRecentFile();
-    void clearRecentFiles();
-
-    // View Menu
-    void togglePlaylist();
-    void toggleStatusBar();
-    void toggleMarkers();
-    void toggleCumshotMarkers();
-    void toggleCyanMarkers();
-    void toggleDialogMarkers();
-    void toggleMagentaMarkers();
-    void toggleOrangeMarkers();
-    void toggleSceneTransitionMarkers();
-    void toggleStripMarkers();
-    void showLogFileViewer();
-    void toggleVideoControls();
-
-    // Playback Menu
-    void togglePlayPause();
-    void nextVideo();
-    void nextFrame();
-    void previousVideo();
-    void previousFrame();
-    void fasterSpeed();
-    void fasterFineSpeed();
-    void normalSpeed();
-    void slowerSpeed();
-    void slowerFineSpeed();
-    void jumpBackwardSmall();
-    void jumpBackwardMedium();
-    void jumpBackwardLarge();
-    void jumpBackwardExtraLarge();
-    void jumpForwardSmall();
-    void jumpForwardMedium();
-    void jumpForwardLarge();
-    void jumpForwardExtraLarge();
-    void jumpToTime();
-    void restartVideo();
-    void streamVideoFromStash();
-
-    // Audio Menu
-    void increaseVolume();
-    void decreaseVolume();
-    void toggleMute();
-    void selectAudioOutput();
-    void selectAudioTrack();
-
-    // Video Menu
-    void toggleFullscreen();
-    void takeSnapshot();
-    void selectVideoTrack();
-    void selectSubtitleTrack();
-
-    // Markers Menu
-    void addMarker();
-    void goToNextMarker();
-    void goToPreviousMarker();
-    void clearSelectedMarker();
-    void clearAllMarkers();
-    void editMarker();
-    void addSceneTransitionMarker();
-    void addCumshotMarker();
-    void addStripMarker();
-    void addDialogMarker();
-    void addCyanMarker();
-    void addMagentaMarker();
-    void addOrangeMarker();
-    void addInMarker();
-    void addOutMarker();
-    void clearInMarker();
-    void clearOutMarker();
-    void clearInAndOutMarker();
-    void goToInMarker();
-    void goToOutMarker();
-
-    // Tools Menu
-    void createSubclip();
-    void testFunction();
-
-    // Subtitle Menu
-    void openSubtitleFile();
-    void toggleSubtitles();
-
-    // Help Menu
-    void showAbout();
-    void showHelp();
-    void showUpdates();
-*/
-#pragma endregion
-
-    void videoControl_Fullscreen();
-    void videoControl_TogglePlaylist();
-    void videoControl_LoopAll();
-    void videoControl_LoopOne();
-    void videoControl_LoopNone();
-    void videoControl_Shuffle();
-
     void showPlaylistContextMenu(const QPoint &pos);
     void playlistContextMenu_AddFileAction();
     void playlistContextMenu_AddFolderAction();
     void playlistContextMenu_AdvancedOpenAction();
     void playlistContextMenu_SaveAction();
-    void playlistContextMenu_ClearAction();
-    void playlistContextMenu_ShuffleAction();
     void playlistContextMenu_PlayVideoAction();
     void playlistContextMenu_StreamVideoAction();
     void playlistContextMenu_SaveVideoAction();
@@ -365,16 +244,30 @@ private slots:
     void playlistContextMenu_RemoveSelectedVideoAction();
 
     void hideCursor();
+    void systemTray_Clicked(QSystemTrayIcon::ActivationReason reason);
+    void hideSystemTray();
+    void systemTray_Stop();
+    void systemTray_Record();
+    void systemTray_Faster();
+    void systemTray_FasterFine();
+    void systemTray_Normal();
+    void systemTray_SlowerFine();
+    void systemTray_Slower();
+    void systemTray_IncreaseVolume();
+    void systemTray_DecreaseVolume();
+    void systemTray_OpenFile();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+    void changeEvent(QEvent *event) override;
     bool event(QEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
     Logger* m_hLogger;
     MenuBar *m_menuBar = nullptr;
+    QSystemTrayIcon *m_trayIcon = nullptr;
     QTimer *timer;
     int m_x = 0;
     int m_y = 0;
@@ -391,6 +284,7 @@ private:
     // =======================================================================================================
     QPointer<VideoControlWidget> m_videoControlWidget;
     VideoSlider *m_videoSlider;
+    bool m_sourceLoaded = false;
     bool m_playing = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;
@@ -420,6 +314,8 @@ private:
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
+    QAction *systemTray_ToggleShow = nullptr;
+    bool m_systemTray_Showing = true;
 
     // SETTINGS
     // =======================================================================================================
@@ -435,6 +331,18 @@ private:
     int m_maxRecentFiles = 0;
     bool m_hideCursorWhenPlaying = false;
     int m_hideCursorTime = 0;
+    bool m_systemTray = true;
+    int m_mediaChangeNotification = 1;
+    bool m_showVideoControlsWhenFullscreen = false;
+    bool m_startInMinimalViewMode = false;
+    bool m_pausePlaybackWhenMinimized = false;
+    bool m_allowOnlyOneInstance = false;
+    bool m_oneInstanceFromFileManager = true;
+    int m_continuePlayback = 1;
+    bool m_pauseOnLastFrameOfVideo = false;
+    double m_playbackSpeedAdjustment = 0.0;
+    double m_playbackSpeedFineAdjustment = 0.0;
+    double m_volumeStep = 0.10;
 
     //
     // =======================================================================================================
@@ -463,23 +371,6 @@ private:
     int subtitleTrack;
     QPoint m_pos;
 
-    // STARTUP FUNCTIONS
-    // =======================================================================================================
-    void configureMenuItems();
-    void configureHotkeys();
-    void configureDefaultHotkeys();
-    void createRecentFileActions();
-    void updateRecentFileActions();
-    void createAudioOutputActions();
-    void updateAudioOutputActions();
-    void createAudioTrackActions();
-    void updateAudioTrackActions();
-    void createVideoTrackActions();
-    void updateVideoTrackActions();
-    void createSubtitleTrackActions();
-    void updateSubtitleTrackActions();
-
-
     // FUNCTIONS
     // =======================================================================================================
     bool isPlaylist(const QUrl &url);
@@ -487,16 +378,16 @@ private:
     void saveMediaFilterList(const QStringList& filterList);
     QStringList loadMediaFilterList();
     bool loadPlaylist(const QUrl &url);
-
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
-    void handleCursor(QMediaPlayer::MediaStatus status);
     void updateDurationInfo(qint64 currentInfo);
     QString trackName(const QMediaMetaData &metaData, int index);
     void showNotImplemented_Message();
     void loadFile(const QString &fileName);
     QString strippedFileName(const QString &fileName);
     QString timestampString(qint64 position);
+    void setApplicationWindowTitle();
+    void setSystemTrayIcon();
 
 
     // VIDEO EDITING FUNCTIONS

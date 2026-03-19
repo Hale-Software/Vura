@@ -107,7 +107,7 @@
            <number>8</number>
           </property>
           <property name="bottomMargin">
-           <number>5</number>
+           <number>8</number>
           </property>
           <item>
            <widget class="QLabel" name="position">
@@ -160,7 +160,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>9</pointsize>
+              <pointsize>10</pointsize>
              </font>
             </property>
             <property name="text">

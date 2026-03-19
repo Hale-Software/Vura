@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "../constants.h"
+
+#include <config.h>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -37,7 +40,9 @@ static Logger* globalRedirector = nullptr;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     this->setMouseTracking(true);
+    this->statusBar()->setSizeGripEnabled(true);
 
     // Set the global redirector and install the custom message handler
     qInstallMessageHandler(Logger::messageHandler);
@@ -53,6 +58,66 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     loadSettings();
     m_videoMarkers = new VideoMarkers;
+
+
+    // Configure system tray icon
+    m_trayIcon = new QSystemTrayIcon(this);
+    m_trayIcon->setIcon(QIcon(":/img/images/vura.png"));
+    systemTray_ToggleShow = new QAction(this);
+    if (m_systemTray_Showing) {
+        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
+    } else {
+        systemTray_ToggleShow->setText(tr("Show Vura"));
+    }
+
+    QMenu *menu = new QMenu(this);
+    menu->addAction(systemTray_ToggleShow);
+    menu->addSeparator();
+    QAction *playAction = menu->addAction(tr("Play"));
+    QAction *stopAction = menu->addAction(tr("Stop"));
+    QAction *nextAction = menu->addAction(tr("Next"));
+    QAction *previousAction = menu->addAction(tr("Previous"));
+    QAction *recordAction = menu->addAction(tr("Record"));
+    menu->addSeparator();
+
+    QMenu *speedMenu = menu->addMenu(tr("Speed"));
+    QAction *fasterAction = speedMenu->addAction(tr("Faster"));
+    QAction *fasterFineAction = speedMenu->addAction(tr("Faster (fine)"));
+    QAction *normalAction = speedMenu->addAction(tr("Normal"));
+    QAction *slowerFineAction = speedMenu->addAction(tr("Slower (fine)"));
+    QAction *slowerAction = speedMenu->addAction(tr("Slower"));
+
+    menu->addSeparator();
+    QAction *increaseVolumeAction = menu->addAction(tr("Increase Volume"));
+    QAction *decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
+    QAction *muteAction = menu->addAction(tr("Mute"));
+    menu->addSeparator();
+    QAction *openFileAction = menu->addAction(tr("Open File"));
+    QAction *quitAction = menu->addAction(tr("Quit"));
+
+    connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::systemTray_Clicked);
+    connect(systemTray_ToggleShow, &QAction::triggered, this, &MainWindow::hideSystemTray);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::systemTray_Stop);
+    connect(recordAction, &QAction::triggered, this, &MainWindow::systemTray_Record);
+    connect(fasterAction, &QAction::triggered, this, &MainWindow::systemTray_Faster);
+    connect(fasterFineAction, &QAction::triggered, this, &MainWindow::systemTray_FasterFine);
+    connect(normalAction, &QAction::triggered, this, &MainWindow::systemTray_Normal);
+    connect(slowerFineAction, &QAction::triggered, this, &MainWindow::systemTray_SlowerFine);
+    connect(slowerAction, &QAction::triggered, this, &MainWindow::systemTray_Slower);
+    connect(increaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_IncreaseVolume);
+    connect(decreaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_DecreaseVolume);
+    connect(openFileAction, &QAction::triggered, this, &MainWindow::systemTray_OpenFile);
+    connect(quitAction, &QAction::triggered, this, &MainWindow::exitApplication);
+    connect(playAction, &QAction::triggered, this, &MainWindow::togglePlayPause);
+    connect(nextAction, &QAction::triggered, this, &MainWindow::nextVideo);
+    connect(previousAction, &QAction::triggered, this, &MainWindow::previousVideo);
+    connect(muteAction, &QAction::triggered, this, &MainWindow::toggleMute);
+
+    m_trayIcon->setContextMenu(menu);
+    m_trayIcon->setToolTip(tr("Vura media player"));
+
+    if (m_systemTray)
+        m_trayIcon->show();
 
 
     // Configure menu bar
@@ -78,7 +143,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::emergencyCollapse, this, &MainWindow::emergencyCollapse);
     connect(m_menuBar, &MenuBar::exitApplication, this, &MainWindow::exitApplication);
     connect(m_menuBar, &MenuBar::openFiles, this, &MainWindow::openFiles);
-    connect(m_menuBar, &MenuBar::closeFiles, this, &MainWindow::closeFiles);
+    connect(m_menuBar, &MenuBar::closeFile, this, &MainWindow::closeFile);
+    connect(m_menuBar, &MenuBar::closeAllFiles, this, &MainWindow::closeAllFiles);
     connect(m_menuBar, &MenuBar::openFolder, this, &MainWindow::openFolder);
     connect(m_menuBar, &MenuBar::saveFile, this, &MainWindow::saveFile);
     connect(m_menuBar, &MenuBar::savePlaylist, this, &MainWindow::savePlaylist);
@@ -157,8 +223,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Configure UI items
     m_videoSlider = new VideoSlider(this);
-    ui->horizontalLayout_3->insertWidget(0, m_videoSlider);
-    ui->horizontalLayout_3->setStretch(0, 2);
+    ui->horizontalLayout_3->removeWidget(ui->placeholder);
+    ui->horizontalLayout_3->insertWidget(1, m_videoSlider);
+    ui->horizontalLayout_3->setStretch(1, 2);
     m_playlistModel = new PlaylistModel(this);
     m_playlist = m_playlistModel->playlist();
     ui->playlistView->setModel(m_playlistModel);
@@ -247,11 +314,24 @@ void MainWindow::loadSettings()
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
     m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
     m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
+    m_systemTray = settings.value("systemTray", true).toBool();
+    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
+    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
+    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
+    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
+    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
+    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
+    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
+    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
+    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
+    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
 
     if (timer->isActive())
         timer->stop();
 
     emit refreshSettings();
+    //setSystemTrayIcon();
 }
 
 void MainWindow::testFunction() {}
@@ -388,7 +468,9 @@ void MainWindow::sourceChanged(const QUrl &media)
     m_currentFile = media.toString();
     qInfo() << "New media source loaded: " << m_currentFile;
     m_videoSlider->setMarkers(m_videoMarkersList);
-    setWindowTitle(m_currentFile);
+
+    setApplicationWindowTitle();
+
     QByteArray byteArray = m_currentFile.toUtf8();
     if (m_playing) {
         m_player->play();
@@ -401,14 +483,13 @@ void MainWindow::sourceChanged(const QUrl &media)
 
 void MainWindow::statusChanged(QMediaPlayer::MediaStatus status)
 {
-    handleCursor(status);
-
     // handle status message
     switch (status) {
         case QMediaPlayer::NoMedia:
             emit setPlayerStatus(false);
         case QMediaPlayer::LoadedMedia:
             setStatusInfo(QString());
+            updateDurationInfo(m_player->position() / 1000);
             emit setPlayerStatus(true);
             break;
         case QMediaPlayer::LoadingMedia:
@@ -441,12 +522,11 @@ void MainWindow::bufferingProgress(float progress)
 
 void MainWindow::playbackRateChanged(qreal rate)
 {
-    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
+    ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 
 #pragma endregion
-
 
 
 #pragma region PUBLIC SLOTS
@@ -546,7 +626,22 @@ void MainWindow::openFiles(const QStringList &fileList)
     emit updateRecentFiles();
 }
 
-void MainWindow::closeFiles(const QStringList &fileList) {}
+void MainWindow::closeFile()
+{
+    if (m_playlist->mediaCount() == 1) {
+        m_playlist->clear();
+        m_player->setSource(QUrl());
+    } else {
+        m_playlist->removeMedia(m_playlist->currentIndex());
+        m_playlist->next();
+    }
+}
+
+void MainWindow::closeAllFiles()
+{
+    m_playlist->clear();
+    m_player->setSource(QUrl());
+}
 
 void MainWindow::openFolder(const QString &folderPath)
 {
@@ -1259,7 +1354,8 @@ void MainWindow::setStatusInfo(const QString &info)
 
 void MainWindow::updateDurationInfo(qint64 currentInfo)
 {
-    QString tStr;
+    QString durationString;
+    QString positionString;
     if (currentInfo || m_duration) {
         QTime currentTime((currentInfo / 3600) % 60, (currentInfo / 60) % 60, currentInfo % 60,
                           (currentInfo * 1000) % 1000);
@@ -1268,10 +1364,12 @@ void MainWindow::updateDurationInfo(qint64 currentInfo)
         QString format = "mm:ss";
         if (m_duration > 3600)
             format = "hh:mm:ss";
-        tStr = currentTime.toString(format) + " / " + totalTime.toString(format);
+        durationString = totalTime.toString(format);
+        positionString = currentTime.toString(format);
     }
-    ui->m_labelDuration->setText(tStr);
-    ui->m_playbackRate->setText("x" + QString::number(m_playbackSpeed));
+    ui->duration->setText(durationString);
+    ui->position->setText(positionString);
+    ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
     if (currentInfo > 0) {
         m_videoSlider->setVideoLoaded(true);
     }
@@ -1313,6 +1411,16 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr
 
     // For other events, or if not handled, call the base implementation
     return QWidget::nativeEvent(eventType, message, result);
+}
+
+void MainWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::WindowStateChange) {
+        if (this->isMinimized()) {
+            if (m_pausePlaybackWhenMinimized)
+                m_player->pause();
+        }
+    }
+    QMainWindow::changeEvent(event);
 }
 
 bool MainWindow::event(QEvent *e)
@@ -1588,4 +1696,143 @@ qint64 MainWindow::fileHash(const QString& filePath)
     return hash;
 }
 
+void MainWindow::setApplicationWindowTitle()
+{
+    QString windowTitle;
+
+    if (!m_player->source().isEmpty()) {
+        windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
+        m_trayIcon->setToolTip(strippedFileName(m_currentFile));
+        m_sourceLoaded = false;
+
+    } else {
+        windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
+        m_trayIcon->setToolTip("Vura media player");
+        m_sourceLoaded = true;
+
+    }
+
+    setWindowTitle(windowTitle);
+}
+
+void MainWindow::setSystemTrayIcon()
+{
+    if (m_systemTray) {
+        m_trayIcon->show();
+
+    } else if (!m_systemTray) {
+        m_trayIcon->hide();
+    }
+}
+
+
 #pragma endregion
+
+
+void MainWindow::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger) {
+        if (this->isHidden() || this->isMinimized()) {
+            this->showNormal();
+            this->activateWindow();
+        }
+    }
+}
+
+void MainWindow::hideSystemTray()
+{
+    if (m_systemTray_Showing) {
+        this->hide();
+        m_player->pause();
+        systemTray_ToggleShow->setText(tr("Show Vura"));
+        m_systemTray_Showing = false;
+    } else {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
+        m_systemTray_Showing = true;
+    }
+}
+
+void MainWindow::systemTray_Stop()
+{
+    m_player->stop();
+}
+
+void MainWindow::systemTray_Record()
+{
+    showNotImplemented_Message();
+}
+
+void MainWindow::systemTray_Faster()
+{
+    changePlaybackSpeed(m_playbackSpeedAdjustment);
+}
+
+void MainWindow::systemTray_FasterFine()
+{
+    changePlaybackSpeed(m_playbackSpeedFineAdjustment);
+}
+
+void MainWindow::systemTray_Normal()
+{
+    setPlaybackSpeedNormal();
+}
+
+void MainWindow::systemTray_SlowerFine()
+{
+    changePlaybackSpeed(-m_playbackSpeedFineAdjustment);
+}
+
+void MainWindow::systemTray_Slower()
+{
+    changePlaybackSpeed(-m_playbackSpeedAdjustment);
+}
+
+void MainWindow::systemTray_IncreaseVolume()
+{
+    changeVolume(m_volumeStep);
+}
+
+void MainWindow::systemTray_DecreaseVolume()
+{
+    changeVolume(-m_volumeStep);
+}
+
+void MainWindow::systemTray_OpenFile()
+{
+    QSettings settings;
+
+    // File filters
+    QStringList fileFilters;
+    fileFilters << MediaFileExtensions;
+    fileFilters << VideoFileExtensions;
+    fileFilters << AudioFileExtensions;
+    fileFilters << PlaylistFileExtensions;
+    fileFilters << "All Files (*.*)";
+
+    // Create open file dialog.
+    QFileDialog fileDialog(this);
+    fileDialog.setNameFilters(fileFilters);
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setWindowTitle(tr("Open File"));
+    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString());
+
+    if (fileDialog.exec() == QDialog::Accepted) {
+        QStringList selectedFiles = fileDialog.selectedFiles();
+        if (!selectedFiles.isEmpty()) {
+            QStringList fileList;
+            for (auto &url : selectedFiles) {
+                fileList.append(url);
+            }
+
+            // Set last file directory where file was opened.
+            QString lastFileDirectory = selectedFiles.last();
+            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
+
+            openFiles(fileList);
+        }
+    }
+}

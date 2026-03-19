@@ -1,10 +1,36 @@
+/*******************************************************************************
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #include "videoslider.h"
+
+namespace {
+    const int m_height = 5;
+    const int m_markerHeight = 10;
+    const int m_markerWidth = 2;
+    const int m_horizontalMarginOffset = 14;
+    const int m_bottomMarginOffset = 10;
+    const int m_caretRadius = 6;
+}
 
 
 VideoSlider::VideoSlider(QWidget *parent) : QWidget(parent)
 {
     setAttribute(Qt::WA_Hover, true);
-    this->setFixedHeight(25);
+    this->setFixedHeight(30);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &VideoSlider::hideIndicator);
@@ -275,9 +301,13 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     int currentWidth = this->width();
 
     if (!m_videoLoaded) {
-        painter.setPen(QPen(Qt::lightGray, 1));
-        painter.setBrush(QBrush(Qt::lightGray, Qt::SolidPattern));
-        painter.drawRect(0, (this->height() / 2) - 1, currentWidth, 5);
+        painter.setPen(QPen(m_emptySliderColor, 1));
+        painter.setBrush(QBrush(m_emptySliderColor, Qt::SolidPattern));
+        painter.drawRect((m_horizontalMarginOffset / 2),
+            this->height() - m_bottomMarginOffset,
+            currentWidth,
+            m_height);
+
     } else {
         double distanceFromMin = (this->value() - this->minimum());
         double sliderRange = (this->maximum() - this->minimum());
@@ -285,20 +315,30 @@ void VideoSlider::paintEvent(QPaintEvent *event)
 
         int x = sliderPercent * currentWidth;
 
-        painter.setPen(QPen(Qt::blue, 1));
-        painter.setBrush(QBrush(Qt::blue, Qt::SolidPattern));
-        painter.drawRect(0, (this->height() / 2) - 1, x, 5);
+        // Draw progress portion of slider.
+        painter.setPen(QPen(m_fullSliderColor, 1));
+        painter.setBrush(QBrush(m_fullSliderColor, Qt::SolidPattern));
+        painter.drawRect((m_horizontalMarginOffset / 2),
+            this->height() - m_bottomMarginOffset,
+            x - 7,
+            m_height);
 
-        painter.setPen(QPen(Qt::lightGray, 1));
-        painter.setBrush(QBrush(Qt::lightGray, Qt::SolidPattern));
-        painter.drawRect(x, (this->height() / 2) - 1, currentWidth, 5);
+        // Draw remaining portion of slider.
+        painter.setPen(QPen(m_emptySliderColor, 1));
+        painter.setBrush(QBrush(m_emptySliderColor, Qt::SolidPattern));
+        painter.drawRect(x,
+            this->height() - m_bottomMarginOffset,
+            currentWidth - (x - 28),
+            m_height);
 
+        // Draw caret.
         if (m_showingIndicator) {
             painter.setPen(QPen(Qt::lightGray, 1));
             painter.setBrush(QBrush(Qt::lightGray, Qt::SolidPattern));
-            QPoint center(x, (this->height() / 2) + 2);
-            int radius = 6;
-            painter.drawEllipse(center, radius, radius);
+            QPoint center(x,
+                (this->height() - m_bottomMarginOffset) + (m_caretRadius / 2));
+
+            painter.drawEllipse(center, m_caretRadius, m_caretRadius);
         }
     }
 
@@ -312,90 +352,98 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     QList<double> magentaMarkers = m_markers.value("magenta").toList();
     QList<double> orangeMarkers = m_markers.value("orange").toList();
 
+    // Draw markers.
     if (showMarkers) {
         foreach(const double marker, markers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::green, 2));
+                painter.setPen(QPen(Qt::green, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw scene markers.
     if (showSceneMarkers) {
         foreach(const double marker, sceneMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::blue, 2));
+                painter.setPen(QPen(Qt::blue, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw cumshot markers.
     if (showCumshotMarkers) {
         foreach(const double marker, cumshotMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::white, 2));
+                painter.setPen(QPen(Qt::white, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw strip markers.
     if (showStripMarkers) {
         foreach(const double marker, stripMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::red, 2));
+                painter.setPen(QPen(Qt::red, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw dialog markers.
     if (showDialogMarkers) {
         foreach(const double marker, dialogMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::yellow, 2));
+                painter.setPen(QPen(Qt::yellow, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw cyan markers.
     if (showCyanMarkers) {
         foreach(const double marker, cyanMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::cyan, 2));
+                painter.setPen(QPen(Qt::cyan, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw magenta markers.
     if (showMagentaMarkers) {
         foreach(const double marker, magentaMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::magenta, 2));
+                painter.setPen(QPen(Qt::magenta, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }
 
+    // Draw orange markers.
     if (showOrangeMarkers) {
         foreach(const double marker, orangeMarkers)
         {
             if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::darkYellow, 2));
+                painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
                 int x = marker * this->width();
-                painter.drawLine(x, 0, x, height());
+                painter.drawLine(x, 0, x, m_markerHeight);
             }
         }
     }

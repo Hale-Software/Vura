@@ -1,3 +1,20 @@
+/*******************************************************************************
+     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #include "menubar.h"
 #include "../constants.h"
 #include "utility/hotkeys.h"
@@ -8,119 +25,119 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     refreshSettings();
 
     // Create Menus
-    m_fileMenu = new QMenu(tr("&File"), this);
-    m_viewMenu = new QMenu(tr("&View"), this);
-    m_playbackMenu = new QMenu(tr("&Playback"), this);
-    m_markersMenu = new QMenu(tr("&Markers"), this);
-    m_audioMenu = new QMenu(tr("&Audio"), this);
-    m_videoMenu = new QMenu(tr("&Video"), this);
-    m_subtitleMenu = new QMenu(tr("&Subtitle"), this);
-    m_toolsMenu = new QMenu(tr("&Tools"), this);
-    m_helpMenu = new QMenu(tr("&Help"), this);
-    m_fileImportMenu = new QMenu(tr("&Import"), this);
-    m_fileExportMenu = new QMenu(tr("&Export"), this);
-    m_openRecentMenu = new QMenu(tr("&Open Recent"), this);
-    m_audioDeviceMenu = new QMenu(tr("&Audio Device"), this);
-    m_audioTrackMenu = new QMenu(tr("&Audio Track"), this);
-    m_jumpBackwardMenu = new QMenu(tr("&Jump Backward"), this);
-    m_jumpForwardMenu = new QMenu(tr("&Jump Forward"), this);
-    m_playbackSpeedMenu = new QMenu(tr("&Playback Speed"), this);
-    m_subtitleTrackMenu = new QMenu(tr("&Subtitle Track"), this);
-    m_videoTrackMenu = new QMenu(tr("&Video Track"), this);
-    m_viewMarkersMenu = new QMenu(tr("&Toggle Markers"), this);
-    // m_ = new QMenu(tr("&"), this);
+    m_fileMenu = new QMenu(tr("File"), this);
+    m_viewMenu = new QMenu(tr("View"), this);
+    m_playbackMenu = new QMenu(tr("Playback"), this);
+    m_markersMenu = new QMenu(tr("Markers"), this);
+    m_audioMenu = new QMenu(tr("Audio"), this);
+    m_videoMenu = new QMenu(tr("Video"), this);
+    m_subtitleMenu = new QMenu(tr("Subtitle"), this);
+    m_toolsMenu = new QMenu(tr("Tools"), this);
+    m_helpMenu = new QMenu(tr("Help"), this);
+    m_fileImportMenu = new QMenu(tr("Import"), this);
+    m_fileExportMenu = new QMenu(tr("Export"), this);
+    m_openRecentMenu = new QMenu(tr("Open Recent"), this);
+    m_audioDeviceMenu = new QMenu(tr("Audio Device"), this);
+    m_audioTrackMenu = new QMenu(tr("Audio Track"), this);
+    m_jumpBackwardMenu = new QMenu(tr("Jump Backward"), this);
+    m_jumpForwardMenu = new QMenu(tr("Jump Forward"), this);
+    m_playbackSpeedMenu = new QMenu(tr("Playback Speed"), this);
+    m_subtitleTrackMenu = new QMenu(tr("Subtitle Track"), this);
+    m_videoTrackMenu = new QMenu(tr("Video Track"), this);
+    m_viewMarkersMenu = new QMenu(tr("Toggle Markers"), this);
+    // m_ = new QMenu(tr(""), this);
 
     // Create Menu Actions
-    m_volumeIncreaseAction = new QAction(tr("&Increase Volume"), this);
-    m_volumeDecreaseAction = new QAction(tr("&Decrease Volume"), this);
-    m_volumeMuteAction = new QAction(tr("&Mute"), this);
-    m_closeAction = new QAction(tr("&Close"), this);
-    m_closeAllAction = new QAction(tr("&Close All"), this);
-    m_emergencyCollapseAction = new QAction(tr("&Emergency Collapse"), this);
-    m_exitAction = new QAction(tr("&Exit"), this);
-    m_openFileAction = new QAction(tr("&Open File..."), this);
-    m_openFolderAction = new QAction(tr("&Open Folder..."), this);
-    m_openMultipleFilesAction = new QAction(tr("&Open Multiple Files..."), this);
-    m_openNetworkStreamAction = new QAction(tr("&Open Network Stream..."), this);
-    m_showPreferencesAction = new QAction(tr("&Preferences"), this);
-    m_saveAction = new QAction(tr("&Save"), this);
-    m_saveAsAction = new QAction(tr("&Save As..."), this);
-    m_savePlaylistAction = new QAction(tr("&Save Playlist"), this);
-    m_saveACopyAction = new QAction(tr("&Save A Copy..."), this);
-    m_importProjectAction = new QAction(tr("&Project..."), this);
-    m_importCaptionsAction = new QAction(tr("&Captions..."), this);
-    m_importMarkersAction = new QAction(tr("&Markers..."), this);
-    m_exportCaptionsAction = new QAction(tr("&Captions..."), this);
-    m_exportClipsAction = new QAction(tr("&Clips..."), this);
-    m_exportMarkersAction = new QAction(tr("&Markers..."), this);
-    m_exportMediaAction = new QAction(tr("&Media..."), this);
-    m_showAboutAction = new QAction(tr("&About"), this);
-    m_showHelpAction = new QAction(tr("&Help"), this);
-    m_showFeedbackAction = new QAction(tr("&Provide Feedback"), this);
-    m_updateAction = new QAction(tr("&Check for Updates..."), this);
-    m_cumshotMarkerAction = new QAction(tr("&Add Cumshot Marker"), this);
-    m_cyanMarkerAction = new QAction(tr("&Add Cyan Marker"), this);
-    m_dialogMarkerAction = new QAction(tr("&Add Dialog Marker"), this);
-    m_magentaMarkerAction = new QAction(tr("&Add Magenta Marker"), this);
-    m_markerAction = new QAction(tr("&Add Marker"), this);
-    m_orangeMarkerAction = new QAction(tr("&Add Orange Marker"), this);
-    m_sceneMarkerAction = new QAction(tr("&Add Scene Transition Marker"), this);
-    m_stripMarkerAction = new QAction(tr("&Add Strip Marker"), this);
-    m_clearInMarkerAction = new QAction(tr("&Clear In"), this);
-    m_clearInAndOutMarkerAction = new QAction(tr("&Clear In and Out"), this);
-    m_clearMarkersAction = new QAction(tr("&Clear Markers"), this);
-    m_clearOutMarkerAction = new QAction(tr("&Clear Out"), this);
-    m_clearSelectedMarkerAction = new QAction(tr("&Clear Selected Marker"), this);
-    m_editMarkerAction = new QAction(tr("&Edit Selected Marker..."), this);
-    m_goToInMarkerAction = new QAction(tr("&Go to In"), this);
-    m_goToNextMarkerAction = new QAction(tr("&Go to Next Marker"), this);
-    m_goToOutMarkerAction = new QAction(tr("&Go to Out"), this);
-    m_goToPreviousMarkerAction = new QAction(tr("&Go to Previous Marker"), this);
-    m_inMarkerAction = new QAction(tr("&Mark In"), this);
-    m_outMarkerAction = new QAction(tr("&Mark Out"), this);
-    m_jumpToTimeAction = new QAction(tr("&Jump to Specific Time..."), this);
-    m_nextVideoAction = new QAction(tr("&Next Video"), this);
-    m_nextFrameAction = new QAction(tr("&Next Frame"), this);
-    m_togglePlayAction = new QAction(tr("&Play/Pause"), this);
-    m_previousVideoAction = new QAction(tr("&Previous Video"), this);
-    m_previousFrameAction = new QAction(tr("&Previous Frame"), this);
-    m_restartVideoAction = new QAction(tr("&Restart Video"), this);
-    m_jumpBackwardSmallAction = new QAction(tr("&Jump Back Small"), this);
-    m_jumpBackwardMediumAction = new QAction(tr("&Jump Back Medium"), this);
-    m_jumpBackwardLargeAction = new QAction(tr("&Jump Back Large"), this);
-    m_jumpBackwardExtraLargeAction = new QAction(tr("&Jump Back Extra Large"), this);
-    m_jumpForwardSmallAction = new QAction(tr("&Jump Fwd Small"), this);
-    m_jumpForwardMediumAction = new QAction(tr("&Jump Fwd Medium"), this);
-    m_jumpForwardLargeAction = new QAction(tr("&Jump Fwd Large"), this);
-    m_jumpForwardExtraLargeAction = new QAction(tr("&Jump Fwd Extra Large"), this);
-    m_playbackSpeedFasterAction = new QAction(tr("&Faster"), this);
-    m_playbackSpeedFasterFineAction = new QAction(tr("&Faster (fine)"), this);
-    m_playbackSpeedNormalAction = new QAction(tr("&Normal"), this);
-    m_playbackSpeedSlowerFineAction = new QAction(tr("&Slower (fine)"), this);
-    m_playbackSpeedSlowerAction = new QAction(tr("&Slower"), this);
-    m_createSubclipAction = new QAction(tr("&Make Subclip"), this);
-    m_streamStashVideoAction = new QAction(tr("&Stream Video from Stash..."), this);
-    m_testFunctionAction = new QAction(tr("&Test Function"), this);
-    m_openSubtitleFileAction = new QAction(tr("&Open Subtitle File..."), this);
-    m_toggleSubtitlesAction = new QAction(tr("&Toggle Subtitles"), this);
-    m_toggleFullscreenAction = new QAction(tr("&Fullscreen"), this);
-    m_takeSnapshotAction = new QAction(tr("&Take Snapshot"), this);
-    m_showMediaInformationAction = new QAction(tr("&Media Information"), this);
-    m_showLogFileViewerAction = new QAction(tr("&Log Viewer"), this);
-    m_togglePlaylistAction = new QAction(tr("&Toggle Playlist"), this);
-    m_toggleStatusBarAction = new QAction(tr("&Toggle Status Bar"), this);
-    m_toggleTagsAction = new QAction(tr("&Toggle Tags"), this);
-    m_toggleVideoControlsAction = new QAction(tr("&Toggle Video Controls"), this);
-    m_toggleCumshotMarkersAction = new QAction(tr("&Cumshot Markers"), this);
-    m_toggleCyanMarkersAction = new QAction(tr("&Cyan Markers"), this);
-    m_toggleDialogMarkersAction = new QAction(tr("&Dialog Markers"), this);
-    m_toggleMagentaMarkersAction = new QAction(tr("&Magenta Markers"), this);
-    m_toggleMarkersAction = new QAction(tr("&Markers"), this);
-    m_toggleOrangeMarkersAction = new QAction(tr("&Orange Markers"), this);
-    m_toggleSceneMarkersAction = new QAction(tr("&Scene Transition Markers"), this);
-    m_toggleStripMarkersAction = new QAction(tr("&Strip Markers"), this);
-    m_clearRecentFilesAction = new QAction(tr("&Clear"), this);
-    // m_ = new QAction(tr("&"), this);
+    m_volumeIncreaseAction = new QAction(tr("Increase Volume"), this);
+    m_volumeDecreaseAction = new QAction(tr("Decrease Volume"), this);
+    m_volumeMuteAction = new QAction(tr("Mute"), this);
+    m_closeAction = new QAction(tr("Close"), this);
+    m_closeAllAction = new QAction(tr("Close All"), this);
+    m_emergencyCollapseAction = new QAction(tr("Emergency Collapse"), this);
+    m_exitAction = new QAction(tr("Exit"), this);
+    m_openFileAction = new QAction(tr("Open File..."), this);
+    m_openFolderAction = new QAction(tr("Open Folder..."), this);
+    m_openMultipleFilesAction = new QAction(tr("Open Multiple Files..."), this);
+    m_openNetworkStreamAction = new QAction(tr("Open Network Stream..."), this);
+    m_showPreferencesAction = new QAction(tr("Preferences"), this);
+    m_saveAction = new QAction(tr("Save"), this);
+    m_saveAsAction = new QAction(tr("Save As..."), this);
+    m_savePlaylistAction = new QAction(tr("Save Playlist"), this);
+    m_saveACopyAction = new QAction(tr("Save A Copy..."), this);
+    m_importProjectAction = new QAction(tr("Project..."), this);
+    m_importCaptionsAction = new QAction(tr("Captions..."), this);
+    m_importMarkersAction = new QAction(tr("Markers..."), this);
+    m_exportCaptionsAction = new QAction(tr("Captions..."), this);
+    m_exportClipsAction = new QAction(tr("Clips..."), this);
+    m_exportMarkersAction = new QAction(tr("Markers..."), this);
+    m_exportMediaAction = new QAction(tr("Media..."), this);
+    m_showAboutAction = new QAction(tr("About"), this);
+    m_showHelpAction = new QAction(tr("Help"), this);
+    m_showFeedbackAction = new QAction(tr("Provide Feedback"), this);
+    m_updateAction = new QAction(tr("Check for Updates..."), this);
+    m_cumshotMarkerAction = new QAction(tr("Add Cumshot Marker"), this);
+    m_cyanMarkerAction = new QAction(tr("Add Cyan Marker"), this);
+    m_dialogMarkerAction = new QAction(tr("Add Dialog Marker"), this);
+    m_magentaMarkerAction = new QAction(tr("Add Magenta Marker"), this);
+    m_markerAction = new QAction(tr("Add Marker"), this);
+    m_orangeMarkerAction = new QAction(tr("Add Orange Marker"), this);
+    m_sceneMarkerAction = new QAction(tr("Add Scene Transition Marker"), this);
+    m_stripMarkerAction = new QAction(tr("Add Strip Marker"), this);
+    m_clearInMarkerAction = new QAction(tr("Clear In"), this);
+    m_clearInAndOutMarkerAction = new QAction(tr("Clear In and Out"), this);
+    m_clearMarkersAction = new QAction(tr("Clear Markers"), this);
+    m_clearOutMarkerAction = new QAction(tr("Clear Out"), this);
+    m_clearSelectedMarkerAction = new QAction(tr("Clear Selected Marker"), this);
+    m_editMarkerAction = new QAction(tr("Edit Selected Marker..."), this);
+    m_goToInMarkerAction = new QAction(tr("Go to In"), this);
+    m_goToNextMarkerAction = new QAction(tr("Go to Next Marker"), this);
+    m_goToOutMarkerAction = new QAction(tr("Go to Out"), this);
+    m_goToPreviousMarkerAction = new QAction(tr("Go to Previous Marker"), this);
+    m_inMarkerAction = new QAction(tr("Mark In"), this);
+    m_outMarkerAction = new QAction(tr("Mark Out"), this);
+    m_jumpToTimeAction = new QAction(tr("Jump to Specific Time..."), this);
+    m_nextVideoAction = new QAction(tr("Next Video"), this);
+    m_nextFrameAction = new QAction(tr("Next Frame"), this);
+    m_togglePlayAction = new QAction(tr("Play/Pause"), this);
+    m_previousVideoAction = new QAction(tr("Previous Video"), this);
+    m_previousFrameAction = new QAction(tr("Previous Frame"), this);
+    m_restartVideoAction = new QAction(tr("Restart Video"), this);
+    m_jumpBackwardSmallAction = new QAction(tr("Jump Back Small"), this);
+    m_jumpBackwardMediumAction = new QAction(tr("Jump Back Medium"), this);
+    m_jumpBackwardLargeAction = new QAction(tr("Jump Back Large"), this);
+    m_jumpBackwardExtraLargeAction = new QAction(tr("Jump Back Extra Large"), this);
+    m_jumpForwardSmallAction = new QAction(tr("Jump Fwd Small"), this);
+    m_jumpForwardMediumAction = new QAction(tr("Jump Fwd Medium"), this);
+    m_jumpForwardLargeAction = new QAction(tr("Jump Fwd Large"), this);
+    m_jumpForwardExtraLargeAction = new QAction(tr("Jump Fwd Extra Large"), this);
+    m_playbackSpeedFasterAction = new QAction(tr("Faster"), this);
+    m_playbackSpeedFasterFineAction = new QAction(tr("Faster (fine)"), this);
+    m_playbackSpeedNormalAction = new QAction(tr("Normal"), this);
+    m_playbackSpeedSlowerFineAction = new QAction(tr("Slower (fine)"), this);
+    m_playbackSpeedSlowerAction = new QAction(tr("Slower"), this);
+    m_createSubclipAction = new QAction(tr("Make Subclip"), this);
+    m_streamStashVideoAction = new QAction(tr("Stream Video from Stash..."), this);
+    m_testFunctionAction = new QAction(tr("Test Function"), this);
+    m_openSubtitleFileAction = new QAction(tr("Open Subtitle File..."), this);
+    m_toggleSubtitlesAction = new QAction(tr("Toggle Subtitles"), this);
+    m_toggleFullscreenAction = new QAction(tr("Fullscreen"), this);
+    m_takeSnapshotAction = new QAction(tr("Take Snapshot"), this);
+    m_showMediaInformationAction = new QAction(tr("Media Information"), this);
+    m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
+    m_togglePlaylistAction = new QAction(tr("Toggle Playlist"), this);
+    m_toggleStatusBarAction = new QAction(tr("Toggle Status Bar"), this);
+    m_toggleTagsAction = new QAction(tr("Toggle Tags"), this);
+    m_toggleVideoControlsAction = new QAction(tr("Toggle Video Controls"), this);
+    m_toggleCumshotMarkersAction = new QAction(tr("Cumshot Markers"), this);
+    m_toggleCyanMarkersAction = new QAction(tr("Cyan Markers"), this);
+    m_toggleDialogMarkersAction = new QAction(tr("Dialog Markers"), this);
+    m_toggleMagentaMarkersAction = new QAction(tr("Magenta Markers"), this);
+    m_toggleMarkersAction = new QAction(tr("Markers"), this);
+    m_toggleOrangeMarkersAction = new QAction(tr("Orange Markers"), this);
+    m_toggleSceneMarkersAction = new QAction(tr("Scene Transition Markers"), this);
+    m_toggleStripMarkersAction = new QAction(tr("Strip Markers"), this);
+    m_clearRecentFilesAction = new QAction(tr("Clear"), this);
+    // m_ = new QAction(tr(""), this);
 
     // Create Separators
     m_recentFilesSeparator = new QAction(this);
@@ -768,9 +785,9 @@ void MenuBar::refreshSettings()
     m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
     m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
     m_jumpSmall = settings.value("jumpSmall", 5).toInt();
-    m_jumpMedium = settings.value("jumpSmall", 15).toInt();
-    m_jumpLarge = settings.value("jumpSmall", 30).toInt();
-    m_jumpExtraLarge = settings.value("jumpSmall", 90).toInt();
+    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
+    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
+    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
     m_stashServerUrl = settings.value("stashServerUrl", "http://127.0.0.1:9999").toString();
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
 
@@ -1094,9 +1111,15 @@ void MenuBar::clearRecentFiles_Clicked()
     updateRecentFiles();
 }
 
-void MenuBar::closeFile_Clicked() {}
+void MenuBar::closeFile_Clicked()
+{
+    emit closeFile();
+}
 
-void MenuBar::closeAll_Clicked() {}
+void MenuBar::closeAll_Clicked()
+{
+    emit closeAllFiles();
+}
 
 void MenuBar::save_Clicked() {}
 

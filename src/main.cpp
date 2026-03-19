@@ -21,8 +21,6 @@
 
 VuraApp::VuraApp(int &argc, char **argv) : QApplication(argc, argv) {}
 
-VuraApp::~VuraApp() {}
-
 void VuraApp::AppInit(int argc, char* argv[])
 {
     bool openedWithFile = false;
