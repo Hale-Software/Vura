@@ -319,6 +319,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string extracomment="Volume"/>
+       </property>
        <property name="maximum">
         <number>100</number>
        </property>

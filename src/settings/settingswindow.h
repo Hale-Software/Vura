@@ -15,8 +15,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#ifndef SETTINGSWINDOW_H
-#define SETTINGSWINDOW_H
+#pragma once
 
 #include <QDialog>
 #include <QSettings>
@@ -45,6 +44,7 @@
 namespace Ui {
 class SettingsWindow;
 }
+
 
 class SettingsWindow : public QDialog
 {
@@ -112,6 +112,7 @@ public slots:
     void hotkeyFilterTextBox_KeySequenceChanged(const QKeySequence &keySequence);
     void hotkeyFilterClearButton_Clicked();
     void hotkey_Changed(int id, QString action, QString oldHotkey, QString newHotkey);
+    void setOverrideWindowsHotkeys_Checked(bool state);
 
     // Advanced Settings
     void stashServer_TextChanged(const QString &text);
@@ -169,6 +170,7 @@ private:
     bool m_oneInstanceFromFileManager;
     int m_continuePlayback;
     bool m_pauseOnLastFrameOfVideo;
+    bool m_setOverrideWindowsHotkeys;
 
     // Appearance Settings
     QString m_theme;
@@ -185,5 +187,3 @@ private:
     QListWidgetItem *m_hotkeyItem;
 
 };
-
-#endif // HSETTINGS_WINDOW_H

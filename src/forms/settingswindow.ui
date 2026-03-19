@@ -127,7 +127,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QScrollArea" name="scrollArea">
+          <widget class="QScrollArea" name="generalPageScrollArea">
            <property name="frameShape">
             <enum>QFrame::Shape::NoFrame</enum>
            </property>
@@ -231,7 +231,7 @@
                  </widget>
                 </item>
                 <item row="5" column="1">
-                 <widget class="QSpinBox" name="maxLogs">
+                 <widget class="SpinBoxIgnoreWheel" name="maxLogs">
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -352,7 +352,7 @@
                  </widget>
                 </item>
                 <item row="15" column="1">
-                 <widget class="QSpinBox" name="maxRecentFiles"/>
+                 <widget class="SpinBoxIgnoreWheel" name="maxRecentFiles"/>
                 </item>
                 <item row="16" column="1">
                  <widget class="QCheckBox" name="hideCursorWhenPlaying">
@@ -369,7 +369,7 @@
                  </widget>
                 </item>
                 <item row="17" column="1">
-                 <widget class="QDoubleSpinBox" name="hideCursorTime"/>
+                 <widget class="DoubleSpinBoxIgnoreWheel" name="hideCursorTime"/>
                 </item>
                 <item row="18" column="0">
                  <spacer name="horizontalSpacer_11">
@@ -636,9 +636,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="playbackSpeedAdjustment"/>
-                </item>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_15">
                   <property name="text">
@@ -646,13 +643,20 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="playbackSpeedAdjustmentFine"/>
-                </item>
                 <item row="2" column="0">
                  <widget class="QLabel" name="label_16">
                   <property name="text">
                    <string>Volume Step</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="DoubleSpinBoxIgnoreWheel" name="volumeStep">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
                   </property>
                  </widget>
                 </item>
@@ -662,9 +666,6 @@
                    <string>Frame Walk (ms)</string>
                   </property>
                  </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QLineEdit" name="frameWalk"/>
                 </item>
                 <item row="4" column="0">
                  <widget class="QLabel" name="label_92">
@@ -722,15 +723,14 @@
                   </property>
                  </spacer>
                 </item>
-                <item row="2" column="1">
-                 <widget class="QDoubleSpinBox" name="volumeStep">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                 </widget>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="frameWalk"/>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="playbackSpeedAdjustmentFine"/>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="playbackSpeedAdjustment"/>
                 </item>
                </layout>
               </widget>
@@ -756,122 +756,168 @@
        </widget>
        <widget class="QWidget" name="appearancePage">
         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QScrollArea" name="appearancePageScrollArea">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <property name="title">
-            <string>Appearance</string>
-           </property>
-           <layout class="QFormLayout" name="formLayout_3">
-            <property name="labelAlignment">
-             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           <widget class="QWidget" name="scrollAreaWidgetContents_3">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>694</width>
+              <height>650</height>
+             </rect>
             </property>
-            <property name="horizontalSpacing">
-             <number>16</number>
-            </property>
-            <property name="verticalSpacing">
-             <number>8</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>16</number>
-            </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Theme</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="ComboBoxIgnoreWheel" name="theme">
-              <item>
-               <property name="text">
-                <string>Use System</string>
+            <layout class="QVBoxLayout" name="verticalLayout_12">
+             <property name="spacing">
+              <number>25</number>
+             </property>
+             <property name="topMargin">
+              <number>12</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Light</string>
+               <property name="title">
+                <string>Appearance</string>
                </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Dark</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Font Size</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,5">
-              <property name="spacing">
-               <number>16</number>
-              </property>
-              <item>
-               <widget class="QLineEdit" name="appearanceFontScaleText"/>
-              </item>
-              <item>
-               <widget class="AbsoluteSlider" name="appearanceFontScale">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
+               <layout class="QFormLayout" name="formLayout_3">
+                <property name="labelAlignment">
+                 <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
                 </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="2" column="0">
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Policy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>170</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
+                <property name="horizontalSpacing">
+                 <number>16</number>
+                </property>
+                <property name="verticalSpacing">
+                 <number>8</number>
+                </property>
+                <property name="topMargin">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>16</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string>Theme</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="ComboBoxIgnoreWheel" name="theme">
+                  <item>
+                   <property name="text">
+                    <string>Use System</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Light</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Dark</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_11">
+                  <property name="text">
+                   <string>Font Size</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,5">
+                  <property name="spacing">
+                   <number>16</number>
+                  </property>
+                  <item>
+                   <widget class="QLineEdit" name="appearanceFontScaleText"/>
+                  </item>
+                  <item>
+                   <widget class="AbsoluteSlider" name="appearanceFontScale">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="2" column="0">
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Policy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>170</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
           </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Policy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="audioPage">
         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QLabel" name="label_4">
            <property name="font">
@@ -885,22 +931,38 @@
           </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
+          <widget class="QScrollArea" name="audioPageScrollArea">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
+           <widget class="QWidget" name="scrollAreaWidgetContents_4">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>694</width>
+              <height>608</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="videoPage">
         <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QLabel" name="label_6">
            <property name="font">
@@ -914,36 +976,40 @@
           </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
+          <widget class="QScrollArea" name="videoPageScrollArea">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
+           <widget class="QWidget" name="scrollAreaWidgetContents_5">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>694</width>
+              <height>608</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="hotkeyPage">
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <property name="spacing">
-          <number>12</number>
+          <number>6</number>
          </property>
          <property name="leftMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <property name="topMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <property name="rightMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <item>
           <widget class="QLabel" name="label_5">
@@ -1083,7 +1149,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QScrollArea" name="scrollArea_2">
+          <widget class="QScrollArea" name="hotkeyPageScrollArea">
            <property name="frameShape">
             <enum>QFrame::Shape::StyledPanel</enum>
            </property>
@@ -1095,13 +1161,16 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>682</width>
-              <height>546</height>
+              <width>694</width>
+              <height>538</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
              <property name="spacing">
               <number>25</number>
+             </property>
+             <property name="topMargin">
+              <number>12</number>
              </property>
              <property name="bottomMargin">
               <number>9</number>
@@ -1116,6 +1185,33 @@
             </layout>
            </widget>
           </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="setOverrideWindowsHotkeys">
+             <property name="text">
+              <string>Override Windows Shortcuts</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -1134,7 +1230,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QScrollArea" name="scrollArea_3">
+          <widget class="QScrollArea" name="advancedPageScrollArea">
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -1308,6 +1404,16 @@
    <class>ComboBoxIgnoreWheel</class>
    <extends>QComboBox</extends>
    <header>components/ComboBoxIgnoreWheel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpinBoxIgnoreWheel</class>
+   <extends>QSpinBox</extends>
+   <header>components/SpinBoxIgnoreWheel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleSpinBoxIgnoreWheel</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>components/DoubleSpinBoxIgnoreWheel.h</header>
   </customwidget>
  </customwidgets>
  <resources>

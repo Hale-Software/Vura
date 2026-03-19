@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_openSubtitleFileAction = new QAction(tr("Open Subtitle File..."), this);
     m_toggleSubtitlesAction = new QAction(tr("Toggle Subtitles"), this);
     m_toggleFullscreenAction = new QAction(tr("Fullscreen"), this);
-    m_takeSnapshotAction = new QAction(tr("Take Snapshot"), this);
+    m_takeSnapshotAction = new QAction(tr("Take Snapshot\tPrtSc"), this);
     m_showMediaInformationAction = new QAction(tr("Media Information"), this);
     m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
     m_togglePlaylistAction = new QAction(tr("Toggle Playlist"), this);
@@ -912,6 +912,8 @@ void MenuBar::updateRecentFiles()
         m_recentFileActions[i]->setText(text);
         m_recentFileActions[i]->setData(files[i]);
         m_recentFileActions[i]->setVisible(true);
+        m_recentFileActions[i]->setShortcut(QKeySequence(QString("Alt+%1").arg(i+1)));
+        m_recentFileActions[i]->setShortcutContext(Qt::ApplicationShortcut);
     }
     for (int j = numRecentFiles; j < m_maxRecentFiles; ++j)
         m_recentFileActions[j]->setVisible(false);
@@ -1442,7 +1444,10 @@ void MenuBar::toggleFullscreen_Clicked()
     emit toggleFullscreen();
 }
 
-void MenuBar::takeSnapshot_Clicked() {}
+void MenuBar::takeSnapshot_Clicked()
+{
+    emit takeSnapshot();
+}
 
 void MenuBar::selectVideoTrack_Clicked()
 {

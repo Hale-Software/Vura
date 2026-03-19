@@ -1,8 +1,10 @@
 target_sources(
         vura PRIVATE
         components/ComboBoxIgnoreWheel.h
-        components/markerslider.cpp
-        components/markerslider.h
+        components/ContinuePlaybackRibbon.cpp
+        components/ContinuePlaybackRibbon.h
+        components/SpinBoxIgnoreWheel.h
+        components/DoubleSpinBoxIgnoreWheel.h
         components/AbsoluteSlider.cpp
         components/AbsoluteSlider.h
         components/SliderIgnoreScroll.cpp

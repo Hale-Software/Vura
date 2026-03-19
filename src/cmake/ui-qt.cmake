@@ -38,6 +38,7 @@ target_sources(
         forms/whatsnew.ui
         forms/mediainformation.ui
         forms/testwindow.ui
+        forms/ContinuePlaybackRibbon.ui
 )
 
 qt_add_ios_ffmpeg_libraries(vura)

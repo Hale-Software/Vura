@@ -77,12 +77,15 @@
 #include <QMouseEvent>
 #include <QHoverEvent>
 #include <QSystemTrayIcon>
+#include <QVideoSink>
+#include <QVideoFrame>
 
 #include <xxHash/xxhash.h>
 
 #include "../models/playlistmodel.h"
+#include "../components/ClickableLabel.h"
+#include "../components/ContinuePlaybackRibbon.h"
 #include "../components/menubar.h"
-#include "../components/markerslider.h"
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
 #include "../utility/logger.h"
@@ -193,6 +196,7 @@ public slots:
     void setLoop(int loopOption);
     void toggleShuffle();
     void clearPlaylist();
+    void takeSnapshot();
 
 
 signals:
@@ -212,6 +216,7 @@ signals:
     void setStatusBarShowing(bool showing);
     void setVideoControlsShowing(bool showing);
     void refreshSettings();
+    void setOverrideWindowsHotkeys(bool value);
     void quitProgram();
 
 
@@ -256,6 +261,7 @@ private slots:
     void systemTray_IncreaseVolume();
     void systemTray_DecreaseVolume();
     void systemTray_OpenFile();
+    void durationLabel_Clicked();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -268,10 +274,13 @@ private:
     Logger* m_hLogger;
     MenuBar *m_menuBar = nullptr;
     QSystemTrayIcon *m_trayIcon = nullptr;
+    QVideoSink *m_videoSink = nullptr;
+    ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     QTimer *timer;
     int m_x = 0;
     int m_y = 0;
     bool m_showingCursor = true;
+    QString m_currentUser = "UNKNOWN";
 
     // WINDOWS
     // =======================================================================================================
@@ -316,6 +325,7 @@ private:
     bool m_playlistLoopNone = false;
     QAction *systemTray_ToggleShow = nullptr;
     bool m_systemTray_Showing = true;
+    bool m_setOverrideWindowsHotkeys = true;
 
     // SETTINGS
     // =======================================================================================================
@@ -343,6 +353,8 @@ private:
     double m_playbackSpeedAdjustment = 0.0;
     double m_playbackSpeedFineAdjustment = 0.0;
     double m_volumeStep = 0.10;
+    bool m_durationLabelShowRemainingTime = false;
+    QString m_theme = "System";
 
     //
     // =======================================================================================================
@@ -388,6 +400,9 @@ private:
     QString timestampString(qint64 position);
     void setApplicationWindowTitle();
     void setSystemTrayIcon();
+    void setToolTips();
+    void setStyleSheet();
+    bool createUserDirs();
 
 
     // VIDEO EDITING FUNCTIONS

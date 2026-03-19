@@ -36,9 +36,8 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QLabel>
+#include <QKeySequence>
 #include <QDebug>
-
-//#include "../utility/hotkeys.h"
 
 
 class MenuBar : public QMenuBar {
@@ -116,6 +115,7 @@ signals:
     void goToInMarker();
     void goToOutMarker();
     void createSubclip();
+    void takeSnapshot();
     void testFunction();
 
 private slots:
@@ -349,7 +349,6 @@ private:
     QAction *m_audioTrackActions[15];
     QAction *m_videoTrackActions[15];
     QAction *m_subtitleTrackActions[15];
-    // QAction *m_Action = nullptr;
 
     QAudioDevice m_activeAudioDevice;
 

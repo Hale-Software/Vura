@@ -1,19 +1,27 @@
-#include "qmediametadata.h"
-#include "qmediaplayer.h"
+/*******************************************************************************
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #include "playlistfileparser.h"
 
-#include <QDebug>
-#include <QFileInfo>
-#include <QIODevice>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QPointer>
-
-#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
+
 
 class ParserBase
 {
@@ -66,6 +74,7 @@ protected:
     PlaylistFileParser *m_parent;
     bool m_aborted;
 };
+
 
 class M3UParser : public ParserBase
 {
@@ -162,6 +171,7 @@ private:
     QMediaMetaData m_extraInfo;
     bool m_extendedFormat;
 };
+
 
 class PLSParser : public ParserBase
 {

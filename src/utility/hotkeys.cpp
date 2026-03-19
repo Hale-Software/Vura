@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -37,7 +37,6 @@ Hotkeys::Hotkeys(QObject *parent) : QObject(parent)
 void Hotkeys::setMenuItemHotkey(QAction &action)
 {
     if (!action.text().isEmpty()) {
-        qDebug() << action.text();
         if (action.text() == "Play/Pause") {
             action.setShortcut(tr("Space"));
             action.setShortcutContext(Qt::ApplicationShortcut);

@@ -36,7 +36,7 @@
 | oneInstanceFromFileManager      | true                         | bool   |
 | continuePlayback                | 1                            | int    |
 | pauseOnLastFrameOfVideo         | false                        | bool   |
-|                                 |                              |        |
+| setOverrideWindowsHotkeys       | true                         | bool   |
 |                                 |                              |        |
 |                                 |                              |        |
 |                                 |                              |        |

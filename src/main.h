@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <QPointer>
 #include <QString>
 #include <QMessageBox>
+#include <QSettings>
 
 #include <qBreakpad/handler/QBreakpadHandler.h>
 
@@ -45,5 +46,14 @@ public:
     VuraApp(int& argc, char** argv);
 
     void AppInit(int argc, char* argv[]);
+    void windowsPrintKey();
+
+    bool overrideWindowsHotkeys = true;
+
+public slots:
+    void setOverrideWindowsHotkeys(bool value);
+
+private slots:
+    void applicationQuiting();
 
 };

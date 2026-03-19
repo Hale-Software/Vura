@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #include <QWidget>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDebug>
+
 
 class RangeSlider : public QWidget
 {

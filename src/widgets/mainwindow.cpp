@@ -20,11 +20,11 @@
 #include "../constants.h"
 
 #include <config.h>
+#include <qglobal.h>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
-
 
 // Global pointer to Logger for use in messageHandler
 static Logger* globalRedirector = nullptr;
@@ -48,6 +48,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     qInstallMessageHandler(Logger::messageHandler);
     globalRedirector = Logger::instance();
     qInfo() << "Starting application...";
+
+    QString name = qgetenv("USER");
+    if (name.isEmpty()) {
+        name = qgetenv("USERNAME");
+    }
+    m_currentUser = name;
+
+    createUserDirs();
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
@@ -186,6 +194,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::goToOutMarker, this, &MainWindow::goToOutMarker);
     connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
     connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
+    connect(m_menuBar, &MenuBar::takeSnapshot, this, &MainWindow::takeSnapshot);
     // connect(m_menuBar, &MenuBar::, this, &MainWindow::);
 
     this->setMenuBar(m_menuBar);
@@ -210,6 +219,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     m_audioOutput = new QAudioOutput(this);
     m_player->setAudioOutput(m_audioOutput);
     m_player->setVideoOutput(ui->videoWidget);
+    m_videoSink = m_player->videoSink();
 
     connect(m_player, &QMediaPlayer::durationChanged, this, &MainWindow::durationChanged);
     connect(m_player, &QMediaPlayer::positionChanged, this, &MainWindow::positionChanged);
@@ -242,7 +252,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_playlist, &Playlist::currentIndexChanged, this, &MainWindow::playlistPositionChanged);
     connect(ui->playlistView, &QListView::activated, this, &MainWindow::jump);
     connect(ui->playlistView, &QListView::customContextMenuRequested, this, &MainWindow::showPlaylistContextMenu);
-
+    connect(ui->duration, &ClickableLabel::clicked, this, &MainWindow::durationLabel_Clicked);
 
 
     //
@@ -267,6 +277,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     if (!isPlayerAvailable()) {
         qWarning() << "The QMediaPlayer object does not have a valid service. Please check the media service plugins are installed.";
     }
+
+    setToolTips();
+    setStyleSheet();
 }
 
 MainWindow::~MainWindow()
@@ -326,11 +339,14 @@ void MainWindow::loadSettings()
     m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
     m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
     m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_theme = settings.value("theme", "System").toString();
+    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
 
     if (timer->isActive())
         timer->stop();
 
     emit refreshSettings();
+    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
     //setSystemTrayIcon();
 }
 
@@ -852,6 +868,13 @@ void MainWindow::previousVideo()
 void MainWindow::changePlaybackSpeed(double mrate)
 {
     float newSpeed = m_playbackSpeed + mrate;
+    if (newSpeed <= 0) {
+        newSpeed = 0.05;
+
+    } else if (newSpeed > 7.5) {
+        newSpeed = 7.5;
+
+    }
     m_player->setPlaybackRate(newSpeed);
     m_playbackSpeed = m_player->playbackRate();
 }
@@ -1057,6 +1080,45 @@ void MainWindow::toggleShuffle()
 void MainWindow::clearPlaylist()
 {
     m_playlist->clear();
+}
+
+void MainWindow::takeSnapshot()
+{
+    QString fullPath;
+    int index = 0;
+
+    QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura/Screenshots";
+    QString fileBaseName = strippedFileName(m_currentFile);
+    // Extract base name without extension for numbering
+    QString nameWithoutExt = QFileInfo(fileBaseName).baseName();
+
+    QString positionString;
+    const int currentPosition = static_cast<int>(m_player->position());
+    QString format = "mm-ss";
+    if (m_player->position() > 3600)
+        format = "hh-mm-ss";
+
+    const QTime currentTime(
+        (currentPosition / 3600) % 60,
+        (currentPosition / 60) % 60,
+        currentPosition % 60,
+        (currentPosition * 1000) % 1000);
+
+    positionString = currentTime.toString(format);
+
+    do {
+        if (index == 0) {
+            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2.jpg").arg(nameWithoutExt, positionString));
+        } else {
+            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2 (%3).jpg").arg(nameWithoutExt, positionString, QString::number(index)));
+        }
+        index++;
+    } while (QFile::exists(fullPath)); // Check if file exists
+
+
+    QVideoFrame frame = m_videoSink->videoFrame();
+    QImage image = frame.toImage();
+    image.save(fullPath, "JPEG");
 }
 
 
@@ -1352,24 +1414,57 @@ void MainWindow::setStatusInfo(const QString &info)
     m_statusLabel->setText(m_statusInfo);
 }
 
-void MainWindow::updateDurationInfo(qint64 currentInfo)
+void MainWindow::updateDurationInfo(const qint64 currentInfo)
 {
     QString durationString;
     QString positionString;
+
     if (currentInfo || m_duration) {
-        QTime currentTime((currentInfo / 3600) % 60, (currentInfo / 60) % 60, currentInfo % 60,
-                          (currentInfo * 1000) % 1000);
-        QTime totalTime((m_duration / 3600) % 60, (m_duration / 60) % 60, m_duration % 60,
-                        (m_duration * 1000) % 1000);
+        const int currentPosition = static_cast<int>(currentInfo);
+        const int currentDuration = static_cast<int>(m_duration);
+
         QString format = "mm:ss";
         if (m_duration > 3600)
             format = "hh:mm:ss";
-        durationString = totalTime.toString(format);
+
+        const QTime currentTime(
+            (currentPosition / 3600) % 60,
+            (currentPosition / 60) % 60,
+            currentPosition % 60,
+            (currentPosition * 1000) % 1000);
+
         positionString = currentTime.toString(format);
+
+        if (m_durationLabelShowRemainingTime) {
+            const int remainingInfo = currentDuration - currentPosition;
+
+            const QTime remainingTime(
+                (remainingInfo / 3600) % 60,
+                (remainingInfo / 60) % 60,
+                remainingInfo % 60,
+                (remainingInfo * 1000) % 1000);
+
+            durationString = remainingTime.toString(format);
+
+        } else {
+            const QTime totalTime(
+                (currentDuration / 3600) % 60,
+                (currentDuration / 60) % 60,
+                currentDuration % 60,
+                (currentDuration * 1000) % 1000);
+
+            durationString = totalTime.toString(format);
+        }
+
+    } else {
+        positionString = "--:--";
+        durationString = "--:--";
     }
+
     ui->duration->setText(durationString);
     ui->position->setText(positionString);
     ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
+
     if (currentInfo > 0) {
         m_videoSlider->setVideoLoaded(true);
     }
@@ -1391,7 +1486,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
         if (!m_currentFile.isEmpty())
             m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
     }
-
     event->accept();
 }
 
@@ -1725,6 +1819,50 @@ void MainWindow::setSystemTrayIcon()
     }
 }
 
+void MainWindow::setToolTips()
+{
+    ui->position->setToolTip(tr("Elapsed time"));
+    ui->duration->setToolTip(tr("Total/Remaining time\n -Click to toggle between total and remaining time"));
+    ui->playbackRate->setToolTip(tr("Playback speed"));
+}
+
+void MainWindow::setStyleSheet()
+{
+    QFile file(":/styles/dark.qss");
+    if (file.open(QFile::ReadOnly)) {
+        QString styleSheet = QLatin1String(file.readAll());
+        qApp->setStyleSheet(styleSheet);
+    }
+}
+
+bool MainWindow::createUserDirs()
+{
+    // User Directories
+    qDebug() << "Running user directory initialization...";
+    QStringList directoryList;
+    QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura";
+    directoryList << documentsDir;
+    directoryList << documentsDir + "/Clips";
+    directoryList << documentsDir + "/Screenshots";
+    directoryList << documentsDir + "/Vura Auto-Save";
+    directoryList << documentsDir + "/Profile-" + m_currentUser;
+
+    foreach (QString directory, directoryList)
+    {
+        if (!QDir(directory).exists()) {
+            qDebug() << "Directory " << directory << " does not exist. Creating...";
+            if (QDir().mkpath(directory)) {
+                qDebug() << "Created directory: " << directory;
+            } else {
+                qWarning() << "Could not create directory: " << directory;
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 
 #pragma endregion
 
@@ -1834,5 +1972,16 @@ void MainWindow::systemTray_OpenFile()
 
             openFiles(fileList);
         }
+    }
+}
+
+void MainWindow::durationLabel_Clicked()
+{
+    if (m_durationLabelShowRemainingTime) {
+        m_durationLabelShowRemainingTime = false;
+
+    } else {
+        m_durationLabelShowRemainingTime = true;
+
     }
 }

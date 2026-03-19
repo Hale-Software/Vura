@@ -16,9 +16,10 @@
  ******************************************************************************/
 
 #include "settingswindow.h"
-#include "../forms/ui_settingswindow.h"
+#include "ui_settingswindow.h"
 
 #include <config.h>
+
 
 SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::SettingsWindow)
 {
@@ -69,6 +70,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->filterTextBox, &QLineEdit::textChanged, this, &SettingsWindow::filterTextBox_TextChanged);
     connect(ui->hotkeyFilterTextBox, &QKeySequenceEdit::keySequenceChanged, this, &SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged);
     connect(ui->hotkeyFilterClearButton, &QPushButton::clicked, this, &SettingsWindow::hotkeyFilterClearButton_Clicked);
+    connect(ui->setOverrideWindowsHotkeys, &QCheckBox::checkStateChanged, this, &SettingsWindow::setOverrideWindowsHotkeys_Checked);
 
     connect(ui->stashServer, &QLineEdit::textChanged, this, &SettingsWindow::stashServer_TextChanged);
 
@@ -126,10 +128,11 @@ void SettingsWindow::loadSettings()
     m_continuePlayback = settings.value("continuePlayback", 1).toInt();
     m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
     m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
-    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt() * 1000;
+    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt() / 1000;
     m_theme = settings.value("theme", "System").toString();
     m_fontSize = settings.value("fontSize", 10).toInt();
     m_stashServerUrl = settings.value("stashServerUrl", "http://127.0.0.1:9999").toString();
+    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
 
     // Populate UI Values
     if (m_language == "en-US") {
@@ -171,6 +174,7 @@ void SettingsWindow::loadSettings()
     ui->oneInstanceFromFileManager->setChecked(m_oneInstanceFromFileManager);
     ui->continuePlayback->setCurrentIndex(m_continuePlayback);
     ui->pauseOnLastFrameOfVideo->setChecked(m_pauseOnLastFrameOfVideo);
+    ui->setOverrideWindowsHotkeys->setChecked(m_setOverrideWindowsHotkeys);
 
     if (m_theme == "System") {
         ui->theme->setCurrentIndex(0);
@@ -370,7 +374,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("updateChannel", m_updateChannel);
     settings.setValue("autoUpdate", m_autoUpdate);
     settings.setValue("hideCursorWhenPlaying", m_hideCursorWhenPlaying);
-    int cursorTime = m_hideCursorTime / 1000;
+    int cursorTime = m_hideCursorTime * 1000;
     settings.setValue("hideCursorTime", cursorTime);
     settings.setValue("theme", m_theme);
     settings.setValue("fontSize", m_fontSize);
@@ -384,6 +388,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("oneInstanceFromFileManager", m_oneInstanceFromFileManager);
     settings.setValue("continuePlayback", m_continuePlayback);
     settings.setValue("pauseOnLastFrameOfVideo", m_pauseOnLastFrameOfVideo);
+    settings.setValue("setOverrideWindowsHotkeys", m_setOverrideWindowsHotkeys);
 
     settings.beginGroup("Hotkeys");
     settings.remove("");
@@ -467,8 +472,15 @@ void SettingsWindow::rememberWindowSize_Checked(int state)
 
 void SettingsWindow::maxLogs_Changed(int i)
 {
-    m_maxLogs = i;
-    settingsChanged();
+    if (i != m_maxLogs) {
+        if (i < 0) {
+            ui->maxLogs->setStyleSheet("QSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->maxLogs->setStyleSheet("QSpinBox { border: none; }");
+            m_maxLogs = i;
+            settingsChanged();
+        }
+    }
 }
 
 void SettingsWindow::logToFile_Checked(int state)
@@ -493,7 +505,10 @@ void SettingsWindow::hashFile_Checked(int state)
 
 void SettingsWindow::markerFile_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->markerFile->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->markerFile->setStyleSheet("QLineEdit { border: none; }");
         if (text != m_markerFile) {
             m_markerFile = text;
             settingsChanged();
@@ -563,8 +578,15 @@ void SettingsWindow::showVideoControlsOnStart_Checked(int state)
 
 void SettingsWindow::maxRecentFiles_Changed(int i)
 {
-    m_maxRecentFiles = i;
-    settingsChanged();
+    if (i != m_maxRecentFiles) {
+        if (i < 0) {
+            ui->maxRecentFiles->setStyleSheet("QSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->maxRecentFiles->setStyleSheet("QSpinBox { border: none; }");
+            m_maxRecentFiles = i;
+            settingsChanged();
+        }
+    }
 }
 
 void SettingsWindow::updateChannel_Changed(int index)
@@ -680,7 +702,10 @@ void SettingsWindow::pauseOnLastFrameOfVideo_Checked(int state)
 
 void SettingsWindow::playbackSpeedAdjustment_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_playbackSpeedAdjustment) {
             m_playbackSpeedAdjustment = text.toInt();
             settingsChanged();
@@ -690,7 +715,10 @@ void SettingsWindow::playbackSpeedAdjustment_TextChanged(const QString &text)
 
 void SettingsWindow::playbackSpeedAdjustmentFine_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_playbackSpeedAdjustmentFine) {
             m_playbackSpeedAdjustmentFine = text.toInt();
             settingsChanged();
@@ -700,13 +728,23 @@ void SettingsWindow::playbackSpeedAdjustmentFine_TextChanged(const QString &text
 
 void SettingsWindow::volumeStep_Changed(double value)
 {
-    m_volumeStep = value;
-    settingsChanged();
+    if (value != m_volumeStep) {
+        if (value < 0) {
+            ui->volumeStep->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->volumeStep->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_volumeStep = value;
+            settingsChanged();
+        }
+    }
 }
 
 void SettingsWindow::frameWalk_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->frameWalk->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->frameWalk->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_frameWalkTime) {
             m_frameWalkTime = text.toInt();
             settingsChanged();
@@ -716,7 +754,10 @@ void SettingsWindow::frameWalk_TextChanged(const QString &text)
 
 void SettingsWindow::smallJump_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->smallJump->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->smallJump->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_smallJump) {
             m_smallJump = text.toInt();
             settingsChanged();
@@ -726,7 +767,10 @@ void SettingsWindow::smallJump_TextChanged(const QString &text)
 
 void SettingsWindow::mediumJump_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->mediumJump->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->mediumJump->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_mediumJump) {
             m_mediumJump = text.toInt();
             settingsChanged();
@@ -736,7 +780,10 @@ void SettingsWindow::mediumJump_TextChanged(const QString &text)
 
 void SettingsWindow::largeJump_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->largeJump->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->largeJump->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_largeJump) {
             m_largeJump = text.toInt();
             settingsChanged();
@@ -746,7 +793,10 @@ void SettingsWindow::largeJump_TextChanged(const QString &text)
 
 void SettingsWindow::extraLargeJump_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->extraLargeJump->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->extraLargeJump->setStyleSheet("QLineEdit { border: none; }");
         if (text.toInt() != m_extraLargeJump) {
             m_extraLargeJump = text.toInt();
             settingsChanged();
@@ -794,9 +844,22 @@ void SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged(const QKeySequence &
 
 void SettingsWindow::hotkeyFilterClearButton_Clicked() {}
 
+void SettingsWindow::setOverrideWindowsHotkeys_Checked(bool state)
+{
+    if (state == Qt::Checked) {
+        m_setOverrideWindowsHotkeys = true;
+    } else {
+        m_setOverrideWindowsHotkeys = false;
+    }
+    settingsChanged();
+}
+
 void SettingsWindow::stashServer_TextChanged(const QString &text)
 {
-    if (!text.isEmpty()) {
+    if (text.isEmpty()) {
+        ui->stashServer->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->stashServer->setStyleSheet("QLineEdit { border: none; }");
         if (text != m_stashServerUrl) {
             m_stashServerUrl = text;
             settingsChanged();
