@@ -454,7 +454,7 @@ void VideoSlider::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton) {
         m_isSliderDown = true;
 
-        double posRatio = (double)event->x() / this->width();
+        double posRatio = (double)event->pos().x() / this->width();
         m_value = m_minimum + posRatio * (m_maximum - m_minimum);
         update();
         //emit sliderClicked(std::round(m_value));

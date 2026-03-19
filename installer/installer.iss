@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.0.0'
+#define MyAppVersion '0.0.3'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -18,10 +18,10 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=D:\Vura\Vura\build\release\src\data\license\license.txt
-OutputDir=D:\a\Vura\Vura\installer
-OutputBaseFilename=vura-0.0.0-win64
-SetupIconFile=D:\a\Vura\Vura\installer\vura.ico
+LicenseFile=..\build\release\src\data\license\license.txt
+OutputDir=..\installer
+OutputBaseFilename=vura-0.0.3-win64
+SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
 DisableWelcomePage=no
@@ -41,6 +41,12 @@ Name: "discsPlayback"; Description: "Discs Playback"; Types: full custom;
 
 
 Name: "fileTypeAssociations"; Description: "File Type Associations"; Types: full custom;
+
+Name: "fileTypeAssociations\applicationFiles"; Description: "Application Files"; Types: full custom;
+Name: "fileTypeAssociations\applicationFiles\vhk"; Description: ".vhk"; Types: full custom;
+Name: "fileTypeAssociations\applicationFiles\vpl"; Description: ".vpl"; Types: full custom;
+Name: "fileTypeAssociations\applicationFiles\vprj"; Description: ".vprj"; Types: full custom;
+Name: "fileTypeAssociations\applicationFiles\vvm"; Description: ".vvm"; Types: full custom;
 
 Name: "fileTypeAssociations\audioFiles"; Description: "Audio Files"; Types: full custom;
 Name: "fileTypeAssociations\audioFiles\3ga"; Description: ".3ga"; Types: full custom;
@@ -146,7 +152,6 @@ Name: "fileTypeAssociations\videoFiles\tp"; Description: ".tp"; Types: full cust
 Name: "fileTypeAssociations\videoFiles\ts"; Description: ".ts"; Types: full custom;
 Name: "fileTypeAssociations\videoFiles\tts"; Description: ".tts"; Types: full custom;
 Name: "fileTypeAssociations\videoFiles\vob"; Description: ".vob"; Types: full custom;
-Name: "fileTypeAssociations\videoFiles\vprj"; Description: ".vprj"; Types: full custom;
 Name: "fileTypeAssociations\videoFiles\vro"; Description: ".vro"; Types: full custom;
 Name: "fileTypeAssociations\videoFiles\webm"; Description: ".webm"; Types: full custom;
 Name: "fileTypeAssociations\videoFiles\wmv"; Description: ".wmv"; Types: full custom;
@@ -155,54 +160,72 @@ Name: "fileTypeAssociations\videoFiles\xesc"; Description: ".xesc"; Types: full 
 
 Name: "fileTypeAssociations\otherFiles"; Description: "Other"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\b4s"; Description: ".b4s"; Types: full custom;
-Name: "fileTypeAssociations\otherFiles\hkey"; Description: ".hkey"; Types: full custom;
-Name: "fileTypeAssociations\otherFiles\hmrk"; Description: ".hmrk"; Types: full custom;
-Name: "fileTypeAssociations\otherFiles\hpl"; Description: ".hpl"; Types: full custom;
-Name: "fileTypeAssociations\otherFiles\hprj"; Description: ".hprj"; Types: full custom;
+Name: "fileTypeAssociations\otherFiles\hlist"; Description: ".hlist"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\m3u"; Description: ".m3u"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\m3u8"; Description: ".m3u8"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\pls"; Description: ".pls"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\wpl"; Description: ".wpl"; Types: full custom;
-Name: "fileTypeAssociations\otherFiles\vpl"; Description: ".vpl"; Types: full custom;
 Name: "fileTypeAssociations\otherFiles\xspf"; Description: ".xspf"; Types: full custom;
 ;Name: "fileTypeAssociations\otherFiles\"; Description: "."; Types: full custom;
 
 
 
 [Files]
-Source: "D:\a\Vura\Vura\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6MultimediaWidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\swresample-5.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\swscale-8.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Vura\Vura\build\release\src\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\multimedia\*"; DestDir: "{app}\multimedia"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Vura\Vura\build\release\src\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6MultimediaWidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\swresample-5.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\swscale-8.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\multimedia\*"; DestDir: "{app}\multimedia"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
+; Application File Associations
+Root: HKA; Subkey: "Software\Classes\.vhk\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vhk"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\applicationFiles\vhk
+Root: HKA; Subkey: "Software\Classes\.vpl\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vpl"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\applicationFiles\vpl
+Root: HKA; Subkey: "Software\Classes\.vprj\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vprj"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\applicationFiles\vprj
+Root: HKA; Subkey: "Software\Classes\.vvm\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vvm"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\applicationFiles\vvm
+
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Hotkeys File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vhk
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Playlist File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vpl
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Project File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Video Marker File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vvm
+
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vhk
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vpl
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vvm
+
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vhk
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vpl
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vvm
+
+
 ; Audio File Associations
 Root: HKA; Subkey: "Software\Classes\.3ga\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.3ga"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\audioFiles\3ga
 Root: HKA; Subkey: "Software\Classes\.669\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.669"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\audioFiles\669
@@ -450,7 +473,6 @@ Root: HKA; Subkey: "Software\Classes\.tp\OpenWithProgids"; ValueType: string; Va
 Root: HKA; Subkey: "Software\Classes\.ts\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.ts"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\ts
 Root: HKA; Subkey: "Software\Classes\.tts\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.tts"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\tts
 Root: HKA; Subkey: "Software\Classes\.vob\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vob"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\vob
-Root: HKA; Subkey: "Software\Classes\.vprj\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vprj"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\vprj
 Root: HKA; Subkey: "Software\Classes\.vro\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vro"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\vro
 Root: HKA; Subkey: "Software\Classes\.webm\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.webm"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\webm
 Root: HKA; Subkey: "Software\Classes\.wmv\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.wmv"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\videoFiles\wmv
@@ -512,7 +534,6 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tp"; ValueType: string; ValueN
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.ts"; ValueType: string; ValueName: ""; ValueData: "TS Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\ts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tts"; ValueType: string; ValueName: ""; ValueData: "TTS Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\tts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vob"; ValueType: string; ValueName: ""; ValueData: "VOB Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\vob
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj"; ValueType: string; ValueName: ""; ValueData: "VPRJ Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\vprj
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vro"; ValueType: string; ValueName: ""; ValueData: "VRO Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\vro
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.webm"; ValueType: string; ValueName: ""; ValueData: "WEBM Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\webm
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wmv"; ValueType: string; ValueName: ""; ValueData: "WMV Video File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\videoFiles\wmv
@@ -574,7 +595,6 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tp\DefaultIcon"; ValueType: st
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.ts\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\ts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tts\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\tts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vob\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\vob
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\vprj
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vro\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\vro
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.webm\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\webm
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wmv\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\videoFiles\wmv
@@ -636,7 +656,6 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tp\shell\open\command"; ValueT
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.ts\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\ts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.tts\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\tts
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vob\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\vob
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\vprj
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vro\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\vro
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.webm\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\webm
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wmv\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\videoFiles\wmv
@@ -647,54 +666,38 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xesc\shell\open\command"; Valu
 
 ; Other File Associations
 Root: HKA; Subkey: "Software\Classes\.b4s\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.b4s"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\b4s
-Root: HKA; Subkey: "Software\Classes\.hkey\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.hkey"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\hkey
-Root: HKA; Subkey: "Software\Classes\.hmrk\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.hmrk"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\hmrk
-Root: HKA; Subkey: "Software\Classes\.hpl\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.hpl"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\hpl
-Root: HKA; Subkey: "Software\Classes\.hprj\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.hprj"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\hprj
+Root: HKA; Subkey: "Software\Classes\.hlist\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.hlist"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\hlist
 Root: HKA; Subkey: "Software\Classes\.m3u\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.m3u"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\m3u
 Root: HKA; Subkey: "Software\Classes\.m3u8\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.m3u8"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\m3u8
 Root: HKA; Subkey: "Software\Classes\.pls\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.pls"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\pls
 Root: HKA; Subkey: "Software\Classes\.wpl\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.wpl"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\wpl
-Root: HKA; Subkey: "Software\Classes\.vpl\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.vpl"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\vpl
 Root: HKA; Subkey: "Software\Classes\.xspf\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.xspf"; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\xspf
 ; Root: HKA; Subkey: "Software\Classes\.\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}."; ValueData: ""; Flags: uninsdeletevalue; Components: fileTypeAssociations\otherFiles\
 
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.b4s"; ValueType: string; ValueName: ""; ValueData: "B4S Other File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\b4s
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hkey"; ValueType: string; ValueName: ""; ValueData: "HPlayer Hotkey File"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\hkey
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hmrk"; ValueType: string; ValueName: ""; ValueData: "HPlayer Marker File"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\hmrk
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hpl"; ValueType: string; ValueName: ""; ValueData: "HPlayer Playlist File"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\hpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hprj"; ValueType: string; ValueName: ""; ValueData: "HPlayer Project File"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\hprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hlist"; ValueType: string; ValueName: ""; ValueData: "HPlayer Playlist File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\hlist
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u"; ValueType: string; ValueName: ""; ValueData: "M3U Other File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\m3u
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u8"; ValueType: string; ValueName: ""; ValueData: "M3U Audio Playlist File (UTF-8)"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\m3u8
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.pls"; ValueType: string; ValueName: ""; ValueData: "PLS Other File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\pls
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wpl"; ValueType: string; ValueName: ""; ValueData: "WPL Other File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\wpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Playlist File"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\vpl
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xspf"; ValueType: string; ValueName: ""; ValueData: "XSPF Other File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\xspf
 ; Root: HKA; Subkey: "Software\Classes\{#MyAppName}."; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} File ({#MyAppName})"; Flags: uninsdeletekey; Components: fileTypeAssociations\otherFiles\
 
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.b4s\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\b4s
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hkey\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\hkey
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hmrk\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\hmrk
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\hpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hprj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\hprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hlist\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\hlist
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\m3u
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u8\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\m3u8
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.pls\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\pls
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\wpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\vpl
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xspf\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\xspf
 ; Root: HKA; Subkey: "Software\Classes\{#MyAppName}.\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\otherFiles\
 
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.b4s\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\b4s
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hkey\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\hkey
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hmrk\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\hmrk
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hpl\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\hpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hprj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\hprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.hlist\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\hlist
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\m3u
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.m3u8\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\m3u8
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.pls\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\pls
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wpl\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\wpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\vpl
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xspf\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\xspf
 ; Root: HKA; Subkey: "Software\Classes\{#MyAppName}.\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\
 
