@@ -56,9 +56,7 @@ signals:
     void previous();
     void fullScreen();
     void togglePlaylist();
-    void loopAll();
-    void loopOne();
-    void loopNone();
+    void setLoop(int loopOption);
     void shuffle();
     void changeVolume(float volume);
     void changeMuting(bool muting);

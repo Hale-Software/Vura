@@ -144,13 +144,13 @@ void VideoControlWidget::playlistClicked()
 void VideoControlWidget::loopClicked()
 {
     if (m_loopOption == LoopOption::LoopAll) {
-        emit loopOne();
+        emit setLoop(1);
         m_loopOption = LoopOption::LoopOne;
     } else if (m_loopOption == LoopOption::LoopOne) {
-        emit loopNone();
+        emit setLoop(2);
         m_loopOption = LoopOption::LoopNone;
     } else {
-        emit loopAll();
+        emit setLoop(3);
         m_loopOption = LoopOption::LoopAll;
     }
 
