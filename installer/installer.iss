@@ -18,10 +18,10 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=..\build\release\src\data\license\license.txt
-OutputDir=..\installer
-OutputBaseFilename=vura-0.0.0-win64
-SetupIconFile=vura.ico
+LicenseFile=D:\a\Vura\Vura\build\release\src\data\license\license.txt
+OutputDir=D:\a\Vura\Vura\installer
+OutputBaseFilename=D:\a\Vura\Vura\installer\vura-0.0.0-win64
+SetupIconFile=D:\a\Vura\Vura\installer\vura.ico
 SolidCompression=yes
 WizardStyle=modern
 DisableWelcomePage=no
@@ -170,37 +170,37 @@ Name: "fileTypeAssociations\otherFiles\xspf"; Description: ".xspf"; Types: full 
 
 
 [Files]
-Source: "..\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6MultimediaWidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\swresample-5.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\swscale-8.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\multimedia\*"; DestDir: "{app}\multimedia"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\build\release\src\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6MultimediaWidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\swresample-5.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\swscale-8.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Vura\Vura\build\release\src\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\multimedia\*"; DestDir: "{app}\multimedia"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Vura\Vura\build\release\src\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
 ; Audio File Associations
