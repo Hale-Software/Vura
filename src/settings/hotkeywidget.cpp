@@ -4,13 +4,15 @@
 #include "settingswindow.h"
 
 
-HotkeyWidget::HotkeyWidget(QString action, QString defaultHotkey, QString hotkey, QWidget *parent) : QWidget(parent), ui(new Ui::HotkeyWidget)
+HotkeyWidget::HotkeyWidget(int id, QString action, QString defaultHotkey, QString hotkey, QWidget *parent) : QWidget(parent), ui(new Ui::HotkeyWidget)
 {
     ui->setupUi(this);
 
-    h_action = action;
-    h_defaultHotkey = defaultHotkey;
-    h_hotkey = hotkey;
+    m_id = id;
+    m_name = action.remove("&");
+    m_action = action;
+    m_defaultHotkey = defaultHotkey;
+    m_hotkey = hotkey;
 
     QString hotkeyBox_ToolTip = "Hotkey combination for " + action + ".";
     ui->actionLabel->setText(action);
@@ -26,38 +28,43 @@ HotkeyWidget::~HotkeyWidget()
     delete ui;
 }
 
+QString HotkeyWidget::getAction()
+{
+    return m_action;
+}
+
 QString HotkeyWidget::getHotkey()
 {
-    return h_hotkey;
+    return m_hotkey;
 }
 
 void HotkeyWidget::setHotkey(QString hotkey)
 {
-    h_hotkey = hotkey;
+    m_hotkey = hotkey;
     ui->hotkeyBox->setKeySequence(hotkey);
 }
 
 void HotkeyWidget::clearHotkey()
 {
-    h_hotkey.clear();
+    m_hotkey.clear();
     ui->hotkeyBox->clear();
 }
 
 void HotkeyWidget::keySequence_Changed(const QKeySequence &keySequence)
 {
     QString newHotkey = keySequence.toString();
-    if (newHotkey != h_hotkey)
-        emit hotkeyChanged(h_action, h_hotkey, newHotkey);
+    if (newHotkey != m_hotkey)
+        emit hotkeyChanged(m_id, m_action, m_hotkey, newHotkey);
 }
 
 void HotkeyWidget::revertButton_Clicked()
 {
-    if (ui->hotkeyBox->keySequence() != h_defaultHotkey)
-        ui->hotkeyBox->setKeySequence(h_defaultHotkey);
+    if (ui->hotkeyBox->keySequence() != m_defaultHotkey)
+        ui->hotkeyBox->setKeySequence(m_defaultHotkey);
 }
 
 void HotkeyWidget::clearButton_Clicked()
 {
-    h_hotkey.clear();
+    m_hotkey.clear();
     ui->hotkeyBox->clear();
 }

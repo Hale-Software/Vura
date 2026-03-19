@@ -1,23 +1,44 @@
-/*  MENUBAR
- *  ============================
- *  This is a custom menubar used by vura.
- *
- *  MENU ITEM NAMING CONVENTION
- *  ============================
- *  If menu item launches a dialog box append (...) to the menu item
- *  label.
- */
+/*******************************************************************************
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #pragma once
 
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QAudioDevice>
+#include <QMediaMetaData>
 #include <QSettings>
 #include <QMap>
 #include <QVariant>
+#include <QLocale>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QTimeEdit>
+#include <QVBoxLayout>
+#include <QInputDialog>
+#include <QStringList>
+#include <QStandardPaths>
+#include <QDirIterator>
+#include <QFile>
+#include <QLabel>
 #include <QDebug>
 
-#include "../utility/hotkeys.h"
+//#include "../utility/hotkeys.h"
 
 
 class MenuBar : public QMenuBar {
@@ -26,90 +47,38 @@ class MenuBar : public QMenuBar {
 public:
     explicit MenuBar(QWidget *parent = nullptr);
 
-signals:
-    /*
-    void open(QStringList fileNames);
-    void openF(QString folderName);
-    void openNetworkStreams();
-    void closeF();
-    void closeAllFiles();
-    void saveFile(QString fileName);
-    void importFile(QString fileName);
-    void exportFile(QString fileName);
-    void checkForUpdate();
-    void addMarker(QString type);
-    void clearIn();
-    void clearOut();
-    void clearInAndOut();
-    void clearMarkers();
-    void clearMarker();
-    void editSelectedMarker();
-    void goToIn();
-    void goToOut();
-    void nextMarker();
-    void previousMarker();
-    void markIn();
-    void markOut();
-    void jump(int pos);
-    void next();
-    void previous();
-    void togglePlay();
-    void subclip();
-    void tFunction();
-    void fullscreen();
-    void snapshot();
-    void audioDeviceChanged(int device);
-    void audioTrackChanged(int track);
-    void subtitleTrackChanged(int track);
-    void seek(int mseconds);
-    void speed(double mrate);
-    void volume(int mvolume);
-    void mute();
-    void toggleMarkerVisibility(QString type);
-    void playlist();
-    void statusBar();
-    void videoControls();
-    void settingsChanged();
-    void collapse();
-    void exiting();
-    */
-
 public slots:
     void setPlayerStatus(bool loaded);
+    void setActiveAudioDevice(const QAudioDevice &audioDevice);
+    void setActiveAudioTrack(int track);
+    void setActiveVideoTrack(int track);
+    void setActiveSubtitleTrack(int track);
     void refreshSettings();
+    void updateAudioOutputs(QList<QAudioDevice> audioDevices);
+    void updateAudioTracks(QList<QMediaMetaData> audioTracks);
+    void updateVideoTracks(QList<QMediaMetaData> videoTracks);
+    void updateSubtitleTracks(QList<QMediaMetaData> subtitleTracks);
+    void updateRecentFiles();
     void setMuted(bool mute);
     void markerShowing(QString type, bool showing);
     void playlistShowing(bool showing);
     void statusBarShowing(bool showing);
     void videoControlsShowing(bool showing);
 
-private slots:
-    // File Menu
-    void closeFile();
-    void closeAll();
-    void emergencyCollapse();
-    void exit();
-    void openFile();
-    void openMultipleFiles();
-    void openFolder();
-    void openNetworkStream();
-    void save();
-    void saveAs();
-    void savePlaylist();
-    void saveACopy();
-    void importProject();
-    void importCaptions();
-    void importMarkers();
-    void exportCaptions();
-    void exportClips();
-    void exportMarkers();
-    void exportMedia();
-    void openRecent();
+signals:
     void showPreferences();
-    void openRecentFile();
-    void clearRecentFiles();
-
-    // View Menu
+    void showAbout();
+    void showHelp();
+    void showUpdates();
+    void showFeedback();
+    void emergencyCollapse();
+    void exitApplication();
+    void openFiles(const QStringList &fileList);
+    void closeFile();
+    void closeAllFiles();
+    void openFolder(const QString &folderPath);
+    void saveFile(const QString &filePath);
+    void savePlaylist(const QString &filePath, const QString &type);
     void togglePlaylist();
     void toggleStatusBar();
     void toggleMarkers();
@@ -122,80 +91,146 @@ private slots:
     void toggleStripMarkers();
     void showLogFileViewer();
     void toggleVideoControls();
-    void showMediaInformation();
-    void toggleTags();
-
-    // Playback Menu
     void togglePlayPause();
     void nextVideo();
-    void nextFrame();
     void previousVideo();
-    void previousFrame();
-    void fasterSpeed();
-    void fasterFineSpeed();
-    void normalSpeed();
-    void slowerSpeed();
-    void slowerFineSpeed();
-    void jumpBackwardSmall();
-    void jumpBackwardMedium();
-    void jumpBackwardLarge();
-    void jumpBackwardExtraLarge();
-    void jumpForwardSmall();
-    void jumpForwardMedium();
-    void jumpForwardLarge();
-    void jumpForwardExtraLarge();
-    void jumpToTime();
+    void changePlaybackSpeed(double mrate);
+    void setPlaybackSpeedNormal();
+    void videoSeek(int mseconds);
+    void videoJumpToTime(int position);
     void restartVideo();
-
-    // Audio Menu
-    void increaseVolume();
-    void decreaseVolume();
+    void changeVolume(double mvolume);
     void toggleMute();
-    void selectAudioOutput();
-    void selectAudioTrack();
-
-    // Video Menu
     void toggleFullscreen();
-    void takeSnapshot();
-    void selectVideoTrack();
-    void selectSubtitleTrack();
-
-    // Markers Menu
-    void addMarker();
-    void goToNextMarker();
-    void goToPreviousMarker();
+    void setAudioOutput(const QAudioDevice &moutput);
+    void setAudioTrack(int mtrack);
+    void setVideoTrack(int mtrack);
+    void setSubtitleTrack(int mtrack);
+    void addMarker(const QString &markerType);
+    void nextMarker();
+    void previousMarker();
     void clearSelectedMarker();
-    void clearAllMarkers();
-    void editMarker();
-    void addSceneTransitionMarker();
-    void addCumshotMarker();
-    void addStripMarker();
-    void addDialogMarker();
-    void addCyanMarker();
-    void addMagentaMarker();
-    void addOrangeMarker();
-    void addInMarker();
-    void addOutMarker();
+    void clearMarkers();
     void clearInMarker();
     void clearOutMarker();
-    void clearInAndOutMarker();
     void goToInMarker();
     void goToOutMarker();
-
-    // Tools Menu
     void createSubclip();
-    void streamVideoFromStash();
     void testFunction();
 
+private slots:
+    // File Menu
+    void closeFile_Clicked();
+    void closeAll_Clicked();
+    void emergencyCollapse_Clicked();
+    void exit_Clicked();
+    void openFile_Clicked();
+    void openMultipleFiles_Clicked();
+    void openFolder_Clicked();
+    void openNetworkStream_Clicked();
+    void save_Clicked();
+    void saveAs_Clicked();
+    void savePlaylist_Clicked();
+    void saveACopy_Clicked();
+    void importProject_Clicked();
+    void importCaptions_Clicked();
+    void importMarkers_Clicked();
+    void exportCaptions_Clicked();
+    void exportClips_Clicked();
+    void exportMarkers_Clicked();
+    void exportMedia_Clicked();
+    void openRecent_Clicked();
+    void showPreferences_Clicked();
+    void openRecentFile_Clicked();
+    void clearRecentFiles_Clicked();
+
+    // View Menu
+    void togglePlaylist_Clicked();
+    void toggleStatusBar_Clicked();
+    void toggleMarkers_Clicked();
+    void toggleCumshotMarkers_Clicked();
+    void toggleCyanMarkers_Clicked();
+    void toggleDialogMarkers_Clicked();
+    void toggleMagentaMarkers_Clicked();
+    void toggleOrangeMarkers_Clicked();
+    void toggleSceneTransitionMarkers_Clicked();
+    void toggleStripMarkers_Clicked();
+    void showLogFileViewer_Clicked();
+    void toggleVideoControls_Clicked();
+    void showMediaInformation_Clicked();
+    void toggleTags_Clicked();
+
+    // Playback Menu
+    void togglePlayPause_Clicked();
+    void nextVideo_Clicked();
+    void nextFrame_Clicked();
+    void previousVideo_Clicked();
+    void previousFrame_Clicked();
+    void fasterSpeed_Clicked();
+    void fasterFineSpeed_Clicked();
+    void normalSpeed_Clicked();
+    void slowerSpeed_Clicked();
+    void slowerFineSpeed_Clicked();
+    void jumpBackwardSmall_Clicked();
+    void jumpBackwardMedium_Clicked();
+    void jumpBackwardLarge_Clicked();
+    void jumpBackwardExtraLarge_Clicked();
+    void jumpForwardSmall_Clicked();
+    void jumpForwardMedium_Clicked();
+    void jumpForwardLarge_Clicked();
+    void jumpForwardExtraLarge_Clicked();
+    void jumpToTime_Clicked();
+    void restartVideo_Clicked();
+
+    // Audio Menu
+    void increaseVolume_Clicked();
+    void decreaseVolume_Clicked();
+    void toggleMute_Clicked();
+    void selectAudioOutput_Clicked();
+    void selectAudioTrack_Clicked();
+
+    // Video Menu
+    void toggleFullscreen_Clicked();
+    void takeSnapshot_Clicked();
+    void selectVideoTrack_Clicked();
+    void selectSubtitleTrack_Clicked();
+
+    // Markers Menu
+    void addMarker_Clicked();
+    void goToNextMarker_Clicked();
+    void goToPreviousMarker_Clicked();
+    void clearSelectedMarker_Clicked();
+    void clearAllMarkers_Clicked();
+    void editMarker_Clicked();
+    void addSceneTransitionMarker_Clicked();
+    void addCumshotMarker_Clicked();
+    void addStripMarker_Clicked();
+    void addDialogMarker_Clicked();
+    void addCyanMarker_Clicked();
+    void addMagentaMarker_Clicked();
+    void addOrangeMarker_Clicked();
+    void addInMarker_Clicked();
+    void addOutMarker_Clicked();
+    void clearInMarker_Clicked();
+    void clearOutMarker_Clicked();
+    void clearInAndOutMarker_Clicked();
+    void goToInMarker_Clicked();
+    void goToOutMarker_Clicked();
+
+    // Tools Menu
+    void createSubclip_Clicked();
+    void streamVideoFromStash_Clicked();
+    void testFunction_Clicked();
+
     // Subtitle Menu
-    void openSubtitleFile();
-    void toggleSubtitles();
+    void openSubtitleFile_Clicked();
+    void toggleSubtitles_Clicked();
 
     // Help Menu
-    void showAbout();
-    void showHelp();
-    void showUpdates();
-    void showFeedback();
+    void showAbout_Clicked();
+    void showHelp_Clicked();
+    void showUpdates_Clicked();
+    void showFeedback_Clicked();
 
 private:
     QMenu *m_fileMenu = nullptr;
@@ -316,17 +351,27 @@ private:
     QAction *m_subtitleTrackActions[15];
     // QAction *m_Action = nullptr;
 
+    QAudioDevice m_activeAudioDevice;
+
+    bool m_initialised = false;
     bool m_fileLoaded = false;
-    int videoTrack;
-    int audioOutput;
-    int audioTrack;
-    int subtitleTrack;
+    int m_activeVideoTrack = 0;
+    int m_activeAudioOutput = 0;
+    int m_activeAudioTrack = 0;
+    int m_activeSubtitleTrack= 0;
+    int m_frameWalkTime = 0;
+    double m_playbackSpeedAdjustment = 0.0;
+    double m_playbackSpeedFineAdjustment = 0.0;
+    double m_volumeStep = 0.10;
     int m_jumpSmall = 0;
     int m_jumpMedium = 0;
     int m_jumpLarge = 0;
     int m_jumpExtraLarge = 0;
+    QString m_stashServerUrl = "";
+    int m_maxRecentFiles = 0;
 
     void setHotkeys();
     void refreshMenuItems();
+    QString trackName(const QMediaMetaData &metaData, int index);
 
 };

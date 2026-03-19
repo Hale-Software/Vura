@@ -1,136 +1,165 @@
+/*******************************************************************************
+     Copyright (c) 2026.  by halea <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 #include "hotkeys.h"
 
 
 Hotkeys::Hotkeys(QObject *parent) : QObject(parent)
 {
     QSettings settings;
-    QString hotkeyFile = settings.value("hotkeyFile", "default.hkey").toString();
-    if (!QFile(hotkeyFile).exists()) {
-        qDebug() << "Hotkeys file does not exist.";
-        setDefaultHotkeys(hotkeyFile);
+    settings.beginGroup("Hotkeys");
+    const QStringList childKeys = settings.childKeys();
+    foreach (const QString &childKey, childKeys)
+    {
+        hotkeys[childKey] = settings.value(childKey).toString();
     }
+    settings.endGroup();
 
-    FileManager fileManager;
-    hotkeys = fileManager.readHotkeyFile(hotkeyFile.toStdString().c_str());
-
-    //settings.beginGroup("Hotkeys");
-    //const QStringList childKeys = settings.childKeys();
-    //foreach (const QString &childKey, childKeys)
-    //{
-    //    hotkeys[childKey] = settings.value(childKey).toString();
-    //}
-    //settings.endGroup();
-
-    //if (hotkeys.isEmpty()) {
-    //    qDebug() << "Hotkeys are empty.";
-    //    setDefaultHotkeys();
-    //}
+    if (hotkeys.isEmpty()) {
+        setDefaultHotkeys();
+    }
 }
 
 void Hotkeys::setMenuItemHotkey(QAction &action)
 {
     if (!action.text().isEmpty()) {
+        qDebug() << action.text();
         if (action.text() == "Play/Pause") {
-            qDebug() << "Setting hotkey Space for action " << action.text();
             action.setShortcut(tr("Space"));
             action.setShortcutContext(Qt::ApplicationShortcut);
+
         } else if (hotkeys.contains(action.text())) {
-            qDebug() << "Setting hotkey " << hotkeys[action.text()] << " for action " << action.text();
-            action.setShortcut(hotkeys.value(action.text()));
-            action.setShortcutContext(Qt::ApplicationShortcut);
+            if (!hotkeys.value(action.text()).isEmpty()) {
+                action.setShortcut(hotkeys.value(action.text()));
+                action.setShortcutContext(Qt::ApplicationShortcut);
+            }
         }
     }
 }
 
-void Hotkeys::setDefaultHotkeys(QString fileName)
+void Hotkeys::removeMenuItemHotkey(QAction &action)
 {
-    FileManager fileManager;
-    qDebug() << "Saving default hotkeys to file: " << fileName;
-    const QMap<QString, QString> hotkeyMap;
+    action.setShortcut(QKeySequence());
+}
+
+void Hotkeys::setDefaultHotkeys()
+{
+    QSettings settings;
+    QMap<QString, QString> hotkeyMap;
 
     // File
     hotkeyMap["Emergency Collapse"] = "C";
     hotkeyMap["Exit"] = "Ctrl+Q";
-    hotkeyMap["Open File"] = "O";
-    //hotkeyMap[HOTKEYS::OPEN_FOLDER] = "Ctrl+F";
-    //hotkeyMap[HOTKEYS::OPEN_MULTIPLE_FILES] = "Alt+O";
-    //hotkeyMap[HOTKEYS::OPEN_NETWORK_STREAM] = "Ctrl+N";
-    //hotkeyMap[HOTKEYS::SAVE] = "Ctrl+S";
-    //hotkeyMap[HOTKEYS::SAVE_AS] = "Ctrl+Shift+S";
-    //hotkeyMap[HOTKEYS::SAVE_PLAYLIST] = "Alt+S";
-    //hotkeyMap[HOTKEYS::SAVE_A_COPY] = "Ctrl+Alt+S";
-    //hotkeyMap[HOTKEYS::CLOSE] = "Ctrl+A";
-    //hotkeyMap[HOTKEYS::CLOSE_ALL] = "Ctrl+Shift+A";
-    //hotkeyMap[HOTKEYS::PREFERENCES] = "Ctrl+Shift+P";
-/*
-    // View
-    hotkeyMap[HOTKEYS::TOGGLE_PLAYLIST] = "Ctrl+P";
-    hotkeyMap[HOTKEYS::TOGGLE_STATUS_BAR] = "Ctrl+B";
-    hotkeyMap[HOTKEYS::SHOW_LOG_VIEWER] = "Ctrl+L";
-    hotkeyMap[HOTKEYS::TOGGLE_VIDEO_CONTROLS] = "Ctrl+V";
+    hotkeyMap["Open File..."] = "O";
+    hotkeyMap["Open Folder..."] = "Ctrl+F";
+    hotkeyMap["Open Multiple Files..."] = "Alt+O";
+    hotkeyMap["Open Network Stream..."] = "Ctrl+N";
+    hotkeyMap["Save"] = "Ctrl+S";
+    hotkeyMap["Save As..."] = "Ctrl+Shift+S";
+    hotkeyMap["Save Playlist"] = "Alt+S";
+    hotkeyMap["Save A Copy..."] = "Ctrl+Alt+S";
+    hotkeyMap["Close"] = "Ctrl+A";
+    hotkeyMap["Close All"] = "Ctrl+Shift+A";
+    hotkeyMap["Preferences"] = "Ctrl+Shift+P";
+    hotkeyMap["Clear"] = "";
+
 
     // Playback
-    hotkeyMap[HOTKEYS::NEXT_VIDEO] = "N";
-    hotkeyMap[HOTKEYS::NEXT_FRAME] = "]";
-    hotkeyMap[HOTKEYS::PREVIOUS_VIDEO] = "P";
-    hotkeyMap[HOTKEYS::PREVIOUS_FRAME] = "[";
-    hotkeyMap[HOTKEYS::RESTART_VIDEO] = "R";
-    hotkeyMap[HOTKEYS::JUMP_TO_SPECIFIC_TIME] = "Ctrl+T";
-    hotkeyMap[HOTKEYS::JUMP_BACK_EXTRA_LARGE] = "";
-    hotkeyMap[HOTKEYS::JUMP_BACK_LARGE] = "Q";
-    hotkeyMap[HOTKEYS::JUMP_BACK_MEDIUM] = "A";
-    hotkeyMap[HOTKEYS::JUMP_BACK_SMALL] = "Z";
-    hotkeyMap[HOTKEYS::JUMP_FORWARD_EXTRA_LARGE] = "";
-    hotkeyMap[HOTKEYS::JUMP_FORWARD_LARGE] = "W";
-    hotkeyMap[HOTKEYS::JUMP_FORWARD_MEDIUM] = "S";
-    hotkeyMap[HOTKEYS::JUMP_FORWARD_SMALL] = "X";
-    hotkeyMap[HOTKEYS::FASTER] = "Num++";
-    hotkeyMap[HOTKEYS::FASTER_FINE] = "Ctrl+Num++";
-    hotkeyMap[HOTKEYS::NORMAL_SPEED] = "=";
-    hotkeyMap[HOTKEYS::SLOWER] = "Num+-";
-    hotkeyMap[HOTKEYS::SLOWER_FINE] = "Ctrl+Num+-";
-
-    // Markers
-    hotkeyMap[HOTKEYS::ADD_CUMSHOT_MARKER] = "Ctrl+3";
-    hotkeyMap[HOTKEYS::ADD_CYAN_MARKER] = "Ctrl+5";
-    hotkeyMap[HOTKEYS::ADD_DIALOG_MARKER] = "Ctrl+4";
-    hotkeyMap[HOTKEYS::ADD_MAGENTA_MARKER] = "Ctrl+6";
-    hotkeyMap[HOTKEYS::ADD_MARKER] = "M";
-    hotkeyMap[HOTKEYS::ADD_ORANGE_MARKER] = "Ctrl+7";
-    hotkeyMap[HOTKEYS::ADD_SCENE_MARKER] = "Ctrl+1";
-    hotkeyMap[HOTKEYS::ADD_STRIP_MARKER] = "Ctrl+2";
-    hotkeyMap[HOTKEYS::CLEAR_IN] = "Ctrl+Shift+,";
-    hotkeyMap[HOTKEYS::CLEAR_IN_AND_OUT] = "Ctrl+Shift+X";
-    hotkeyMap[HOTKEYS::CLEAR_MARKERS] = "Ctrl+Shift+M";
-    hotkeyMap[HOTKEYS::CLEAR_OUT] = "Ctrl+Shift+.";
-    hotkeyMap[HOTKEYS::CLEAR_SELECTED_MARKER] = "Ctrl+C";
-    hotkeyMap[HOTKEYS::EDIT_SELECTED_MARKER] = "Alt+M";
-    hotkeyMap[HOTKEYS::GO_TO_IN] = "Shift+,";
-    hotkeyMap[HOTKEYS::GO_TO_NEXT_MARKER] = "B";
-    hotkeyMap[HOTKEYS::GO_TO_OUT] = "Shift+.";
-    hotkeyMap[HOTKEYS::GO_TO_PREVIOUS_MARKER] = "V";
-    hotkeyMap[HOTKEYS::MARK_IN] = ",";
-    hotkeyMap[HOTKEYS::MARK_OUT] = ".";
+    hotkeyMap["Next Video"] = "N";
+    hotkeyMap["Next Frame"] = "]";
+    hotkeyMap["Previous Video"] = "P";
+    hotkeyMap["Previous Frame"] = "[";
+    hotkeyMap["Restart Video"] = "R";
+    hotkeyMap["Jump to Specific Time..."] = "Ctrl+T";
+    hotkeyMap["Jump Back Extra Large"] = "1";
+    hotkeyMap["Jump Back Large"] = "Q";
+    hotkeyMap["Jump Back Medium"] = "A";
+    hotkeyMap["Jump Back Small"] = "Z";
+    hotkeyMap["Jump Fwd Extra Large"] = "2";
+    hotkeyMap["Jump Fwd Large"] = "W";
+    hotkeyMap["Jump Fwd Medium"] = "S";
+    hotkeyMap["Jump Fwd Small"] = "X";
+    hotkeyMap["Faster"] = "Num++";
+    hotkeyMap["Faster (fine)"] = "Ctrl+Num++";
+    hotkeyMap["Normal"] = "=";
+    hotkeyMap["Slower"] = "Num+-";
+    hotkeyMap["Slower (fine)"] = "Ctrl+Num+-";
 
     // Audio
-    hotkeyMap[HOTKEYS::DECREASE_VOLUME] = "Down";
-    hotkeyMap[HOTKEYS::INCREASE_VOLUME] = "Up";
-    hotkeyMap[HOTKEYS::MUTE] = "Ctrl+M";
+    hotkeyMap["Decrease Volume"] = "Down";
+    hotkeyMap["Increase Volume"] = "Up";
+    hotkeyMap["Mute"] = "Ctrl+M";
 
     // Video
-    hotkeyMap[HOTKEYS::FULLSCREEN] = "F";
+    hotkeyMap["Fullscreen"] = "F";
+    hotkeyMap["Take Snapshot"] = "";
+
+    // View
+    hotkeyMap["Toggle Playlist"] = "Ctrl+P";
+    hotkeyMap["Toggle Status Bar"] = "Ctrl+B";
+    hotkeyMap["Log Viewer"] = "Ctrl+L";
+    hotkeyMap["Toggle Video Controls"] = "Ctrl+V";
+    hotkeyMap["Media Information"] = "";
+    hotkeyMap["Toggle Tags"] = "";
+
+    // Markers
+    hotkeyMap["Add Cumshot Marker"] = "Ctrl+3";
+    hotkeyMap["Add Cyan Marker"] = "Ctrl+5";
+    hotkeyMap["Add Dialog Marker"] = "Ctrl+4";
+    hotkeyMap["Add Magenta Marker"] = "Ctrl+6";
+    hotkeyMap["Add Marker"] = "M";
+    hotkeyMap["Add Orange Marker"] = "Ctrl+7";
+    hotkeyMap["Add Scene Transition Marker"] = "Ctrl+1";
+    hotkeyMap["Add Strip Marker"] = "Ctrl+2";
+    hotkeyMap["Clear In"] = "Ctrl+Shift+,";
+    hotkeyMap["Clear In and Out"] = "Ctrl+Shift+X";
+    hotkeyMap["Clear Markers"] = "Ctrl+Shift+M";
+    hotkeyMap["Clear Out"] = "Ctrl+Shift+.";
+    hotkeyMap["Clear Selected Marker"] = "Ctrl+C";
+    hotkeyMap["Edit Selected Marker..."] = "Alt+M";
+    hotkeyMap["Go to In"] = "Shift+,";
+    hotkeyMap["Go to Next Marker"] = "B";
+    hotkeyMap["Go to Out"] = "Shift+.";
+    hotkeyMap["Go to Previous Marker"] = "V";
+    hotkeyMap["Mark In"] = ",";
+    hotkeyMap["Mark Out"] = ".";
 
     // Tools
-    hotkeyMap[HOTKEYS::MAKE_SUBCLIP] = "Ctrl+U";
-    hotkeyMap[HOTKEYS::STREAM_STASH_VIDEO] = "Ctrl+X";
+    hotkeyMap["Make Subclip"] = "Ctrl+U";
+    hotkeyMap["Stream Video from Stash..."] = "Ctrl+X";
+    hotkeyMap["Test Function"] = "";
+
+    // Subtitle
+    hotkeyMap["Toggle Subtitles"] = "";
 
     // Help
-    hotkeyMap[HOTKEYS::HELP] = "F1";
-*/
-    if (!fileManager.writeHotkeyFile(fileName.toStdString().c_str(), hotkeyMap)) {
-        qWarning() << "Could not write hotkey file";
-        return;
+    hotkeyMap["Help"] = "F1";
+    hotkeyMap["About"] = "";
+
+
+    settings.beginGroup("Hotkeys");
+    QMapIterator<QString, QString> i(hotkeyMap);
+    while (i.hasNext()) {
+        i.next();
+        settings.setValue(i.key(), i.value());
     }
 
-    qDebug() << "Saved default hotkeys to file: " << fileName;
+    settings.endGroup();
+    settings.sync();
+
+    hotkeys = hotkeyMap;
 }

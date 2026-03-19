@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1004</width>
-    <height>608</height>
+    <width>1000</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="HVideoWidget" name="videoWidget" native="true">
+           <widget class="QVideoWidget" name="videoWidget" native="true">
             <property name="minimumSize">
              <size>
               <width>500</width>
@@ -98,25 +98,94 @@
            <number>12</number>
           </property>
           <property name="leftMargin">
-           <number>12</number>
+           <number>8</number>
+          </property>
+          <property name="topMargin">
+           <number>8</number>
           </property>
           <property name="rightMargin">
-           <number>12</number>
+           <number>8</number>
           </property>
           <property name="bottomMargin">
-           <number>5</number>
+           <number>8</number>
           </property>
           <item>
-           <widget class="QLabel" name="m_playbackRate">
+           <widget class="QLabel" name="position">
+            <property name="font">
+             <font>
+              <family>Segoe UI</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="text">
-             <string>x1</string>
+             <string>--:--</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="m_labelDuration">
+           <widget class="QWidget" name="placeholder" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(0, 0, 255);</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="playbackRate">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="text">
-             <string>--:-- / --:--</string>
+             <string>x1</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="duration">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>--:--</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing</set>
             </property>
            </widget>
           </item>
@@ -127,253 +196,6 @@
      </layout>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1004</width>
-     <height>33</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <widget class="QMenu" name="menuOpen_Recent">
-     <property name="title">
-      <string>Open Recent</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="title">
-      <string>Export</string>
-     </property>
-     <addaction name="actionMedia"/>
-     <addaction name="actionClips"/>
-     <addaction name="actionCaptions"/>
-     <addaction name="actionMarkers"/>
-    </widget>
-    <addaction name="actionOpen"/>
-    <addaction name="actionOpen_Multiple_Media_Files"/>
-    <addaction name="actionOpen_Media_Folder"/>
-    <addaction name="actionOpen_Network_Stream"/>
-    <addaction name="menuOpen_Recent"/>
-    <addaction name="separator"/>
-    <addaction name="actionClose"/>
-    <addaction name="actionClose_All"/>
-    <addaction name="separator"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="actionSave_Playlist"/>
-    <addaction name="actionSave_a_Copy"/>
-    <addaction name="separator"/>
-    <addaction name="menuExport"/>
-    <addaction name="separator"/>
-    <addaction name="actionEmergency_Collapse"/>
-    <addaction name="separator"/>
-    <addaction name="actionPreferences"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
-   </widget>
-   <widget class="QMenu" name="menuSequence">
-    <property name="title">
-     <string>Tools</string>
-    </property>
-    <addaction name="actionMake_Subclip"/>
-    <addaction name="separator"/>
-    <addaction name="actionStream_Stash_Video"/>
-    <addaction name="separator"/>
-    <addaction name="actionTestFunction"/>
-   </widget>
-   <widget class="QMenu" name="menuMarkers">
-    <property name="title">
-     <string>Markers</string>
-    </property>
-    <addaction name="actionMark_In"/>
-    <addaction name="actionMark_Out"/>
-    <addaction name="separator"/>
-    <addaction name="actionGo_to_In"/>
-    <addaction name="actionGo_to_Out"/>
-    <addaction name="separator"/>
-    <addaction name="actionClear_In"/>
-    <addaction name="actionClear_Out"/>
-    <addaction name="actionClear_In_and_Out"/>
-    <addaction name="separator"/>
-    <addaction name="actionAdd_Marker"/>
-    <addaction name="actionGo_to_Next_Marker"/>
-    <addaction name="actionGo_to_Previous_Marker"/>
-    <addaction name="separator"/>
-    <addaction name="actionClear_Selected_Marker"/>
-    <addaction name="actionClear_Markers"/>
-    <addaction name="separator"/>
-    <addaction name="actionEdit_Marker"/>
-    <addaction name="separator"/>
-    <addaction name="actionAdd_Scene_Transition_Marker"/>
-    <addaction name="actionAdd_Cumshot_Marker"/>
-    <addaction name="actionAdd_Strip_Marker"/>
-    <addaction name="actionAdd_Dialog_Marker"/>
-    <addaction name="separator"/>
-    <addaction name="actionAdd_Cyan_Marker"/>
-    <addaction name="actionAdd_Magenta_Marker"/>
-    <addaction name="actionAdd_Orange_Marker"/>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-    <widget class="QMenu" name="menuToggle_Markers">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="title">
-      <string>Toggle Markers</string>
-     </property>
-     <addaction name="actionShow_Markers"/>
-     <addaction name="actionShow_Scene_Transition_Markers"/>
-     <addaction name="actionShow_Strip_Markers"/>
-     <addaction name="actionShow_Cumshot_Markers"/>
-     <addaction name="actionShow_Dialog_Markers"/>
-     <addaction name="actionShow_Cyan_Markers"/>
-     <addaction name="actionShow_Magenta_Markers"/>
-     <addaction name="actionShow_Orange_Markers"/>
-    </widget>
-    <addaction name="actionToggle_Playlist"/>
-    <addaction name="actionToggle_Tags"/>
-    <addaction name="actionToggle_Status_Bar"/>
-    <addaction name="actionToggle_Video_Controls"/>
-    <addaction name="separator"/>
-    <addaction name="menuToggle_Markers"/>
-    <addaction name="separator"/>
-    <addaction name="actionMedia_Information"/>
-    <addaction name="separator"/>
-    <addaction name="actionShow_Log_Files"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-    <addaction name="actionHelp"/>
-    <addaction name="actionProvide_Feedback"/>
-    <addaction name="separator"/>
-    <addaction name="actionUpdates"/>
-    <addaction name="separator"/>
-    <addaction name="actionAbout"/>
-   </widget>
-   <widget class="QMenu" name="menuPlayback">
-    <property name="title">
-     <string>Playback</string>
-    </property>
-    <widget class="QMenu" name="menuSpeed">
-     <property name="title">
-      <string>Speed</string>
-     </property>
-     <addaction name="actionFaster"/>
-     <addaction name="actionFaster_fine"/>
-     <addaction name="actionNormal_Speed"/>
-     <addaction name="actionSlower_fine"/>
-     <addaction name="actionSlower"/>
-    </widget>
-    <widget class="QMenu" name="menuJump_Forward">
-     <property name="title">
-      <string>Jump Forward</string>
-     </property>
-     <addaction name="actionJumpForwardSmall"/>
-     <addaction name="actionJumpForwardMedium"/>
-     <addaction name="actionJumpForwardLarge"/>
-     <addaction name="actionJumpForwardExtraLarge"/>
-    </widget>
-    <widget class="QMenu" name="menuJump_Backward">
-     <property name="title">
-      <string>Jump Backward</string>
-     </property>
-     <addaction name="actionJumpBackwardSmall"/>
-     <addaction name="actionJumpBackwardMedium"/>
-     <addaction name="actionJumpBackwardLarge"/>
-     <addaction name="actionJumpBackwardExtraLarge"/>
-    </widget>
-    <addaction name="menuSpeed"/>
-    <addaction name="separator"/>
-    <addaction name="actionNext_Frame_2"/>
-    <addaction name="actionPrevious_Frame_2"/>
-    <addaction name="separator"/>
-    <addaction name="menuJump_Forward"/>
-    <addaction name="menuJump_Backward"/>
-    <addaction name="actionJump_to_Specific_Time"/>
-    <addaction name="separator"/>
-    <addaction name="actionPlay_Pause_2"/>
-    <addaction name="actionNext"/>
-    <addaction name="actionPrevious"/>
-    <addaction name="separator"/>
-    <addaction name="actionRestart_Video"/>
-   </widget>
-   <widget class="QMenu" name="menuAudio">
-    <property name="title">
-     <string>Audio</string>
-    </property>
-    <widget class="QMenu" name="menuAudio_Track">
-     <property name="title">
-      <string>Audio Track</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuAudio_Device">
-     <property name="title">
-      <string>Audio Device</string>
-     </property>
-    </widget>
-    <addaction name="menuAudio_Device"/>
-    <addaction name="menuAudio_Track"/>
-    <addaction name="separator"/>
-    <addaction name="actionIncrease_Volume_2"/>
-    <addaction name="actionDecrease_Volume_2"/>
-    <addaction name="actionMute"/>
-   </widget>
-   <widget class="QMenu" name="menuVideo">
-    <property name="title">
-     <string>Video</string>
-    </property>
-    <widget class="QMenu" name="menuVideo_Track">
-     <property name="title">
-      <string>Video Track</string>
-     </property>
-    </widget>
-    <addaction name="menuVideo_Track"/>
-    <addaction name="separator"/>
-    <addaction name="actionFullscreen"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
-    <addaction name="actionTake_Snapshot"/>
-   </widget>
-   <widget class="QMenu" name="menuSubtitle">
-    <property name="title">
-     <string>Subtitle</string>
-    </property>
-    <widget class="QMenu" name="menuSubtitle_Track">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="title">
-      <string>Subtitle Track</string>
-     </property>
-    </widget>
-    <addaction name="actionOpen_Subtitle_File"/>
-    <addaction name="menuSubtitle_Track"/>
-    <addaction name="separator"/>
-    <addaction name="actionToggle_Subtitles"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuView"/>
-   <addaction name="menuPlayback"/>
-   <addaction name="menuAudio"/>
-   <addaction name="menuVideo"/>
-   <addaction name="menuMarkers"/>
-   <addaction name="menuSequence"/>
-   <addaction name="menuSubtitle"/>
-   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen_Media">
@@ -1590,9 +1412,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>HVideoWidget</class>
+   <class>QVideoWidget</class>
    <extends>QWidget</extends>
-   <header location="global">widgets/hvideowidget.h</header>
+   <header location="global">&lt;QtMultimediaWidgets&gt;</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
