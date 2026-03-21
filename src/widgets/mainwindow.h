@@ -82,6 +82,7 @@
 
 #include <xxHash/xxhash.h>
 
+#include "../constants.h"
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"

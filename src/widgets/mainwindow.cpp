@@ -17,7 +17,6 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "../constants.h"
 
 #include <config.h>
 #include <qglobal.h>
@@ -453,9 +452,6 @@ QString MainWindow::trackName(const QMediaMetaData &metaData, int index)
 
 void MainWindow::tracksChanged()
 {
-    //updateAudioTrackActions();
-    //updateVideoTrackActions();
-    //updateSubtitleTrackActions();
     emit updateAudioTracks(m_player->audioTracks());
     emit updateVideoTracks(m_player->videoTracks());
     emit updateSubtitleTracks(m_player->subtitleTracks());
@@ -1951,10 +1947,11 @@ void MainWindow::systemTray_OpenFile()
 
     // File filters
     QStringList fileFilters;
-    fileFilters << MediaFileExtensions;
-    fileFilters << VideoFileExtensions;
-    fileFilters << AudioFileExtensions;
-    fileFilters << PlaylistFileExtensions;
+    fileFilters << constants::MediaFileExtensions;
+    fileFilters << constants::VideoFileExtensions;
+    fileFilters << constants::AudioFileExtensions;
+    fileFilters << constants::ApplicationFileExtensions;
+    fileFilters << constants::PlaylistFileExtensions;
     fileFilters << "All Files (*.*)";
 
     // Create open file dialog.

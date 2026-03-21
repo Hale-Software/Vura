@@ -16,7 +16,6 @@
  ******************************************************************************/
 
 #include "menubar.h"
-#include "../constants.h"
 #include "utility/hotkeys.h"
 
 
@@ -975,10 +974,11 @@ void MenuBar::openFile_Clicked()
 
     // File filters
     QStringList fileFilters;
-    fileFilters << MediaFileExtensions;
-    fileFilters << VideoFileExtensions;
-    fileFilters << AudioFileExtensions;
-    fileFilters << PlaylistFileExtensions;
+    fileFilters << constants::MediaFileExtensions;
+    fileFilters << constants::VideoFileExtensions;
+    fileFilters << constants::AudioFileExtensions;
+    fileFilters << constants::ApplicationFileExtensions;
+    fileFilters << constants::PlaylistFileExtensions;
     fileFilters << "All Files (*.*)";
 
     // Create open file dialog.
@@ -1011,10 +1011,11 @@ void MenuBar::openMultipleFiles_Clicked()
 
     // File filters
     QStringList fileFilters;
-    fileFilters << MediaFileExtensions;
-    fileFilters << VideoFileExtensions;
-    fileFilters << AudioFileExtensions;
-    fileFilters << PlaylistFileExtensions;
+    fileFilters << constants::MediaFileExtensions;
+    fileFilters << constants::VideoFileExtensions;
+    fileFilters << constants::AudioFileExtensions;
+    fileFilters << constants::ApplicationFileExtensions;
+    fileFilters << constants::PlaylistFileExtensions;
     fileFilters << "All Files (*.*)";
 
     // Create open file dialog.
@@ -1131,7 +1132,7 @@ void MenuBar::savePlaylist_Clicked()
 
     // File filters
     QStringList fileFilters;
-    fileFilters << PlaylistFileExtensions;
+    fileFilters << constants::PlaylistFileExtensions;
     fileFilters << "All Files (*.*)";
 
     // Create save file dialog.
