@@ -94,7 +94,7 @@ void SettingsWindow::loadSettings()
     QSettings settings;
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = "C:/Users/halea/vura-debug/markers.json";
+        defaultMarkerFile = constants::ApplicationDebugFolder + "/vura-debug/markers.json";
     }
 
     // Load Settings

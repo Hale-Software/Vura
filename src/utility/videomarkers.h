@@ -31,6 +31,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 
+#include "../constants.h"
+
 
 class VideoMarkers : public QObject
 {

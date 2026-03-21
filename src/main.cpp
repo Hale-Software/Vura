@@ -68,8 +68,8 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 VuraApp::VuraApp(int &argc, char **argv) : QApplication(argc, argv)
 {
-    QCoreApplication::setApplicationName("vura");
-    QCoreApplication::setOrganizationName("Hale Software");
+    QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
+    QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
     QObject::connect(qApp, &QCoreApplication::aboutToQuit, this, &VuraApp::applicationQuiting);
@@ -99,7 +99,7 @@ void VuraApp::AppInit(int argc, char* argv[])
     } else {
         mainWindow = new MainWindow();
         mainWindow->setAttribute(Qt::WA_DeleteOnClose, true);
-        mainWindow->setWindowTitle("Vura " + QString::fromUtf8(VURA_VERSION_STRING));
+        mainWindow->setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         connect(mainWindow, SIGNAL(destroyed()), this, SLOT(quit()));
         mainWindow->show();
         if (openedWithFile) {
@@ -132,7 +132,7 @@ void setCrashHandler()
 #ifdef Q_OS_WIN
     QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = "C:/Users/halea/vura-debug/crashes";
+        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
     }
 
     if (!QDir(defaultCrashFileLocation).exists()) {

@@ -39,6 +39,8 @@
 #include <QKeySequence>
 #include <QDebug>
 
+#include "../constants.h"
+
 
 class MenuBar : public QMenuBar {
     Q_OBJECT

@@ -143,7 +143,7 @@ void LogViewer::openButton_Clicked()
     QString logDirString = "logs";
     QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (VURA_BUILD_TYPE == "Debug") {
-        appDataDirString = "C:/Users/halea/vura-debug";
+        appDataDirString = constants::ApplicationDebugFolder;
     }
     QDir appDataDir(appDataDirString);
     if (appDataDir.exists()) {
