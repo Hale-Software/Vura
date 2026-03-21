@@ -72,7 +72,7 @@ signals:
     void showFeedback();
     void emergencyCollapse();
     void exitApplication();
-    void openFiles(const QStringList &fileList);
+    void openFiles(const QStringList &fileList, bool localFile = true);
     void closeFile();
     void closeAllFiles();
     void openFolder(const QString &folderPath);

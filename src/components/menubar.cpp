@@ -186,7 +186,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_createSubclipAction->setEnabled(false);
     m_toggleSubtitlesAction->setEnabled(false);
     m_takeSnapshotAction->setEnabled(false);
-    m_togglePlayAction->setEnabled(false);
 
     m_volumeMuteAction->setCheckable(true);
     m_toggleSubtitlesAction->setCheckable(true);
@@ -731,7 +730,6 @@ void MenuBar::refreshMenuItems()
     m_createSubclipAction->setEnabled(m_fileLoaded);
     m_toggleSubtitlesAction->setEnabled(m_fileLoaded);
     m_takeSnapshotAction->setEnabled(m_fileLoaded);
-    m_togglePlayAction->setEnabled(m_fileLoaded);
 
     updateRecentFiles();
 }
@@ -1085,7 +1083,7 @@ void MenuBar::openNetworkStream_Clicked()
         QStringList networkStreamList;
         networkStreamList << text;
 
-        emit openFiles(networkStreamList);
+        emit openFiles(networkStreamList, false);
     }
 }
 
