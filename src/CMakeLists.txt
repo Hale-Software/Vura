@@ -14,12 +14,13 @@ add_executable(vura)
 add_executable(VURA::vura ALIAS vura)
 add_dependencies(vura copy_data_files)
 
-target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOURCE_DIR}/src/deps")
+target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOURCE_DIR}/src/deps" "${CMAKE_SOURCE_DIR}/libvura")
 
 target_link_libraries(
         vura PRIVATE
         xxhash
         VURA::qBreakpad
+        VURA::libvura
 )
 
 include(cmake/ui-components.cmake)
