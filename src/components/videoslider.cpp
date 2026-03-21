@@ -248,30 +248,15 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
     }
 }
 
-int VideoSlider::minimum() const
-{
-    return m_minimum;
-}
+int VideoSlider::minimum() const { return m_minimum; }
 
-int VideoSlider::maximum() const
-{
-    return m_maximum;
-}
+int VideoSlider::maximum() const { return m_maximum; }
 
-int VideoSlider::value() const
-{
-    return m_value;
-}
+int VideoSlider::value() const { return m_value; }
 
-bool VideoSlider::isSliderDown() const
-{
-    return m_isSliderDown;
-}
+bool VideoSlider::isSliderDown() const { return m_isSliderDown; }
 
-bool VideoSlider::isVideoLoaded() const
-{
-    return m_videoLoaded;
-}
+bool VideoSlider::isVideoLoaded() const { return m_videoLoaded; }
 
 void VideoSlider::hideIndicator()
 {

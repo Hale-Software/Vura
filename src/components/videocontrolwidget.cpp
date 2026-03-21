@@ -126,10 +126,7 @@ void VideoControlWidget::setVolume(float volume)
     refreshUI();
 }
 
-bool VideoControlWidget::isMuted() const
-{
-    return m_playerMuted;
-}
+bool VideoControlWidget::isMuted() const { return m_playerMuted; }
 
 void VideoControlWidget::setMuted(bool muted)
 {
