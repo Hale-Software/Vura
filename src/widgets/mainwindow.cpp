@@ -604,7 +604,7 @@ void MainWindow::exitApplication()
     }
 }
 
-void MainWindow::openFiles(const QStringList &fileList)
+void MainWindow::openFiles(const QStringList &fileList, bool localFile)
 {
     QSettings settings;
 
@@ -617,11 +617,17 @@ void MainWindow::openFiles(const QStringList &fileList)
         files.removeAll(fileName);
         files.prepend(fileName);
 
-        QUrl url = QUrl::fromLocalFile(fileName);
-        if (!isPlaylist(url)) {
-            m_playlist->addMedia(url);
+        if (localFile) {
+            QUrl url = QUrl::fromLocalFile(fileName);
+
+            if (!isPlaylist(url)) {
+                m_playlist->addMedia(url);
+            } else {
+                loadedNewPlaylist = loadPlaylist(url);
+            }
+
         } else {
-            loadedNewPlaylist = loadPlaylist(url);
+            m_playlist->addMedia(fileName);
         }
     }
 
