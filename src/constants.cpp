@@ -18,6 +18,8 @@
 #include "constants.h"
 
 
+QString _applicationDebugFolder = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+
 QString _videoFileExtensions = R"(
 *.3g2 *.3gp *.3gp2 *.3gpp *.amv *.asf *.avi *.bik *.bin *.crf *.dav *.divx *.drc *.dv *.dvr-ms *.evo *.f4v *.flv
  *.gvi *.gxf *.iso *.m1v *.m2v *.m2t *.m2ts *.m4v *.mkv *.mov *.mp2 *.mp2v *.mp4 *.mp4v *.mpe *.mpeg *.mpeg1
@@ -41,6 +43,10 @@ QString _playlistFileExtensions = R"(
 
 
 namespace constants {
+
+    extern const QString ApplicationDebugFolder {
+        _applicationDebugFolder + "/vura-debug"
+    };
 
     extern const QString MediaFileExtensions {
         "Media Files ("

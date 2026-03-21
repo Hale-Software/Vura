@@ -28,6 +28,7 @@
 #include <QTextStream>
 #include <QString>
 
+#include "constants.h"
 #include "../utility/logger.h"
 #include "../utility/qt-wrappers.h"
 

@@ -52,7 +52,7 @@ void Startup::InitDirectories()
     QStringList directoryList;
     QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (VURA_BUILD_TYPE == "Debug") {
-        appDataDir = "C:/Users/halea/vura-debug";
+        appDataDir = constants::ApplicationDebugFolder;
     }
     directoryList << appDataDir;
     directoryList << appDataDir + "/crashes";
@@ -85,7 +85,7 @@ void Startup::InitApplicationFiles()
     qDebug() << "Checking if marker file from settings exists...";
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = "C:/Users/halea/vura-debug/markers.json";
+        defaultMarkerFile = constants::ApplicationDebugFolder + "/markers.json";
     }
     QString markerFile = settings.value("markerFile", defaultMarkerFile).toString();
 

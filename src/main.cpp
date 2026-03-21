@@ -132,7 +132,7 @@ void setCrashHandler()
 #ifdef Q_OS_WIN
     QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = "C:/Users/halea/vura-debug/crashes";
+        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
     }
 
     if (!QDir(defaultCrashFileLocation).exists()) {

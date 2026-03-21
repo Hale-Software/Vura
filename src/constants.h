@@ -18,14 +18,16 @@
 #pragma once
 
 #include <QString>
+#include <QStandardPaths>
 
 
 namespace constants {
 
- extern const QString MediaFileExtensions;
- extern const QString VideoFileExtensions;
- extern const QString AudioFileExtensions;
- extern const QString ApplicationFileExtensions;
- extern const QString PlaylistFileExtensions;
+    extern const QString ApplicationDebugFolder;
+    extern const QString MediaFileExtensions;
+    extern const QString VideoFileExtensions;
+    extern const QString AudioFileExtensions;
+    extern const QString ApplicationFileExtensions;
+    extern const QString PlaylistFileExtensions;
 
 }

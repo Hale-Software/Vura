@@ -30,6 +30,8 @@
 #include <QCoreApplication>
 #include <QMessageBox>
 
+#include "../constants.h"
+
 
 class Logger : public QObject
 {

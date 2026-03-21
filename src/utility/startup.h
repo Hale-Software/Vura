@@ -28,6 +28,8 @@
 #include <QJsonArray>
 #include <QDebug>
 
+#include "../constants.h"
+
 
 class Startup {
 

@@ -100,7 +100,7 @@ void VideoMarkers::saveMarkers(QString video, QMap<QString,QList<double>> marker
     QSettings settings;
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = "C:/Users/halea/vura-debug/markers.json";
+        defaultMarkerFile = constants::ApplicationDebugFolder + "/markers.json";
     }
 
     QList<double> markerList = markerMap.value("marker").toList();

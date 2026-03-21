@@ -26,6 +26,7 @@
 
 #include <qBreakpad/handler/QBreakpadHandler.h>
 
+#include "constants.h"
 #include "widgets/mainwindow.h"
 #include "widgets/testwindow.h"
 
