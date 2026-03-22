@@ -15,18 +15,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "logmessages.h"
+#include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
 
-
-LogMessages::LogMessages(QObject* parent) : QObject(parent) {}
-
-QStringList LogMessages::getAllMessages() const { return m_messages; }
-
-void LogMessages::clearAllMessages() { m_messages.clear(); }
-
-void LogMessages::append(const QString &message)
-{
-    m_messages.append(message);
-
-    emit newMessage(message);
-}
+#include "../../../src/constants.h"
+#include "../../../src/utility/videomarkers.h"

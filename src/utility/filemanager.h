@@ -40,8 +40,6 @@ struct HKEYHeader {
 struct HMRKHeader {
     uint32_t signature = 0xE8EDF2EB;
     uint32_t version = 0x31;
-    uint32_t data_size;
-    uint32_t checksum;
 };
 
 struct HPLHeader {
@@ -91,7 +89,7 @@ public:
 
 private:
     uint32_t calculateHeaderChecksum(const HKEYHeader &header);
-    uint32_t calculateHeaderChecksum(const HMRKHeader &header);
+    static uint32_t calculateHeaderChecksum(const HMRKHeader &header);
     uint32_t calculateHeaderChecksum(const HPLHeader &header);
     uint32_t calculateHeaderChecksum(const HPRJHeader &header);
 

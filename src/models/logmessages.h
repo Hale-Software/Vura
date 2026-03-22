@@ -21,16 +21,18 @@
 #include <QString>
 #include <QStringList>
 
+
 class LogMessages : public QObject
 {
     Q_OBJECT
-public:
-    LogMessages();
 
-    QStringList getAllMessages();
+public:
+    explicit LogMessages(QObject* parent = nullptr);
+    QStringList getAllMessages() const;
+    void clearAllMessages();
 
 public slots:
-    void append(QString message);
+    void append(const QString &message);
 
 signals:
     void newMessage(QString newMessage);

@@ -11,5 +11,13 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ENABLE_UI "Enable building with UI frontend (requires Qt6)" ON)
+option(ENABLE_TESTS "Enable building tests" OFF)
+
 add_subdirectory(deps)
-add_subdirectory(src)
+
+if (ENABLE_UI)
+    add_subdirectory(src)
+endif ()
+
+add_subdirectory(tests)
