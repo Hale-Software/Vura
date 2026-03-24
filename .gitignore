@@ -8,6 +8,7 @@
 !/cmake
 !/deps
 !/installer
+!/libvura
 !/src
 !/scripts
 !/tests
