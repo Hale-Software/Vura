@@ -7,31 +7,29 @@
 !/build-aux
 !/cmake
 !/deps
+!/docs
 !/installer
 !/libvura
-!/src
 !/scripts
+!/src
 !/tests
 !.clang-format
 !.editorconfig
-!.gitmodules
+!.gitattributes
 !.gitignore
+!.gitmodules
 !.mailmap
 !AUTHORS
 !buildspec.json
 !CMakeLists.txt
 !CMakePresets.json
-!COC.rst
+!CODE_OF_CONDUCT.md
 !COMMITMENT
 !CONTRIBUTING.md
 !COPYING
+!crowdin.yml
 !INSTALL
 !README.md
-
-# Exclude docs
-!/docs/HOTKEYS.md
-!/docs/SETTINGS.md
-!/docs/TODO.md
 
 # Exclude lock files
 *.lock.json
