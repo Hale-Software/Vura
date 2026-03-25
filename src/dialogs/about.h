@@ -20,6 +20,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QTextBrowser>
+#include <QFile>
 #include "../components/ClickableLabel.h"
 
 QT_BEGIN_NAMESPACE
@@ -38,8 +39,12 @@ class AboutDialog : public QDialog
 
 public:
     explicit AboutDialog(QWidget *parent = nullptr);
-
     ~AboutDialog() override;
+
+private slots:
+    void authors_Clicked();
+    void license_Clicked();
+    void credits_Clicked();
 
 private:
     Ui::AboutDialog *ui;
