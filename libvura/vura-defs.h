@@ -17,20 +17,25 @@
 
 #pragma once
 
-#include <curl/curl.h>
+#define VURA_ALIGN_CENTER (0)
+#define VURA_ALIGN_LEFT (1 << 0)
+#define VURA_ALIGN_RIGHT (1 << 1)
+#define VURA_ALIGN_TOP (1 << 2)
+#define VURA_ALIGN_BOTTOM (1 << 3)
 
-#if defined(_WIN32) && LIBCURL_VERSION_NUM >= 0x072c00
+#define VURA_OUTPUT_SUCCESS 0
+#define VURA_OUTPUT_BAD_PATH -1
+#define VURA_OUTPUT_CONNECT_FAILED -2
+#define VURA_OUTPUT_INVALID_STREAM -3
+#define VURA_OUTPUT_ERROR -4
+#define VURA_OUTPUT_DISCONNECTED -5
+#define VURA_OUTPUT_UNSUPPORTED -6
+#define VURA_OUTPUT_NO_SPACE -7
+#define VURA_OUTPUT_ENCODE_ERROR -8
+#define VURA_OUTPUT_HDR_DISABLED -9
 
-#ifdef CURLSSLOPT_REVOKE_BEST_EFFORT
-#define CURL_VURA_REVOKE_SETTING CURLSSLOPT_REVOKE_BEST_EFFORT
-#else
-#define CURL_VURA_REVOKE_SETTING CURLSSLOPT_NO_REVOKE
-#endif
-
-#define curl_vura_set_revoke_setting(handle) curl_easy_setopt(handle, CURLOPT_SSL_OPTIONS, CURL_VURA_REVOKE_SETTING)
-
-#else
-
-#define curl_vura_set_revoke_setting(handle)
-
-#endif
+#define VURA_VIDEO_SUCCESS 0
+#define VURA_VIDEO_FAIL -1
+#define VURA_VIDEO_NOT_SUPPORTED -2
+#define VURA_VIDEO_INVALID_PARAM -3
+#define VURA_VIDEO_CURRENTLY_ACTIVE -4
