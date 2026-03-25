@@ -17,8 +17,6 @@
 
 #include "system-tray.h"
 
-#include <QMainWindow>
-
 
 SystemTray::SystemTray(QWidget *parent) : QSystemTrayIcon(parent)
 {
@@ -51,7 +49,7 @@ void SystemTray::createContextMenu()
         m_toggleShow->setText(tr("Show Vura"));
     }
 
-    QMenu *menu = new QMenu;
+    QMenu *menu = new QMenu();
     menu->addAction(m_toggleShow);
     menu->addSeparator();
     QAction *playAction = menu->addAction(tr("Play"));

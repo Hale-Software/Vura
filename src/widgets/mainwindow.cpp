@@ -248,6 +248,51 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+
+    m_locale = settings.value("language", "en-US").toString();
+    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
+    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
+    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
+    m_hashFile = settings.value("hashFile", false).toBool();
+    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
+    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
+    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
+    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
+    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
+    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
+    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
+    m_systemTray = settings.value("systemTray", true).toBool();
+    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
+    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
+    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
+    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
+    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
+    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
+    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
+    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
+    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
+    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_theme = settings.value("theme", "System").toString();
+    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+
+    if (timer->isActive())
+        timer->stop();
+
+    emit refreshSettings();
+    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
+    //setSystemTrayIcon();
+}
+
+void MainWindow::testFunction() {}
+
+
+#pragma region CONTEXT MENUS
+
+
 void MainWindow::openFolderContextMenu(const QString &path)
 {
     qDebug() << "Open folder from context Menu";
@@ -361,46 +406,151 @@ void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
     }
 }
 
-void MainWindow::loadSettings()
+void MainWindow::showPlaylistContextMenu(const QPoint &pos)
 {
-    QSettings settings;
+    QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
+    m_pos = pos;
 
-    m_locale = settings.value("language", "en-US").toString();
-    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
-    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
-    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
-    m_hashFile = settings.value("hashFile", false).toBool();
-    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
-    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
-    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
-    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
-    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
-    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
-    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
-    m_systemTray = settings.value("systemTray", true).toBool();
-    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
-    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
-    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
-    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
-    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
-    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
-    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
-    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
-    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
-    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
-    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
-    m_theme = settings.value("theme", "System").toString();
-    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    if (m_playlist->mediaCount() > 0) {
+        QModelIndex index = ui->playlistView->indexAt(pos);
+        if (index.isValid()) {
+            QMenu videoMenu;
+            QAction *playAction = videoMenu.addAction("Play");
+            QAction *streamAction = videoMenu.addAction("Stream");
+            QAction *saveVideoAction = videoMenu.addAction("Save");
+            QAction *informationAction = videoMenu.addAction("Information");
+            videoMenu.addSeparator();
+            QAction *showFolderAction = videoMenu.addAction("Show Containing Folder");
+            videoMenu.addSeparator();
+            QAction *addFileAction = videoMenu.addAction("Add File");
+            QAction *addFolderAction = videoMenu.addAction("Add Folder");
+            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
+            videoMenu.addSeparator();
+            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
+            videoMenu.addSeparator();
+            QAction *removeSelectedAction = videoMenu.addAction("Remove Selected");
+            QAction *clearAction = videoMenu.addAction("Clear the playlist");
+            videoMenu.addSeparator();
+            QAction *shuffleAction = videoMenu.addAction("Shuffle");
 
-    if (timer->isActive())
-        timer->stop();
+            connect(playAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_PlayVideoAction);
+            connect(streamAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_StreamVideoAction);
+            connect(saveVideoAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveVideoAction);
+            connect(informationAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_InformationVideoAction);
+            connect(showFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_ShowFolderVideoAction);
+            connect(removeSelectedAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_RemoveSelectedVideoAction);
+            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
+            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
+            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
 
-    emit refreshSettings();
-    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
-    //setSystemTrayIcon();
+            videoMenu.exec(globalPos);
+
+        } else {
+            QMenu videoMenu;
+            QAction *addFileAction = videoMenu.addAction("Add File");
+            QAction *addFolderAction = videoMenu.addAction("Add Folder");
+            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
+            videoMenu.addSeparator();
+            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
+            videoMenu.addSeparator();
+            QAction *clearAction = videoMenu.addAction("Clear the playlist");
+            videoMenu.addSeparator();
+            QAction *shuffleAction = videoMenu.addAction("Shuffle");
+
+            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
+            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
+            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
+
+            videoMenu.exec(globalPos);
+        }
+    } else {
+        QMenu emptyMenu;
+        QAction *addFileAction = emptyMenu.addAction("Add File");
+        QAction *addFolderAction = emptyMenu.addAction("Add Folder");
+        QAction *advancedOpenAction = emptyMenu.addAction("Advanced Open");
+
+        connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+        connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+        connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+
+        emptyMenu.exec(globalPos);
+    }
+
 }
 
-void MainWindow::testFunction() {}
+void MainWindow::playlistContextMenu_AddFileAction() {}
+
+void MainWindow::playlistContextMenu_AddFolderAction() {}
+
+void MainWindow::playlistContextMenu_AdvancedOpenAction() {}
+
+void MainWindow::playlistContextMenu_SaveAction() {}
+
+void MainWindow::playlistContextMenu_PlayVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    m_playlist->setCurrentIndex(index.row());
+}
+
+void MainWindow::playlistContextMenu_StreamVideoAction() {}
+
+void MainWindow::playlistContextMenu_SaveVideoAction() {}
+
+void MainWindow::playlistContextMenu_InformationVideoAction() {}
+
+void MainWindow::playlistContextMenu_ShowFolderVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    QVariant data = index.data(); // Get the data
+    QString text = data.toString();
+    QFileInfo info(text);
+    QString directoryPath = info.absoluteDir().absolutePath();
+    QUrl folderUrl = QUrl::fromLocalFile(directoryPath);
+    if (!QDesktopServices::openUrl(folderUrl)) {
+        // Handle error if the folder couldn't be opened
+        qWarning() << "Could not open folder: " << directoryPath.toStdString();
+    }
+}
+
+void MainWindow::playlistContextMenu_RemoveSelectedVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    if (index.row() == m_playlist->currentIndex()) {
+        m_playlist->next();
+    }
+    m_playlist->removeMedia(index.row());
+}
+
+void MainWindow::systemTray_Clicked()
+{
+    if (this->isHidden() || this->isMinimized()) {
+        this->showNormal();
+        this->activateWindow();
+    }
+}
+
+void MainWindow::systemTray_Hide(bool hiding)
+{
+    if (hiding) {
+        this->hide();
+        m_player->pause();
+
+    } else {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+    }
+}
+
+
+#pragma endregion
 
 
 #pragma region MEDIA PLAYER
@@ -661,14 +811,14 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
     bool loadedNewPlaylist = false;
 
     for (const QString& fileName : fileList) {
-        files.removeAll(fileName);
-        files.prepend(fileName);
-
         if (localFile) {
             QUrl url = QUrl::fromLocalFile(fileName);
 
             if (!isPlaylist(url)) {
+                files.removeAll(fileName);
+                files.prepend(fileName);
                 m_playlist->addMedia(url);
+
             } else {
                 loadedNewPlaylist = loadPlaylist(url);
             }
@@ -1172,134 +1322,6 @@ void MainWindow::takeSnapshot()
     QVideoFrame frame = m_videoSink->videoFrame();
     QImage image = frame.toImage();
     image.save(fullPath, "JPEG");
-}
-
-
-#pragma endregion
-
-
-#pragma region PLAYLIST CONTEXT MENU
-
-
-void MainWindow::showPlaylistContextMenu(const QPoint &pos)
-{
-    QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
-    m_pos = pos;
-
-    if (m_playlist->mediaCount() > 0) {
-        QModelIndex index = ui->playlistView->indexAt(pos);
-        if (index.isValid()) {
-            QMenu videoMenu;
-            QAction *playAction = videoMenu.addAction("Play");
-            QAction *streamAction = videoMenu.addAction("Stream");
-            QAction *saveVideoAction = videoMenu.addAction("Save");
-            QAction *informationAction = videoMenu.addAction("Information");
-            videoMenu.addSeparator();
-            QAction *showFolderAction = videoMenu.addAction("Show Containing Folder");
-            videoMenu.addSeparator();
-            QAction *addFileAction = videoMenu.addAction("Add File");
-            QAction *addFolderAction = videoMenu.addAction("Add Folder");
-            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
-            videoMenu.addSeparator();
-            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
-            videoMenu.addSeparator();
-            QAction *removeSelectedAction = videoMenu.addAction("Remove Selected");
-            QAction *clearAction = videoMenu.addAction("Clear the playlist");
-            videoMenu.addSeparator();
-            QAction *shuffleAction = videoMenu.addAction("Shuffle");
-
-            connect(playAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_PlayVideoAction);
-            connect(streamAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_StreamVideoAction);
-            connect(saveVideoAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveVideoAction);
-            connect(informationAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_InformationVideoAction);
-            connect(showFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_ShowFolderVideoAction);
-            connect(removeSelectedAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_RemoveSelectedVideoAction);
-            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
-            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
-            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
-
-            videoMenu.exec(globalPos);
-
-        } else {
-            QMenu videoMenu;
-            QAction *addFileAction = videoMenu.addAction("Add File");
-            QAction *addFolderAction = videoMenu.addAction("Add Folder");
-            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
-            videoMenu.addSeparator();
-            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
-            videoMenu.addSeparator();
-            QAction *clearAction = videoMenu.addAction("Clear the playlist");
-            videoMenu.addSeparator();
-            QAction *shuffleAction = videoMenu.addAction("Shuffle");
-
-            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
-            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
-            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
-
-            videoMenu.exec(globalPos);
-        }
-    } else {
-        QMenu emptyMenu;
-        QAction *addFileAction = emptyMenu.addAction("Add File");
-        QAction *addFolderAction = emptyMenu.addAction("Add Folder");
-        QAction *advancedOpenAction = emptyMenu.addAction("Advanced Open");
-
-        connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-        connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-        connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-
-        emptyMenu.exec(globalPos);
-    }
-
-}
-
-void MainWindow::playlistContextMenu_AddFileAction() {}
-
-void MainWindow::playlistContextMenu_AddFolderAction() {}
-
-void MainWindow::playlistContextMenu_AdvancedOpenAction() {}
-
-void MainWindow::playlistContextMenu_SaveAction() {}
-
-void MainWindow::playlistContextMenu_PlayVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    m_playlist->setCurrentIndex(index.row());
-}
-
-void MainWindow::playlistContextMenu_StreamVideoAction() {}
-
-void MainWindow::playlistContextMenu_SaveVideoAction() {}
-
-void MainWindow::playlistContextMenu_InformationVideoAction() {}
-
-void MainWindow::playlistContextMenu_ShowFolderVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    QVariant data = index.data(); // Get the data
-    QString text = data.toString();
-    QFileInfo info(text);
-    QString directoryPath = info.absoluteDir().absolutePath();
-    QUrl folderUrl = QUrl::fromLocalFile(directoryPath);
-    if (!QDesktopServices::openUrl(folderUrl)) {
-        // Handle error if the folder couldn't be opened
-        qWarning() << "Could not open folder: " << directoryPath.toStdString();
-    }
-}
-
-void MainWindow::playlistContextMenu_RemoveSelectedVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    if (index.row() == m_playlist->currentIndex()) {
-        m_playlist->next();
-    }
-    m_playlist->removeMedia(index.row());
 }
 
 
@@ -1932,24 +1954,3 @@ void MainWindow::durationLabel_Clicked()
     }
 }
 
-void MainWindow::systemTray_Clicked()
-{
-    if (this->isHidden() || this->isMinimized()) {
-        this->showNormal();
-        this->activateWindow();
-    }
-}
-
-void MainWindow::systemTray_Hide(bool hiding)
-{
-    if (hiding) {
-        this->hide();
-        m_player->pause();
-
-    } else {
-        this->show();
-        this->showNormal();
-        this->raise();
-        this->activateWindow();
-    }
-}
