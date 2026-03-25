@@ -89,7 +89,7 @@ void FeedbackDialog::privacyPolicy_Clicked()
 void FeedbackDialog::emailAddress_EditingFinished()
 {
     if (ui->emailAddress->hasAcceptableInput()) {
-
+        ui->emailAddress->setStyleSheet("border: none;");
     } else {
         ui->emailAddress->setStyleSheet("border: 1px solid red;");
     }
