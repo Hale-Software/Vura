@@ -77,9 +77,27 @@ private slots:
 
 private:
     QSystemTrayIcon *m_systemTrayIcon = nullptr;
+    QMenu *m_speedMenu = nullptr;
     QAction *m_toggleShow = nullptr;
+    QAction *m_playAction = nullptr;
+    QAction *m_stopAction = nullptr;
+    QAction *m_nextAction = nullptr;
+    QAction *m_previousAction = nullptr;
+    QAction *m_recordAction = nullptr;
+    QAction *m_fasterAction = nullptr;
+    QAction *m_fasterFineAction = nullptr;
+    QAction *m_normalAction = nullptr;
+    QAction *m_slowerFineAction = nullptr;
+    QAction *m_slowerAction = nullptr;
+    QAction *m_increaseVolumeAction = nullptr;
+    QAction *m_decreaseVolumeAction = nullptr;
+    QAction *m_muteAction = nullptr;
+    QAction *m_openFileAction = nullptr;
+    QAction *m_quitAction = nullptr;
+
     bool m_showing = true;
 
     void createContextMenu();
+    void setActionEnables();
 
 };

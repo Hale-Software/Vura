@@ -759,6 +759,9 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
     }
     settings.setValue("recentFileList", files);
     emit updateRecentFiles();
+    this->showNormal();
+    this->raise();
+    this->activateWindow();
 }
 
 void MainWindow::closeFile()

@@ -24,6 +24,7 @@ SystemTray::SystemTray(QWidget *parent) : QSystemTrayIcon(parent)
     m_systemTrayIcon->setIcon(QIcon(":/img/images/vura-white.png"));
 
     createContextMenu();
+    setActionEnables();
 }
 
 SystemTray::~SystemTray() {}
@@ -32,12 +33,14 @@ void SystemTray::show()
 {
     m_systemTrayIcon->show();
     m_showing = true;
+    setActionEnables();
 }
 
 void SystemTray::hide()
 {
     m_systemTrayIcon->hide();
     m_showing = false;
+    setActionEnables();
 }
 
 void SystemTray::createContextMenu()
@@ -49,51 +52,87 @@ void SystemTray::createContextMenu()
         m_toggleShow->setText(tr("Show Vura"));
     }
 
+    m_speedMenu = new QMenu();
+    m_playAction = new QAction(this);
+    m_stopAction = new QAction(this);
+    m_nextAction = new QAction(this);
+    m_previousAction = new QAction(this);
+    m_recordAction = new QAction(this);
+    m_fasterAction = new QAction(this);
+    m_fasterFineAction = new QAction(this);
+    m_normalAction = new QAction(this);
+    m_slowerFineAction = new QAction(this);
+    m_slowerAction = new QAction(this);
+    m_increaseVolumeAction = new QAction(this);
+    m_decreaseVolumeAction = new QAction(this);
+    m_muteAction = new QAction(this);
+    m_openFileAction = new QAction(this);
+    m_quitAction = new QAction(this);
+
     QMenu *menu = new QMenu();
     menu->addAction(m_toggleShow);
     menu->addSeparator();
-    QAction *playAction = menu->addAction(tr("Play"));
-    QAction *stopAction = menu->addAction(tr("Stop"));
-    QAction *nextAction = menu->addAction(tr("Next"));
-    QAction *previousAction = menu->addAction(tr("Previous"));
-    QAction *recordAction = menu->addAction(tr("Record"));
+    m_playAction = menu->addAction(tr("Play"));
+    m_stopAction = menu->addAction(tr("Stop"));
+    m_nextAction = menu->addAction(tr("Next"));
+    m_previousAction = menu->addAction(tr("Previous"));
+    m_recordAction = menu->addAction(tr("Record"));
     menu->addSeparator();
 
-    QMenu *speedMenu = menu->addMenu(tr("Speed"));
-    QAction *fasterAction = speedMenu->addAction(tr("Faster"));
-    QAction *fasterFineAction = speedMenu->addAction(tr("Faster (fine)"));
-    QAction *normalAction = speedMenu->addAction(tr("Normal"));
-    QAction *slowerFineAction = speedMenu->addAction(tr("Slower (fine)"));
-    QAction *slowerAction = speedMenu->addAction(tr("Slower"));
+    m_speedMenu = menu->addMenu(tr("Speed"));
+    m_fasterAction = m_speedMenu->addAction(tr("Faster"));
+    m_fasterFineAction = m_speedMenu->addAction(tr("Faster (fine)"));
+    m_normalAction = m_speedMenu->addAction(tr("Normal"));
+    m_slowerFineAction = m_speedMenu->addAction(tr("Slower (fine)"));
+    m_slowerAction = m_speedMenu->addAction(tr("Slower"));
 
     menu->addSeparator();
-    QAction *increaseVolumeAction = menu->addAction(tr("Increase Volume"));
-    QAction *decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
-    QAction *muteAction = menu->addAction(tr("Mute"));
+    m_increaseVolumeAction = menu->addAction(tr("Increase Volume"));
+    m_decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
+    m_muteAction = menu->addAction(tr("Mute"));
     menu->addSeparator();
-    QAction *openFileAction = menu->addAction(tr("Open File"));
-    QAction *quitAction = menu->addAction(tr("Quit"));
+    m_openFileAction = menu->addAction(tr("Open File"));
+    m_quitAction = menu->addAction(tr("Quit"));
 
     connect(m_systemTrayIcon, &QSystemTrayIcon::activated, this, &SystemTray::systemTray_Clicked);
     connect(m_toggleShow, &QAction::triggered, this, &SystemTray::systemTray_Hide);
-    connect(stopAction, &QAction::triggered, this, &SystemTray::systemTray_Stop);
-    connect(recordAction, &QAction::triggered, this, &SystemTray::systemTray_Record);
-    connect(fasterAction, &QAction::triggered, this, &SystemTray::systemTray_Faster);
-    connect(fasterFineAction, &QAction::triggered, this, &SystemTray::systemTray_FasterFine);
-    connect(normalAction, &QAction::triggered, this, &SystemTray::systemTray_NormalSpeed);
-    connect(slowerFineAction, &QAction::triggered, this, &SystemTray::systemTray_SlowerFine);
-    connect(slowerAction, &QAction::triggered, this, &SystemTray::systemTray_Slower);
-    connect(increaseVolumeAction, &QAction::triggered, this, &SystemTray::systemTray_IncreaseVolume);
-    connect(decreaseVolumeAction, &QAction::triggered, this, &SystemTray::systemTray_DecreaseVolume);
-    connect(openFileAction, &QAction::triggered, this, &SystemTray::systemTray_OpenFile);
-    connect(quitAction, &QAction::triggered, this, &SystemTray::systemTray_Exit);
-    connect(playAction, &QAction::triggered, this, &SystemTray::systemTray_TogglePlayPause);
-    connect(nextAction, &QAction::triggered, this, &SystemTray::systemTray_Next);
-    connect(previousAction, &QAction::triggered, this, &SystemTray::systemTray_Previous);
-    connect(muteAction, &QAction::triggered, this, &SystemTray::systemTray_ToggleMute);
+    connect(m_stopAction, &QAction::triggered, this, &SystemTray::systemTray_Stop);
+    connect(m_recordAction, &QAction::triggered, this, &SystemTray::systemTray_Record);
+    connect(m_fasterAction, &QAction::triggered, this, &SystemTray::systemTray_Faster);
+    connect(m_fasterFineAction, &QAction::triggered, this, &SystemTray::systemTray_FasterFine);
+    connect(m_normalAction, &QAction::triggered, this, &SystemTray::systemTray_NormalSpeed);
+    connect(m_slowerFineAction, &QAction::triggered, this, &SystemTray::systemTray_SlowerFine);
+    connect(m_slowerAction, &QAction::triggered, this, &SystemTray::systemTray_Slower);
+    connect(m_increaseVolumeAction, &QAction::triggered, this, &SystemTray::systemTray_IncreaseVolume);
+    connect(m_decreaseVolumeAction, &QAction::triggered, this, &SystemTray::systemTray_DecreaseVolume);
+    connect(m_openFileAction, &QAction::triggered, this, &SystemTray::systemTray_OpenFile);
+    connect(m_quitAction, &QAction::triggered, this, &SystemTray::systemTray_Exit);
+    connect(m_playAction, &QAction::triggered, this, &SystemTray::systemTray_TogglePlayPause);
+    connect(m_nextAction, &QAction::triggered, this, &SystemTray::systemTray_Next);
+    connect(m_previousAction, &QAction::triggered, this, &SystemTray::systemTray_Previous);
+    connect(m_muteAction, &QAction::triggered, this, &SystemTray::systemTray_ToggleMute);
 
     m_systemTrayIcon->setContextMenu(menu);
     m_systemTrayIcon->setToolTip(tr("Vura media player"));
+}
+
+void SystemTray::setActionEnables()
+{
+    m_playAction->setEnabled(m_showing);
+    m_stopAction->setEnabled(m_showing);
+    m_nextAction->setEnabled(m_showing);
+    m_previousAction->setEnabled(m_showing);
+    m_recordAction->setEnabled(m_showing);
+    m_fasterAction->setEnabled(m_showing);
+    m_fasterFineAction->setEnabled(m_showing);
+    m_normalAction->setEnabled(m_showing);
+    m_slowerFineAction->setEnabled(m_showing);
+    m_slowerAction->setEnabled(m_showing);
+    m_increaseVolumeAction->setEnabled(m_showing);
+    m_decreaseVolumeAction->setEnabled(m_showing);
+    m_muteAction->setEnabled(m_showing);
+    m_openFileAction->setEnabled(m_showing);
+    m_speedMenu->setEnabled(m_showing);
 }
 
 void SystemTray::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
@@ -115,6 +154,8 @@ void SystemTray::systemTray_Hide()
         m_toggleShow->setText(tr("Hide Vura in taskbar"));
         m_showing = true;
     }
+
+    setActionEnables();
 }
 
 void SystemTray::systemTray_Stop()
