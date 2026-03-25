@@ -1,4 +1,4 @@
-#include <version.h>
+#include <vuraversion.h>
 
 const char *VURA_VERSION = "@VURA_VERSION@";
 const char *VURA_VERSION_CANONICAL = "@VURA_VERSION_CANONICAL@";
