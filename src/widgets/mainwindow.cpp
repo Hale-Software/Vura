@@ -791,14 +791,7 @@ void MainWindow::emergencyCollapse()
 
 void MainWindow::exitApplication()
 {
-    QMessageBox::StandardButton confirmationBox;
-    confirmationBox = QMessageBox::question(this, "Exit Application", "Are you sure you want to exit?",
-                                  QMessageBox::Yes | QMessageBox::No);
-
-    if (confirmationBox == QMessageBox::Yes) {
-        qInfo() << "Exitting Application";
-        this->close();
-    }
+    this->close();
 }
 
 void MainWindow::openFiles(const QStringList &fileList, bool localFile)
@@ -1330,6 +1323,7 @@ void MainWindow::takeSnapshot()
 
 #pragma region VIDEO CONTROLS
 
+
 void MainWindow::seek(int mseconds)
 {
     m_player->setPosition(mseconds);
@@ -1364,6 +1358,17 @@ void MainWindow::jumpTo(int mseconds)
         } else if (newPosition <= zeroNum) {
             m_player->setPosition(zeroNum);
         }
+    }
+}
+
+void MainWindow::durationLabel_Clicked()
+{
+    if (m_durationLabelShowRemainingTime) {
+        m_durationLabelShowRemainingTime = false;
+
+    } else {
+        m_durationLabelShowRemainingTime = true;
+
     }
 }
 
@@ -1664,149 +1669,6 @@ bool MainWindow::loadPlaylist(const QUrl &url)
     return false;
 }
 
-QString MainWindow::getMarker(const double &markerTime)
-{
-    QSettings settings;
-
-    double markerMatchTolerance = settings.value("markerMatchTolerance", 0.001).toDouble();
-    QString markerKey;
-    double m_time;
-    double markerDif;
-
-    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
-    {
-        QString m_key = i.key();
-        foreach (const double marker, i.value())
-        {
-            if (qAbs(marker - markerTime) <= markerMatchTolerance)
-            {
-                if (!markerKey.isEmpty())
-                {
-                    if (qAbs(marker - markerTime) <= markerDif)
-                    {
-                        markerKey = m_key;
-                        m_time = marker;
-                        markerDif = qAbs(marker - markerTime);
-                    }
-                }
-                else
-                {
-                    markerKey = m_key;
-                    m_time = marker;
-                    markerDif = qAbs(marker - markerTime);
-                }
-            }
-        }
-    }
-
-    return markerKey;
-}
-
-void MainWindow::markersChanged(const QString &markerName, const double &markerTime, const QString &markerType)
-{
-    if (markerType == m_markerValue)
-    {
-        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
-
-        if (!markers.isEmpty())
-        {
-            markers.replace(m_markerIndex, markerTime);
-            m_videoMarkersList.insert(m_markerValue, markers);
-        }
-    }
-    else
-    {
-        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
-
-        if (!markers.isEmpty())
-        {
-            markers.removeAt(m_markerIndex);
-            QList<double> marker = m_videoMarkersList.value(markerType).toList();
-            marker.append(markerTime);
-            m_videoMarkersList.insert(markerType, marker);
-        }
-    }
-    m_videoSlider->setMarkers(m_videoMarkersList);
-}
-
-void MainWindow::markerDeleted(const double &markerTime)
-{
-    QSettings settings;
-
-    double markerMatchTolerance = settings.value("markerMatchTolerance", 0.001).toDouble();
-    QString markerKey;
-    double m_time;
-    double markerDif;
-
-    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
-    {
-        QString m_key = i.key();
-        foreach (const double marker, i.value())
-        {
-            if (qAbs(marker - markerTime) <= markerMatchTolerance)
-            {
-                if (!markerKey.isEmpty())
-                {
-                    if (qAbs(marker - markerTime) <= markerDif)
-                    {
-                        markerKey = m_key;
-                        m_time = marker;
-                        markerDif = qAbs(marker - markerTime);
-                    }
-                }
-                else
-                {
-                    markerKey = m_key;
-                    m_time = marker;
-                    markerDif = qAbs(marker - markerTime);
-                }
-            }
-        }
-    }
-
-    if (!markerKey.isEmpty())
-    {
-        if (m_videoMarkersList.contains(markerKey))
-        {
-            QList<double>& m_list = m_videoMarkersList[markerKey];
-            bool removed = m_list.removeAll(m_time);
-
-            if (removed)
-            {
-                qDebug() << tr("Removed marker %1").arg(markerKey);
-            }
-            else
-            {
-                qDebug() << tr("Failed to removed marker %1").arg(markerKey);
-            }
-        }
-    }
-
-    m_videoSlider->setMarkers(m_videoMarkersList);
-}
-
-void MainWindow::saveMediaFilterList(const QStringList& filterList)
-{
-    QSettings settings;
-    settings.setValue("mediaFileFilter", QVariant::fromValue(filterList));
-    settings.sync();
-}
-
-QStringList MainWindow::loadMediaFilterList()
-{
-    QSettings settings;
-
-    QStringList defaultList;
-    QVariant value = settings.value("mediaFileFilter", QVariant::fromValue(defaultList));
-    QStringList fileFilters = value.value<QStringList>();
-
-    if (fileFilters.isEmpty()) {
-        fileFilters << "*.mp4" << "*.wmv";
-    }
-
-    return fileFilters;
-}
-
 void MainWindow::showNotImplemented_Message()
 {
     QMessageBox::information(this, "Not Implemented", "Sorry this function has not been implemented yet.");
@@ -1884,16 +1746,6 @@ void MainWindow::setApplicationWindowTitle()
     setWindowTitle(windowTitle);
 }
 
-void MainWindow::setSystemTrayIcon()
-{
-    if (m_systemTray) {
-        m_systemTrayIcon->show();
-
-    } else if (!m_systemTray) {
-        m_systemTrayIcon->hide();
-    }
-}
-
 void MainWindow::setToolTips()
 {
     ui->position->setToolTip(tr("Elapsed time"));
@@ -1940,17 +1792,3 @@ bool MainWindow::createUserDirs()
 
 
 #pragma endregion
-
-
-
-void MainWindow::durationLabel_Clicked()
-{
-    if (m_durationLabelShowRemainingTime) {
-        m_durationLabelShowRemainingTime = false;
-
-    } else {
-        m_durationLabelShowRemainingTime = true;
-
-    }
-}
-

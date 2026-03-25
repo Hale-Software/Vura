@@ -141,9 +141,6 @@ public:
     bool isPlayerAvailable() const;
 
 public slots:
-    void markersChanged(const QString &markerName, const double &markerTime, const QString &markerType);
-    void markerDeleted(const double &markerTime);
-
     void showPreferences();
     void showAbout();
     void showHelp();
@@ -361,14 +358,6 @@ private:
     QString m_statusInfo;
     qint64 m_duration;
     QMediaDevices m_mediaDevices;
-    QMenu *h_audioMenu = nullptr;
-    QAction *h_recentFileActions[10];
-    QAction *h_clearRecentFilesAction;
-    QAction *h_recentFilesSeparator;
-    QAction *h_audioOutputActions[15];
-    QAction *h_audioTrackActions[15];
-    QAction *h_videoTrackActions[15];
-    QAction *h_subtitleTrackActions[15];
     int videoTrack;
     int audioOutput;
     int audioTrack;
@@ -378,9 +367,6 @@ private:
     // FUNCTIONS
     // =======================================================================================================
     bool isPlaylist(const QUrl &url);
-    QString getMarker(const double &markerTime);
-    void saveMediaFilterList(const QStringList& filterList);
-    QStringList loadMediaFilterList();
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
@@ -391,7 +377,6 @@ private:
     QString strippedFileName(const QString &fileName);
     QString timestampString(qint64 position);
     void setApplicationWindowTitle();
-    void setSystemTrayIcon();
     void setToolTips();
     void setStyleSheet();
     bool createUserDirs();
