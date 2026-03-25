@@ -19,7 +19,7 @@
 
 #include <stdarg.h>
 
-#include "defs.h"
+#include "c99defs.h"
 
 /*
  * Logging and Crash Related Stuff
