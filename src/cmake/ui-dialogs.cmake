@@ -14,4 +14,6 @@ target_sources(
         dialogs/mediainformation.h
         dialogs/helpdialog.cpp
         dialogs/helpdialog.h
+        dialogs/LogUploadDialog.cpp
+        dialogs/LogUploadDialog.h
 )
