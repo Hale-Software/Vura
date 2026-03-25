@@ -68,63 +68,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 
     // Configure system tray icon
-    m_trayIcon = new QSystemTrayIcon(this);
-    m_trayIcon->setIcon(QIcon(":/img/images/vura.png"));
-    systemTray_ToggleShow = new QAction(this);
-    if (m_systemTray_Showing) {
-        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
+    m_systemTrayIcon = new SystemTray(this);
+    if (m_systemTray) {
+        m_systemTrayIcon->show();
     } else {
-        systemTray_ToggleShow->setText(tr("Show Vura"));
+        m_systemTrayIcon->hide();
     }
 
-    QMenu *menu = new QMenu(this);
-    menu->addAction(systemTray_ToggleShow);
-    menu->addSeparator();
-    QAction *playAction = menu->addAction(tr("Play"));
-    QAction *stopAction = menu->addAction(tr("Stop"));
-    QAction *nextAction = menu->addAction(tr("Next"));
-    QAction *previousAction = menu->addAction(tr("Previous"));
-    QAction *recordAction = menu->addAction(tr("Record"));
-    menu->addSeparator();
-
-    QMenu *speedMenu = menu->addMenu(tr("Speed"));
-    QAction *fasterAction = speedMenu->addAction(tr("Faster"));
-    QAction *fasterFineAction = speedMenu->addAction(tr("Faster (fine)"));
-    QAction *normalAction = speedMenu->addAction(tr("Normal"));
-    QAction *slowerFineAction = speedMenu->addAction(tr("Slower (fine)"));
-    QAction *slowerAction = speedMenu->addAction(tr("Slower"));
-
-    menu->addSeparator();
-    QAction *increaseVolumeAction = menu->addAction(tr("Increase Volume"));
-    QAction *decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
-    QAction *muteAction = menu->addAction(tr("Mute"));
-    menu->addSeparator();
-    QAction *openFileAction = menu->addAction(tr("Open File"));
-    QAction *quitAction = menu->addAction(tr("Quit"));
-
-    connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::systemTray_Clicked);
-    connect(systemTray_ToggleShow, &QAction::triggered, this, &MainWindow::hideSystemTray);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::systemTray_Stop);
-    connect(recordAction, &QAction::triggered, this, &MainWindow::systemTray_Record);
-    connect(fasterAction, &QAction::triggered, this, &MainWindow::systemTray_Faster);
-    connect(fasterFineAction, &QAction::triggered, this, &MainWindow::systemTray_FasterFine);
-    connect(normalAction, &QAction::triggered, this, &MainWindow::systemTray_Normal);
-    connect(slowerFineAction, &QAction::triggered, this, &MainWindow::systemTray_SlowerFine);
-    connect(slowerAction, &QAction::triggered, this, &MainWindow::systemTray_Slower);
-    connect(increaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_IncreaseVolume);
-    connect(decreaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_DecreaseVolume);
-    connect(openFileAction, &QAction::triggered, this, &MainWindow::systemTray_OpenFile);
-    connect(quitAction, &QAction::triggered, this, &MainWindow::exitApplication);
-    connect(playAction, &QAction::triggered, this, &MainWindow::togglePlayPause);
-    connect(nextAction, &QAction::triggered, this, &MainWindow::nextVideo);
-    connect(previousAction, &QAction::triggered, this, &MainWindow::previousVideo);
-    connect(muteAction, &QAction::triggered, this, &MainWindow::toggleMute);
-
-    m_trayIcon->setContextMenu(menu);
-    m_trayIcon->setToolTip(tr("Vura media player"));
-
-    if (m_systemTray)
-        m_trayIcon->show();
+    connect(m_systemTrayIcon, &SystemTray::clicked, this, &MainWindow::systemTray_Clicked);
+    connect(m_systemTrayIcon, &SystemTray::hiding, this, &MainWindow::systemTray_Hide);
+    connect(m_systemTrayIcon, &SystemTray::stop, m_player, &QMediaPlayer::stop);
+    connect(m_systemTrayIcon, &SystemTray::changePlaybackSpeed, this, &MainWindow::changePlaybackSpeed);
+    connect(m_systemTrayIcon, &SystemTray::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
+    connect(m_systemTrayIcon, &SystemTray::changeVolume, this, &MainWindow::changeVolume);
+    connect(m_systemTrayIcon, &SystemTray::toggleMute, this, &MainWindow::toggleMute);
+    connect(m_systemTrayIcon, &SystemTray::openFiles, this, &MainWindow::openFiles);
+    connect(m_systemTrayIcon, &SystemTray::togglePlayPause, this, &MainWindow::togglePlayPause);
+    connect(m_systemTrayIcon, &SystemTray::nextVideo, this, &MainWindow::nextVideo);
+    connect(m_systemTrayIcon, &SystemTray::previousVideo, this, &MainWindow::previousVideo);
+    connect(m_systemTrayIcon, &SystemTray::exit, this, &MainWindow::exitApplication);
 
 
     // Configure menu bar
@@ -1887,12 +1849,12 @@ void MainWindow::setApplicationWindowTitle()
 
     if (!m_player->source().isEmpty()) {
         windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
-        m_trayIcon->setToolTip(strippedFileName(m_currentFile));
+        m_systemTrayIcon->setToolTip(strippedFileName(m_currentFile));
         m_sourceLoaded = false;
 
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
-        m_trayIcon->setToolTip("Vura media player");
+        m_systemTrayIcon->setToolTip("Vura media player");
         m_sourceLoaded = true;
 
     }
@@ -1903,10 +1865,10 @@ void MainWindow::setApplicationWindowTitle()
 void MainWindow::setSystemTrayIcon()
 {
     if (m_systemTray) {
-        m_trayIcon->show();
+        m_systemTrayIcon->show();
 
     } else if (!m_systemTray) {
-        m_trayIcon->hide();
+        m_systemTrayIcon->hide();
     }
 }
 
@@ -1958,114 +1920,6 @@ bool MainWindow::createUserDirs()
 #pragma endregion
 
 
-void MainWindow::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
-{
-    if (reason == QSystemTrayIcon::Trigger) {
-        if (this->isHidden() || this->isMinimized()) {
-            this->showNormal();
-            this->activateWindow();
-        }
-    }
-}
-
-void MainWindow::hideSystemTray()
-{
-    if (m_systemTray_Showing) {
-        this->hide();
-        m_player->pause();
-        systemTray_ToggleShow->setText(tr("Show Vura"));
-        m_systemTray_Showing = false;
-    } else {
-        this->show();
-        this->showNormal();
-        this->raise();
-        this->activateWindow();
-        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
-        m_systemTray_Showing = true;
-    }
-}
-
-void MainWindow::systemTray_Stop()
-{
-    m_player->stop();
-}
-
-void MainWindow::systemTray_Record()
-{
-    showNotImplemented_Message();
-}
-
-void MainWindow::systemTray_Faster()
-{
-    changePlaybackSpeed(m_playbackSpeedAdjustment);
-}
-
-void MainWindow::systemTray_FasterFine()
-{
-    changePlaybackSpeed(m_playbackSpeedFineAdjustment);
-}
-
-void MainWindow::systemTray_Normal()
-{
-    setPlaybackSpeedNormal();
-}
-
-void MainWindow::systemTray_SlowerFine()
-{
-    changePlaybackSpeed(-m_playbackSpeedFineAdjustment);
-}
-
-void MainWindow::systemTray_Slower()
-{
-    changePlaybackSpeed(-m_playbackSpeedAdjustment);
-}
-
-void MainWindow::systemTray_IncreaseVolume()
-{
-    changeVolume(m_volumeStep);
-}
-
-void MainWindow::systemTray_DecreaseVolume()
-{
-    changeVolume(-m_volumeStep);
-}
-
-void MainWindow::systemTray_OpenFile()
-{
-    QSettings settings;
-
-    // File filters
-    QStringList fileFilters;
-    fileFilters << constants::MediaFileExtensions;
-    fileFilters << constants::VideoFileExtensions;
-    fileFilters << constants::AudioFileExtensions;
-    fileFilters << constants::ApplicationFileExtensions;
-    fileFilters << constants::PlaylistFileExtensions;
-    fileFilters << "All Files (*.*)";
-
-    // Create open file dialog.
-    QFileDialog fileDialog(this);
-    fileDialog.setNameFilters(fileFilters);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open File"));
-    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString());
-
-    if (fileDialog.exec() == QDialog::Accepted) {
-        QStringList selectedFiles = fileDialog.selectedFiles();
-        if (!selectedFiles.isEmpty()) {
-            QStringList fileList;
-            for (auto &url : selectedFiles) {
-                fileList.append(url);
-            }
-
-            // Set last file directory where file was opened.
-            QString lastFileDirectory = selectedFiles.last();
-            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
-
-            openFiles(fileList);
-        }
-    }
-}
 
 void MainWindow::durationLabel_Clicked()
 {
@@ -2075,5 +1929,27 @@ void MainWindow::durationLabel_Clicked()
     } else {
         m_durationLabelShowRemainingTime = true;
 
+    }
+}
+
+void MainWindow::systemTray_Clicked()
+{
+    if (this->isHidden() || this->isMinimized()) {
+        this->showNormal();
+        this->activateWindow();
+    }
+}
+
+void MainWindow::systemTray_Hide(bool hiding)
+{
+    if (hiding) {
+        this->hide();
+        m_player->pause();
+
+    } else {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
     }
 }

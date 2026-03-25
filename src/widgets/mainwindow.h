@@ -76,7 +76,6 @@
 #include <QAbstractItemModel>
 #include <QMouseEvent>
 #include <QHoverEvent>
-#include <QSystemTrayIcon>
 #include <QVideoSink>
 #include <QVideoFrame>
 
@@ -89,6 +88,7 @@
 #include "../components/menubar.h"
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
+#include "../components/system-tray.h"
 #include "../utility/logger.h"
 #include "../utility/playlist.h"
 #include "../utility/qt-wrappers.h"
@@ -253,19 +253,9 @@ private slots:
     void playlistContextMenu_RemoveSelectedVideoAction();
 
     void hideCursor();
-    void systemTray_Clicked(QSystemTrayIcon::ActivationReason reason);
-    void hideSystemTray();
-    void systemTray_Stop();
-    void systemTray_Record();
-    void systemTray_Faster();
-    void systemTray_FasterFine();
-    void systemTray_Normal();
-    void systemTray_SlowerFine();
-    void systemTray_Slower();
-    void systemTray_IncreaseVolume();
-    void systemTray_DecreaseVolume();
-    void systemTray_OpenFile();
     void durationLabel_Clicked();
+    void systemTray_Clicked();
+    void systemTray_Hide(bool hiding);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -277,7 +267,7 @@ private:
     Ui::MainWindow *ui;
     Logger* m_hLogger;
     MenuBar *m_menuBar = nullptr;
-    QSystemTrayIcon *m_trayIcon = nullptr;
+    SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     QTimer *timer;
@@ -327,8 +317,6 @@ private:
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
-    QAction *systemTray_ToggleShow = nullptr;
-    bool m_systemTray_Showing = true;
     bool m_setOverrideWindowsHotkeys = true;
 
     // SETTINGS
