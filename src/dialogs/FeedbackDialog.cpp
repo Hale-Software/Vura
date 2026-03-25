@@ -33,7 +33,9 @@ FeedbackDialog::FeedbackDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Fe
     connect(ui->cancelButton, &QPushButton::clicked, this, &FeedbackDialog::cancelButton_Clicked);
     connect(ui->sendFeedback, &QPushButton::clicked, this, &FeedbackDialog::sendFeedback_Clicked);
     connect(ui->privacyPolicy, &QPushButton::clicked, this, &FeedbackDialog::privacyPolicy_Clicked);
-    connect(ui->emailAddress, &QLineEdit::textChanged, this, &FeedbackDialog::emailAddress_TextChanged);
+    connect(ui->emailAddress, &QLineEdit::editingFinished, this, &FeedbackDialog::emailAddress_EditingFinished);
+    connect(ui->feedbackMessage, &MonitoredTextEdit::startEditing, this, &FeedbackDialog::feedbackMessage_StartedEditing);
+    connect(ui->feedbackMessage, &MonitoredTextEdit::editingFinished, this, &FeedbackDialog::feedbackMessage_EditingFinished);
 
 }
 
@@ -78,13 +80,30 @@ void FeedbackDialog::cancelButton_Clicked()
 
 void FeedbackDialog::sendFeedback_Clicked() {}
 
-void FeedbackDialog::privacyPolicy_Clicked() {}
+void FeedbackDialog::privacyPolicy_Clicked()
+{
+    QString link = "https://github.com/Hale-Software/Vura/wiki/Privacy-Policy";
+    QDesktopServices::openUrl(QUrl(link));
+}
 
-void FeedbackDialog::emailAddress_TextChanged()
+void FeedbackDialog::emailAddress_EditingFinished()
 {
     if (ui->emailAddress->hasAcceptableInput()) {
 
     } else {
         ui->emailAddress->setStyleSheet("border: 1px solid red;");
+    }
+}
+
+void FeedbackDialog::feedbackMessage_StartedEditing()
+{
+    //ui->feedbackMessage->setStyleSheet("border: none;");
+}
+
+void FeedbackDialog::feedbackMessage_EditingFinished()
+{
+    QString feedbackMessage = ui->feedbackMessage->toPlainText();
+    if (feedbackMessage.isEmpty()) {
+        //ui->feedbackMessage->setStyleSheet("border: 1px solid red;");
     }
 }

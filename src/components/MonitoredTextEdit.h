@@ -17,44 +17,29 @@
 
 #pragma once
 
-#include <QDialog>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-#include <QDesktopServices>
-#include <QUrl>
-
-#include "../components/MonitoredTextEdit.h"
+#include <QTextEdit>
 
 
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class FeedbackDialog;
-}
-
-QT_END_NAMESPACE
-
-class FeedbackDialog : public QDialog {
+class MonitoredTextEdit : public QTextEdit {
     Q_OBJECT
 
 public:
-    explicit FeedbackDialog(QWidget *parent = nullptr);
-    ~FeedbackDialog() override;
+    MonitoredTextEdit(QWidget* parent = nullptr) : QTextEdit(parent) {}
 
-private slots:
-    void cancelButton_Clicked();
-    void sendFeedback_Clicked();
-    void privacyPolicy_Clicked();
-    void emailAddress_EditingFinished();
+signals:
+    void startEditing();
+    void editingFinished();
 
-    void feedbackMessage_StartedEditing();
-    void feedbackMessage_EditingFinished();
+protected:
+    void focusOutEvent(QFocusEvent *event) override {
+        QTextEdit::focusOutEvent(event);
+        emit editingFinished();
+    }
 
-private:
-    Ui::FeedbackDialog *ui;
+    void focusInEvent(QFocusEvent *event) override
+    {
+        QTextEdit::focusInEvent(event);
+        emit startEditing();
+    }
+
 };

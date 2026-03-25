@@ -180,7 +180,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextEdit" name="feedbackMessage"/>
+    <widget class="MonitoredTextEdit" name="feedbackMessage"/>
    </item>
    <item>
     <widget class="QCheckBox" name="responseWanted">
@@ -235,6 +235,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MonitoredTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>components/MonitoredTextEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>feedbackMessage</tabstop>
   <tabstop>responseWanted</tabstop>
