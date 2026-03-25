@@ -288,25 +288,66 @@ MainWindow::~MainWindow()
 
 void MainWindow::openedWithFile(QString file)
 {
-    const int previousMediaCount = m_playlist->mediaCount();
-    qDebug() << "File " << file << " opened with application.";
-    if (!file.isEmpty()) {
-        QUrl url = QUrl::fromLocalFile(file);
-        if (!isPlaylist(url)) {
-            m_playlist->addMedia(url);
-            if (m_playlist->mediaCount() > previousMediaCount) {
-                auto index = m_playlistModel->index(previousMediaCount, 0);
-                ui->playlistView->setCurrentIndex(index);
-                jump(index);
-            }
-        } else {
-            m_playlist->loadPlaylist(file);
-            if (m_playlist->mediaCount() > previousMediaCount) {
-                auto index = m_playlistModel->index(previousMediaCount, 0);
-                ui->playlistView->setCurrentIndex(index);
-                jump(index);
+    if (file.isEmpty()) {
+        qFatal() << "File opened with is empty.";
+        this->quitProgram();
+        return;
+    }
+
+    QFileInfo fileInfo(file);
+    if (!fileInfo.exists()) {
+        qFatal() << "File opened with does not exist. File: " << file;
+        this->quitProgram();
+        return;
+    }
+
+    if (fileInfo.isFile()) {
+        const int previousMediaCount = m_playlist->mediaCount();
+        qDebug() << "File " << file << " opened with application.";
+        if (!file.isEmpty()) {
+            QUrl url = QUrl::fromLocalFile(file);
+            if (!isPlaylist(url)) {
+                m_playlist->addMedia(url);
+                if (m_playlist->mediaCount() > previousMediaCount) {
+                    auto index = m_playlistModel->index(previousMediaCount, 0);
+                    ui->playlistView->setCurrentIndex(index);
+                    jump(index);
+                }
+            } else {
+                m_playlist->loadPlaylist(file);
+                if (m_playlist->mediaCount() > previousMediaCount) {
+                    auto index = m_playlistModel->index(previousMediaCount, 0);
+                    ui->playlistView->setCurrentIndex(index);
+                    jump(index);
+                }
             }
         }
+
+    } else if (fileInfo.isDir()) {
+        QList<QUrl> fileList;
+
+        QDirIterator it(file, QDir::Files | QDir::NoDotAndDotDot);
+        while (it.hasNext()) {
+            it.next();
+            fileList.append(QUrl::fromLocalFile(it.filePath()));
+        }
+
+        const int previousMediaCount = m_playlist->mediaCount();
+        for (auto &url : fileList) {
+            if (!isPlaylist(url)) {
+                m_playlist->addMedia(url);
+            }
+        }
+
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
+        }
+
+    } else {
+        qFatal() << "Failed to open with file: " << file;
+        this->quitProgram();
     }
 }
 

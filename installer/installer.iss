@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.0.5'
+#define MyAppVersion '0.0.7'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -20,7 +20,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=..\build\release\src\data\license\license.txt
 OutputDir=..\installer
-OutputBaseFilename=vura-0.0.5-win64
+OutputBaseFilename=vura-0.0.7-win64
 SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
@@ -708,6 +708,22 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.wpl\shell\open\command"; Value
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xspf\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\xspf
 ; Root: HKA; Subkey: "Software\Classes\{#MyAppName}.\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\
 
+
+
+; Add Open File in Vura to Windows File Explorer Context Menu
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open with {#MyAppName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+
+; Add Open Folder in Vura to Windows File Explorer Context Menu
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder with {#MyAppName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+
+; Add Open Folder in Vura to Windows File Explorer Context Menu
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder with {#MyAppName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%V"""; Flags: uninsdeletekey
 
 
 [Icons]
