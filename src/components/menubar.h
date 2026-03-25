@@ -45,6 +45,7 @@
 #include "../constants.h"
 
 #include "../dialogs/about.h"
+#include "../dialogs/FeedbackDialog.h"
 #include "../dialogs/helpdialog.h"
 #include "../dialogs/LogUploadDialog.h"
 #include "../dialogs/logviewer.h"
@@ -57,6 +58,7 @@ class MenuBar : public QMenuBar {
     Q_OBJECT
 
     friend class AboutDialog;
+    friend class FeedbackDialog;
     friend class HelpDialog;
     friend class LogUploadDialog;
     friend class LogViewer;
@@ -109,7 +111,6 @@ signals:
     void saveFile(const QString &filePath);
     void savePlaylist(const QString &filePath, const QString &type);
     void emergencyCollapse();
-    //void showPreferences();
     void exitApplication();
 
     // View
@@ -125,7 +126,6 @@ signals:
     void toggleSceneTransitionMarkers();
     void toggleStripMarkers();
     void showMediaInformation();
-    //void showLogFileViewer();
 
     // Playback
     void changePlaybackSpeed(double mrate);
@@ -165,18 +165,6 @@ signals:
     // Tools
     void createSubclip();
     void testFunction();
-
-    // Help
-    //void showHelp();
-    //void showFeedback();
-    //void uploadLogFile(const QString &logFile);
-    //void viewCurrentLog();
-    //void uploadCrashReport(const QString &reportFile);
-    //void checkFileIntegrity();
-    //void showUpdates();
-    //void showWhatsNew();
-    //void showReleaseNotes();
-    //void showAbout();
 
 
 private slots:
@@ -326,6 +314,7 @@ private slots:
 
 private:
     QPointer<AboutDialog> m_aboutDialog = nullptr;
+    QPointer<FeedbackDialog> m_feedbackDialog = nullptr;
     QPointer<HelpDialog> m_helpDialog = nullptr;
     QPointer<LogUploadDialog> m_logUploadDialog = nullptr;
     QPointer<LogViewer> m_logViewer = nullptr;

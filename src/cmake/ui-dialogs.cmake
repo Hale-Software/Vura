@@ -16,4 +16,6 @@ target_sources(
         dialogs/helpdialog.h
         dialogs/LogUploadDialog.cpp
         dialogs/LogUploadDialog.h
+        dialogs/FeedbackDialog.cpp
+        dialogs/FeedbackDialog.h
 )

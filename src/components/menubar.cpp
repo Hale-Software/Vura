@@ -1815,9 +1815,14 @@ void MenuBar::showHelp_Clicked()
     m_helpDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-// TODO: Implement
 void MenuBar::showFeedback_Clicked()
 {
+    if (m_feedbackDialog)
+        m_feedbackDialog->close();
+
+    m_feedbackDialog = new FeedbackDialog(this);
+    m_feedbackDialog->show();
+    m_feedbackDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void MenuBar::actionShowLogFiles_Clicked()
