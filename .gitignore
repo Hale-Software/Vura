@@ -7,6 +7,7 @@
 !/build-aux
 !/cmake
 !/deps
+!/libvura
 !/src
 !/scripts
 !/share
