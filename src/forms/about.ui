@@ -16,10 +16,6 @@
   <property name="windowTitle">
    <string>About</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="vura.qrc">
-    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>6</number>
@@ -71,7 +67,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="vura.qrc">:/img/images/vura256x256.png</pixmap>
+        <pixmap resource="vura.qrc">:/img/images/vura-white.png</pixmap>
        </property>
       </widget>
      </item>

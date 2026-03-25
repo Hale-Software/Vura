@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="vura.qrc">
-    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
+    <normaloff>:/img/images/vura-white.png</normaloff>:/img/images/vura-white.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1418,15 +1418,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header location="global">components/clickablelabel.h</header>
+  </customwidget>
+  <customwidget>
    <class>QVideoWidget</class>
    <extends>QWidget</extends>
    <header location="global">&lt;QtMultimediaWidgets&gt;</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ClickableLabel</class>
-   <extends>QLabel</extends>
-   <header location="global">components/clickablelabel.h</header>
   </customwidget>
  </customwidgets>
  <resources>
