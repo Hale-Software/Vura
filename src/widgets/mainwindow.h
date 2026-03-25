@@ -134,7 +134,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void openedWithFile(QString file);
+    void openFolderContextMenu(const QString &path);
+    void openFileContextMenu(const QString &file);
+    void addFileToPlaylistContextMenu(const QString &file);
+    void addFolderToPlaylistContextMenu(const QString &path);
     bool isPlayerAvailable() const;
 
 public slots:

@@ -286,10 +286,57 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::openedWithFile(QString file)
+void MainWindow::openFolderContextMenu(const QString &path)
 {
+    qDebug() << "Open folder from context Menu";
+    if (m_playlist->mediaCount() > 0) {
+        QMessageBox::StandardButton confirmationBox;
+        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
+                                      QMessageBox::Yes | QMessageBox::No);
+
+        if (confirmationBox == QMessageBox::Yes) {
+            // Save playlist
+        }
+    }
+    m_playlist->clear();
+
+    QList<QUrl> fileList;
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        it.next();
+        fileList.append(QUrl::fromLocalFile(it.filePath()));
+    }
+
     const int previousMediaCount = m_playlist->mediaCount();
-    qDebug() << "File " << file << " opened with application.";
+    for (auto &url : fileList) {
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+        }
+    }
+
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
+    }
+}
+
+void MainWindow::openFileContextMenu(const QString &file)
+{
+    qDebug() << "Open file from context Menu";
+    if (m_playlist->mediaCount() > 0) {
+        QMessageBox::StandardButton confirmationBox;
+        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
+                                      QMessageBox::Yes | QMessageBox::No);
+
+        if (confirmationBox == QMessageBox::Yes) {
+            // Save playlist
+        }
+    }
+    m_playlist->clear();
+
+    const int previousMediaCount = m_playlist->mediaCount();
     if (!file.isEmpty()) {
         QUrl url = QUrl::fromLocalFile(file);
         if (!isPlaylist(url)) {
@@ -307,6 +354,48 @@ void MainWindow::openedWithFile(QString file)
                 jump(index);
             }
         }
+    }
+}
+
+void MainWindow::addFileToPlaylistContextMenu(const QString &file)
+{
+    qDebug() << "Add file to playlist from context Menu";
+    const int previousMediaCount = m_playlist->mediaCount();
+    if (!file.isEmpty()) {
+        QUrl url = QUrl::fromLocalFile(file);
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+            if (m_playlist->mediaCount() > previousMediaCount) {
+                auto index = m_playlistModel->index(previousMediaCount, 0);
+                ui->playlistView->setCurrentIndex(index);
+                jump(index);
+            }
+        }
+    }
+}
+
+void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
+{
+    qDebug() << "Add folder to playlist from context Menu";
+    QList<QUrl> fileList;
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        it.next();
+        fileList.append(QUrl::fromLocalFile(it.filePath()));
+    }
+
+    const int previousMediaCount = m_playlist->mediaCount();
+    for (auto &url : fileList) {
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+        }
+    }
+
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
     }
 }
 

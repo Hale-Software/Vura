@@ -83,14 +83,6 @@ void VuraApp::windowsPrintKey()
 
 void VuraApp::AppInit(int argc, char* argv[])
 {
-    bool openedWithFile = false;
-    QString fileName;
-
-    // Check if file was opened with application
-    if (argc > 1) {
-        openedWithFile = true;
-        fileName = QString::fromLocal8Bit(argv[1]);
-    }
 
     if (useTestWindow) {
         testWindow = new TestWindow();
@@ -102,8 +94,54 @@ void VuraApp::AppInit(int argc, char* argv[])
         mainWindow->setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         connect(mainWindow, SIGNAL(destroyed()), this, SLOT(quit()));
         mainWindow->show();
-        if (openedWithFile) {
-            mainWindow->openedWithFile(fileName);
+
+        if (argc > 2) {
+            QString pathName = QString::fromUtf8(argv[2]);
+            if (pathName.isEmpty()) {
+                QMessageBox::critical(nullptr, "Vura Error", "File or folder requested is empty.");
+
+            } else {
+                QFileInfo fileInfo(pathName);
+                if (!fileInfo.exists()) {
+                    QMessageBox::critical(nullptr, "Vura Error", "Requested file or folder does not exist.");
+
+                } else {
+                    if (fileInfo.isFile()) {
+                        if (QString::fromLocal8Bit(argv[1]) == "open") {
+                            mainWindow->openFileContextMenu(pathName);
+
+                        } else if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                            mainWindow->addFileToPlaylistContextMenu(pathName);
+
+                        } else {
+                            QMessageBox::critical(nullptr, "Vura Error", "Requested file to open does not specify whether to open or add to playlist.");
+
+                        }
+                    } else if (fileInfo.isDir()) {
+                        if (QString::fromLocal8Bit(argv[1]) == "open") {
+                            mainWindow->openFolderContextMenu(pathName);
+
+                        } else if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                            mainWindow->addFolderToPlaylistContextMenu(pathName);
+
+                        } else {
+                            QMessageBox::critical(nullptr, "Vura Error", "Requested folder to open does not specify whether to open or add to playlist.");
+
+                        }
+                    } else {
+                        QMessageBox::critical(nullptr, "Vura Error", "Requested file or folder to open is neither a file nor a folder.");
+                    }
+                }
+            }
+        } else if (argc > 1) {
+            QString pathName = QString::fromUtf8(argv[1]);
+            if (pathName.isEmpty()) {
+                QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
+
+            } else {
+                mainWindow->openFileContextMenu(pathName);
+
+            }
         }
     }
 }
