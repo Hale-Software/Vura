@@ -17,20 +17,16 @@
 
 #pragma once
 
-#include <windows.h>
 #include "../c99defs.h"
+#include <Windows.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    struct reg_dword {
-        LSTATUS status;
-        DWORD size;
-        DWORD return_value;
-    };
-
-    EXPORT void get_reg_dword(HKEY hkey, LPCWSTR sub_key, LPCWSTR value_name, struct reg_dword *info);
+    /* this is a workaround to A/Vs going crazy whenever certain functions (such as
+     * OpenProcess) are used */
+    void *ms_get_obfuscated_func(HMODULE module, const char *str, uint64_t val);
 
 #ifdef __cplusplus
 }

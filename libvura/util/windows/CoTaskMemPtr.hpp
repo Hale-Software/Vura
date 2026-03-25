@@ -17,21 +17,36 @@
 
 #pragma once
 
-#include <windows.h>
-#include "../c99defs.h"
+template<typename T> class CoTaskMemPtr {
+    T *ptr;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    inline void Clear()
+    {
+        if (ptr)
+            CoTaskMemFree(ptr);
+    }
 
-    struct reg_dword {
-        LSTATUS status;
-        DWORD size;
-        DWORD return_value;
-    };
+public:
+    inline CoTaskMemPtr() : ptr(NULL) {}
+    inline CoTaskMemPtr(T *ptr_) : ptr(ptr_) {}
+    inline ~CoTaskMemPtr() { Clear(); }
 
-    EXPORT void get_reg_dword(HKEY hkey, LPCWSTR sub_key, LPCWSTR value_name, struct reg_dword *info);
+    inline operator T *() const { return ptr; }
+    inline T *operator->() const { return ptr; }
 
-#ifdef __cplusplus
-}
-#endif
+    inline const T *Get() const { return ptr; }
+
+    inline CoTaskMemPtr &operator=(T *val)
+    {
+        Clear();
+        ptr = val;
+        return *this;
+    }
+
+    inline T **operator&()
+    {
+        Clear();
+        ptr = NULL;
+        return &ptr;
+    }
+};
