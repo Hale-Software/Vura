@@ -22,6 +22,7 @@
 #include <QPointer>
 #include <QString>
 #include <QMessageBox>
+#include <QFileInfo>
 #include <QSettings>
 
 #include <qBreakpad/handler/QBreakpadHandler.h>

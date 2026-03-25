@@ -286,68 +286,116 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::openedWithFile(QString file)
+void MainWindow::openFolderContextMenu(const QString &path)
 {
-    if (file.isEmpty()) {
-        qFatal() << "File opened with is empty.";
-        this->quitProgram();
-        return;
+    qDebug() << "Open folder from context Menu";
+    if (m_playlist->mediaCount() > 0) {
+        QMessageBox::StandardButton confirmationBox;
+        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
+                                      QMessageBox::Yes | QMessageBox::No);
+
+        if (confirmationBox == QMessageBox::Yes) {
+            // Save playlist
+        }
+    }
+    m_playlist->clear();
+
+    QList<QUrl> fileList;
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        it.next();
+        fileList.append(QUrl::fromLocalFile(it.filePath()));
     }
 
-    QFileInfo fileInfo(file);
-    if (!fileInfo.exists()) {
-        qFatal() << "File opened with does not exist. File: " << file;
-        this->quitProgram();
-        return;
+    const int previousMediaCount = m_playlist->mediaCount();
+    for (auto &url : fileList) {
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+        }
     }
 
-    if (fileInfo.isFile()) {
-        const int previousMediaCount = m_playlist->mediaCount();
-        qDebug() << "File " << file << " opened with application.";
-        if (!file.isEmpty()) {
-            QUrl url = QUrl::fromLocalFile(file);
-            if (!isPlaylist(url)) {
-                m_playlist->addMedia(url);
-                if (m_playlist->mediaCount() > previousMediaCount) {
-                    auto index = m_playlistModel->index(previousMediaCount, 0);
-                    ui->playlistView->setCurrentIndex(index);
-                    jump(index);
-                }
-            } else {
-                m_playlist->loadPlaylist(file);
-                if (m_playlist->mediaCount() > previousMediaCount) {
-                    auto index = m_playlistModel->index(previousMediaCount, 0);
-                    ui->playlistView->setCurrentIndex(index);
-                    jump(index);
-                }
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
+    }
+}
+
+void MainWindow::openFileContextMenu(const QString &file)
+{
+    qDebug() << "Open file from context Menu";
+    if (m_playlist->mediaCount() > 0) {
+        QMessageBox::StandardButton confirmationBox;
+        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
+                                      QMessageBox::Yes | QMessageBox::No);
+
+        if (confirmationBox == QMessageBox::Yes) {
+            // Save playlist
+        }
+    }
+    m_playlist->clear();
+
+    const int previousMediaCount = m_playlist->mediaCount();
+    if (!file.isEmpty()) {
+        QUrl url = QUrl::fromLocalFile(file);
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+            if (m_playlist->mediaCount() > previousMediaCount) {
+                auto index = m_playlistModel->index(previousMediaCount, 0);
+                ui->playlistView->setCurrentIndex(index);
+                jump(index);
+            }
+        } else {
+            m_playlist->loadPlaylist(file);
+            if (m_playlist->mediaCount() > previousMediaCount) {
+                auto index = m_playlistModel->index(previousMediaCount, 0);
+                ui->playlistView->setCurrentIndex(index);
+                jump(index);
             }
         }
+    }
+}
 
-    } else if (fileInfo.isDir()) {
-        QList<QUrl> fileList;
-
-        QDirIterator it(file, QDir::Files | QDir::NoDotAndDotDot);
-        while (it.hasNext()) {
-            it.next();
-            fileList.append(QUrl::fromLocalFile(it.filePath()));
-        }
-
-        const int previousMediaCount = m_playlist->mediaCount();
-        for (auto &url : fileList) {
-            if (!isPlaylist(url)) {
-                m_playlist->addMedia(url);
+void MainWindow::addFileToPlaylistContextMenu(const QString &file)
+{
+    qDebug() << "Add file to playlist from context Menu";
+    const int previousMediaCount = m_playlist->mediaCount();
+    if (!file.isEmpty()) {
+        QUrl url = QUrl::fromLocalFile(file);
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
+            if (m_playlist->mediaCount() > previousMediaCount) {
+                auto index = m_playlistModel->index(previousMediaCount, 0);
+                ui->playlistView->setCurrentIndex(index);
+                jump(index);
             }
         }
+    }
+}
 
-        if (m_playlist->mediaCount() > previousMediaCount) {
-            auto index = m_playlistModel->index(previousMediaCount, 0);
-            ui->playlistView->setCurrentIndex(index);
-            jump(index);
+void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
+{
+    qDebug() << "Add folder to playlist from context Menu";
+    QList<QUrl> fileList;
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        it.next();
+        fileList.append(QUrl::fromLocalFile(it.filePath()));
+    }
+
+    const int previousMediaCount = m_playlist->mediaCount();
+    for (auto &url : fileList) {
+        if (!isPlaylist(url)) {
+            m_playlist->addMedia(url);
         }
+    }
 
-    } else {
-        qFatal() << "Failed to open with file: " << file;
-        this->quitProgram();
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
     }
 }
 

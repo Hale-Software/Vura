@@ -34,10 +34,17 @@ Name: "full"; Description: "Full Installation"
 Name: "custom"; Description: "Custom Installation"; Flags: iscustom
 
 [Components]
-Name: "player"; Description: "Media Player"; Types: full custom; Flags: fixed
+Name: "player"; Description: "Media Player (required)"; Types: full custom; Flags: fixed
 Name: "startMenuShortcut"; Description: "Start Menu Shortcut"; Types: full custom;
 Name: "desktopShortcut"; Description: "Desktop Shortcut"; Types: full custom;
-Name: "discsPlayback"; Description: "Discs Playback"; Types: full custom;
+
+
+Name: "contextMenus"; Description: "Context Menus"; Types: full custom;
+
+Name: "contextMenus\openFile"; Description: "Play with Vura"; Types: full custom;
+Name: "contextMenus\addFileToPlaylist"; Description: "Add to Vura's Playlist"; Types: full custom;
+Name: "contextMenus\openFolder"; Description: "Open Folder in Vura"; Types: full custom;
+Name: "contextMenus\addFolderToPlaylist"; Description: "Add Folder to Vura's Playlist"; Types: full custom;
 
 
 Name: "fileTypeAssociations"; Description: "File Type Associations"; Types: full custom;
@@ -709,21 +716,37 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.xspf\shell\open\command"; Valu
 ; Root: HKA; Subkey: "Software\Classes\{#MyAppName}.\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\otherFiles\
 
 
+; Context Menus
 
-; Add Open File in Vura to Windows File Explorer Context Menu
-Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open with {#MyAppName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
-Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+; Add Play with Vura to Windows File Explorer Context Menu
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Play with {#MyAppName}"; Flags: uninsdeletekey; Components: contextMenus\openFile
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\openFile
+Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""open"" ""%1"""; Flags: uninsdeletekey; Components: contextMenus\openFile
+
+; Add Add to Vura's Playlist to Windows File Explorer Context Menu
+;Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Add to {#MyAppName}'s Playlist"; Flags: uninsdeletekey; Components: contextMenus\addFileToPlaylist
+;Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\addFileToPlaylist
+;Root: HKA; Subkey: "Software\Classes\*\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""playlist"" ""%1"""; Flags: uninsdeletekey; Components: contextMenus\addFileToPlaylist
 
 ; Add Open Folder in Vura to Windows File Explorer Context Menu
-Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder with {#MyAppName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
-Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder in {#MyAppName}"; Flags: uninsdeletekey; Components: contextMenus\openFolder
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\openFolder
+Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""open"" ""%1"""; Flags: uninsdeletekey; Components: contextMenus\openFolder
 
 ; Add Open Folder in Vura to Windows File Explorer Context Menu
-Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder with {#MyAppName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
-Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%V"""; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Open Folder in {#MyAppName}"; Flags: uninsdeletekey; Components: contextMenus\openFolder
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\openFolder
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""open"" ""%V"""; Flags: uninsdeletekey; Components: contextMenus\openFolder
+
+; Add Add Folder to Vura's Playlist to Windows File Explorer Context Menu
+;Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Add Folder to {#MyAppName}'s Playlist"; Flags: uninsdeletekey; Components: contextMenus\addFolderToPlaylist
+;Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\addFolderToPlaylist
+;Root: HKA; Subkey: "Software\Classes\Directory\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""playlist"" ""%1"""; Flags: uninsdeletekey; Components: contextMenus\addFolderToPlaylist
+
+; Add Add Folder to Vura's Playlist to Windows File Explorer Context Menu
+;Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: ""; ValueData: "Add Folder to {#MyAppName}'s Playlist"; Flags: uninsdeletekey; Components: contextMenus\addFolderToPlaylist
+;Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Components: contextMenus\addFolderToPlaylist
+;Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\{#MyAppName}\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""playlist"" ""%V"""; Flags: uninsdeletekey; Components: contextMenus\addFolderToPlaylist
 
 
 [Icons]
@@ -735,3 +758,161 @@ Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; Components: 
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+
+[Code]
+
+var
+  LastMouse: TPoint;
+  CompLabel: TLabel;
+
+function GetCursorPos(var lpPoint: TPoint): BOOL;
+  external 'GetCursorPos@user32.dll stdcall';
+function SetTimer(
+  hWnd: longword; nIDEvent, uElapse: LongWord; lpTimerFunc: LongWord): LongWord;
+  external 'SetTimer@user32.dll stdcall';
+function ScreenToClient(hWnd: HWND; var lpPoint: TPoint): BOOL;
+  external 'ScreenToClient@user32.dll stdcall';
+function ClientToScreen(hWnd: HWND; var lpPoint: TPoint): BOOL;
+  external 'ClientToScreen@user32.dll stdcall';
+function ListBox_GetItemRect(
+  const hWnd: HWND; const Msg: Integer; Index: LongInt;
+  var Rect: TRect): LongInt;
+  external 'SendMessageW@user32.dll stdcall';  
+
+const
+  LB_GETITEMRECT = $0198;
+  LB_GETTOPINDEX = $018E;
+
+function FindControl(Parent: TWinControl; P: TPoint): TControl;
+var
+  Control: TControl;
+  WinControl: TWinControl;
+  I: Integer;
+  P2: TPoint;
+begin
+  for I := 0 to Parent.ControlCount - 1 do
+  begin
+    Control := Parent.Controls[I];
+    if Control.Visible and
+       (Control.Left <= P.X) and (P.X < Control.Left + Control.Width) and
+       (Control.Top <= P.Y) and (P.Y < Control.Top + Control.Height) then
+    begin
+      if Control is TWinControl then
+      begin
+        P2 := P;
+        ClientToScreen(Parent.Handle, P2);
+        WinControl := TWinControl(Control);
+        ScreenToClient(WinControl.Handle, P2);
+        Result := FindControl(WinControl, P2);
+        if Result <> nil then Exit;
+      end;
+
+      Result := Control;
+      Exit;
+    end;
+  end;
+
+  Result := nil;
+end;
+
+function PointInRect(const Rect: TRect; const Point: TPoint): Boolean;
+begin
+  Result :=
+    (Point.X >= Rect.Left) and (Point.X <= Rect.Right) and
+    (Point.Y >= Rect.Top) and (Point.Y <= Rect.Bottom);
+end;
+
+function ListBoxItemAtPos(ListBox: TCustomListBox; Pos: TPoint): Integer;
+var
+  Count: Integer;
+  ItemRect: TRect;
+begin
+  Result := SendMessage(ListBox.Handle, LB_GETTOPINDEX, 0, 0);
+  Count := ListBox.Items.Count;
+  while Result < Count do
+  begin
+    ListBox_GetItemRect(ListBox.Handle, LB_GETITEMRECT, Result, ItemRect);
+    if PointInRect(ItemRect, Pos) then Exit;
+    Inc(Result);
+  end;
+  Result := -1;
+end;
+
+procedure HoverComponentChanged(Item: Integer);
+var 
+  Description: string;
+begin
+  case Item of
+    0: Description := 'The media player itself';
+    1: Description := 'Adds icons to your start menu for easy access';
+    2: Description := 'Adds icons to your desktop for easy access';
+    3: Description := 'Add context menu items';
+    8: Description := 'Sets Vura as the default application for the specified file type';
+    9: Description := 'Vura application files';
+    10: Description := 'Vura hotkey file';
+    11: Description := 'Vura playlist file';
+    12: Description := 'Vura project file';
+    13: Description := 'Vura video markers file';
+  else
+    Description := 'Move your mouse over a component to see its description.';
+  end;
+  CompLabel.Caption := Description;
+end;
+
+procedure HoverTimerProc(
+  H: LongWord; Msg: LongWord; IdEvent: LongWord; Time: LongWord);
+var
+  P: TPoint;
+  Control: TControl; 
+  Item: Integer;
+begin
+  GetCursorPos(P);
+  if P <> LastMouse then // just optimization
+  begin
+    LastMouse := P;
+    ScreenToClient(WizardForm.Handle, P);
+
+    if (P.X < 0) or (P.Y < 0) or
+       (P.X > WizardForm.ClientWidth) or (P.Y > WizardForm.ClientHeight) then
+    begin
+      Control := nil;
+    end
+      else
+    begin
+      Control := FindControl(WizardForm, P);
+    end;
+
+    Item := -1;
+    if (Control = WizardForm.ComponentsList) and
+       (not WizardForm.TypesCombo.DroppedDown) then
+    begin
+      P := LastMouse;
+      ScreenToClient(WizardForm.ComponentsList.Handle, P);
+      Item := ListBoxItemAtPos(WizardForm.ComponentsList, P);
+    end;
+
+    HoverComponentChanged(Item);
+  end;
+end;
+
+procedure InitializeWizard();
+begin
+  SetTimer(0, 0, 50, CreateCallback(@HoverTimerProc));
+
+  CompLabel := TLabel.Create(WizardForm);
+  CompLabel.Parent := WizardForm.SelectComponentsPage;
+  CompLabel.Left := WizardForm.ComponentsList.Left;
+  CompLabel.Width := WizardForm.ComponentsList.Width;
+  CompLabel.Height := ScaleY(32);
+  CompLabel.Top :=
+    WizardForm.ComponentsList.Top + WizardForm.ComponentsList.Height -
+    CompLabel.Height;
+  CompLabel.AutoSize := False;
+  CompLabel.WordWrap := True;
+  CompLabel.Anchors := [akLeft, akRight, akBottom];
+
+  WizardForm.ComponentsList.Height :=
+    WizardForm.ComponentsList.Height - CompLabel.Height - ScaleY(8);
+end;
+
