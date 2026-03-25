@@ -10,7 +10,9 @@
 !/docs
 !/installer
 !/libvura*
+!/plugins
 !/scripts
+!/shared
 !/src
 !/tests
 !.clang-format
