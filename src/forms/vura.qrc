@@ -17,9 +17,8 @@
 
 <RCC>
     <qresource prefix="/img">
-        <file>images/vura.png</file>
-        <file>images/vura_macos.png</file>
-        <file>images/vura256x256.png</file>
+        <file>images/vura-black.png</file>
+        <file>images/vura-white.png</file>
         <file>images/advanced-tools.svg</file>
         <file>images/back.svg</file>
         <file>images/fullscreen.svg</file>
