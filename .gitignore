@@ -9,7 +9,7 @@
 !/deps
 !/docs
 !/installer
-!/libvura
+!/libvura*
 !/scripts
 !/src
 !/tests
