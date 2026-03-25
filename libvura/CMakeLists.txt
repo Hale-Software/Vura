@@ -16,9 +16,9 @@ endif()
 #find_package(Uthash REQUIRED)
 
 #find_package(jansson REQUIRED)
-if(NOT TARGET VURA::caption)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/deps/libcaption" "${CMAKE_BINARY_DIR}/deps/libcaption")
-endif()
+#if(NOT TARGET VURA::caption)
+#    add_subdirectory("${CMAKE_SOURCE_DIR}/deps/libcaption" "${CMAKE_BINARY_DIR}/deps/libcaption")
+#endif()
 
 add_library(libvura SHARED)
 add_library(VURA::libvura ALIAS libvura)
@@ -28,6 +28,8 @@ target_sources(
         PRIVATE
 #        $<$<BOOL:${ENABLE_HEVC}>:vura-hevc.c>
 #        $<$<BOOL:${ENABLE_HEVC}>:vura-hevc.h>
+        constants.c
+        constants.h
 #        vura-audio-controls.c
 #        vura-audio-controls.h
 #        vura-audio.c
@@ -36,22 +38,22 @@ target_sources(
 #        vura-avc.c
 #        vura-avc.h
 #        vura-canvas.c
-        vura-config.h
-        vura-data.c
-        vura-data.h
-        vura-defs.h
+#        vura-config.h
+#        vura-data.c
+#        vura-data.h
+#        vura-defs.h
 #        vura-display.c
 #        vura-encoder.c
 #        vura-encoder.h
 #        vura-ffmpeg-compat.h
-        vura-hotkey-name-map.c
-        vura-hotkey.c
-        vura-hotkey.h
-        vura-hotkeys.h
-        vura-interaction.h
-        vura-internal.h
-        vura-missing-files.c
-        vura-missing-files.h
+#        vura-hotkey-name-map.c
+#        vura-hotkey.c
+#        vura-hotkey.h
+#        vura-hotkeys.h
+#        vura-interaction.h
+#        vura-internal.h
+#        vura-missing-files.c
+#        vura-missing-files.h
 #        vura-module.c
 #        vura-module.h
 #        vura-nal.c
@@ -59,8 +61,8 @@ target_sources(
 #        vura-output-delay.c
 #        vura-output.c
 #        vura-output.h
-        vura-properties.c
-        vura-properties.h
+#        vura-properties.c
+#        vura-properties.h
 #        vura-scene.c
 #        vura-scene.h
 #        vura-service.c
@@ -74,7 +76,7 @@ target_sources(
 #        vura-view.c
         vura.c
         vura.h
-        vura.hpp
+#        vura.hpp
 )
 
 target_sources(
@@ -95,23 +97,23 @@ target_sources(
 #        util/cf-lexer.h
 #        util/cf-parser.c
 #        util/cf-parser.h
-        util/config-file.c
-        util/config-file.h
+#        util/config-file.c
+#        util/config-file.h
 #        util/crc32.c
 #        util/crc32.h
-        util/curl/curl-helper.h
+#        util/curl/curl-helper.h
 #        util/darray.h
 #        util/deque.h
 #        util/dstr.c
 #        util/dstr.h
-        util/file-serializer.c
-        util/file-serializer.h
+#        util/file-serializer.c
+#        util/file-serializer.h
 #        util/lexer.c
 #        util/lexer.h
-        util/pipe.c
-        util/pipe.h
-        util/platform.c
-        util/platform.h
+#        util/pipe.c
+#        util/pipe.h
+#        util/platform.c
+#        util/platform.h
 #        util/profiler.c
 #        util/profiler.h
 #        util/profiler.hpp
@@ -119,15 +121,15 @@ target_sources(
 #        util/source-profiler.c
 #        util/source-profiler.h
 #        util/sse-intrin.h
-        util/task.c
-        util/task.h
+#        util/task.c
+#        util/task.h
 #        util/text-lookup.c
 #        util/text-lookup.h
-        util/threading.h
+#        util/threading.h
 #        util/utf8.c
 #        util/utf8.h
 #        util/uthash.h
-        util/util.hpp
+#        util/util.hpp
 #        util/util_uint128.h
 #        util/util_uint64.h
 )
@@ -239,7 +241,7 @@ target_compile_definitions(
 target_link_libraries(
         libvura
         PRIVATE
-        VURA::caption
+#        VURA::caption
         VURA::libvura-version
 #        FFmpeg::avcodec
 #        FFmpeg::avformat
@@ -306,19 +308,19 @@ set(
 #        media-io/video-scaler.h
 #        vura-audio-controls.h
 #        vura-avc.h
-        vura-config.h
-        vura-data.h
+#        vura-config.h
+#        vura-data.h
 #        vura-defs.h
 #        vura-encoder.h
-        vura-hotkey.h
-        vura-hotkeys.h
-        vura-interaction.h
-        vura-missing-files.h
+#        vura-hotkey.h
+#        vura-hotkeys.h
+#        vura-interaction.h
+#        vura-missing-files.h
 #        vura-module.h
 #        vura-nal.h
 #        vura-nix-platform.h
 #        vura-output.h
-        vura-properties.h
+#        vura-properties.h
 #        vura-service.h
 #        vura-source.h
         vura.h
@@ -330,26 +332,26 @@ set(
         util/c99defs.h
 #        util/cf-lexer.h
 #        util/cf-parser.h
-        util/config-file.h
+#        util/config-file.h
 #        util/crc32.h
 #        util/darray.h
 #        util/deque.h
 #        util/dstr.h
 #        util/dstr.hpp
-        util/file-serializer.h
+#        util/file-serializer.h
 #        util/lexer.h
-        util/pipe.h
-        util/platform.h
+#        util/pipe.h
+#        util/platform.h
 #        util/profiler.h
 #        util/profiler.hpp
 #        util/serializer.h
 #        util/sse-intrin.h
-        util/task.h
+#        util/task.h
 #        util/text-lookup.h
 #        util/threading-posix.h
-        util/threading.h
+#        util/threading.h
 #        util/uthash.h
-        util/util.hpp
+#        util/util.hpp
 #        util/util_uint128.h
 #        util/util_uint64.h
 )
@@ -357,18 +359,18 @@ set(
 if(OS_WINDOWS)
     list(
             APPEND public_headers
-            util/threading-windows.h
-            util/windows/ComPtr.hpp
-            util/windows/CoTaskMemPtr.hpp
+#            util/threading-windows.h
+#            util/windows/ComPtr.hpp
+#            util/windows/CoTaskMemPtr.hpp
 #            util/windows/device-enum.h
-            util/windows/HRError.hpp
+#            util/windows/HRError.hpp
             util/windows/win-registry.h
             util/windows/win-version.h
-            util/windows/window-helpers.h
-            util/windows/WinHandle.hpp
+#            util/windows/window-helpers.h
+#            util/windows/WinHandle.hpp
     )
-elseif(OS_MACOS)
-    list(APPEND public_headers util/apple/cfstring-utils.h)
+#elseif(OS_MACOS)
+#    list(APPEND public_headers util/apple/cfstring-utils.h)
 endif()
 
 #if(ENABLE_HEVC)
