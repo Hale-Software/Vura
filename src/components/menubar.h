@@ -67,6 +67,7 @@ public slots:
     void videoControlsShowing(bool showing);
 
 signals:
+    void showMediaInformation();
     void showPreferences();
     void showAbout();
     void showHelp();
@@ -160,7 +161,6 @@ private slots:
     void showLogFileViewer_Clicked();
     void toggleVideoControls_Clicked();
     void showMediaInformation_Clicked();
-    void toggleTags_Clicked();
 
     // Playback Menu
     void togglePlayPause_Clicked();
@@ -334,7 +334,6 @@ private:
     QAction *m_showLogFileViewerAction = nullptr;
     QAction *m_togglePlaylistAction = nullptr;
     QAction *m_toggleStatusBarAction = nullptr;
-    QAction *m_toggleTagsAction = nullptr;
     QAction *m_toggleVideoControlsAction = nullptr;
     QAction *m_toggleCumshotMarkersAction = nullptr;
     QAction *m_toggleCyanMarkersAction = nullptr;

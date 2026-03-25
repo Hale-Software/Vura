@@ -20,4 +20,6 @@ target_sources(
         components/videoplayer.h
         components/RangeSlider.cpp
         components/RangeSlider.h
+        components/system-tray.cpp
+        components/system-tray.h
 )

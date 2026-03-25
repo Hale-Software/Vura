@@ -14,6 +14,13 @@ add_executable(vura)
 add_executable(VURA::vura ALIAS vura)
 add_dependencies(vura copy_data_files)
 
+add_custom_command(TARGET vura POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_SOURCE_DIR}/AUTHORS"
+        "$<TARGET_FILE_DIR:vura>/data/AUTHORS"
+        COMMENT "Copying authors file to build directory"
+)
+
 target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOURCE_DIR}/src/deps")
 
 target_link_libraries(

@@ -19,12 +19,39 @@
 #include "ui_mediainformation.h"
 
 
-MediaInformation::MediaInformation(QWidget *parent) : QWidget(parent), ui(new Ui::MediaInformation)
+MediaInformation::MediaInformation(QWidget *parent) : QDialog(parent), ui(new Ui::MediaInformation)
 {
     ui->setupUi(this);
+
+    connect(ui->close, &QPushButton::clicked, this, &MediaInformation::close_Clicked);
+    connect(ui->fingerprint, &QPushButton::clicked, this, &MediaInformation::fingerprint_Clicked);
 }
 
 MediaInformation::~MediaInformation()
 {
     delete ui;
 }
+
+void MediaInformation::setMediaInformation(const QString &filePath, const QMediaMetaData &metaData)
+{
+    ui->location->setText(filePath);
+
+    ui->author->setText(metaData.value(QMediaMetaData::Author).toString());
+    ui->comments->setText(metaData.value(QMediaMetaData::Comment).toString());
+    ui->copyright->setText(metaData.value(QMediaMetaData::Copyright).toString());
+    ui->date->setText(metaData.value(QMediaMetaData::Date).toString());
+    ui->resolution->setText(metaData.value(QMediaMetaData::Resolution).toString());
+    ui->genre->setText(metaData.value(QMediaMetaData::Genre).toString());
+    ui->language->setText(metaData.value(QMediaMetaData::Language).toString());
+    ui->publisher->setText(metaData.value(QMediaMetaData::Publisher).toString());
+    ui->trackNumber->setText(metaData.value(QMediaMetaData::TrackNumber).toString());
+    ui->title->setText(metaData.value(QMediaMetaData::Title).toString());
+
+}
+
+void MediaInformation::close_Clicked()
+{
+    this->close();
+}
+
+void MediaInformation::fingerprint_Clicked() {}

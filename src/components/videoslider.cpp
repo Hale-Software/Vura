@@ -40,7 +40,6 @@ void VideoSlider::setMinimum(int mminimum)
 {
     if (mminimum < m_maximum) {
         m_minimum = mminimum;
-        qDebug() << "Minimum set to: " << m_minimum;
         update();
     }
 }
@@ -49,7 +48,6 @@ void VideoSlider::setMaximum(int mmaximum)
 {
     if (mmaximum > m_minimum) {
         m_maximum = mmaximum;
-        qDebug() << "Maximum set to: " << m_maximum;
         update();
     }
 }
@@ -57,7 +55,6 @@ void VideoSlider::setMaximum(int mmaximum)
 void VideoSlider::setValue(int mvalue)
 {
     m_value = mvalue;
-    qDebug() << "Value set to: " << m_value;
     update();
 }
 

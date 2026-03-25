@@ -15,38 +15,36 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#ifndef VURA_HELPDIALOG_H
+#define VURA_HELPDIALOG_H
 
 #include <QDialog>
-#include <QLabel>
 #include <QTextBrowser>
+#include <QPushButton>
 #include <QFile>
-#include "../components/ClickableLabel.h"
+
 
 QT_BEGIN_NAMESPACE
 
-namespace Ui
-{
-    class AboutDialog;
+namespace Ui {
+    class HelpDialog;
 }
 
 QT_END_NAMESPACE
 
-
-class AboutDialog : public QDialog
-{
+class HelpDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit AboutDialog(QWidget *parent = nullptr);
-    ~AboutDialog() override;
+    explicit HelpDialog(QWidget *parent = nullptr);
+    ~HelpDialog() override;
 
 private slots:
-    void authors_Clicked();
-    void license_Clicked();
-    void credits_Clicked();
+    void close_Clicked();
 
 private:
-    Ui::AboutDialog *ui;
-
+    Ui::HelpDialog *ui;
 };
+
+
+#endif //VURA_HELPDIALOG_H

@@ -76,7 +76,6 @@
 #include <QAbstractItemModel>
 #include <QMouseEvent>
 #include <QHoverEvent>
-#include <QSystemTrayIcon>
 #include <QVideoSink>
 #include <QVideoFrame>
 
@@ -89,6 +88,7 @@
 #include "../components/menubar.h"
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
+#include "../components/system-tray.h"
 #include "../utility/logger.h"
 #include "../utility/playlist.h"
 #include "../utility/qt-wrappers.h"
@@ -99,6 +99,8 @@
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
 #include "../dialogs/updatewindow.h"
+#include "../dialogs/mediainformation.h"
+#include "../dialogs/helpdialog.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -141,9 +143,7 @@ public:
     bool isPlayerAvailable() const;
 
 public slots:
-    void markersChanged(const QString &markerName, const double &markerTime, const QString &markerType);
-    void markerDeleted(const double &markerTime);
-
+    void showMediaInformation();
     void showPreferences();
     void showAbout();
     void showHelp();
@@ -228,7 +228,6 @@ private slots:
     void loadSettings();
     void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
-    void metaDataChanged();
     void tracksChanged();
     void seek(int mseconds);
     void jump(const QModelIndex &index);
@@ -253,19 +252,9 @@ private slots:
     void playlistContextMenu_RemoveSelectedVideoAction();
 
     void hideCursor();
-    void systemTray_Clicked(QSystemTrayIcon::ActivationReason reason);
-    void hideSystemTray();
-    void systemTray_Stop();
-    void systemTray_Record();
-    void systemTray_Faster();
-    void systemTray_FasterFine();
-    void systemTray_Normal();
-    void systemTray_SlowerFine();
-    void systemTray_Slower();
-    void systemTray_IncreaseVolume();
-    void systemTray_DecreaseVolume();
-    void systemTray_OpenFile();
     void durationLabel_Clicked();
+    void systemTray_Clicked();
+    void systemTray_Hide(bool hiding);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -277,13 +266,15 @@ private:
     Ui::MainWindow *ui;
     Logger* m_hLogger;
     MenuBar *m_menuBar = nullptr;
-    QSystemTrayIcon *m_trayIcon = nullptr;
+    SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     QTimer *timer;
     int m_x = 0;
     int m_y = 0;
     bool m_showingCursor = true;
+    bool m_fromFullscreen = false;
+    qint64 m_lastPosition = 0;
     QString m_currentUser = "UNKNOWN";
 
     // WINDOWS
@@ -292,6 +283,8 @@ private:
     QPointer<SettingsWindow> m_settingsWindow;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
+    QPointer<MediaInformation> m_mediaInformation;
+    QPointer<HelpDialog> m_helpDialog;
 
     // VARIABLES
     // =======================================================================================================
@@ -327,8 +320,6 @@ private:
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
-    QAction *systemTray_ToggleShow = nullptr;
-    bool m_systemTray_Showing = true;
     bool m_setOverrideWindowsHotkeys = true;
 
     // SETTINGS
@@ -373,14 +364,6 @@ private:
     QString m_statusInfo;
     qint64 m_duration;
     QMediaDevices m_mediaDevices;
-    QMenu *h_audioMenu = nullptr;
-    QAction *h_recentFileActions[10];
-    QAction *h_clearRecentFilesAction;
-    QAction *h_recentFilesSeparator;
-    QAction *h_audioOutputActions[15];
-    QAction *h_audioTrackActions[15];
-    QAction *h_videoTrackActions[15];
-    QAction *h_subtitleTrackActions[15];
     int videoTrack;
     int audioOutput;
     int audioTrack;
@@ -390,9 +373,6 @@ private:
     // FUNCTIONS
     // =======================================================================================================
     bool isPlaylist(const QUrl &url);
-    QString getMarker(const double &markerTime);
-    void saveMediaFilterList(const QStringList& filterList);
-    QStringList loadMediaFilterList();
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
@@ -403,7 +383,6 @@ private:
     QString strippedFileName(const QString &fileName);
     QString timestampString(qint64 position);
     void setApplicationWindowTitle();
-    void setSystemTrayIcon();
     void setToolTips();
     void setStyleSheet();
     bool createUserDirs();

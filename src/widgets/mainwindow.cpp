@@ -68,63 +68,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 
     // Configure system tray icon
-    m_trayIcon = new QSystemTrayIcon(this);
-    m_trayIcon->setIcon(QIcon(":/img/images/vura.png"));
-    systemTray_ToggleShow = new QAction(this);
-    if (m_systemTray_Showing) {
-        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
+    m_systemTrayIcon = new SystemTray(this);
+    if (m_systemTray) {
+        m_systemTrayIcon->show();
     } else {
-        systemTray_ToggleShow->setText(tr("Show Vura"));
+        m_systemTrayIcon->hide();
     }
 
-    QMenu *menu = new QMenu(this);
-    menu->addAction(systemTray_ToggleShow);
-    menu->addSeparator();
-    QAction *playAction = menu->addAction(tr("Play"));
-    QAction *stopAction = menu->addAction(tr("Stop"));
-    QAction *nextAction = menu->addAction(tr("Next"));
-    QAction *previousAction = menu->addAction(tr("Previous"));
-    QAction *recordAction = menu->addAction(tr("Record"));
-    menu->addSeparator();
-
-    QMenu *speedMenu = menu->addMenu(tr("Speed"));
-    QAction *fasterAction = speedMenu->addAction(tr("Faster"));
-    QAction *fasterFineAction = speedMenu->addAction(tr("Faster (fine)"));
-    QAction *normalAction = speedMenu->addAction(tr("Normal"));
-    QAction *slowerFineAction = speedMenu->addAction(tr("Slower (fine)"));
-    QAction *slowerAction = speedMenu->addAction(tr("Slower"));
-
-    menu->addSeparator();
-    QAction *increaseVolumeAction = menu->addAction(tr("Increase Volume"));
-    QAction *decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
-    QAction *muteAction = menu->addAction(tr("Mute"));
-    menu->addSeparator();
-    QAction *openFileAction = menu->addAction(tr("Open File"));
-    QAction *quitAction = menu->addAction(tr("Quit"));
-
-    connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::systemTray_Clicked);
-    connect(systemTray_ToggleShow, &QAction::triggered, this, &MainWindow::hideSystemTray);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::systemTray_Stop);
-    connect(recordAction, &QAction::triggered, this, &MainWindow::systemTray_Record);
-    connect(fasterAction, &QAction::triggered, this, &MainWindow::systemTray_Faster);
-    connect(fasterFineAction, &QAction::triggered, this, &MainWindow::systemTray_FasterFine);
-    connect(normalAction, &QAction::triggered, this, &MainWindow::systemTray_Normal);
-    connect(slowerFineAction, &QAction::triggered, this, &MainWindow::systemTray_SlowerFine);
-    connect(slowerAction, &QAction::triggered, this, &MainWindow::systemTray_Slower);
-    connect(increaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_IncreaseVolume);
-    connect(decreaseVolumeAction, &QAction::triggered, this, &MainWindow::systemTray_DecreaseVolume);
-    connect(openFileAction, &QAction::triggered, this, &MainWindow::systemTray_OpenFile);
-    connect(quitAction, &QAction::triggered, this, &MainWindow::exitApplication);
-    connect(playAction, &QAction::triggered, this, &MainWindow::togglePlayPause);
-    connect(nextAction, &QAction::triggered, this, &MainWindow::nextVideo);
-    connect(previousAction, &QAction::triggered, this, &MainWindow::previousVideo);
-    connect(muteAction, &QAction::triggered, this, &MainWindow::toggleMute);
-
-    m_trayIcon->setContextMenu(menu);
-    m_trayIcon->setToolTip(tr("Vura media player"));
-
-    if (m_systemTray)
-        m_trayIcon->show();
+    connect(m_systemTrayIcon, &SystemTray::clicked, this, &MainWindow::systemTray_Clicked);
+    connect(m_systemTrayIcon, &SystemTray::hiding, this, &MainWindow::systemTray_Hide);
+    connect(m_systemTrayIcon, &SystemTray::stop, m_player, &QMediaPlayer::stop);
+    connect(m_systemTrayIcon, &SystemTray::changePlaybackSpeed, this, &MainWindow::changePlaybackSpeed);
+    connect(m_systemTrayIcon, &SystemTray::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
+    connect(m_systemTrayIcon, &SystemTray::changeVolume, this, &MainWindow::changeVolume);
+    connect(m_systemTrayIcon, &SystemTray::toggleMute, this, &MainWindow::toggleMute);
+    connect(m_systemTrayIcon, &SystemTray::openFiles, this, &MainWindow::openFiles);
+    connect(m_systemTrayIcon, &SystemTray::togglePlayPause, this, &MainWindow::togglePlayPause);
+    connect(m_systemTrayIcon, &SystemTray::nextVideo, this, &MainWindow::nextVideo);
+    connect(m_systemTrayIcon, &SystemTray::previousVideo, this, &MainWindow::previousVideo);
+    connect(m_systemTrayIcon, &SystemTray::exit, this, &MainWindow::exitApplication);
 
 
     // Configure menu bar
@@ -140,8 +102,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this, &MainWindow::updateVideoTracks, m_menuBar, &MenuBar::updateVideoTracks);
     connect(this, &MainWindow::updateSubtitleTracks, m_menuBar, &MenuBar::updateSubtitleTracks);
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
-    // connect(this, &MainWindow::, m_menuBar, &MenuBar::);
 
+    connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
     connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
     connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
     connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
@@ -194,7 +156,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
     connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
     connect(m_menuBar, &MenuBar::takeSnapshot, this, &MainWindow::takeSnapshot);
-    // connect(m_menuBar, &MenuBar::, this, &MainWindow::);
 
     this->setMenuBar(m_menuBar);
 
@@ -285,6 +246,12 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::testFunction() {}
+
+
+#pragma region CONTEXT MENUS
+
 
 void MainWindow::openFolderContextMenu(const QString &path)
 {
@@ -399,46 +366,151 @@ void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
     }
 }
 
-void MainWindow::loadSettings()
+void MainWindow::showPlaylistContextMenu(const QPoint &pos)
 {
-    QSettings settings;
+    QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
+    m_pos = pos;
 
-    m_locale = settings.value("language", "en-US").toString();
-    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
-    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
-    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
-    m_hashFile = settings.value("hashFile", false).toBool();
-    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
-    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
-    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
-    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
-    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
-    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
-    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
-    m_systemTray = settings.value("systemTray", true).toBool();
-    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
-    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
-    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
-    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
-    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
-    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
-    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
-    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
-    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
-    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
-    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
-    m_theme = settings.value("theme", "System").toString();
-    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    if (m_playlist->mediaCount() > 0) {
+        QModelIndex index = ui->playlistView->indexAt(pos);
+        if (index.isValid()) {
+            QMenu videoMenu;
+            QAction *playAction = videoMenu.addAction("Play");
+            QAction *streamAction = videoMenu.addAction("Stream");
+            QAction *saveVideoAction = videoMenu.addAction("Save");
+            QAction *informationAction = videoMenu.addAction("Information");
+            videoMenu.addSeparator();
+            QAction *showFolderAction = videoMenu.addAction("Show Containing Folder");
+            videoMenu.addSeparator();
+            QAction *addFileAction = videoMenu.addAction("Add File");
+            QAction *addFolderAction = videoMenu.addAction("Add Folder");
+            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
+            videoMenu.addSeparator();
+            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
+            videoMenu.addSeparator();
+            QAction *removeSelectedAction = videoMenu.addAction("Remove Selected");
+            QAction *clearAction = videoMenu.addAction("Clear the playlist");
+            videoMenu.addSeparator();
+            QAction *shuffleAction = videoMenu.addAction("Shuffle");
 
-    if (timer->isActive())
-        timer->stop();
+            connect(playAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_PlayVideoAction);
+            connect(streamAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_StreamVideoAction);
+            connect(saveVideoAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveVideoAction);
+            connect(informationAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_InformationVideoAction);
+            connect(showFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_ShowFolderVideoAction);
+            connect(removeSelectedAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_RemoveSelectedVideoAction);
+            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
+            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
+            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
 
-    emit refreshSettings();
-    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
-    //setSystemTrayIcon();
+            videoMenu.exec(globalPos);
+
+        } else {
+            QMenu videoMenu;
+            QAction *addFileAction = videoMenu.addAction("Add File");
+            QAction *addFolderAction = videoMenu.addAction("Add Folder");
+            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
+            videoMenu.addSeparator();
+            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
+            videoMenu.addSeparator();
+            QAction *clearAction = videoMenu.addAction("Clear the playlist");
+            videoMenu.addSeparator();
+            QAction *shuffleAction = videoMenu.addAction("Shuffle");
+
+            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
+            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
+            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
+
+            videoMenu.exec(globalPos);
+        }
+    } else {
+        QMenu emptyMenu;
+        QAction *addFileAction = emptyMenu.addAction("Add File");
+        QAction *addFolderAction = emptyMenu.addAction("Add Folder");
+        QAction *advancedOpenAction = emptyMenu.addAction("Advanced Open");
+
+        connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
+        connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
+        connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
+
+        emptyMenu.exec(globalPos);
+    }
+
 }
 
-void MainWindow::testFunction() {}
+void MainWindow::playlistContextMenu_AddFileAction() {}
+
+void MainWindow::playlistContextMenu_AddFolderAction() {}
+
+void MainWindow::playlistContextMenu_AdvancedOpenAction() {}
+
+void MainWindow::playlistContextMenu_SaveAction() {}
+
+void MainWindow::playlistContextMenu_PlayVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    m_playlist->setCurrentIndex(index.row());
+}
+
+void MainWindow::playlistContextMenu_StreamVideoAction() {}
+
+void MainWindow::playlistContextMenu_SaveVideoAction() {}
+
+void MainWindow::playlistContextMenu_InformationVideoAction() {}
+
+void MainWindow::playlistContextMenu_ShowFolderVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    QVariant data = index.data(); // Get the data
+    QString text = data.toString();
+    QFileInfo info(text);
+    QString directoryPath = info.absoluteDir().absolutePath();
+    QUrl folderUrl = QUrl::fromLocalFile(directoryPath);
+    if (!QDesktopServices::openUrl(folderUrl)) {
+        // Handle error if the folder couldn't be opened
+        qWarning() << "Could not open folder: " << directoryPath.toStdString();
+    }
+}
+
+void MainWindow::playlistContextMenu_RemoveSelectedVideoAction()
+{
+    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    if (index.row() == m_playlist->currentIndex()) {
+        m_playlist->next();
+    }
+    m_playlist->removeMedia(index.row());
+}
+
+void MainWindow::systemTray_Clicked()
+{
+    if (this->isHidden() || this->isMinimized()) {
+        this->showNormal();
+        this->activateWindow();
+    }
+}
+
+void MainWindow::systemTray_Hide(bool hiding)
+{
+    if (hiding) {
+        this->hide();
+        m_player->pause();
+
+    } else {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+    }
+}
+
+
+#pragma endregion
 
 
 #pragma region MEDIA PLAYER
@@ -461,62 +533,6 @@ void MainWindow::positionChanged(qint64 progress)
         m_videoSlider->setValue(static_cast<int>(progress));
 
     updateDurationInfo(progress / 1000);
-}
-
-// TODO: Implement
-void MainWindow::metaDataChanged()
-{
-    /*
-    auto metaData = m_player->metaData();
-    setTrackInfo(QStringLiteral("%1 - %2")
-                         .arg(metaData.value(QMediaMetaData::AlbumArtist).toString())
-                         .arg(metaData.value(QMediaMetaData::Title).toString()));
-
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
-    for (int i = 0; i < QMediaMetaData::NumMetaData; i++) {
-        if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[i]))
-            field->clear();
-        else if (QLabel *label = qobject_cast<QLabel *>(m_metaDataFields[i]))
-            label->clear();
-        m_metaDataFields[i]->setDisabled(true);
-        m_metaDataLabels[i]->setDisabled(true);
-    }
-
-    for (auto &&[key, value] : metaData.asKeyValueRange()) {
-        int i = int(key);
-        if (key == QMediaMetaData::CoverArtImage) {
-            if (QLabel *cover = qobject_cast<QLabel *>(m_metaDataFields[key])) {
-                QImage coverImage = value.value<QImage>();
-                cover->setPixmap(QPixmap::fromImage(coverImage));
-            }
-        } else if (key == QMediaMetaData::ThumbnailImage) {
-            if (QLabel *thumbnail = qobject_cast<QLabel *>(m_metaDataFields[key])) {
-                QImage thumbnailImage = value.value<QImage>();
-                thumbnail->setPixmap(QPixmap::fromImage(thumbnailImage));
-            }
-        } else if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[key])) {
-            QString stringValue = metaData.stringValue(key);
-            field->setText(stringValue);
-        }
-        m_metaDataFields[i]->setDisabled(false);
-        m_metaDataLabels[i]->setDisabled(false);
-    }
-
-    const QList<QMediaMetaData> tracks = m_player->videoTracks();
-    const int currentVideoTrack = m_player->activeVideoTrack();
-    if (currentVideoTrack >= 0 && currentVideoTrack < tracks.size()) {
-        const QMediaMetaData track = tracks.value(currentVideoTrack);
-        for (const QMediaMetaData::Key &key : track.keys()) {
-            if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[key])) {
-                QString stringValue = track.stringValue(key);
-                field->setText(stringValue);
-            }
-            m_metaDataFields[key]->setDisabled(true);
-            m_metaDataLabels[key]->setDisabled(true);
-        }
-    }
-#endif
-*/
 }
 
 QString MainWindow::trackName(const QMediaMetaData &metaData, int index)
@@ -633,6 +649,17 @@ void MainWindow::playbackRateChanged(qreal rate)
 #pragma region PUBLIC SLOTS
 
 
+void MainWindow::showMediaInformation()
+{
+    if (m_mediaInformation)
+        m_mediaInformation->close();
+
+    m_mediaInformation = new MediaInformation(this);
+    m_mediaInformation->show();
+    m_mediaInformation->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_mediaInformation->setMediaInformation(m_currentFile, m_player->metaData());
+}
+
 void MainWindow::showPreferences()
 {
     if (m_settingsWindow)
@@ -654,7 +681,15 @@ void MainWindow::showAbout()
     m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void MainWindow::showHelp() {}
+void MainWindow::showHelp()
+{
+    if (m_helpDialog)
+        m_helpDialog->close();
+
+    m_helpDialog = new HelpDialog(this);
+    m_helpDialog->show();
+    m_helpDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
 
 void MainWindow::showUpdates()
 {
@@ -679,14 +714,7 @@ void MainWindow::emergencyCollapse()
 
 void MainWindow::exitApplication()
 {
-    QMessageBox::StandardButton confirmationBox;
-    confirmationBox = QMessageBox::question(this, "Exit Application", "Are you sure you want to exit?",
-                                  QMessageBox::Yes | QMessageBox::No);
-
-    if (confirmationBox == QMessageBox::Yes) {
-        qInfo() << "Exitting Application";
-        this->close();
-    }
+    this->close();
 }
 
 void MainWindow::openFiles(const QStringList &fileList, bool localFile)
@@ -699,14 +727,14 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
     bool loadedNewPlaylist = false;
 
     for (const QString& fileName : fileList) {
-        files.removeAll(fileName);
-        files.prepend(fileName);
-
         if (localFile) {
             QUrl url = QUrl::fromLocalFile(fileName);
 
             if (!isPlaylist(url)) {
+                files.removeAll(fileName);
+                files.prepend(fileName);
                 m_playlist->addMedia(url);
+
             } else {
                 loadedNewPlaylist = loadPlaylist(url);
             }
@@ -731,6 +759,9 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
     }
     settings.setValue("recentFileList", files);
     emit updateRecentFiles();
+    this->showNormal();
+    this->raise();
+    this->activateWindow();
 }
 
 void MainWindow::closeFile()
@@ -1034,12 +1065,21 @@ void MainWindow::toggleMute()
 
 void MainWindow::toggleFullscreen()
 {
-    if (ui->videoWidget->isFullScreen()) {
+    if (!this->isMaximized() && !ui->videoWidget->isFullScreen()) {
+        this->showMaximized();
+
+    } else if (this->isMaximized() && !ui->videoWidget->isFullScreen()) {
+        if (!m_fromFullscreen) {
+            ui->videoWidget->setFullScreen(true);
+            ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
+        } else {
+            this->showNormal();
+            m_fromFullscreen = false;
+        }
+    } else if (ui->videoWidget->isFullScreen()) {
         ui->videoWidget->setFullScreen(false);
+        m_fromFullscreen = true;
         ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-    } else {
-        ui->videoWidget->setFullScreen(true);
-        ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
     }
 }
 
@@ -1216,135 +1256,8 @@ void MainWindow::takeSnapshot()
 #pragma endregion
 
 
-#pragma region PLAYLIST CONTEXT MENU
-
-
-void MainWindow::showPlaylistContextMenu(const QPoint &pos)
-{
-    QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
-    m_pos = pos;
-
-    if (m_playlist->mediaCount() > 0) {
-        QModelIndex index = ui->playlistView->indexAt(pos);
-        if (index.isValid()) {
-            QMenu videoMenu;
-            QAction *playAction = videoMenu.addAction("Play");
-            QAction *streamAction = videoMenu.addAction("Stream");
-            QAction *saveVideoAction = videoMenu.addAction("Save");
-            QAction *informationAction = videoMenu.addAction("Information");
-            videoMenu.addSeparator();
-            QAction *showFolderAction = videoMenu.addAction("Show Containing Folder");
-            videoMenu.addSeparator();
-            QAction *addFileAction = videoMenu.addAction("Add File");
-            QAction *addFolderAction = videoMenu.addAction("Add Folder");
-            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
-            videoMenu.addSeparator();
-            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
-            videoMenu.addSeparator();
-            QAction *removeSelectedAction = videoMenu.addAction("Remove Selected");
-            QAction *clearAction = videoMenu.addAction("Clear the playlist");
-            videoMenu.addSeparator();
-            QAction *shuffleAction = videoMenu.addAction("Shuffle");
-
-            connect(playAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_PlayVideoAction);
-            connect(streamAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_StreamVideoAction);
-            connect(saveVideoAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveVideoAction);
-            connect(informationAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_InformationVideoAction);
-            connect(showFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_ShowFolderVideoAction);
-            connect(removeSelectedAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_RemoveSelectedVideoAction);
-            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
-            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
-            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
-
-            videoMenu.exec(globalPos);
-
-        } else {
-            QMenu videoMenu;
-            QAction *addFileAction = videoMenu.addAction("Add File");
-            QAction *addFolderAction = videoMenu.addAction("Add Folder");
-            QAction *advancedOpenAction = videoMenu.addAction("Advanced Open");
-            videoMenu.addSeparator();
-            QAction *saveAction = videoMenu.addAction("Save Playlist to File");
-            videoMenu.addSeparator();
-            QAction *clearAction = videoMenu.addAction("Clear the playlist");
-            videoMenu.addSeparator();
-            QAction *shuffleAction = videoMenu.addAction("Shuffle");
-
-            connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-            connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-            connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-            connect(saveAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_SaveAction);
-            connect(clearAction, &QAction::triggered, this, &MainWindow::clearPlaylist);
-            connect(shuffleAction, &QAction::triggered, this, &MainWindow::toggleShuffle);
-
-            videoMenu.exec(globalPos);
-        }
-    } else {
-        QMenu emptyMenu;
-        QAction *addFileAction = emptyMenu.addAction("Add File");
-        QAction *addFolderAction = emptyMenu.addAction("Add Folder");
-        QAction *advancedOpenAction = emptyMenu.addAction("Advanced Open");
-
-        connect(addFileAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFileAction);
-        connect(addFolderAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AddFolderAction);
-        connect(advancedOpenAction, &QAction::triggered, this, &MainWindow::playlistContextMenu_AdvancedOpenAction);
-
-        emptyMenu.exec(globalPos);
-    }
-
-}
-
-void MainWindow::playlistContextMenu_AddFileAction() {}
-
-void MainWindow::playlistContextMenu_AddFolderAction() {}
-
-void MainWindow::playlistContextMenu_AdvancedOpenAction() {}
-
-void MainWindow::playlistContextMenu_SaveAction() {}
-
-void MainWindow::playlistContextMenu_PlayVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    m_playlist->setCurrentIndex(index.row());
-}
-
-void MainWindow::playlistContextMenu_StreamVideoAction() {}
-
-void MainWindow::playlistContextMenu_SaveVideoAction() {}
-
-void MainWindow::playlistContextMenu_InformationVideoAction() {}
-
-void MainWindow::playlistContextMenu_ShowFolderVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    QVariant data = index.data(); // Get the data
-    QString text = data.toString();
-    QFileInfo info(text);
-    QString directoryPath = info.absoluteDir().absolutePath();
-    QUrl folderUrl = QUrl::fromLocalFile(directoryPath);
-    if (!QDesktopServices::openUrl(folderUrl)) {
-        // Handle error if the folder couldn't be opened
-        qWarning() << "Could not open folder: " << directoryPath.toStdString();
-    }
-}
-
-void MainWindow::playlistContextMenu_RemoveSelectedVideoAction()
-{
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    if (index.row() == m_playlist->currentIndex()) {
-        m_playlist->next();
-    }
-    m_playlist->removeMedia(index.row());
-}
-
-
-#pragma endregion
-
-
 #pragma region VIDEO CONTROLS
+
 
 void MainWindow::seek(int mseconds)
 {
@@ -1383,17 +1296,26 @@ void MainWindow::jumpTo(int mseconds)
     }
 }
 
+void MainWindow::durationLabel_Clicked()
+{
+    if (m_durationLabelShowRemainingTime) {
+        m_durationLabelShowRemainingTime = false;
+
+    } else {
+        m_durationLabelShowRemainingTime = true;
+
+    }
+
+    if (m_lastPosition > 0)
+        updateDurationInfo(m_lastPosition);
+}
+
 
 #pragma endregion
 
 
 #pragma region VIDEO EDITING FUNCTIONS
 
-
-void MainWindow::showErrorMessage(const QString &message)
-{
-    QMessageBox::warning(this, tr("vura"), message);
-}
 
 void MainWindow::extractSubclipFromVideo()
 {
@@ -1483,6 +1405,49 @@ QString MainWindow::generateSubclipFilenameWithIncrement(const QString &director
 #pragma region CORE APPLICATION FUNCTIONS
 
 
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+
+    m_locale = settings.value("language", "en-US").toString();
+    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
+    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
+    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
+    m_hashFile = settings.value("hashFile", false).toBool();
+    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
+    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
+    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
+    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
+    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
+    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
+    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
+    m_systemTray = settings.value("systemTray", true).toBool();
+    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
+    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
+    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
+    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
+    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
+    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
+    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
+    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
+    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
+    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_theme = settings.value("theme", "System").toString();
+    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+
+    if (timer->isActive())
+        timer->stop();
+
+    emit refreshSettings();
+    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
+}
+
+void MainWindow::showErrorMessage(const QString &message)
+{
+    QMessageBox::warning(this, tr("vura"), message);
+}
+
 void MainWindow::setTrackInfo(const QString &info)
 {
     m_trackInfo = info;
@@ -1511,6 +1476,7 @@ void MainWindow::updateDurationInfo(const qint64 currentInfo)
     QString positionString;
 
     if (currentInfo || m_duration) {
+        m_lastPosition = currentInfo;
         const int currentPosition = static_cast<int>(currentInfo);
         const int currentDuration = static_cast<int>(m_duration);
 
@@ -1664,9 +1630,11 @@ bool MainWindow::isPlaylist(const QUrl &url)
 bool MainWindow::loadPlaylist(const QUrl &url)
 {
     if (m_playlistLoaded) {
-        QMessageBox::StandardButton confirmationBox;
-        confirmationBox = QMessageBox::question(this, "Close Playlist", "Are you sure you want to close the current playlist and load the selected one?",
-                                      QMessageBox::Yes | QMessageBox::No);
+        QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+            this,
+            "Close Playlist",
+            "Are you sure you want to close the current playlist and load the selected one?",
+            QMessageBox::Yes | QMessageBox::No);
 
         if (confirmationBox == QMessageBox::Yes) {
             m_playlist->load(url);
@@ -1680,152 +1648,13 @@ bool MainWindow::loadPlaylist(const QUrl &url)
     return false;
 }
 
-QString MainWindow::getMarker(const double &markerTime)
-{
-    QSettings settings;
-
-    double markerMatchTolerance = settings.value("markerMatchTolerance", 0.001).toDouble();
-    QString markerKey;
-    double m_time;
-    double markerDif;
-
-    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
-    {
-        QString m_key = i.key();
-        foreach (const double marker, i.value())
-        {
-            if (qAbs(marker - markerTime) <= markerMatchTolerance)
-            {
-                if (!markerKey.isEmpty())
-                {
-                    if (qAbs(marker - markerTime) <= markerDif)
-                    {
-                        markerKey = m_key;
-                        m_time = marker;
-                        markerDif = qAbs(marker - markerTime);
-                    }
-                }
-                else
-                {
-                    markerKey = m_key;
-                    m_time = marker;
-                    markerDif = qAbs(marker - markerTime);
-                }
-            }
-        }
-    }
-
-    return markerKey;
-}
-
-void MainWindow::markersChanged(const QString &markerName, const double &markerTime, const QString &markerType)
-{
-    if (markerType == m_markerValue)
-    {
-        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
-
-        if (!markers.isEmpty())
-        {
-            markers.replace(m_markerIndex, markerTime);
-            m_videoMarkersList.insert(m_markerValue, markers);
-        }
-    }
-    else
-    {
-        QList<double> markers = m_videoMarkersList.value(m_markerValue).toList();
-
-        if (!markers.isEmpty())
-        {
-            markers.removeAt(m_markerIndex);
-            QList<double> marker = m_videoMarkersList.value(markerType).toList();
-            marker.append(markerTime);
-            m_videoMarkersList.insert(markerType, marker);
-        }
-    }
-    m_videoSlider->setMarkers(m_videoMarkersList);
-}
-
-void MainWindow::markerDeleted(const double &markerTime)
-{
-    QSettings settings;
-
-    double markerMatchTolerance = settings.value("markerMatchTolerance", 0.001).toDouble();
-    QString markerKey;
-    double m_time;
-    double markerDif;
-
-    for (QMap<QString, QList<double>>::iterator i = m_videoMarkersList.begin(); i != m_videoMarkersList.end(); ++i)
-    {
-        QString m_key = i.key();
-        foreach (const double marker, i.value())
-        {
-            if (qAbs(marker - markerTime) <= markerMatchTolerance)
-            {
-                if (!markerKey.isEmpty())
-                {
-                    if (qAbs(marker - markerTime) <= markerDif)
-                    {
-                        markerKey = m_key;
-                        m_time = marker;
-                        markerDif = qAbs(marker - markerTime);
-                    }
-                }
-                else
-                {
-                    markerKey = m_key;
-                    m_time = marker;
-                    markerDif = qAbs(marker - markerTime);
-                }
-            }
-        }
-    }
-
-    if (!markerKey.isEmpty())
-    {
-        if (m_videoMarkersList.contains(markerKey))
-        {
-            QList<double>& m_list = m_videoMarkersList[markerKey];
-            bool removed = m_list.removeAll(m_time);
-
-            if (removed)
-            {
-                qDebug() << tr("Removed marker %1").arg(markerKey);
-            }
-            else
-            {
-                qDebug() << tr("Failed to removed marker %1").arg(markerKey);
-            }
-        }
-    }
-
-    m_videoSlider->setMarkers(m_videoMarkersList);
-}
-
-void MainWindow::saveMediaFilterList(const QStringList& filterList)
-{
-    QSettings settings;
-    settings.setValue("mediaFileFilter", QVariant::fromValue(filterList));
-    settings.sync();
-}
-
-QStringList MainWindow::loadMediaFilterList()
-{
-    QSettings settings;
-
-    QStringList defaultList;
-    QVariant value = settings.value("mediaFileFilter", QVariant::fromValue(defaultList));
-    QStringList fileFilters = value.value<QStringList>();
-
-    if (fileFilters.isEmpty()) {
-        fileFilters << "*.mp4" << "*.wmv";
-    }
-
-    return fileFilters;
-}
-
 void MainWindow::showNotImplemented_Message()
 {
-    QMessageBox::information(this, "Not Implemented", "Sorry this function has not been implemented yet.");
+    QMessageBox::information(
+        this,
+        "Not Implemented",
+        "Sorry this function has not been implemented yet."
+        );
 }
 
 void MainWindow::loadFile(const QString &fileName)
@@ -1887,27 +1716,17 @@ void MainWindow::setApplicationWindowTitle()
 
     if (!m_player->source().isEmpty()) {
         windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
-        m_trayIcon->setToolTip(strippedFileName(m_currentFile));
+        m_systemTrayIcon->setToolTip(strippedFileName(m_currentFile));
         m_sourceLoaded = false;
 
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
-        m_trayIcon->setToolTip("Vura media player");
+        m_systemTrayIcon->setToolTip("Vura media player");
         m_sourceLoaded = true;
 
     }
 
     setWindowTitle(windowTitle);
-}
-
-void MainWindow::setSystemTrayIcon()
-{
-    if (m_systemTray) {
-        m_trayIcon->show();
-
-    } else if (!m_systemTray) {
-        m_trayIcon->hide();
-    }
 }
 
 void MainWindow::setToolTips()
@@ -1956,124 +1775,3 @@ bool MainWindow::createUserDirs()
 
 
 #pragma endregion
-
-
-void MainWindow::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
-{
-    if (reason == QSystemTrayIcon::Trigger) {
-        if (this->isHidden() || this->isMinimized()) {
-            this->showNormal();
-            this->activateWindow();
-        }
-    }
-}
-
-void MainWindow::hideSystemTray()
-{
-    if (m_systemTray_Showing) {
-        this->hide();
-        m_player->pause();
-        systemTray_ToggleShow->setText(tr("Show Vura"));
-        m_systemTray_Showing = false;
-    } else {
-        this->show();
-        this->showNormal();
-        this->raise();
-        this->activateWindow();
-        systemTray_ToggleShow->setText(tr("Hide Vura in taskbar"));
-        m_systemTray_Showing = true;
-    }
-}
-
-void MainWindow::systemTray_Stop()
-{
-    m_player->stop();
-}
-
-void MainWindow::systemTray_Record()
-{
-    showNotImplemented_Message();
-}
-
-void MainWindow::systemTray_Faster()
-{
-    changePlaybackSpeed(m_playbackSpeedAdjustment);
-}
-
-void MainWindow::systemTray_FasterFine()
-{
-    changePlaybackSpeed(m_playbackSpeedFineAdjustment);
-}
-
-void MainWindow::systemTray_Normal()
-{
-    setPlaybackSpeedNormal();
-}
-
-void MainWindow::systemTray_SlowerFine()
-{
-    changePlaybackSpeed(-m_playbackSpeedFineAdjustment);
-}
-
-void MainWindow::systemTray_Slower()
-{
-    changePlaybackSpeed(-m_playbackSpeedAdjustment);
-}
-
-void MainWindow::systemTray_IncreaseVolume()
-{
-    changeVolume(m_volumeStep);
-}
-
-void MainWindow::systemTray_DecreaseVolume()
-{
-    changeVolume(-m_volumeStep);
-}
-
-void MainWindow::systemTray_OpenFile()
-{
-    QSettings settings;
-
-    // File filters
-    QStringList fileFilters;
-    fileFilters << constants::MediaFileExtensions;
-    fileFilters << constants::VideoFileExtensions;
-    fileFilters << constants::AudioFileExtensions;
-    fileFilters << constants::ApplicationFileExtensions;
-    fileFilters << constants::PlaylistFileExtensions;
-    fileFilters << "All Files (*.*)";
-
-    // Create open file dialog.
-    QFileDialog fileDialog(this);
-    fileDialog.setNameFilters(fileFilters);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open File"));
-    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString());
-
-    if (fileDialog.exec() == QDialog::Accepted) {
-        QStringList selectedFiles = fileDialog.selectedFiles();
-        if (!selectedFiles.isEmpty()) {
-            QStringList fileList;
-            for (auto &url : selectedFiles) {
-                fileList.append(url);
-            }
-
-            // Set last file directory where file was opened.
-            QString lastFileDirectory = selectedFiles.last();
-            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
-
-            openFiles(fileList);
-        }
-    }
-}
-
-void MainWindow::durationLabel_Clicked()
-{
-    if (m_durationLabelShowRemainingTime) {
-        m_durationLabelShowRemainingTime = false;
-
-    } else {
-        m_durationLabelShowRemainingTime = true;
-
-    }
-}

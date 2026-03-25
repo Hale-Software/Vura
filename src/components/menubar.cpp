@@ -125,7 +125,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
     m_togglePlaylistAction = new QAction(tr("Toggle Playlist"), this);
     m_toggleStatusBarAction = new QAction(tr("Toggle Status Bar"), this);
-    m_toggleTagsAction = new QAction(tr("Toggle Tags"), this);
     m_toggleVideoControlsAction = new QAction(tr("Toggle Video Controls"), this);
     m_toggleCumshotMarkersAction = new QAction(tr("Cumshot Markers"), this);
     m_toggleCyanMarkersAction = new QAction(tr("Cyan Markers"), this);
@@ -190,7 +189,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_toggleSubtitlesAction->setCheckable(true);
     m_togglePlaylistAction->setCheckable(true);
     m_toggleStatusBarAction->setCheckable(true);
-    m_toggleTagsAction->setCheckable(true);
     m_toggleVideoControlsAction->setCheckable(true);
     m_toggleCumshotMarkersAction->setCheckable(true);
     m_toggleCyanMarkersAction->setCheckable(true);
@@ -213,7 +211,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_toggleSubtitlesAction->setChecked(false);
     m_togglePlaylistAction->setChecked(false);
     m_toggleStatusBarAction->setChecked(false);
-    m_toggleTagsAction->setChecked(false);
     m_toggleVideoControlsAction->setChecked(false);
 
 
@@ -341,7 +338,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_fileMenu->addAction(m_exitAction);
 
     m_viewMenu->addAction(m_togglePlaylistAction);
-    m_viewMenu->addAction(m_toggleTagsAction);
     m_viewMenu->addAction(m_toggleStatusBarAction);
     m_viewMenu->addAction(m_toggleVideoControlsAction);
     m_viewMenu->addSeparator();
@@ -513,7 +509,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     connect(m_showLogFileViewerAction, &QAction::triggered, this, &MenuBar::showLogFileViewer_Clicked);
     connect(m_togglePlaylistAction, &QAction::triggered, this, &MenuBar::togglePlaylist_Clicked);
     connect(m_toggleStatusBarAction, &QAction::triggered, this, &MenuBar::toggleStatusBar_Clicked);
-    connect(m_toggleTagsAction, &QAction::triggered, this, &MenuBar::toggleTags_Clicked);
     connect(m_toggleVideoControlsAction, &QAction::triggered, this, &MenuBar::toggleVideoControls_Clicked);
     connect(m_toggleCumshotMarkersAction, &QAction::triggered, this, &MenuBar::toggleCumshotMarkers_Clicked);
     connect(m_toggleCyanMarkersAction, &QAction::triggered, this, &MenuBar::toggleCyanMarkers_Clicked);
@@ -602,7 +597,6 @@ void MenuBar::setHotkeys()
         m_hotkeys.removeMenuItemHotkey(*m_showLogFileViewerAction);
         m_hotkeys.removeMenuItemHotkey(*m_togglePlaylistAction);
         m_hotkeys.removeMenuItemHotkey(*m_toggleStatusBarAction);
-        m_hotkeys.removeMenuItemHotkey(*m_toggleTagsAction);
         m_hotkeys.removeMenuItemHotkey(*m_toggleVideoControlsAction);
         m_hotkeys.removeMenuItemHotkey(*m_clearRecentFilesAction);
         m_hotkeys.removeMenuItemHotkey(*m_togglePlayAction);
@@ -677,7 +671,6 @@ void MenuBar::setHotkeys()
     m_hotkeys.setMenuItemHotkey(*m_showLogFileViewerAction);
     m_hotkeys.setMenuItemHotkey(*m_togglePlaylistAction);
     m_hotkeys.setMenuItemHotkey(*m_toggleStatusBarAction);
-    m_hotkeys.setMenuItemHotkey(*m_toggleTagsAction);
     m_hotkeys.setMenuItemHotkey(*m_toggleVideoControlsAction);
     m_hotkeys.setMenuItemHotkey(*m_clearRecentFilesAction);
     m_hotkeys.setMenuItemHotkey(*m_togglePlayAction);
@@ -1265,9 +1258,10 @@ void MenuBar::toggleVideoControls_Clicked()
     emit toggleVideoControls();
 }
 
-void MenuBar::showMediaInformation_Clicked() {}
-
-void MenuBar::toggleTags_Clicked() {}
+void MenuBar::showMediaInformation_Clicked()
+{
+    emit showMediaInformation();
+}
 
 // Playback Menu
 void MenuBar::togglePlayPause_Clicked()

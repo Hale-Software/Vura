@@ -24,9 +24,36 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent), ui(new Ui::AboutDia
 {
     ui->setupUi(this);
     ui->version->setText(QString::fromStdString(VURA_VERSION_STRING));
+
+    connect(ui->authors, &ClickableLabel::clicked, this, &AboutDialog::authors_Clicked);
+    connect(ui->license, &ClickableLabel::clicked, this, &AboutDialog::license_Clicked);
+    connect(ui->credits, &ClickableLabel::clicked, this, &AboutDialog::credits_Clicked);
 }
 
 AboutDialog::~AboutDialog()
 {
     delete ui;
+}
+
+void AboutDialog::authors_Clicked()
+{
+    QFile file("data/AUTHORS");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ui->textBrowser->setText(file.readAll());
+        file.close();
+    }
+}
+
+void AboutDialog::license_Clicked()
+{
+    QFile file("data/license/license.txt");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ui->textBrowser->setText(file.readAll());
+        file.close();
+    }
+}
+
+void AboutDialog::credits_Clicked()
+{
+    ui->textBrowser->clear();
 }

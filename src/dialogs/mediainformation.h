@@ -17,8 +17,11 @@
 
 #pragma once
 
-#include <QWidget>
-
+#include <QDialog>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTextBrowser>
+#include <QMediaMetaData>
 
 QT_BEGIN_NAMESPACE
 
@@ -29,12 +32,18 @@ namespace Ui {
 QT_END_NAMESPACE
 
 
-class MediaInformation : public QWidget {
+class MediaInformation : public QDialog {
     Q_OBJECT
 
 public:
     explicit MediaInformation(QWidget *parent = nullptr);
     ~MediaInformation() override;
+
+    void setMediaInformation(const QString &filePath, const QMediaMetaData &metaData);
+
+private slots:
+    void close_Clicked();
+    void fingerprint_Clicked();
 
 private:
     Ui::MediaInformation *ui;

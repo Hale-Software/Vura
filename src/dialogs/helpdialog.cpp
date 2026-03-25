@@ -15,38 +15,30 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
 
-#include <QDialog>
-#include <QLabel>
-#include <QTextBrowser>
-#include <QFile>
-#include "../components/ClickableLabel.h"
+#include "helpdialog.h"
+#include "ui_helpdialog.h"
 
-QT_BEGIN_NAMESPACE
 
-namespace Ui
+HelpDialog::HelpDialog(QWidget *parent) : QDialog(parent), ui(new Ui::HelpDialog)
 {
-    class AboutDialog;
+    ui->setupUi(this);
+
+    connect(ui->close, &QPushButton::clicked, this, &HelpDialog::close_Clicked);
+
+    QFile file("data/help.html");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ui->textBrowser->setHtml(file.readAll());
+        file.close();
+    }
 }
 
-QT_END_NAMESPACE
-
-
-class AboutDialog : public QDialog
+HelpDialog::~HelpDialog()
 {
-    Q_OBJECT
+    delete ui;
+}
 
-public:
-    explicit AboutDialog(QWidget *parent = nullptr);
-    ~AboutDialog() override;
-
-private slots:
-    void authors_Clicked();
-    void license_Clicked();
-    void credits_Clicked();
-
-private:
-    Ui::AboutDialog *ui;
-
-};
+void HelpDialog::close_Clicked()
+{
+    this->close();
+}
