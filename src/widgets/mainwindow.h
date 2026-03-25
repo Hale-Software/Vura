@@ -273,6 +273,8 @@ private:
     int m_x = 0;
     int m_y = 0;
     bool m_showingCursor = true;
+    bool m_fromFullscreen = false;
+    qint64 m_lastPosition = 0;
     QString m_currentUser = "UNKNOWN";
 
     // WINDOWS

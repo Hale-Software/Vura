@@ -94,6 +94,7 @@ void VuraApp::AppInit(int argc, char* argv[])
         mainWindow->setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         connect(mainWindow, SIGNAL(destroyed()), this, SLOT(quit()));
         mainWindow->show();
+        mainWindow->windowHandle()->setScreen(qApp->screens()[0]);
 
         if (argc > 2) {
             QString pathName = QString::fromUtf8(argv[2]);

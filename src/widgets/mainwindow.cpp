@@ -1065,12 +1065,21 @@ void MainWindow::toggleMute()
 
 void MainWindow::toggleFullscreen()
 {
-    if (ui->videoWidget->isFullScreen()) {
+    if (!this->isMaximized() && !ui->videoWidget->isFullScreen()) {
+        this->showMaximized();
+
+    } else if (this->isMaximized() && !ui->videoWidget->isFullScreen()) {
+        if (!m_fromFullscreen) {
+            ui->videoWidget->setFullScreen(true);
+            ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
+        } else {
+            this->showNormal();
+            m_fromFullscreen = false;
+        }
+    } else if (ui->videoWidget->isFullScreen()) {
         ui->videoWidget->setFullScreen(false);
+        m_fromFullscreen = true;
         ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-    } else {
-        ui->videoWidget->setFullScreen(true);
-        ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
     }
 }
 
@@ -1296,6 +1305,9 @@ void MainWindow::durationLabel_Clicked()
         m_durationLabelShowRemainingTime = true;
 
     }
+
+    if (m_lastPosition > 0)
+        updateDurationInfo(m_lastPosition);
 }
 
 
@@ -1464,6 +1476,7 @@ void MainWindow::updateDurationInfo(const qint64 currentInfo)
     QString positionString;
 
     if (currentInfo || m_duration) {
+        m_lastPosition = currentInfo;
         const int currentPosition = static_cast<int>(currentInfo);
         const int currentDuration = static_cast<int>(m_duration);
 
