@@ -17,14 +17,17 @@
 
 #pragma once
 
-#include <string>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+char *libApplicationDebugFolder();
+char *libMediaFileExtensions();
+char *libVideoFileExtensions();
+char *libAudioFileExtensions();
+char *libApplicationFileExtensions();
+char *libPlaylistFileExtensions();
 
-namespace constants {
-    extern const std::string ApplicationDebugFolder;
-    extern const std::string MediaFileExtensions;
-    extern const std::string VideoFileExtensions;
-    extern const std::string AudioFileExtensions;
-    extern const std::string ApplicationFileExtensions;
-    extern const std::string PlaylistFileExtensions;
+#ifdef __cplusplus
 }
+#endif

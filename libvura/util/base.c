@@ -88,7 +88,7 @@ void base_set_crash_handler(void (*handler)(const char *, va_list, void *), void
     crash_handler = handler;
 }
 
-OBS_NORETURN void bcrash(const char *format, ...)
+VURA_NORETURN void bcrash(const char *format, ...)
 {
     va_list args;
 

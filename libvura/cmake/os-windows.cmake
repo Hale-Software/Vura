@@ -43,7 +43,7 @@ target_sources(
 #        vura-win-crash-handler.c
 #        vura-windows.c
 #        util/pipe-windows.c
-#        util/platform-windows.c
+        util/platform-windows.c
 #        util/threading-windows.c
 #        util/threading-windows.h
 #        util/windows/CoTaskMemPtr.hpp

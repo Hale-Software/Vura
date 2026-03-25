@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
+find_package(Qt6 COMPONENTS Widgets Network)
+
 include(cmake/vura-version.cmake)
 
-if(OS_WINDOWS AND NOT VURA_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
-    include(cmake/os-windows.cmake)
-    return()
-endif()
+#if(OS_WINDOWS AND NOT VURA_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
+#    include(cmake/os-windows.cmake)
+#    return()
+#endif()
 
 #find_package(SIMDe REQUIRED)
 #find_package(Threads REQUIRED)
@@ -28,8 +30,6 @@ target_sources(
         PRIVATE
 #        $<$<BOOL:${ENABLE_HEVC}>:vura-hevc.c>
 #        $<$<BOOL:${ENABLE_HEVC}>:vura-hevc.h>
-        constants.c
-        constants.h
 #        vura-audio-controls.c
 #        vura-audio-controls.h
 #        vura-audio.c
@@ -99,6 +99,8 @@ target_sources(
 #        util/cf-parser.h
 #        util/config-file.c
 #        util/config-file.h
+#        util/constants.c
+#        util/constants.h
 #        util/crc32.c
 #        util/crc32.h
 #        util/curl/curl-helper.h
@@ -112,8 +114,8 @@ target_sources(
 #        util/lexer.h
 #        util/pipe.c
 #        util/pipe.h
-#        util/platform.c
-#        util/platform.h
+        util/platform.c
+        util/platform.h
 #        util/profiler.c
 #        util/profiler.h
 #        util/profiler.hpp
@@ -241,6 +243,8 @@ target_compile_definitions(
 target_link_libraries(
         libvura
         PRIVATE
+        Qt6::Widgets
+        Qt6::Network
 #        VURA::caption
         VURA::libvura-version
 #        FFmpeg::avcodec
@@ -379,11 +383,11 @@ endif()
 
 set_property(TARGET libvura APPEND PROPERTY VURA_PUBLIC_HEADERS ${public_headers})
 
-set_target_properties_vura(
+set_target_properties(
         libvura
         PROPERTIES FOLDER core
         VERSION 0
         SOVERSION "${VURA_VERSION_MAJOR}"
 )
 
-target_export(libvura)
+#target_export(libvura)
