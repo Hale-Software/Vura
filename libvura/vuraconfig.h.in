@@ -1,4 +1,6 @@
 #pragma once
 
+#cmakedefine VURA_DATA_PATH "@VURA_DATA_PATH@"
+
 #define VURA_RELEASE_CANDIDATE @VURA_RELEASE_CANDIDATE@
 #define VURA_BETA @VURA_BETA@
