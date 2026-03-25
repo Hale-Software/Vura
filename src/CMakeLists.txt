@@ -29,6 +29,7 @@ target_link_libraries(
         vura PRIVATE
         xxhash
         VURA::qBreakpad
+        VURA::libvura
 )
 
 include(cmake/ui-components.cmake)
