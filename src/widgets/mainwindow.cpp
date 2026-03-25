@@ -104,6 +104,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
     // connect(this, &MainWindow::, m_menuBar, &MenuBar::);
 
+    connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
     connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
     connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
     connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
@@ -744,6 +745,17 @@ void MainWindow::playbackRateChanged(qreal rate)
 
 #pragma region PUBLIC SLOTS
 
+
+void MainWindow::showMediaInformation()
+{
+    if (m_mediaInformation)
+        m_mediaInformation->close();
+
+    m_mediaInformation = new MediaInformation(this);
+    m_mediaInformation->show();
+    m_mediaInformation->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_mediaInformation->setMediaInformation(m_currentFile, m_player->metaData());
+}
 
 void MainWindow::showPreferences()
 {

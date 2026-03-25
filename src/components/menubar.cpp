@@ -1258,7 +1258,10 @@ void MenuBar::toggleVideoControls_Clicked()
     emit toggleVideoControls();
 }
 
-void MenuBar::showMediaInformation_Clicked() {}
+void MenuBar::showMediaInformation_Clicked()
+{
+    emit showMediaInformation();
+}
 
 // Playback Menu
 void MenuBar::togglePlayPause_Clicked()

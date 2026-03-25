@@ -67,6 +67,7 @@ public slots:
     void videoControlsShowing(bool showing);
 
 signals:
+    void showMediaInformation();
     void showPreferences();
     void showAbout();
     void showHelp();

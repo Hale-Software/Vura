@@ -99,6 +99,7 @@
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
 #include "../dialogs/updatewindow.h"
+#include "../dialogs/mediainformation.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -141,6 +142,7 @@ public:
     bool isPlayerAvailable() const;
 
 public slots:
+    void showMediaInformation();
     void showPreferences();
     void showAbout();
     void showHelp();
@@ -279,6 +281,7 @@ private:
     QPointer<SettingsWindow> m_settingsWindow;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
+    QPointer<MediaInformation> m_mediaInformation;
 
     // VARIABLES
     // =======================================================================================================
