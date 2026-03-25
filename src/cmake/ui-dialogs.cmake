@@ -12,4 +12,6 @@ target_sources(
         dialogs/permissions.h
         dialogs/mediainformation.cpp
         dialogs/mediainformation.h
+        dialogs/helpdialog.cpp
+        dialogs/helpdialog.h
 )

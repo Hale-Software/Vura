@@ -100,6 +100,7 @@
 #include "../dialogs/logviewer.h"
 #include "../dialogs/updatewindow.h"
 #include "../dialogs/mediainformation.h"
+#include "../dialogs/helpdialog.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -282,6 +283,7 @@ private:
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
     QPointer<MediaInformation> m_mediaInformation;
+    QPointer<HelpDialog> m_helpDialog;
 
     // VARIABLES
     // =======================================================================================================

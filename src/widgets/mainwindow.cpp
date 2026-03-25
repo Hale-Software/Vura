@@ -778,7 +778,15 @@ void MainWindow::showAbout()
     m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void MainWindow::showHelp() {}
+void MainWindow::showHelp()
+{
+    if (m_helpDialog)
+        m_helpDialog->close();
+
+    m_helpDialog = new HelpDialog(this);
+    m_helpDialog->show();
+    m_helpDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
 
 void MainWindow::showUpdates()
 {
