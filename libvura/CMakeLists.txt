@@ -39,7 +39,7 @@ target_sources(
         vura-config.h
         vura-data.c
         vura-data.h
-#        vura-defs.h
+        vura-defs.h
 #        vura-display.c
 #        vura-encoder.c
 #        vura-encoder.h
