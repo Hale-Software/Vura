@@ -228,7 +228,6 @@ private slots:
     void loadSettings();
     void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
-    void metaDataChanged();
     void tracksChanged();
     void seek(int mseconds);
     void jump(const QModelIndex &index);

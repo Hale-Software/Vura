@@ -102,7 +102,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this, &MainWindow::updateVideoTracks, m_menuBar, &MenuBar::updateVideoTracks);
     connect(this, &MainWindow::updateSubtitleTracks, m_menuBar, &MenuBar::updateSubtitleTracks);
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
-    // connect(this, &MainWindow::, m_menuBar, &MenuBar::);
 
     connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
     connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
@@ -157,7 +156,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
     connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
     connect(m_menuBar, &MenuBar::takeSnapshot, this, &MainWindow::takeSnapshot);
-    // connect(m_menuBar, &MenuBar::, this, &MainWindow::);
 
     this->setMenuBar(m_menuBar);
 
@@ -247,45 +245,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::loadSettings()
-{
-    QSettings settings;
-
-    m_locale = settings.value("language", "en-US").toString();
-    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
-    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
-    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
-    m_hashFile = settings.value("hashFile", false).toBool();
-    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
-    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
-    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
-    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
-    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
-    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
-    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
-    m_systemTray = settings.value("systemTray", true).toBool();
-    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
-    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
-    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
-    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
-    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
-    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
-    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
-    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
-    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
-    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
-    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
-    m_theme = settings.value("theme", "System").toString();
-    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
-
-    if (timer->isActive())
-        timer->stop();
-
-    emit refreshSettings();
-    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
-    //setSystemTrayIcon();
 }
 
 void MainWindow::testFunction() {}
@@ -574,62 +533,6 @@ void MainWindow::positionChanged(qint64 progress)
         m_videoSlider->setValue(static_cast<int>(progress));
 
     updateDurationInfo(progress / 1000);
-}
-
-// TODO: Implement
-void MainWindow::metaDataChanged()
-{
-    /*
-    auto metaData = m_player->metaData();
-    setTrackInfo(QStringLiteral("%1 - %2")
-                         .arg(metaData.value(QMediaMetaData::AlbumArtist).toString())
-                         .arg(metaData.value(QMediaMetaData::Title).toString()));
-
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
-    for (int i = 0; i < QMediaMetaData::NumMetaData; i++) {
-        if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[i]))
-            field->clear();
-        else if (QLabel *label = qobject_cast<QLabel *>(m_metaDataFields[i]))
-            label->clear();
-        m_metaDataFields[i]->setDisabled(true);
-        m_metaDataLabels[i]->setDisabled(true);
-    }
-
-    for (auto &&[key, value] : metaData.asKeyValueRange()) {
-        int i = int(key);
-        if (key == QMediaMetaData::CoverArtImage) {
-            if (QLabel *cover = qobject_cast<QLabel *>(m_metaDataFields[key])) {
-                QImage coverImage = value.value<QImage>();
-                cover->setPixmap(QPixmap::fromImage(coverImage));
-            }
-        } else if (key == QMediaMetaData::ThumbnailImage) {
-            if (QLabel *thumbnail = qobject_cast<QLabel *>(m_metaDataFields[key])) {
-                QImage thumbnailImage = value.value<QImage>();
-                thumbnail->setPixmap(QPixmap::fromImage(thumbnailImage));
-            }
-        } else if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[key])) {
-            QString stringValue = metaData.stringValue(key);
-            field->setText(stringValue);
-        }
-        m_metaDataFields[i]->setDisabled(false);
-        m_metaDataLabels[i]->setDisabled(false);
-    }
-
-    const QList<QMediaMetaData> tracks = m_player->videoTracks();
-    const int currentVideoTrack = m_player->activeVideoTrack();
-    if (currentVideoTrack >= 0 && currentVideoTrack < tracks.size()) {
-        const QMediaMetaData track = tracks.value(currentVideoTrack);
-        for (const QMediaMetaData::Key &key : track.keys()) {
-            if (QLineEdit *field = qobject_cast<QLineEdit *>(m_metaDataFields[key])) {
-                QString stringValue = track.stringValue(key);
-                field->setText(stringValue);
-            }
-            m_metaDataFields[key]->setDisabled(true);
-            m_metaDataLabels[key]->setDisabled(true);
-        }
-    }
-#endif
-*/
 }
 
 QString MainWindow::trackName(const QMediaMetaData &metaData, int index)
@@ -1399,11 +1302,6 @@ void MainWindow::durationLabel_Clicked()
 #pragma region VIDEO EDITING FUNCTIONS
 
 
-void MainWindow::showErrorMessage(const QString &message)
-{
-    QMessageBox::warning(this, tr("vura"), message);
-}
-
 void MainWindow::extractSubclipFromVideo()
 {
     if (m_inMarker <= 0 || m_outMarker <= 0) {
@@ -1491,6 +1389,49 @@ QString MainWindow::generateSubclipFilenameWithIncrement(const QString &director
 
 #pragma region CORE APPLICATION FUNCTIONS
 
+
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+
+    m_locale = settings.value("language", "en-US").toString();
+    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
+    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
+    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
+    m_hashFile = settings.value("hashFile", false).toBool();
+    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
+    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
+    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
+    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
+    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
+    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
+    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
+    m_systemTray = settings.value("systemTray", true).toBool();
+    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
+    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
+    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
+    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
+    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
+    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
+    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
+    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
+    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
+    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_theme = settings.value("theme", "System").toString();
+    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+
+    if (timer->isActive())
+        timer->stop();
+
+    emit refreshSettings();
+    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
+}
+
+void MainWindow::showErrorMessage(const QString &message)
+{
+    QMessageBox::warning(this, tr("vura"), message);
+}
 
 void MainWindow::setTrackInfo(const QString &info)
 {
@@ -1673,9 +1614,11 @@ bool MainWindow::isPlaylist(const QUrl &url)
 bool MainWindow::loadPlaylist(const QUrl &url)
 {
     if (m_playlistLoaded) {
-        QMessageBox::StandardButton confirmationBox;
-        confirmationBox = QMessageBox::question(this, "Close Playlist", "Are you sure you want to close the current playlist and load the selected one?",
-                                      QMessageBox::Yes | QMessageBox::No);
+        QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+            this,
+            "Close Playlist",
+            "Are you sure you want to close the current playlist and load the selected one?",
+            QMessageBox::Yes | QMessageBox::No);
 
         if (confirmationBox == QMessageBox::Yes) {
             m_playlist->load(url);
@@ -1691,7 +1634,11 @@ bool MainWindow::loadPlaylist(const QUrl &url)
 
 void MainWindow::showNotImplemented_Message()
 {
-    QMessageBox::information(this, "Not Implemented", "Sorry this function has not been implemented yet.");
+    QMessageBox::information(
+        this,
+        "Not Implemented",
+        "Sorry this function has not been implemented yet."
+        );
 }
 
 void MainWindow::loadFile(const QString &fileName)
