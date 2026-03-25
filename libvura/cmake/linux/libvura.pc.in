@@ -1,0 +1,13 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libvura
+Description: Vura core compositor library
+Version: @VURA_VERSION_CANONICAL@
+
+Requires:
+Libs: -L${libdir} -lvura
+Libs.private: -pthread -lm
+Cflags: -I${includedir} -std=gnu@CMAKE_C_STANDARD@ -fPIC -fvisibility=hidden -fopenmp-simd -Werror -DHAVE_VURACONFIG_H
