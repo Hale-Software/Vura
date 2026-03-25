@@ -68,6 +68,14 @@ LogViewer::~LogViewer()
     delete ui;
 }
 
+void LogViewer::openFile(const QString &fileName)
+{
+    if (!fileName.isEmpty()) {
+        m_openedLogFile = fileName;
+        refreshMessages();
+    }
+}
+
 void LogViewer::messageFormatter(QString message)
 {
     if (m_simplify) {

@@ -37,16 +37,46 @@
 #include <QFile>
 #include <QLabel>
 #include <QKeySequence>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QPointer>
 #include <QDebug>
 
 #include "../constants.h"
+
+#include "../dialogs/about.h"
+#include "../dialogs/helpdialog.h"
+#include "../dialogs/LogUploadDialog.h"
+#include "../dialogs/logviewer.h"
+#include "../dialogs/updatewindow.h"
+#include "../dialogs/whatsnew.h"
+#include "../settings/settingswindow.h"
 
 
 class MenuBar : public QMenuBar {
     Q_OBJECT
 
+    friend class AboutDialog;
+    friend class HelpDialog;
+    friend class LogUploadDialog;
+    friend class LogViewer;
+    friend class UpdateDialog;
+    friend class WhatsNewDialog;
+    friend class SettingsWindow;
+
 public:
     explicit MenuBar(QWidget *parent = nullptr);
+
+    void createMenus();
+    void createMenuActions();
+    void setActionsDefaultProperties();
+    void createRecentFileActions();
+    void createAudioDeviceActions();
+    void createAudioTrackActions();
+    void createVideoTrackActions();
+    void createSubtitleTrackActions();
+    void buildMenus();
+    void setActionConnections();
 
 public slots:
     void setPlayerStatus(bool loaded);
@@ -66,23 +96,26 @@ public slots:
     void statusBarShowing(bool showing);
     void videoControlsShowing(bool showing);
 
+
 signals:
-    void showMediaInformation();
-    void showPreferences();
-    void showAbout();
-    void showHelp();
-    void showUpdates();
-    void showFeedback();
-    void emergencyCollapse();
-    void exitApplication();
+    // Misc
+    void settingsUpdated();
+
+    // File
     void openFiles(const QStringList &fileList, bool localFile = true);
+    void openFolder(const QString &folderPath);
     void closeFile();
     void closeAllFiles();
-    void openFolder(const QString &folderPath);
     void saveFile(const QString &filePath);
     void savePlaylist(const QString &filePath, const QString &type);
+    void emergencyCollapse();
+    //void showPreferences();
+    void exitApplication();
+
+    // View
     void togglePlaylist();
     void toggleStatusBar();
+    void toggleVideoControls();
     void toggleMarkers();
     void toggleCumshotMarkers();
     void toggleCyanMarkers();
@@ -91,150 +124,215 @@ signals:
     void toggleOrangeMarkers();
     void toggleSceneTransitionMarkers();
     void toggleStripMarkers();
-    void showLogFileViewer();
-    void toggleVideoControls();
-    void togglePlayPause();
-    void nextVideo();
-    void previousVideo();
+    void showMediaInformation();
+    //void showLogFileViewer();
+
+    // Playback
     void changePlaybackSpeed(double mrate);
     void setPlaybackSpeedNormal();
     void videoSeek(int mseconds);
     void videoJumpToTime(int position);
+    void togglePlayPause();
+    void nextVideo();
+    void previousVideo();
     void restartVideo();
-    void changeVolume(double mvolume);
-    void toggleMute();
-    void toggleFullscreen();
-    void setAudioOutput(const QAudioDevice &moutput);
-    void setAudioTrack(int mtrack);
-    void setVideoTrack(int mtrack);
-    void setSubtitleTrack(int mtrack);
+
+    // Markers
     void addMarker(const QString &markerType);
-    void nextMarker();
-    void previousMarker();
-    void clearSelectedMarker();
-    void clearMarkers();
-    void clearInMarker();
-    void clearOutMarker();
     void goToInMarker();
     void goToOutMarker();
-    void createSubclip();
+    void clearInMarker();
+    void clearOutMarker();
+    void nextMarker();
+    void previousMarker();
+    void clearMarkers();
+    void clearSelectedMarker();
+
+    // Audio
+    void setAudioOutput(const QAudioDevice &moutput);
+    void setAudioTrack(int mtrack);
+    void changeVolume(double mvolume);
+    void toggleMute();
+
+    // Video
+    void setVideoTrack(int mtrack);
+    void toggleFullscreen();
     void takeSnapshot();
+
+    // Subtitle
+    void setSubtitleTrack(int mtrack);
+
+    // Tools
+    void createSubclip();
     void testFunction();
 
+    // Help
+    //void showHelp();
+    //void showFeedback();
+    //void uploadLogFile(const QString &logFile);
+    //void viewCurrentLog();
+    //void uploadCrashReport(const QString &reportFile);
+    //void checkFileIntegrity();
+    //void showUpdates();
+    //void showWhatsNew();
+    //void showReleaseNotes();
+    //void showAbout();
+
+
 private slots:
+    // Misc
+    void settingsUpdatedSlot();
+
     // File Menu
-    void closeFile_Clicked();
-    void closeAll_Clicked();
-    void emergencyCollapse_Clicked();
-    void exit_Clicked();
     void openFile_Clicked();
     void openMultipleFiles_Clicked();
     void openFolder_Clicked();
     void openNetworkStream_Clicked();
+
+    void openRecent_Clicked();
+    void openRecentFile_Clicked();
+    void clearRecentFiles_Clicked();
+
+    void closeFile_Clicked();
+    void closeAll_Clicked();
     void save_Clicked();
     void saveAs_Clicked();
     void savePlaylist_Clicked();
     void saveACopy_Clicked();
+
     void importProject_Clicked();
     void importCaptions_Clicked();
     void importMarkers_Clicked();
+
     void exportCaptions_Clicked();
     void exportClips_Clicked();
     void exportMarkers_Clicked();
     void exportMedia_Clicked();
-    void openRecent_Clicked();
+
+    void emergencyCollapse_Clicked();
     void showPreferences_Clicked();
-    void openRecentFile_Clicked();
-    void clearRecentFiles_Clicked();
+    void exit_Clicked();
+
 
     // View Menu
     void togglePlaylist_Clicked();
     void toggleStatusBar_Clicked();
-    void toggleMarkers_Clicked();
+    void toggleVideoControls_Clicked();
+
     void toggleCumshotMarkers_Clicked();
     void toggleCyanMarkers_Clicked();
     void toggleDialogMarkers_Clicked();
     void toggleMagentaMarkers_Clicked();
+    void toggleMarkers_Clicked();
     void toggleOrangeMarkers_Clicked();
     void toggleSceneTransitionMarkers_Clicked();
     void toggleStripMarkers_Clicked();
-    void showLogFileViewer_Clicked();
-    void toggleVideoControls_Clicked();
+
     void showMediaInformation_Clicked();
+    void showLogFileViewer_Clicked();
+
 
     // Playback Menu
-    void togglePlayPause_Clicked();
-    void nextVideo_Clicked();
-    void nextFrame_Clicked();
-    void previousVideo_Clicked();
-    void previousFrame_Clicked();
     void fasterSpeed_Clicked();
     void fasterFineSpeed_Clicked();
     void normalSpeed_Clicked();
     void slowerSpeed_Clicked();
     void slowerFineSpeed_Clicked();
-    void jumpBackwardSmall_Clicked();
-    void jumpBackwardMedium_Clicked();
-    void jumpBackwardLarge_Clicked();
-    void jumpBackwardExtraLarge_Clicked();
+
+    void nextFrame_Clicked();
+    void previousFrame_Clicked();
+
     void jumpForwardSmall_Clicked();
     void jumpForwardMedium_Clicked();
     void jumpForwardLarge_Clicked();
     void jumpForwardExtraLarge_Clicked();
+
+    void jumpBackwardSmall_Clicked();
+    void jumpBackwardMedium_Clicked();
+    void jumpBackwardLarge_Clicked();
+    void jumpBackwardExtraLarge_Clicked();
+
     void jumpToTime_Clicked();
+    void togglePlayPause_Clicked();
+    void nextVideo_Clicked();
+    void previousVideo_Clicked();
     void restartVideo_Clicked();
 
-    // Audio Menu
-    void increaseVolume_Clicked();
-    void decreaseVolume_Clicked();
-    void toggleMute_Clicked();
-    void selectAudioOutput_Clicked();
-    void selectAudioTrack_Clicked();
-
-    // Video Menu
-    void toggleFullscreen_Clicked();
-    void takeSnapshot_Clicked();
-    void selectVideoTrack_Clicked();
-    void selectSubtitleTrack_Clicked();
 
     // Markers Menu
+    void addInMarker_Clicked();
+    void addOutMarker_Clicked();
+    void goToInMarker_Clicked();
+    void goToOutMarker_Clicked();
+    void clearInMarker_Clicked();
+    void clearOutMarker_Clicked();
+    void clearInAndOutMarker_Clicked();
     void addMarker_Clicked();
     void goToNextMarker_Clicked();
     void goToPreviousMarker_Clicked();
-    void clearSelectedMarker_Clicked();
     void clearAllMarkers_Clicked();
+    void clearSelectedMarker_Clicked();
     void editMarker_Clicked();
     void addSceneTransitionMarker_Clicked();
-    void addCumshotMarker_Clicked();
     void addStripMarker_Clicked();
+    void addCumshotMarker_Clicked();
     void addDialogMarker_Clicked();
     void addCyanMarker_Clicked();
     void addMagentaMarker_Clicked();
     void addOrangeMarker_Clicked();
-    void addInMarker_Clicked();
-    void addOutMarker_Clicked();
-    void clearInMarker_Clicked();
-    void clearOutMarker_Clicked();
-    void clearInAndOutMarker_Clicked();
-    void goToInMarker_Clicked();
-    void goToOutMarker_Clicked();
+
+
+    // Audio Menu
+    void selectAudioOutput_Clicked();
+    void selectAudioTrack_Clicked();
+    void increaseVolume_Clicked();
+    void decreaseVolume_Clicked();
+    void toggleMute_Clicked();
+
+
+    // Video Menu
+    void selectVideoTrack_Clicked();
+    void toggleFullscreen_Clicked();
+    void takeSnapshot_Clicked();
+
+
+    // Subtitle Menu
+    void selectSubtitleTrack_Clicked();
+    void openSubtitleFile_Clicked();
+    void toggleSubtitles_Clicked();
+
 
     // Tools Menu
     void createSubclip_Clicked();
     void streamVideoFromStash_Clicked();
     void testFunction_Clicked();
 
-    // Subtitle Menu
-    void openSubtitleFile_Clicked();
-    void toggleSubtitles_Clicked();
 
     // Help Menu
-    void showAbout_Clicked();
     void showHelp_Clicked();
-    void showUpdates_Clicked();
     void showFeedback_Clicked();
+    void actionShowLogFiles_Clicked();
+    void actionUploadCurrentLogFile_Clicked();
+    void actionUploadPreviousLogFile_Clicked();
+    void actionViewCurrentLog_Clicked();
+    void actionShowCrashReports_Clicked();
+    void actionUploadPreviousCrashReport_Clicked();
+    void actionCheckFileIntegrity_Clicked();
+    void showUpdates_Clicked();
+    void actionWhatsNew_Clicked();
+    void actionReleaseNotes_Clicked();
+    void showAbout_Clicked();
+
 
 private:
+    QPointer<AboutDialog> m_aboutDialog = nullptr;
+    QPointer<HelpDialog> m_helpDialog = nullptr;
+    QPointer<LogUploadDialog> m_logUploadDialog = nullptr;
+    QPointer<LogViewer> m_logViewer = nullptr;
+    QPointer<UpdateDialog> m_updateDialog = nullptr;
+    QPointer<WhatsNewDialog> m_whatsNewDialog = nullptr;
+    QPointer<SettingsWindow> m_settingsWindow = nullptr;
+
     QMenu *m_fileMenu = nullptr;
     QMenu *m_viewMenu = nullptr;
     QMenu *m_playbackMenu = nullptr;
@@ -244,6 +342,7 @@ private:
     QMenu *m_subtitleMenu = nullptr;
     QMenu *m_toolsMenu = nullptr;
     QMenu *m_helpMenu = nullptr;
+
     QMenu *m_fileImportMenu = nullptr;
     QMenu *m_fileExportMenu = nullptr;
     QMenu *m_openRecentMenu = nullptr;
@@ -255,86 +354,44 @@ private:
     QMenu *m_subtitleTrackMenu = nullptr;
     QMenu *m_videoTrackMenu = nullptr;
     QMenu *m_viewMarkersMenu = nullptr;
+    QMenu *m_logFilesMenu = nullptr;
+    QMenu *m_crashReportsMenu = nullptr;
 
-    QAction *m_volumeIncreaseAction = nullptr;
-    QAction *m_volumeDecreaseAction = nullptr;
-    QAction *m_volumeMuteAction = nullptr;
+    // File
+    QAction *m_openFileAction = nullptr;
+    QAction *m_openMultipleFilesAction = nullptr;
+    QAction *m_openFolderAction = nullptr;
+    QAction *m_openNetworkStreamAction = nullptr;
+
+    QAction *m_recentFileActions[10];
+    QAction *m_recentFilesSeparator = nullptr;
+    QAction *m_clearRecentFilesAction = nullptr;
+
     QAction *m_closeAction = nullptr;
     QAction *m_closeAllAction = nullptr;
-    QAction *m_emergencyCollapseAction = nullptr;
-    QAction *m_exitAction = nullptr;
-    QAction *m_openFileAction = nullptr;
-    QAction *m_openFolderAction = nullptr;
-    QAction *m_openMultipleFilesAction = nullptr;
-    QAction *m_openNetworkStreamAction = nullptr;
-    QAction *m_showPreferencesAction = nullptr;
     QAction *m_saveAction = nullptr;
     QAction *m_saveAsAction = nullptr;
     QAction *m_savePlaylistAction = nullptr;
     QAction *m_saveACopyAction = nullptr;
+
     QAction *m_importProjectAction = nullptr;
     QAction *m_importCaptionsAction = nullptr;
     QAction *m_importMarkersAction = nullptr;
+
     QAction *m_exportCaptionsAction = nullptr;
     QAction *m_exportClipsAction = nullptr;
     QAction *m_exportMarkersAction = nullptr;
     QAction *m_exportMediaAction = nullptr;
-    QAction *m_showAboutAction = nullptr;
-    QAction *m_showHelpAction = nullptr;
-    QAction *m_showFeedbackAction = nullptr;
-    QAction *m_updateAction = nullptr;
-    QAction *m_cumshotMarkerAction = nullptr;
-    QAction *m_cyanMarkerAction = nullptr;
-    QAction *m_dialogMarkerAction = nullptr;
-    QAction *m_magentaMarkerAction = nullptr;
-    QAction *m_markerAction = nullptr;
-    QAction *m_orangeMarkerAction = nullptr;
-    QAction *m_sceneMarkerAction = nullptr;
-    QAction *m_stripMarkerAction = nullptr;
-    QAction *m_clearInMarkerAction = nullptr;
-    QAction *m_clearInAndOutMarkerAction = nullptr;
-    QAction *m_clearMarkersAction = nullptr;
-    QAction *m_clearOutMarkerAction = nullptr;
-    QAction *m_clearSelectedMarkerAction = nullptr;
-    QAction *m_editMarkerAction = nullptr;
-    QAction *m_goToInMarkerAction = nullptr;
-    QAction *m_goToNextMarkerAction = nullptr;
-    QAction *m_goToOutMarkerAction = nullptr;
-    QAction *m_goToPreviousMarkerAction = nullptr;
-    QAction *m_inMarkerAction = nullptr;
-    QAction *m_outMarkerAction = nullptr;
-    QAction *m_jumpToTimeAction = nullptr;
-    QAction *m_nextVideoAction = nullptr;
-    QAction *m_nextFrameAction = nullptr;
-    QAction *m_togglePlayAction = nullptr;
-    QAction *m_previousVideoAction = nullptr;
-    QAction *m_previousFrameAction = nullptr;
-    QAction *m_restartVideoAction = nullptr;
-    QAction *m_jumpBackwardSmallAction = nullptr;
-    QAction *m_jumpBackwardMediumAction = nullptr;
-    QAction *m_jumpBackwardLargeAction = nullptr;
-    QAction *m_jumpBackwardExtraLargeAction = nullptr;
-    QAction *m_jumpForwardSmallAction = nullptr;
-    QAction *m_jumpForwardMediumAction = nullptr;
-    QAction *m_jumpForwardLargeAction = nullptr;
-    QAction *m_jumpForwardExtraLargeAction = nullptr;
-    QAction *m_playbackSpeedFasterAction = nullptr;
-    QAction *m_playbackSpeedFasterFineAction = nullptr;
-    QAction *m_playbackSpeedNormalAction = nullptr;
-    QAction *m_playbackSpeedSlowerFineAction = nullptr;
-    QAction *m_playbackSpeedSlowerAction = nullptr;
-    QAction *m_createSubclipAction = nullptr;
-    QAction *m_streamStashVideoAction = nullptr;
-    QAction *m_testFunctionAction = nullptr;
-    QAction *m_openSubtitleFileAction = nullptr;
-    QAction *m_toggleSubtitlesAction = nullptr;
-    QAction *m_toggleFullscreenAction = nullptr;
-    QAction *m_takeSnapshotAction = nullptr;
-    QAction *m_showMediaInformationAction = nullptr;
-    QAction *m_showLogFileViewerAction = nullptr;
+
+    QAction *m_emergencyCollapseAction = nullptr;
+    QAction *m_showPreferencesAction = nullptr;
+    QAction *m_exitAction = nullptr;
+
+    // View
     QAction *m_togglePlaylistAction = nullptr;
     QAction *m_toggleStatusBarAction = nullptr;
     QAction *m_toggleVideoControlsAction = nullptr;
+
     QAction *m_toggleCumshotMarkersAction = nullptr;
     QAction *m_toggleCyanMarkersAction = nullptr;
     QAction *m_toggleDialogMarkersAction = nullptr;
@@ -343,13 +400,97 @@ private:
     QAction *m_toggleOrangeMarkersAction = nullptr;
     QAction *m_toggleSceneMarkersAction = nullptr;
     QAction *m_toggleStripMarkersAction = nullptr;
-    QAction *m_clearRecentFilesAction = nullptr;
-    QAction *m_recentFilesSeparator = nullptr;
-    QAction *m_recentFileActions[10];
+
+    QAction *m_showMediaInformationAction = nullptr;
+    QAction *m_showLogFileViewerAction = nullptr;
+
+    // Playback
+    QAction *m_playbackSpeedFasterAction = nullptr;
+    QAction *m_playbackSpeedFasterFineAction = nullptr;
+    QAction *m_playbackSpeedNormalAction = nullptr;
+    QAction *m_playbackSpeedSlowerFineAction = nullptr;
+    QAction *m_playbackSpeedSlowerAction = nullptr;
+
+    QAction *m_nextFrameAction = nullptr;
+    QAction *m_previousFrameAction = nullptr;
+
+    QAction *m_jumpForwardSmallAction = nullptr;
+    QAction *m_jumpForwardMediumAction = nullptr;
+    QAction *m_jumpForwardLargeAction = nullptr;
+    QAction *m_jumpForwardExtraLargeAction = nullptr;
+
+    QAction *m_jumpBackwardSmallAction = nullptr;
+    QAction *m_jumpBackwardMediumAction = nullptr;
+    QAction *m_jumpBackwardLargeAction = nullptr;
+    QAction *m_jumpBackwardExtraLargeAction = nullptr;
+
+    QAction *m_jumpToTimeAction = nullptr;
+    QAction *m_togglePlayAction = nullptr;
+    QAction *m_nextVideoAction = nullptr;
+    QAction *m_previousVideoAction = nullptr;
+    QAction *m_restartVideoAction = nullptr;
+
+    // Markers
+    QAction *m_inMarkerAction = nullptr;
+    QAction *m_outMarkerAction = nullptr;
+    QAction *m_goToInMarkerAction = nullptr;
+    QAction *m_goToOutMarkerAction = nullptr;
+    QAction *m_clearInMarkerAction = nullptr;
+    QAction *m_clearOutMarkerAction = nullptr;
+    QAction *m_clearInAndOutMarkerAction = nullptr;
+    QAction *m_markerAction = nullptr;
+    QAction *m_goToNextMarkerAction = nullptr;
+    QAction *m_goToPreviousMarkerAction = nullptr;
+    QAction *m_clearMarkersAction = nullptr;
+    QAction *m_clearSelectedMarkerAction = nullptr;
+    QAction *m_editMarkerAction = nullptr;
+    QAction *m_sceneMarkerAction = nullptr;
+    QAction *m_stripMarkerAction = nullptr;
+    QAction *m_cumshotMarkerAction = nullptr;
+    QAction *m_dialogMarkerAction = nullptr;
+    QAction *m_cyanMarkerAction = nullptr;
+    QAction *m_magentaMarkerAction = nullptr;
+    QAction *m_orangeMarkerAction = nullptr;
+
+    // Audio
     QAction *m_audioOutputActions[15];
     QAction *m_audioTrackActions[15];
+    QAction *m_volumeIncreaseAction = nullptr;
+    QAction *m_volumeDecreaseAction = nullptr;
+    QAction *m_volumeMuteAction = nullptr;
+
+    // Video
     QAction *m_videoTrackActions[15];
+    QAction *m_toggleFullscreenAction = nullptr;
+    QAction *m_takeSnapshotAction = nullptr;
+
+    // Subtitle
+    QAction *m_openSubtitleFileAction = nullptr;
     QAction *m_subtitleTrackActions[15];
+    QAction *m_toggleSubtitlesAction = nullptr;
+
+    // Tools
+    QAction *m_createSubclipAction = nullptr;
+    QAction *m_streamStashVideoAction = nullptr;
+    QAction *m_testFunctionAction = nullptr;
+
+    // Help
+    QAction *m_showHelpAction = nullptr;
+    QAction *m_showFeedbackAction = nullptr;
+
+    QAction *m_showLogFilesAction = nullptr;
+    QAction *m_uploadCurrentLogFileAction = nullptr;
+    QAction *m_uploadPreviousLogFileAction = nullptr;
+    QAction *m_viewCurrentLogAction = nullptr;
+
+    QAction *m_showCrashReportsAction = nullptr;
+    QAction *m_uploadPreviousCrashReportAction = nullptr;
+
+    QAction *m_checkFileIntegrityAction = nullptr;
+    QAction *m_updateAction = nullptr;
+    QAction *m_whatsNewAction = nullptr;
+    QAction *m_releaseNotesAction = nullptr;
+    QAction *m_showAboutAction = nullptr;
 
     QAudioDevice m_activeAudioDevice;
 

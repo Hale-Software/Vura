@@ -17,12 +17,29 @@
 
 #include "menubar.h"
 #include "utility/hotkeys.h"
+#include <config.h>
 
 
 MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
 {
     refreshSettings();
+    createMenus();
+    createMenuActions();
+    setActionsDefaultProperties();
+    createRecentFileActions();
+    createAudioDeviceActions();
+    createAudioTrackActions();
+    createVideoTrackActions();
+    createSubtitleTrackActions();
+    buildMenus();
+    setActionConnections();
+    updateRecentFiles();
+    setHotkeys();
 
+}
+
+void MenuBar::createMenus()
+{
     // Create Menus
     m_fileMenu = new QMenu(tr("File"), this);
     m_viewMenu = new QMenu(tr("View"), this);
@@ -44,8 +61,15 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_subtitleTrackMenu = new QMenu(tr("Subtitle Track"), this);
     m_videoTrackMenu = new QMenu(tr("Video Track"), this);
     m_viewMarkersMenu = new QMenu(tr("Toggle Markers"), this);
+    m_logFilesMenu = new QMenu(tr("Log Files"), this);
+    m_crashReportsMenu = new QMenu(tr("Crash Reports"), this);
     // m_ = new QMenu(tr(""), this);
 
+}
+
+// TODO: Organize code
+void MenuBar::createMenuActions()
+{
     // Create Menu Actions
     m_volumeIncreaseAction = new QAction(tr("Increase Volume"), this);
     m_volumeDecreaseAction = new QAction(tr("Decrease Volume"), this);
@@ -135,13 +159,47 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_toggleSceneMarkersAction = new QAction(tr("Scene Transition Markers"), this);
     m_toggleStripMarkersAction = new QAction(tr("Strip Markers"), this);
     m_clearRecentFilesAction = new QAction(tr("Clear"), this);
+
+    // File Menu
+
+    // View Menu
+
+    // Playback Menu
+
+    // Markers Menu
+
+    // Audio Menu
+
+    // Video Menu
+
+    // Subtitle Menu
+
+    // Tools Menu
+
+    // Help Menu
+    m_showLogFilesAction = new QAction(tr("Show Log Files"), this);
+    m_uploadCurrentLogFileAction = new QAction(tr("Upload Current Log File"), this);
+    m_uploadPreviousLogFileAction = new QAction(tr("Upload Previous Log File"), this);
+    m_viewCurrentLogAction = new QAction(tr("View Current Log"), this);
+    m_showCrashReportsAction = new QAction(tr("Show Crash Reports"), this);
+    m_uploadPreviousCrashReportAction = new QAction(tr("Upload Previous Crash Report"), this);
+    m_checkFileIntegrityAction = new QAction(tr("Check File Integrity"), this);
+    m_whatsNewAction = new QAction(tr("What's New"), this);
+    m_releaseNotesAction = new QAction(tr("Release Notes"), this);
     // m_ = new QAction(tr(""), this);
+
+
 
     // Create Separators
     m_recentFilesSeparator = new QAction(this);
     m_recentFilesSeparator->setSeparator(true);
     // m_ = new QAction(this);
 
+}
+
+// TODO: Organize code
+void MenuBar::setActionsDefaultProperties()
+{
     // Set Menu Item Default Properties
     //m_openRecentMenu->setEnabled(false);
     m_closeAction->setEnabled(false);
@@ -212,8 +270,28 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_togglePlaylistAction->setChecked(false);
     m_toggleStatusBarAction->setChecked(false);
     m_toggleVideoControlsAction->setChecked(false);
+    // File Menu
 
+    // View Menu
 
+    // Playback Menu
+
+    // Markers Menu
+
+    // Audio Menu
+
+    // Video Menu
+
+    // Subtitle Menu
+
+    // Tools Menu
+
+    // Help Menu
+
+}
+
+void MenuBar::createRecentFileActions()
+{
     // Create Recent File Items
     for (int i = 0; i < m_maxRecentFiles; ++i) {
         m_recentFileActions[i] = new QAction(this);
@@ -229,7 +307,10 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     connect(m_clearRecentFilesAction, &QAction::triggered, this, &MenuBar::clearRecentFiles_Clicked);
     m_openRecentMenu->addAction(m_clearRecentFilesAction);
 
+}
 
+void MenuBar::createAudioDeviceActions()
+{
     // Create Audio Output Actions
     for (int i = 0; i < 15; ++i) {
         m_audioOutputActions[i] = new QAction(this);
@@ -240,7 +321,10 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
         m_audioDeviceMenu->addAction(m_audioOutputActions[i]);
     }
 
+}
 
+void MenuBar::createAudioTrackActions()
+{
     // Create Audio Track Actions
     for (int i = 0; i < 15; ++i) {
         m_audioTrackActions[i] = new QAction(this);
@@ -252,7 +336,10 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     }
     m_audioTrackMenu->setEnabled(false);
 
+}
 
+void MenuBar::createVideoTrackActions()
+{
     // Create Video Track Actions
     for (int i = 0; i < 15; ++i) {
         m_videoTrackActions[i] = new QAction(this);
@@ -264,7 +351,10 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     }
     m_videoTrackMenu->setEnabled(false);
 
+}
 
+void MenuBar::createSubtitleTrackActions()
+{
     // Create Subtitle Track Actions
     for (int i = 0; i < 15; ++i) {
         m_subtitleTrackActions[i] = new QAction(this);
@@ -276,7 +366,11 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     }
     m_subtitleTrackMenu->setEnabled(false);
 
+}
 
+// TODO: Organize code
+void MenuBar::buildMenus()
+{
     // Build Submenus
     m_fileImportMenu->addAction(m_importProjectAction);
     m_fileImportMenu->addAction(m_importCaptionsAction);
@@ -311,6 +405,14 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_viewMarkersMenu->addAction(m_toggleOrangeMarkersAction);
     m_viewMarkersMenu->addAction(m_toggleSceneMarkersAction);
     m_viewMarkersMenu->addAction(m_toggleStripMarkersAction);
+
+    m_logFilesMenu->addAction(m_showLogFilesAction);
+    m_logFilesMenu->addAction(m_uploadCurrentLogFileAction);
+    m_logFilesMenu->addAction(m_uploadPreviousLogFileAction);
+    m_logFilesMenu->addAction(m_viewCurrentLogAction);
+
+    m_crashReportsMenu->addAction(m_showCrashReportsAction);
+    m_crashReportsMenu->addAction(m_uploadPreviousCrashReportAction);
 
 
     // Build Menus
@@ -412,12 +514,36 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     m_subtitleMenu->addSeparator();
     m_subtitleMenu->addAction(m_toggleSubtitlesAction);
 
+    // File Menu
+
+    // View Menu
+
+    // Playback Menu
+
+    // Markers Menu
+
+    // Audio Menu
+
+    // Video Menu
+
+    // Subtitle Menu
+
+    // Tools Menu
+
+    // Help Menu
     m_helpMenu->addAction(m_showHelpAction);
     m_helpMenu->addAction(m_showFeedbackAction);
     m_helpMenu->addSeparator();
+    m_helpMenu->addMenu(m_logFilesMenu);
+    m_helpMenu->addMenu(m_crashReportsMenu);
+    m_helpMenu->addSeparator();
+    m_helpMenu->addAction(m_checkFileIntegrityAction);
     m_helpMenu->addAction(m_updateAction);
     m_helpMenu->addSeparator();
+    m_helpMenu->addAction(m_whatsNewAction);
+    m_helpMenu->addAction(m_releaseNotesAction);
     m_helpMenu->addAction(m_showAboutAction);
+
 
     this->addMenu(m_fileMenu);
     this->addMenu(m_viewMenu);
@@ -429,8 +555,11 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     this->addMenu(m_toolsMenu);
     this->addMenu(m_helpMenu);
 
+}
 
-    // Menu Item Connections
+// TODO: Organize code
+void MenuBar::setActionConnections()
+{
     connect(m_volumeIncreaseAction, &QAction::triggered, this, &MenuBar::increaseVolume_Clicked);
     connect(m_volumeDecreaseAction, &QAction::triggered, this, &MenuBar::decreaseVolume_Clicked);
     connect(m_volumeMuteAction, &QAction::triggered, this, &MenuBar::toggleMute_Clicked);
@@ -454,10 +583,6 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     connect(m_exportClipsAction, &QAction::triggered, this, &MenuBar::exportClips_Clicked);
     connect(m_exportMarkersAction, &QAction::triggered, this, &MenuBar::exportMarkers_Clicked);
     connect(m_exportMediaAction, &QAction::triggered, this, &MenuBar::exportMedia_Clicked);
-    connect(m_showAboutAction, &QAction::triggered, this, &MenuBar::showAbout_Clicked);
-    connect(m_showHelpAction, &QAction::triggered, this, &MenuBar::showHelp_Clicked);
-    connect(m_showFeedbackAction, &QAction::triggered, this, &MenuBar::showFeedback_Clicked);
-    connect(m_updateAction, &QAction::triggered, this, &MenuBar::showUpdates_Clicked);
     connect(m_cumshotMarkerAction, &QAction::triggered, this, &MenuBar::addCumshotMarker_Clicked);
     connect(m_cyanMarkerAction, &QAction::triggered, this, &MenuBar::addCyanMarker_Clicked);
     connect(m_dialogMarkerAction, &QAction::triggered, this, &MenuBar::addDialogMarker_Clicked);
@@ -519,12 +644,40 @@ MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
     connect(m_toggleSceneMarkersAction, &QAction::triggered, this, &MenuBar::toggleSceneTransitionMarkers_Clicked);
     connect(m_toggleStripMarkersAction, &QAction::triggered, this, &MenuBar::toggleStripMarkers_Clicked);
     //connect(, &QAction::triggered, this, &MenuBar::);
+    // File Menu
 
-    updateRecentFiles();
+    // View Menu
 
-    setHotkeys();
+    // Playback Menu
+
+    // Markers Menu
+
+    // Audio Menu
+
+    // Video Menu
+
+    // Subtitle Menu
+
+    // Tools Menu
+
+    // Help Menu
+    connect(m_showAboutAction, &QAction::triggered, this, &MenuBar::showAbout_Clicked);
+    connect(m_showHelpAction, &QAction::triggered, this, &MenuBar::showHelp_Clicked);
+    connect(m_showFeedbackAction, &QAction::triggered, this, &MenuBar::showFeedback_Clicked);
+    connect(m_updateAction, &QAction::triggered, this, &MenuBar::showUpdates_Clicked);
+    connect(m_showLogFilesAction, &QAction::triggered, this, &MenuBar::actionShowLogFiles_Clicked);
+    connect(m_uploadCurrentLogFileAction, &QAction::triggered, this, &MenuBar::actionUploadCurrentLogFile_Clicked);
+    connect(m_uploadPreviousLogFileAction, &QAction::triggered, this, &MenuBar::actionUploadPreviousLogFile_Clicked);
+    connect(m_viewCurrentLogAction, &QAction::triggered, this, &MenuBar::actionViewCurrentLog_Clicked);
+    connect(m_showCrashReportsAction, &QAction::triggered, this, &MenuBar::actionShowCrashReports_Clicked);
+    connect(m_uploadPreviousCrashReportAction, &QAction::triggered, this, &MenuBar::actionUploadPreviousCrashReport_Clicked);
+    connect(m_checkFileIntegrityAction, &QAction::triggered, this, &MenuBar::actionCheckFileIntegrity_Clicked);
+    connect(m_whatsNewAction, &QAction::triggered, this, &MenuBar::actionWhatsNew_Clicked);
+    connect(m_releaseNotesAction, &QAction::triggered, this, &MenuBar::actionReleaseNotes_Clicked);
+
 }
 
+// TODO: Organize code
 void MenuBar::setHotkeys()
 {
     Hotkeys m_hotkeys;
@@ -680,6 +833,7 @@ void MenuBar::setHotkeys()
     m_initialised = true;
 }
 
+// TODO: Organize code
 void MenuBar::refreshMenuItems()
 {
     m_closeAction->setEnabled(m_fileLoaded);
@@ -890,6 +1044,7 @@ void MenuBar::updateSubtitleTracks(QList<QMediaMetaData> subtitleTracks)
     m_subtitleTrackMenu->setEnabled(subtitleTracks.size() > 0);
 }
 
+// TODO: Refactor
 void MenuBar::updateRecentFiles()
 {
     QSettings settings;
@@ -957,6 +1112,12 @@ void MenuBar::statusBarShowing(bool showing)
 void MenuBar::videoControlsShowing(bool showing)
 {
     m_toggleVideoControlsAction->setChecked(showing);
+}
+
+void MenuBar::settingsUpdatedSlot()
+{
+    emit settingsUpdated();
+    refreshSettings();
 }
 
 
@@ -1176,7 +1337,13 @@ void MenuBar::exportMedia_Clicked() {}
 
 void MenuBar::showPreferences_Clicked()
 {
-    emit showPreferences();
+    if (m_settingsWindow)
+        m_settingsWindow->close();
+
+    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow->show();
+    m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
+    connect(m_settingsWindow, &SettingsWindow::updateSettings, this, &MenuBar::settingsUpdatedSlot);
 }
 
 void MenuBar::emergencyCollapse_Clicked()
@@ -1196,6 +1363,8 @@ void MenuBar::exit_Clicked()
         emit exitApplication();
     }
 }
+
+
 
 // View Menu
 void MenuBar::togglePlaylist_Clicked()
@@ -1250,7 +1419,12 @@ void MenuBar::toggleStripMarkers_Clicked()
 
 void MenuBar::showLogFileViewer_Clicked()
 {
-    emit showLogFileViewer();
+    if (m_logViewer)
+        m_logViewer->close();
+
+    m_logViewer = new LogViewer(this);
+    m_logViewer->show();
+    m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void MenuBar::toggleVideoControls_Clicked()
@@ -1262,6 +1436,8 @@ void MenuBar::showMediaInformation_Clicked()
 {
     emit showMediaInformation();
 }
+
+
 
 // Playback Menu
 void MenuBar::togglePlayPause_Clicked()
@@ -1388,6 +1564,8 @@ void MenuBar::restartVideo_Clicked()
     emit restartVideo();
 }
 
+
+
 // Audio Menu
 void MenuBar::increaseVolume_Clicked()
 {
@@ -1431,6 +1609,8 @@ void MenuBar::selectAudioTrack_Clicked()
     }
 }
 
+
+
 // Video Menu
 void MenuBar::toggleFullscreen_Clicked()
 {
@@ -1467,6 +1647,8 @@ void MenuBar::selectSubtitleTrack_Clicked()
         action->setChecked(true);
     }
 }
+
+
 
 // Markers Menu
 void MenuBar::addMarker_Clicked()
@@ -1576,6 +1758,8 @@ void MenuBar::goToOutMarker_Clicked()
     emit goToOutMarker();
 }
 
+
+
 // Tools Menu
 void MenuBar::createSubclip_Clicked()
 {
@@ -1611,28 +1795,128 @@ void MenuBar::testFunction_Clicked()
     emit testFunction();
 }
 
+
+
 // Subtitle Menu
 void MenuBar::openSubtitleFile_Clicked() {}
 
 void MenuBar::toggleSubtitles_Clicked() {}
 
-// Help Menu
-void MenuBar::showAbout_Clicked()
-{
-    emit showAbout();
-}
 
+
+// Help Menu
 void MenuBar::showHelp_Clicked()
 {
-    emit showHelp();
+    if (m_helpDialog)
+        m_helpDialog->close();
+
+    m_helpDialog = new HelpDialog(this);
+    m_helpDialog->show();
+    m_helpDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
+
+// TODO: Implement
+void MenuBar::showFeedback_Clicked()
+{
+}
+
+void MenuBar::actionShowLogFiles_Clicked()
+{
+    QString logsDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logs";
+    if (VURA_BUILD_TYPE == "Debug") {
+        logsDirString = constants::ApplicationDebugFolder + "/logs";
+    }
+
+    if (QDir(logsDirString).exists()) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(logsDirString));
+
+    } else {
+        QMessageBox::critical(
+            this,
+            tr("Vura Error"),
+            QString("The application log directory %1 does not exist.").arg(logsDirString)
+            );
+    }
+}
+
+// TODO: Implement
+void MenuBar::actionUploadCurrentLogFile_Clicked()
+{
+
+}
+
+// TODO: Implement
+void MenuBar::actionUploadPreviousLogFile_Clicked()
+{
+
+}
+
+void MenuBar::actionViewCurrentLog_Clicked()
+{
+    if (m_logViewer)
+        m_logViewer->close();
+
+    m_logViewer = new LogViewer(this);
+    m_logViewer->show();
+    m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MenuBar::actionShowCrashReports_Clicked()
+{
+    QString crashesDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    if (VURA_BUILD_TYPE == "Debug") {
+        crashesDirString = constants::ApplicationDebugFolder + "/crashes";
+    }
+
+    if (QDir(crashesDirString).exists()) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(crashesDirString));
+
+    } else {
+        QMessageBox::critical(
+            this,
+            tr("Vura Error"),
+            QString("The application crashes directory %1 does not exist.").arg(crashesDirString)
+            );
+    }
+}
+
+// TODO: Implement
+void MenuBar::actionUploadPreviousCrashReport_Clicked()
+{
+
+}
+
+void MenuBar::actionCheckFileIntegrity_Clicked() {}
 
 void MenuBar::showUpdates_Clicked()
 {
-    emit showUpdates();
+    if (m_updateDialog)
+        m_updateDialog->close();
+
+    m_updateDialog = new UpdateDialog(this);
+    m_updateDialog->show();
+    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void MenuBar::showFeedback_Clicked()
+// TODO: Implement
+void MenuBar::actionWhatsNew_Clicked()
 {
-    emit showFeedback();
+
 }
+
+// TODO: Implement
+void MenuBar::actionReleaseNotes_Clicked()
+{
+
+}
+
+void MenuBar::showAbout_Clicked()
+{
+    if (m_aboutDialog)
+        m_aboutDialog->close();
+
+    m_aboutDialog = new AboutDialog(this);
+    m_aboutDialog->show();
+    m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+

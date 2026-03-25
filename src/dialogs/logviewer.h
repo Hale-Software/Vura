@@ -48,6 +48,8 @@ public:
     explicit LogViewer(QWidget *parent = nullptr);
     ~LogViewer() override;
 
+    void openFile(const QString &fileName);
+
 public slots:
     void message(QString message);
 
