@@ -104,11 +104,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
 
     connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
-    connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
-    connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
-    connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
-    connect(m_menuBar, &MenuBar::showUpdates, this, &MainWindow::showUpdates);
-    connect(m_menuBar, &MenuBar::showFeedback, this, &MainWindow::showFeedback);
+    //connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
+    //connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
+    //connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
+    //connect(m_menuBar, &MenuBar::showUpdates, this, &MainWindow::showUpdates);
+    //connect(m_menuBar, &MenuBar::showFeedback, this, &MainWindow::showFeedback);
     connect(m_menuBar, &MenuBar::emergencyCollapse, this, &MainWindow::emergencyCollapse);
     connect(m_menuBar, &MenuBar::exitApplication, this, &MainWindow::exitApplication);
     connect(m_menuBar, &MenuBar::openFiles, this, &MainWindow::openFiles);
@@ -127,7 +127,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::toggleOrangeMarkers, this, &MainWindow::toggleOrangeMarkers);
     connect(m_menuBar, &MenuBar::toggleSceneTransitionMarkers, this, &MainWindow::toggleSceneTransitionMarkers);
     connect(m_menuBar, &MenuBar::toggleStripMarkers, this, &MainWindow::toggleStripMarkers);
-    connect(m_menuBar, &MenuBar::showLogFileViewer, this, &MainWindow::showLogFileViewer);
+    //connect(m_menuBar, &MenuBar::showLogFileViewer, this, &MainWindow::showLogFileViewer);
     connect(m_menuBar, &MenuBar::toggleVideoControls, this, &MainWindow::toggleVideoControls);
     connect(m_menuBar, &MenuBar::togglePlayPause, this, &MainWindow::togglePlayPause);
     connect(m_menuBar, &MenuBar::nextVideo, this, &MainWindow::nextVideo);

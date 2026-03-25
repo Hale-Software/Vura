@@ -40,6 +40,8 @@ target_sources(
         forms/testwindow.ui
         forms/ContinuePlaybackRibbon.ui
         forms/helpdialog.ui
+        forms/LogUploadDialog.ui
+        forms/FeedbackDialog.ui
 )
 
 qt_add_ios_ffmpeg_libraries(vura)

@@ -19,56 +19,42 @@
 
 #include <QDialog>
 #include <QPushButton>
-#include <QTextBrowser>
+#include <QLineEdit>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QMessageBox>
-#include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
-#include <QString>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QDesktopServices>
+#include <QUrl>
 
-#include "constants.h"
-#include "../utility/logger.h"
-#include "../utility/qt-wrappers.h"
+#include "../components/MonitoredTextEdit.h"
+
 
 QT_BEGIN_NAMESPACE
 
 namespace Ui {
-    class LogViewer;
+    class FeedbackDialog;
 }
 
 QT_END_NAMESPACE
 
-
-class LogViewer : public QDialog {
+class FeedbackDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit LogViewer(QWidget *parent = nullptr);
-    ~LogViewer() override;
-
-    void openFile(const QString &fileName);
-
-public slots:
-    void message(QString message);
+    explicit FeedbackDialog(QWidget *parent = nullptr);
+    ~FeedbackDialog() override;
 
 private slots:
-    //void AddLine(int type, const QString &text);
-    void openButton_Clicked();
-    void clearButton_Clicked();
-    void closeButton_Clicked();
-    void verbosityIndexChanged(int index);
-    void simplify_Clicked();
+    void cancelButton_Clicked();
+    void sendFeedback_Clicked();
+    void privacyPolicy_Clicked();
+    void emailAddress_EditingFinished();
+
+    void feedbackMessage_StartedEditing();
+    void feedbackMessage_EditingFinished();
 
 private:
-    Ui::LogViewer *ui;
-    int m_verbosity = 0;
-    bool m_simplify = true;
-    QString m_currentLogFile;
-    QString m_openedLogFile;
-
-    void refreshMessages();
-    void messageFormatter(QString message);
-
+    Ui::FeedbackDialog *ui;
 };
