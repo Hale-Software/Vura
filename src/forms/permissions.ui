@@ -13,10 +13,6 @@
   <property name="windowTitle">
    <string>PermissionsDialog</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="vura.qrc">
-    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
-  </property>
  </widget>
  <resources>
   <include location="vura.qrc"/>

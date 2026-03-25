@@ -7,9 +7,9 @@
 !/build-aux
 !/cmake
 !/deps
-!/installer
 !/src
 !/scripts
+!/share
 !/tests
 !.clang-format
 !.editorconfig
@@ -26,6 +26,10 @@
 !COPYING
 !INSTALL
 !README.md
+
+# Exclude installer files
+!/installer/installer.iss
+!/installer/vura.ico
 
 # Exclude docs
 !/docs/HOTKEYS.md

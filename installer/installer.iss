@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.0.3'
+#define MyAppVersion '0.0.5'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -20,7 +20,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=..\build\release\src\data\license\license.txt
 OutputDir=..\installer
-OutputBaseFilename=vura-0.0.3-win64
+OutputBaseFilename=vura-0.0.5-win64
 SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
@@ -171,6 +171,13 @@ Name: "fileTypeAssociations\otherFiles\xspf"; Description: ".xspf"; Types: full 
 
 
 [Files]
+Source: "..\share\icons\app-data-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\hotkey-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\markers-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\playlist-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\project-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\vura-black.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\share\icons\vura-white.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
 Source: "..\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -215,10 +222,10 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl"; ValueType: string; Value
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Project File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vprj
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Video Marker File"; Flags: uninsdeletekey; Components: fileTypeAssociations\applicationFiles\vvm
 
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vhk
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vpl
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vprj
-Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Components: fileTypeAssociations\applicationFiles\vvm
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icons\hotkey-file.ico"; Components: fileTypeAssociations\applicationFiles\vhk
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icons\playlist-file.ico"; Components: fileTypeAssociations\applicationFiles\vpl
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vprj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icons\project-file.ico"; Components: fileTypeAssociations\applicationFiles\vprj
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vvm\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icons\markers-file.ico"; Components: fileTypeAssociations\applicationFiles\vvm
 
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vhk\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vhk
 Root: HKA; Subkey: "Software\Classes\{#MyAppName}.vpl\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Components: fileTypeAssociations\applicationFiles\vpl

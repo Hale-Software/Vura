@@ -13,10 +13,6 @@
   <property name="windowTitle">
    <string>Log Viewer</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="vura.qrc">
-    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>8</number>

@@ -13,10 +13,6 @@
   <property name="windowTitle">
    <string>Edit Marker</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="vura.qrc">
-    <normaloff>:/img/images/vura.png</normaloff>:/img/images/vura.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
