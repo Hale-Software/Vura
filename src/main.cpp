@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
-
     // Prevent many instances of the app to be launched
     QString name = "com.hale-software.vura";
     SingleInstance instance;

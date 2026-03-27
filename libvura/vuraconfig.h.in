@@ -1,4 +1,0 @@
-#pragma once
-
-#define VURA_RELEASE_CANDIDATE @VURA_RELEASE_CANDIDATE@
-#define VURA_BETA @VURA_BETA@
