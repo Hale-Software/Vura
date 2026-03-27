@@ -17,45 +17,27 @@
 
 #pragma once
 
-#include <QApplication>
-#include <QCoreApplication>
-#include <QPointer>
-#include <QString>
-#include <QMessageBox>
-#include <QFileInfo>
-#include <QSettings>
-
-#include <qBreakpad/handler/QBreakpadHandler.h>
-
-#include "constants.h"
-#include "widgets/mainwindow.h"
-#include "widgets/testwindow.h"
+#include <QObject>
+#include <QLocalServer>
+#include <QLocalSocket>
 
 
-class VuraApp : public QApplication {
+class SingleInstance : public QObject
+{
     Q_OBJECT
 
-    friend class MainWindow;
-    friend class TestWindow;
+public:
+    explicit SingleInstance(QObject *parent = nullptr);
+
+    void listen(const QString &name);
+    static bool hasPrevious(const QString &name, int argc, char *argv[]);
+
+signals:
+    void newInstance();
+    void sendParamsToInstance();
 
 private:
-    QPointer<MainWindow> mainWindow;
-    QPointer<TestWindow> testWindow;
-
-    bool useTestWindow = false;
-
-public:
-    VuraApp(int& argc, char** argv);
-
-    void AppInit(int argc, char* argv[]);
-    void windowsPrintKey();
-
-    bool overrideWindowsHotkeys = true;
-
-public slots:
-    void setOverrideWindowsHotkeys(bool value);
-
-private slots:
-    void applicationQuiting();
+    QLocalSocket *m_socket;
+    QLocalServer m_server;
 
 };

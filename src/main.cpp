@@ -15,197 +15,73 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "main.h"
+#include <QApplication>
+
+#include "widgets/mainwindow.h"
+#include "utility/singleinstance.h"
 
 #include <config.h>
 
-VuraApp *m_program;
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-
-bool m_83key = false;
-bool m_91key = false;
-bool m_160key = false;
-
-HHOOK hKeyboardHook;
-
-// Callback function to intercept Windows hotkeys
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (m_program->overrideWindowsHotkeys) {
-        if (nCode >= 0) {
-            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-                KBDLLHOOKSTRUCT* pKeyStruct = (KBDLLHOOKSTRUCT*)lParam;
-
-                if (pKeyStruct->vkCode == 83) {
-                    m_83key = true;
-                } else if (pKeyStruct->vkCode == 91) {
-                    m_91key = true;
-                } else if (pKeyStruct->vkCode == 160) {
-                    m_160key = true;
-                } else {
-                    m_83key = false;
-                    m_91key = false;
-                    m_160key = false;
-                }
-
-                if (m_83key) {
-                    if (m_91key) {
-                        if (m_160key) {
-                            m_program->windowsPrintKey();
-                            return 1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
-}
-
-#endif
-
-
-VuraApp::VuraApp(int &argc, char **argv) : QApplication(argc, argv)
+int main(int argc, char *argv[])
 {
+    QApplication app(argc, argv);
+    // Set application information
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
-    QObject::connect(qApp, &QCoreApplication::aboutToQuit, this, &VuraApp::applicationQuiting);
-    connect(mainWindow, &MainWindow::setOverrideWindowsHotkeys, this, &VuraApp::setOverrideWindowsHotkeys);
-}
 
-void VuraApp::windowsPrintKey()
-{
-    mainWindow->takeSnapshot();
-}
+    // Prevent many instances of the app to be launched
+    QString name = "com.hale-software.vura";
+    SingleInstance instance;
+    if (SingleInstance::hasPrevious(name, argc, argv)) {
+        return EXIT_SUCCESS;
+    }
 
-void VuraApp::AppInit(int argc, char* argv[])
-{
+    instance.listen(name);
 
-    if (useTestWindow) {
-        testWindow = new TestWindow();
-        testWindow->setAttribute(Qt::WA_DeleteOnClose, true);
-        testWindow->show();
-    } else {
-        mainWindow = new MainWindow();
-        mainWindow->setAttribute(Qt::WA_DeleteOnClose, true);
-        mainWindow->setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-        connect(mainWindow, SIGNAL(destroyed()), this, SLOT(quit()));
-        mainWindow->show();
-        mainWindow->windowHandle()->setScreen(qApp->screens()[0]);
+    // Create and Show the app
+    MainWindow mainWindow;
+    mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
+    mainWindow.show();
 
-        if (argc > 2) {
-            QString pathName = QString::fromUtf8(argv[2]);
-            if (pathName.isEmpty()) {
-                QMessageBox::critical(nullptr, "Vura Error", "File or folder requested is empty.");
+    if (argc > 2) {
+        QString pathParam = QString::fromUtf8(argv[2]);
+
+        QFileInfo pathParamInfo(pathParam);
+        if (pathParamInfo.isFile()) {
+
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                mainWindow.addFileToPlaylistContextMenu(pathParam);
 
             } else {
-                QFileInfo fileInfo(pathName);
-                if (!fileInfo.exists()) {
-                    QMessageBox::critical(nullptr, "Vura Error", "Requested file or folder does not exist.");
-
-                } else {
-                    if (fileInfo.isFile()) {
-                        if (QString::fromLocal8Bit(argv[1]) == "open") {
-                            mainWindow->openFileContextMenu(pathName);
-
-                        } else if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                            mainWindow->addFileToPlaylistContextMenu(pathName);
-
-                        } else {
-                            QMessageBox::critical(nullptr, "Vura Error", "Requested file to open does not specify whether to open or add to playlist.");
-
-                        }
-                    } else if (fileInfo.isDir()) {
-                        if (QString::fromLocal8Bit(argv[1]) == "open") {
-                            mainWindow->openFolderContextMenu(pathName);
-
-                        } else if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                            mainWindow->addFolderToPlaylistContextMenu(pathName);
-
-                        } else {
-                            QMessageBox::critical(nullptr, "Vura Error", "Requested folder to open does not specify whether to open or add to playlist.");
-
-                        }
-                    } else {
-                        QMessageBox::critical(nullptr, "Vura Error", "Requested file or folder to open is neither a file nor a folder.");
-                    }
-                }
+                mainWindow.addFileToPlaylistContextMenu(pathParam);
             }
-        } else if (argc > 1) {
-            QString pathName = QString::fromUtf8(argv[1]);
-            if (pathName.isEmpty()) {
-                QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
+
+        } else if (pathParamInfo.isDir()) {
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                mainWindow.addFolderToPlaylistContextMenu(pathParam);
 
             } else {
-                mainWindow->openFileContextMenu(pathName);
-
+                mainWindow.addFolderToPlaylistContextMenu(pathParam);
             }
         }
-    }
-}
 
-void VuraApp::applicationQuiting()
-{
+    } else if (argc > 1) {
+        QString pathName = QString::fromUtf8(argv[1]);
+        if (pathName.isEmpty()) {
+            QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
 
-#ifdef Q_OS_WIN
-    UnhookWindowsHookEx(hKeyboardHook);
-#endif
+        } else {
+            mainWindow.openFileContextMenu(pathName);
 
-}
-
-void VuraApp::setOverrideWindowsHotkeys(bool value)
-{
-    overrideWindowsHotkeys = value;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void setCrashHandler()
-{
-
-#ifdef Q_OS_WIN
-    QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
-    if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
-    }
-
-    if (!QDir(defaultCrashFileLocation).exists()) {
-        if (!QDir().mkpath(defaultCrashFileLocation)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
-            return;
         }
     }
 
-    QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
+    // Bring the main window to the front
+    QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { (&mainWindow)->setMainWindowVisibility(true); });
+    QObject::connect(&instance, &SingleInstance::sendParamsToInstance, &mainWindow, [&]() { (&mainWindow)->processOpenParams(argc, argv); });
 
-#endif
-
-}
-
-static int run_program(int argc, char* argv[])
-{
-    int ret = -1;
-    m_program = new VuraApp(argc, argv);
-
-
-#ifdef Q_OS_WIN
-    hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
-#endif
-
-    m_program->AppInit(argc, argv);
-    ret = m_program->exec();
-
-    return ret;
-}
-
-int main(int argc, char *argv[])
-{
-    int ret = run_program(argc, argv);
-
-    return ret;
+    return QApplication::exec();
 }

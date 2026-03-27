@@ -136,6 +136,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void setMainWindowVisibility(bool state);
+    void processOpenParams(int argc, char *argv[]);
+
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
     void addFileToPlaylistContextMenu(const QString &file);

@@ -45,7 +45,6 @@ configure_file(cmake/templates/config.h.in config.h)
 target_sources(
         vura PRIVATE
         main.cpp
-        main.h
         config.h
         constants.cpp
         constants.h

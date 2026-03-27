@@ -20,4 +20,6 @@ target_sources(
         utility/hotkeys.h
         utility/videomarkers.cpp
         utility/videomarkers.h
+        utility/singleinstance.cpp
+        utility/singleinstance.h
 )

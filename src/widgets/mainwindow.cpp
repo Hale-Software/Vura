@@ -241,7 +241,58 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*!
+ * \brief MainWindow::setMainWindowVisibility
+ * \param state
+ */
+void MainWindow::setMainWindowVisibility(bool state)
+{
+    if (state) {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+    }
+}
+
+void MainWindow::processOpenParams(int argc, char *argv[])
+{
+    if (argc > 2) {
+        QString pathParam = QString::fromUtf8(argv[2]);
+
+        QFileInfo pathParamInfo(pathParam);
+        if (pathParamInfo.isFile()) {
+
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                addFileToPlaylistContextMenu(pathParam);
+
+            } else {
+                addFileToPlaylistContextMenu(pathParam);
+            }
+
+        } else if (pathParamInfo.isDir()) {
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                addFolderToPlaylistContextMenu(pathParam);
+
+            } else {
+                addFolderToPlaylistContextMenu(pathParam);
+            }
+        }
+
+    } else if (argc > 1) {
+        QString pathName = QString::fromUtf8(argv[1]);
+        if (pathName.isEmpty()) {
+            QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
+
+        } else {
+            openFileContextMenu(pathName);
+
+        }
+    }
+}
+
 void MainWindow::testFunction() {}
+
 
 
 #pragma region CONTEXT MENUS
