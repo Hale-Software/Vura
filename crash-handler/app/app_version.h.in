@@ -1,8 +1,0 @@
-/* App Version.
-*  Hale Software Vura Crash Handler.
-*  Contributer(s): Andrew Hale
-*/
-#pragma once
-
-#define APP_VERSION "@VERSION@"
-#define APP_DISPLAY_NAME "@APP_DISPLAY_NAME@"

@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/vura
+
+Name: libvura
+Description: VURA Library
+Version: @VURA_VERSION_CANONICAL@
+Cflags: -I${includedir} @_TARGET_DEFINITIONS@ @_TARGET_OPTIONS@ @_LINKED_DEFINITIONS@ @_LINKED_OPTIONS@
+Libs: -L${libdir} -lvura @_LINKED_LIBRARIES@

@@ -11,28 +11,16 @@ target_sources(
         PUBLIC
         constants.h
         libvura.h
-        vura-deserializer.h
+        vura-data.h
         vura-error.h
         vura-overloads.h
-        vura-serializer.h
+
         PRIVATE
         constants.cpp
         libvura.cpp
-        vura-deserializer.cpp
+        vura-data.cpp
         vura-defs.h
         vura-error.cpp
-        vura-serializer.cpp
-)
-
-# Filetypes Directory
-target_sources(
-        libvura
-        PUBLIC
-        filetypes/application-data.h
-        filetypes/hotkeys-data.h
-        filetypes/markers-data.h
-        filetypes/playlist-data.h
-        filetypes/project-data.h
 )
 
 # Models Directory
@@ -40,6 +28,7 @@ target_sources(
         libvura
         PUBLIC
         models/logmessages.h
+
         PRIVATE
         models/logmessages.cpp
 )
@@ -60,6 +49,7 @@ target_sources(
 #        libvura
 #        PUBLIC
 #        util/windows/windowskeyboardhandler.h
+
 #        PRIVATE
 #        util/windows/windowskeyboardhandler.cpp
 #)
