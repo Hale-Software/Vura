@@ -23,7 +23,8 @@
 #include <QDebug>
 
 #include "../components/RangeSlider.h"
-#include "../utility/logger.h"
+
+#include <util/blog.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -45,7 +46,7 @@ public:
 private:
     Ui::TestWindow *ui;
     QMediaPlayer *m_player;
-    Logger* m_hLogger;
+    Blog* m_hLogger;
     QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
     RangeSlider *m_rangeSlider;
 

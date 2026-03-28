@@ -18,37 +18,21 @@
 #pragma once
 
 #include <QObject>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QDebug>
 #include <QString>
-#include <QList>
-#include <QMap>
-#include <QDataStream>
-#include <QSettings>
-#include <QStandardPaths>
-
-#include <constants.h>
 
 
-class ApplicationData : public QObject
+class VuraError : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ApplicationData(QObject *parent = nullptr);
-    QMap<QString, int> getPlayHistory(QString filename);
+    explicit VuraError(QObject *parent = nullptr);
 
-    bool isPlayHistoryAvailable(QString filename);
+    QString Message();
+    void setMessage(QString message);
 
-private:
-    QJsonObject rootObj;
-
-    bool createBlankFile(QString filename);
-    bool loadFile(QString filename);
-    bool saveFile(QString filename);
+protected:
+     QString m_message;
 
 };
+

@@ -28,7 +28,7 @@
 #include <QJsonArray>
 #include <QDebug>
 
-#include "../constants.h"
+#include <constants.h>
 
 
 class Startup {

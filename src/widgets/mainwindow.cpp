@@ -21,12 +21,14 @@
 #include <config.h>
 #include <qglobal.h>
 
+#include <vura-serializer.h>
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
 // Global pointer to Logger for use in messageHandler
-static Logger* globalRedirector = nullptr;
+static Blog* globalRedirector = nullptr;
 
 
 /*!
@@ -44,8 +46,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->statusBar()->setSizeGripEnabled(true);
 
     // Set the global redirector and install the custom message handler
-    qInstallMessageHandler(Logger::messageHandler);
-    globalRedirector = Logger::instance();
+    qInstallMessageHandler(Blog::messageHandler);
+    globalRedirector = Blog::instance();
     qInfo() << "Starting application...";
 
     QString name = qgetenv("USER");
@@ -291,7 +293,17 @@ void MainWindow::processOpenParams(int argc, char *argv[])
     }
 }
 
-void MainWindow::testFunction() {}
+void MainWindow::testFunction()
+{
+    VuraSerializer serializer;
+    if (!wroteTestFile) {
+        serializer.Save("test.vvm");
+        wroteTestFile = true;
+
+    } else {
+        serializer.Load("test.vvm");
+    }
+}
 
 
 

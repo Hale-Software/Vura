@@ -15,40 +15,16 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "vura-error.h"
 
-#include <QObject>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QDebug>
-#include <QString>
-#include <QList>
-#include <QMap>
-#include <QDataStream>
-#include <QSettings>
-#include <QStandardPaths>
+VuraError::VuraError(QObject *parent) : QObject(parent) {}
 
-#include <constants.h>
-
-
-class ApplicationData : public QObject
+QString VuraError::Message()
 {
-    Q_OBJECT
+    return m_message;
+}
 
-public:
-    explicit ApplicationData(QObject *parent = nullptr);
-    QMap<QString, int> getPlayHistory(QString filename);
-
-    bool isPlayHistoryAvailable(QString filename);
-
-private:
-    QJsonObject rootObj;
-
-    bool createBlankFile(QString filename);
-    bool loadFile(QString filename);
-    bool saveFile(QString filename);
-
-};
+void VuraError::setMessage(QString message)
+{
+    m_message = message;
+}

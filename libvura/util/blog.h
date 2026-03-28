@@ -18,37 +18,41 @@
 #pragma once
 
 #include <QObject>
+#include <QTextBrowser>
 #include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QDebug>
-#include <QString>
-#include <QList>
-#include <QMap>
-#include <QDataStream>
+#include <QDir>
+#include <QTextStream>
+#include <QMessageLogContext>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QDebug>
+#include <QDateTime>
+#include <QCoreApplication>
+#include <QMessageBox>
 
-#include <constants.h>
+#include "../constants.h"
 
 
-class ApplicationData : public QObject
+class Blog : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit ApplicationData(QObject *parent = nullptr);
-    QMap<QString, int> getPlayHistory(QString filename);
+    static Blog* instance(); // Singleton instance
+    void clearLogFile();
+    QString getLogFileName();
+    static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-    bool isPlayHistoryAvailable(QString filename);
+    signals:
+        void message(QString message);
 
 private:
-    QJsonObject rootObj;
+    Blog(QObject* parent = nullptr);
+    ~Blog();
+    QString m_logFileName;
+    QFile m_logFile;
 
-    bool createBlankFile(QString filename);
-    bool loadFile(QString filename);
-    bool saveFile(QString filename);
+    void InitLogFile();
+    bool deleteOldestLogFile(QDir logDir, QStringList logFiles);
+    QString m_message(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 };

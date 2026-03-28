@@ -46,8 +46,6 @@ target_sources(
         vura PRIVATE
         main.cpp
         config.h
-        constants.cpp
-        constants.h
 )
 
 if (OS_WINDOWS)

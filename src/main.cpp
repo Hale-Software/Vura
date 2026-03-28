@@ -19,17 +19,9 @@
 #include <QDebug>
 
 #include "widgets/mainwindow.h"
-#include "utility/singleinstance.h"
+#include <util/singleinstance.h>
 
 #include <config.h>
-
-
-void test()
-{
-	qDebug() << "Main application test function.";
-
-    throw "NOoooooooooooo";
-}
 
 
 int main(int argc, char *argv[])
@@ -90,8 +82,6 @@ int main(int argc, char *argv[])
     // Bring the main window to the front
     QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { (&mainWindow)->setMainWindowVisibility(true); });
     QObject::connect(&instance, &SingleInstance::sendParamsToInstance, &mainWindow, [&]() { (&mainWindow)->processOpenParams(argc, argv); });
-
-    test();
 
     return QApplication::exec();
 }

@@ -56,8 +56,8 @@ LogViewer::LogViewer(QWidget *parent) : QDialog(parent), ui(new Ui::LogViewer)
     connect(ui->verbosityComboBox, &QComboBox::currentIndexChanged, this, &LogViewer::verbosityIndexChanged);
     connect(ui->simplify, &QCheckBox::checkStateChanged, this, &LogViewer::simplify_Clicked);
 
-    Logger *logger = Logger::instance();
-    connect(logger, &Logger::message, this, &LogViewer::message);
+    Blog *logger = Blog::instance();
+    connect(logger, &Blog::message, this, &LogViewer::message);
     m_currentLogFile = logger->getLogFileName();
     m_openedLogFile = m_currentLogFile;
     refreshMessages();
@@ -196,7 +196,7 @@ void LogViewer::clearButton_Clicked()
 
     if (confirmationBox == QMessageBox::Yes) {
         if (m_openedLogFile == m_currentLogFile) {
-            Logger *logger = Logger::instance();
+            Blog *logger = Blog::instance();
             logger->clearLogFile();
         } else {
             QFile f(m_openedLogFile);

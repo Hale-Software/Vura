@@ -81,7 +81,7 @@
 
 #include <xxHash/xxhash.h>
 
-#include "../constants.h"
+#include <constants.h>
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
@@ -89,7 +89,6 @@
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
 #include "../components/system-tray.h"
-#include "../utility/logger.h"
 #include "../utility/playlist.h"
 #include "../utility/qt-wrappers.h"
 #include "../utility/startup.h"
@@ -101,6 +100,8 @@
 #include "../dialogs/updatewindow.h"
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
+
+#include <util/blog.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -267,7 +268,7 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    Logger* m_hLogger;
+    Blog* m_hLogger;
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
@@ -279,6 +280,8 @@ private:
     bool m_fromFullscreen = false;
     qint64 m_lastPosition = 0;
     QString m_currentUser = "UNKNOWN";
+
+    bool wroteTestFile = false;
 
     // WINDOWS
     // =======================================================================================================

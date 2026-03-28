@@ -17,38 +17,23 @@
 
 #pragma once
 
-#include <QObject>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QDebug>
-#include <QString>
-#include <QList>
-#include <QMap>
-#include <QDataStream>
-#include <QSettings>
-#include <QStandardPaths>
+#include "filetypes/markers-data.h"
+#include <QtCore/QtCore>
 
-#include <constants.h>
+QDataStream &operator<<(QDataStream &out, const MarkersData &markers);
+QDataStream &operator>>(QDataStream &in, MarkersData &markers);
 
-
-class ApplicationData : public QObject
+inline QDataStream &operator<<(QDataStream &out, const MarkersData &markers)
 {
-    Q_OBJECT
+    // Write a MarkersData class to the stream
+    out << markers.fileName << markers.markerType << markers.markerPos;
+    return out;
+}
 
-public:
-    explicit ApplicationData(QObject *parent = nullptr);
-    QMap<QString, int> getPlayHistory(QString filename);
-
-    bool isPlayHistoryAvailable(QString filename);
-
-private:
-    QJsonObject rootObj;
-
-    bool createBlankFile(QString filename);
-    bool loadFile(QString filename);
-    bool saveFile(QString filename);
-
-};
+inline QDataStream &operator>>(QDataStream &in, MarkersData &markers)
+{
+    // Read in a MarkersData class
+    markers = MarkersData();
+    in >> markers.fileName >> markers.markerType >> markers.markerPos;
+    return in;
+}

@@ -42,7 +42,7 @@
 #include <QPointer>
 #include <QDebug>
 
-#include "../constants.h"
+#include <constants.h>
 
 #include "../dialogs/about.h"
 #include "../dialogs/FeedbackDialog.h"

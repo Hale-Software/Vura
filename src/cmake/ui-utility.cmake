@@ -6,8 +6,6 @@ target_sources(
         utility/filemanager.h
         utility/startup.cpp
         utility/startup.h
-        utility/logger.cpp
-        utility/logger.h
         utility/playlist.cpp
         utility/playlist.h
         utility/playlist_p.cpp
@@ -20,6 +18,4 @@ target_sources(
         utility/hotkeys.h
         utility/videomarkers.cpp
         utility/videomarkers.h
-        utility/singleinstance.cpp
-        utility/singleinstance.h
 )

@@ -15,23 +15,21 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "logger.h"
-
-#include <config.h>
+#include "blog.h"
 
 
-Logger::Logger(QObject* parent) : QObject(parent) {
+Blog::Blog(QObject* parent) : QObject(parent) {
     QSettings settings;
     if (settings.value("logToFile", true).toBool()) {
         InitLogFile();
     }
 }
 
-Logger::~Logger() {
+Blog::~Blog() {
     m_logFile.close();
 }
 
-void Logger::InitLogFile()
+void Blog::InitLogFile()
 {
     QSettings settings;
 
@@ -41,9 +39,7 @@ void Logger::InitLogFile()
     // Set the log directory.
     QString logDirString = "logs";
     QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (VURA_BUILD_TYPE == "Debug") {
-        appDataDirString = constants::ApplicationDebugFolder;
-    }
+
     QDir appDataDir(appDataDirString);
     if (appDataDir.exists()) {
         QDir appLogDir(appDataDirString + "/logs");
@@ -87,7 +83,7 @@ void Logger::InitLogFile()
     }
 }
 
-bool Logger::deleteOldestLogFile(QDir logDir, QStringList logFiles)
+bool Blog::deleteOldestLogFile(QDir logDir, QStringList logFiles)
 {
     // Oldest filename found.
     QString oldestFilename;
@@ -128,17 +124,17 @@ bool Logger::deleteOldestLogFile(QDir logDir, QStringList logFiles)
     return false;
 }
 
-Logger* Logger::instance() {
-    static Logger instance;
+Blog* Blog::instance() {
+    static Blog instance;
     return &instance;
 }
 
-QString Logger::getLogFileName()
+QString Blog::getLogFileName()
 {
     return m_logFileName;
 }
 
-void Logger::clearLogFile()
+void Blog::clearLogFile()
 {
     m_logFile.close();
     QFile f(m_logFileName);
@@ -152,7 +148,7 @@ void Logger::clearLogFile()
     }
 }
 
-QString Logger::m_message(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+QString Blog::m_message(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     Q_UNUSED(context);
 
@@ -188,22 +184,22 @@ QString Logger::m_message(QtMsgType type, const QMessageLogContext &context, con
     return output;
 }
 
-void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+void Blog::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     QSettings settings;
 
-    QString output = Logger::instance()->m_message(type, context, msg);
+    QString output = Blog::instance()->m_message(type, context, msg);
 
     // If log to file setting is on, write log to file.
     if (settings.value("logToFile", true).toBool()) {
-        if (Logger::instance()->m_logFile.isOpen()) {
+        if (Blog::instance()->m_logFile.isOpen()) {
             QString formattedOutput = output + "\n";
-             Logger::instance()->m_logFile.write(formattedOutput.toUtf8());
-             Logger::instance()->m_logFile.flush(); // Ensure immediate writing
+             Blog::instance()->m_logFile.write(formattedOutput.toUtf8());
+             Blog::instance()->m_logFile.flush(); // Ensure immediate writing
         }
     }
 
     // Emit new log message
-    emit Logger::instance()->message(output);
+    emit Blog::instance()->message(output);
 
     // Also output to the standard console for development visibility
     fprintf(stderr, "%s", output.toLocal8Bit().constData());

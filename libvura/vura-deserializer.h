@@ -17,27 +17,4 @@
 
 #pragma once
 
-#include <QObject>
-#include <QLocalServer>
-#include <QLocalSocket>
-
-
-class SingleInstance : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit SingleInstance(QObject *parent = nullptr);
-
-    void listen(const QString &name);
-    static bool hasPrevious(const QString &name, int argc, char *argv[]);
-
-signals:
-    void newInstance();
-    void sendParamsToInstance();
-
-private:
-    QLocalSocket *m_socket;
-    QLocalServer m_server;
-
-};
+#include "filetypes/markers-data.h"
