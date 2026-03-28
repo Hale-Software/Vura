@@ -17,11 +17,27 @@
 
 #pragma once
 
+#include <QObject>
 #include <QString>
+#include <QDebug>
+#include <QTime>
+#include <QChar>
 
+#include <iostream>
+#include <windows.h>
+#pragma comment(lib, "user32.lib")
 
-struct ApplicationData {
-    QString fileName;
-    qint64 position;
+class WindowsKeyboardHandler : public QObject
+{
+    Q_OBJECT
+public:
+    explicit WindowsKeyboardHandler(QObject *parent = nullptr);
+    ~WindowsKeyboardHandler();
+
+    void hotkey(QString hotkey);
+
+signals:
+    void hotkeyPressed(QString hotkey);
 
 };
+

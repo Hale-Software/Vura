@@ -22,7 +22,8 @@
 
 struct MarkersData {
     QString fileName;
+    QString markerName;
     QString markerType;
-    float markerPos;
+    qint64 markerTimestamp;
 
 };

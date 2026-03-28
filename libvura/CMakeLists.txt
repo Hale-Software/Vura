@@ -28,7 +28,11 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        filetypes/application-data.h
+        filetypes/hotkeys-data.h
         filetypes/markers-data.h
+        filetypes/playlist-data.h
+        filetypes/project-data.h
 )
 
 # Models Directory
@@ -50,6 +54,15 @@ target_sources(
         util/blog.cpp
         util/singleinstance.cpp
 )
+
+# Util/Windows Directory
+#target_sources(
+#        libvura
+#        PUBLIC
+#        util/windows/windowskeyboardhandler.h
+#        PRIVATE
+#        util/windows/windowskeyboardhandler.cpp
+#)
 
 target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 target_include_directories(libvura INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

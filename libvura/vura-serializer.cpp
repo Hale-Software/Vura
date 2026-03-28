@@ -22,26 +22,6 @@ VuraSerializer::VuraSerializer(QObject *parent) : QObject(parent) {}
 
 void VuraSerializer::Save(const QString &fileName)
 {
-    MarkersData markersData1;
-    markersData1.fileName = "c:/Users/halea/Videos/Extra/SDMU-724.mp4";
-    markersData1.markerType = "scene";
-    markersData1.markerPos = 0.3013312623925498;
-
-    MarkersData markersData2;
-    markersData2.fileName = "c:/Users/halea/Videos/Extra/SDMU-724.mp4";
-    markersData2.markerType = "scene";
-    markersData2.markerPos = 0.4328884249391577;
-
-    MarkersData markersData3;
-    markersData3.fileName = "file:///C:/Users/halea/Videos/Extra/Found Some hot ass looking for Tony.mp4";
-    markersData3.markerType = "marker";
-    markersData3.markerPos = 0.5493785095199009;
-
-    MarkersData markersData4;
-    markersData4.fileName = "file:///C:/Users/halea/Videos/Extra/GirlsDoPorn - E170 Melissa King (HQ)%5B720p%5D.mp4";
-    markersData4.markerType = "scene";
-    markersData4.markerPos = 0.1451034949743104;
-
     QFile file(fileName);
 
     if (!file.open(QIODevice::WriteOnly))
@@ -50,16 +30,16 @@ void VuraSerializer::Save(const QString &fileName)
         return;
     }
 
-    QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_6_10);
+    //QDataStream out(&file);
+    //out.setVersion(QDataStream::Qt_6_10);
 
-    out << markersData1;
-    out << markersData2;
-    out << markersData3;
-    out << markersData4;
+    //out << markersData1;
+    //out << markersData2;
+    //out << markersData3;
+    //out << markersData4;
 
-    file.flush();
-    file.close();
+    //file.flush();
+    //file.close();
 
 }
 
@@ -78,19 +58,14 @@ void VuraSerializer::Load(const QString &fileName)
         return;
     }
 
-    QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_6_10);
+    //QDataStream in(&file);
+    //in.setVersion(QDataStream::Qt_6_10);
 
-    in >> markersData1;
-    in >> markersData2;
-    in >> markersData3;
-    in >> markersData4;
+    //in >> markersData1;
+    //in >> markersData2;
+    //in >> markersData3;
+    //in >> markersData4;
 
-    file.close();
-
-    qDebug() << "Marker 1 - File: " << markersData1.fileName << " Type: " << markersData1.markerType << " Pos: " << markersData1.markerPos;
-    qDebug() << "Marker 2 - File: " << markersData2.fileName << " Type: " << markersData2.markerType << " Pos: " << markersData2.markerPos;
-    qDebug() << "Marker 3 - File: " << markersData3.fileName << " Type: " << markersData3.markerType << " Pos: " << markersData3.markerPos;
-    qDebug() << "Marker 4 - File: " << markersData4.fileName << " Type: " << markersData4.markerType << " Pos: " << markersData4.markerPos;
+    //file.close();
 
 }

@@ -86,4 +86,8 @@ install(TARGETS vura
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+if (MSVC)
+    qt_add_win_app_sdk(vura)
+endif()
+
 qt_finalize_executable(vura)

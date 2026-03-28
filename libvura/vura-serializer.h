@@ -23,7 +23,11 @@
 #include <QDebug>
 
 #include "vura-overloads.h"
+#include "filetypes/application-data.h"
+#include "filetypes/hotkeys-data.h"
 #include "filetypes/markers-data.h"
+#include "filetypes/playlist-data.h"
+#include "filetypes/project-data.h"
 
 
 class VuraSerializer : public QObject
