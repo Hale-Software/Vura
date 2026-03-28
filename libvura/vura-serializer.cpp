@@ -20,7 +20,7 @@
 
 VuraSerializer::VuraSerializer(QObject *parent) : QObject(parent) {}
 
-void VuraSerializer::Save(const QString &fileName)
+void VuraSerializer::Save(const QString &fileName, QList<ApplicationData> applicationData)
 {
     QFile file(fileName);
 
@@ -30,42 +30,214 @@ void VuraSerializer::Save(const QString &fileName)
         return;
     }
 
-    //QDataStream out(&file);
-    //out.setVersion(QDataStream::Qt_6_10);
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_10);
 
-    //out << markersData1;
-    //out << markersData2;
-    //out << markersData3;
-    //out << markersData4;
+    foreach (ApplicationData data, applicationData)
+    {
+        out << data.fileName << data.position;
+    }
 
-    //file.flush();
-    //file.close();
+    file.flush();
+    file.close();
 
 }
 
-void VuraSerializer::Load(const QString &fileName)
+void VuraSerializer::Save(const QString& fileName, QList<HotkeysData> hotkeysData)
 {
-    MarkersData markersData1;
-    MarkersData markersData2;
-    MarkersData markersData3;
-    MarkersData markersData4;
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Could not open file";
+        return;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_10);
+
+    foreach (HotkeysData data, hotkeysData)
+    {
+        out << data.action << data.modifier << data.keyCode;
+    }
+
+    file.flush();
+    file.close();
+}
+
+void VuraSerializer::Save(const QString& fileName, QList<MarkersData> markersData)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Could not open file";
+        return;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_10);
+
+    foreach (MarkersData data, markersData)
+    {
+        out << data.fileName << data.markerName << data.markerType << data.markerTimestamp;
+    }
+
+    file.flush();
+    file.close();
+}
+
+void VuraSerializer::Save(const QString& fileName, QList<PlaylistData> playlistData)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Could not open file";
+        return;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_10);
+
+    foreach (PlaylistData data, playlistData)
+    {
+        out << data.fileName << data.fileType;
+    }
+
+    file.flush();
+    file.close();
+}
+
+void VuraSerializer::Save(const QString& fileName, QList<ProjectData> projectData)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Could not open file";
+        return;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_10);
+
+    foreach (ProjectData data, projectData)
+    {
+        out << data.projectName;
+    }
+
+    file.flush();
+    file.close();
+}
+
+
+QList<ApplicationData> VuraSerializer::LoadApplicationData(const QString& fileName)
+{
+    QList<ApplicationData> applicationData;
 
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly))
     {
         qDebug() << "Could not open file";
-        return;
+        return applicationData;
     }
 
-    //QDataStream in(&file);
-    //in.setVersion(QDataStream::Qt_6_10);
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_6_10);
 
-    //in >> markersData1;
-    //in >> markersData2;
-    //in >> markersData3;
-    //in >> markersData4;
+    in >> applicationData;
 
-    //file.close();
+    file.close();
 
+    return  applicationData;
+}
+
+QList<HotkeysData> VuraSerializer::LoadHotkeysData(const QString& fileName)
+{
+    QList<HotkeysData> hotkeysData;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "Could not open file";
+        return hotkeysData;
+    }
+
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_6_10);
+
+    in >> hotkeysData;
+
+    file.close();
+
+    return  hotkeysData;
+}
+
+QList<MarkersData> VuraSerializer::LoadMarkersData(const QString& fileName)
+{
+    QList<MarkersData> markersData;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "Could not open file";
+        return markersData;
+    }
+
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_6_10);
+
+    in >> markersData;
+
+    file.close();
+
+    return  markersData;
+}
+
+QList<PlaylistData> VuraSerializer::LoadPlaylistData(const QString& fileName)
+{
+    QList<PlaylistData> playlistData;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "Could not open file";
+        return playlistData;
+    }
+
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_6_10);
+
+    in >> playlistData;
+
+    file.close();
+
+    return  playlistData;
+}
+
+QList<ProjectData> VuraSerializer::LoadProjectData(const QString& fileName)
+{
+    QList<ProjectData> projectData;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "Could not open file";
+        return projectData;
+    }
+
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_6_10);
+
+    in >> projectData;
+
+    file.close();
+
+    return  projectData;
 }

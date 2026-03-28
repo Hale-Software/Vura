@@ -36,7 +36,16 @@ class VuraSerializer : public QObject
 public:
     explicit VuraSerializer(QObject *parent = nullptr);
 
-    void Save(const QString& fileName);
-    void Load(const QString& fileName);
+    void Save(const QString& fileName, QList<ApplicationData> applicationData);
+    void Save(const QString& fileName, QList<HotkeysData> hotkeysData);
+    void Save(const QString& fileName, QList<MarkersData> markersData);
+    void Save(const QString& fileName, QList<PlaylistData> playlistData);
+    void Save(const QString& fileName, QList<ProjectData> projectData);
+
+    static QList<ApplicationData> LoadApplicationData(const QString& fileName);
+    static QList<HotkeysData> LoadHotkeysData(const QString& fileName);
+    static QList<MarkersData> LoadMarkersData(const QString& fileName);
+    static QList<PlaylistData> LoadPlaylistData(const QString& fileName);
+    static QList<ProjectData> LoadProjectData(const QString& fileName);
 
 };
