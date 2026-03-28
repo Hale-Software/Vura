@@ -295,14 +295,7 @@ void MainWindow::processOpenParams(int argc, char *argv[])
 
 void MainWindow::testFunction()
 {
-    VuraSerializer serializer;
-    if (!wroteTestFile) {
-        serializer.Save("test.vvm");
-        wroteTestFile = true;
 
-    } else {
-        serializer.Load("test.vvm");
-    }
 }
 
 
