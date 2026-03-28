@@ -18,8 +18,11 @@
 #include <QApplication>
 #include <QDebug>
 
+#include <QBreakpadHandler.h>
+
 #include "widgets/mainwindow.h"
 #include <util/singleinstance.h>
+#include <constants.h>
 
 #include <config.h>
 
@@ -31,6 +34,33 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
+
+
+    // Set Windows Crash Handler
+#ifdef Q_OS_WIN
+    bool winCrashHandler = true;
+
+    QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    if (VURA_BUILD_TYPE == "Debug") {
+        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
+    }
+
+    if (!QDir(defaultCrashFileLocation).exists()) {
+        if (!QDir().mkpath(defaultCrashFileLocation)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
+            winCrashHandler = false;
+        }
+    }
+
+    if (winCrashHandler) {
+        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
+
+    } else {
+        qCritical() << "Failed to initialize the Windows Crash Handler";
+    }
+
+#endif
+
 
     // Prevent many instances of the app to be launched
     QString name = "com.hale-software.vura";

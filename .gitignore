@@ -6,6 +6,7 @@
 !/additional_install_files
 !/build-aux
 !/cmake
+!/crash-handler
 !/deps
 !/libvura
 !/src
