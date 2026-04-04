@@ -15,62 +15,31 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#ifndef VURA_MARKERDIALOG_H
+#define VURA_MARKERDIALOG_H
 
 #include <QDialog>
-#include <QPushButton>
-#include <QTextBrowser>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
-#include <QString>
-
-#include <constants.h>
-#include "../utility/qt-wrappers.h"
-
-#include <util/blogger.h>
 
 
 QT_BEGIN_NAMESPACE
 
 namespace Ui {
-    class LogViewer;
+    class MarkerDialog;
 }
 
 QT_END_NAMESPACE
 
-
-class LogViewer : public QDialog {
+class MarkerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit LogViewer(QWidget *parent = nullptr);
-    ~LogViewer() override;
+    explicit MarkerDialog(QWidget *parent = nullptr);
 
-    void openFile(const QString &fileName);
-
-public slots:
-    void message(QString message);
-
-private slots:
-    //void AddLine(int type, const QString &text);
-    void openButton_Clicked();
-    void clearButton_Clicked();
-    void closeButton_Clicked();
-    void verbosityIndexChanged(int index);
-    void simplify_Clicked();
+    ~MarkerDialog() override;
 
 private:
-    Ui::LogViewer *ui;
-    int m_verbosity = 0;
-    bool m_simplify = true;
-    QString m_currentLogFile;
-    QString m_openedLogFile;
-
-    void refreshMessages();
-    void messageFormatter(QString message);
-
+    Ui::MarkerDialog *ui;
 };
+
+
+#endif //VURA_MARKERDIALOG_H

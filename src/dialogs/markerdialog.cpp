@@ -15,39 +15,18 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+// You may need to build the project (run Qt uic code generator) to get "ui_MarkerDialog.h" resolved
 
-#include <QMainWindow>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QDebug>
-
-#include "../components/RangeSlider.h"
-
-#include <util/blogger.h>
+#include "markerdialog.h"
+#include "ui_MarkerDialog.h"
 
 
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class TestWindow;
+MarkerDialog::MarkerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MarkerDialog)
+{
+    ui->setupUi(this);
 }
 
-QT_END_NAMESPACE
-
-class TestWindow : public QMainWindow {
-    Q_OBJECT
-
-public:
-    explicit TestWindow(QWidget *parent = nullptr);
-
-    ~TestWindow() override;
-
-private:
-    Ui::TestWindow *ui;
-    QMediaPlayer *m_player;
-    Blogger* blog;
-    QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
-    RangeSlider *m_rangeSlider;
-
-};
+MarkerDialog::~MarkerDialog()
+{
+    delete ui;
+}

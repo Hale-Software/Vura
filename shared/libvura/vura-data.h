@@ -17,37 +17,47 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QDebug>
-
-#include "../components/RangeSlider.h"
-
-#include <util/blogger.h>
+#include <QString>
 
 
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class TestWindow;
-}
-
-QT_END_NAMESPACE
-
-class TestWindow : public QMainWindow {
-    Q_OBJECT
-
-public:
-    explicit TestWindow(QWidget *parent = nullptr);
-
-    ~TestWindow() override;
-
-private:
-    Ui::TestWindow *ui;
-    QMediaPlayer *m_player;
-    Blogger* blog;
-    QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
-    RangeSlider *m_rangeSlider;
-
+enum MarkerTypes {
+    REGULAR_MARKER,
+    SCENE_MARKER,
+    STRIP_MARKER,
+    DIALOG_MARKER,
+    CUMSHOT_MARKER,
+    CYAN_MARKER,
+    MAGENTA_MARKER,
+    ORANGE_MARKER
 };
+
+struct ApplicationData {
+    QString fileName;
+    qint64 position;
+};
+
+struct HotkeysData {
+    QString action;
+    int modifier = 0;
+    int keyCode = 0;
+};
+
+struct MarkersData {
+    QString fileName;
+    QString markerName;
+    QString markerType;
+    qint64 markerTimestamp;
+};
+
+struct PlaylistData {
+    QString fileName;
+    QString fileType;
+};
+
+struct ProjectData {
+    QString projectName;
+};
+
+
+class VuraData {};
+

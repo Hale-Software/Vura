@@ -15,39 +15,28 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+# pragma once
 
-#include <QMainWindow>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QDebug>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "../components/RangeSlider.h"
+inline const char* VIDEO_MARKER_FORMAT_OUT = "(%s, %s, %d, %s)\n";
 
-#include <util/blogger.h>
+typedef struct VideoMarker {
+    char filename[256];
+    char markername;
+    int timestamp;
+    char type;
+
+} VideoMarker;
 
 
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class TestWindow;
-}
-
-QT_END_NAMESPACE
-
-class TestWindow : public QMainWindow {
-    Q_OBJECT
+class Serializer {
 
 public:
-    explicit TestWindow(QWidget *parent = nullptr);
+    explicit Serializer();
 
-    ~TestWindow() override;
-
-private:
-    Ui::TestWindow *ui;
-    QMediaPlayer *m_player;
-    Blogger* blog;
-    QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
-    RangeSlider *m_rangeSlider;
+    void serializeMarker(const char* outfile, VideoMarker marker);
 
 };

@@ -101,7 +101,7 @@
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
 
-#include <util/blog.h>
+#include <util/blogger.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -268,7 +268,7 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    Blog* m_hLogger;
+    Blogger* blog;
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;

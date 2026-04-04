@@ -17,60 +17,42 @@
 
 #pragma once
 
-#include <QDialog>
-#include <QPushButton>
+#include <QObject>
 #include <QTextBrowser>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QFileDialog>
 #include <QFile>
+#include <QDir>
 #include <QTextStream>
-#include <QString>
+#include <QMessageLogContext>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QDebug>
+#include <QDateTime>
+#include <QCoreApplication>
+#include <QMessageBox>
 
-#include <constants.h>
-#include "../utility/qt-wrappers.h"
-
-#include <util/blogger.h>
-
-
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class LogViewer;
-}
-
-QT_END_NAMESPACE
+#include "../constants.h"
 
 
-class LogViewer : public QDialog {
+class Blogger : public QObject
+{
     Q_OBJECT
-
 public:
-    explicit LogViewer(QWidget *parent = nullptr);
-    ~LogViewer() override;
+    static Blogger* instance(); // Singleton instance
+    void clearLogFile();
+    QString getLogFileName();
+    static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-    void openFile(const QString &fileName);
-
-public slots:
-    void message(QString message);
-
-private slots:
-    //void AddLine(int type, const QString &text);
-    void openButton_Clicked();
-    void clearButton_Clicked();
-    void closeButton_Clicked();
-    void verbosityIndexChanged(int index);
-    void simplify_Clicked();
+    signals:
+        void message(QString message);
 
 private:
-    Ui::LogViewer *ui;
-    int m_verbosity = 0;
-    bool m_simplify = true;
-    QString m_currentLogFile;
-    QString m_openedLogFile;
+    Blogger(QObject* parent = nullptr);
+    ~Blogger();
+    QString m_logFileName;
+    QFile m_logFile;
 
-    void refreshMessages();
-    void messageFormatter(QString message);
+    void InitLogFile();
+    bool deleteOldestLogFile(QDir logDir, QStringList logFiles);
+    QString m_message(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 };

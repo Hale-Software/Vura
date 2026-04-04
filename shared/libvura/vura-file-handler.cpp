@@ -15,39 +15,18 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
-
-#include <QMainWindow>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QDebug>
-
-#include "../components/RangeSlider.h"
-
-#include <util/blogger.h>
+#include "vura-file-handler.h"
 
 
-QT_BEGIN_NAMESPACE
+Serializer::Serializer() {}
 
-namespace Ui {
-    class TestWindow;
+void Serializer::serializeMarker(const char* outfile, VideoMarker marker)
+{
+    FILE* file;
+    fopen_s(&file, outfile, "wb");
+    if (file == NULL) {
+        return;
+    }
+
+    fprintf_s(file, VIDEO_MARKER_FORMAT_OUT, marker.filename, marker.markername, marker.timestamp, marker.type);
 }
-
-QT_END_NAMESPACE
-
-class TestWindow : public QMainWindow {
-    Q_OBJECT
-
-public:
-    explicit TestWindow(QWidget *parent = nullptr);
-
-    ~TestWindow() override;
-
-private:
-    Ui::TestWindow *ui;
-    QMediaPlayer *m_player;
-    Blogger* blog;
-    QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
-    RangeSlider *m_rangeSlider;
-
-};

@@ -18,4 +18,6 @@ target_sources(
         dialogs/LogUploadDialog.h
         dialogs/FeedbackDialog.cpp
         dialogs/FeedbackDialog.h
+        dialogs/markerdialog.cpp
+        dialogs/markerdialog.h
 )

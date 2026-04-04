@@ -19,14 +19,14 @@
 #include "ui_testwindow.h"
 
 
-static Blog* globalRedirector = nullptr;
+static Blogger* globalRedirector = nullptr;
 
 TestWindow::TestWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::TestWindow)
 {
     ui->setupUi(this);
 
-    qInstallMessageHandler(Blog::messageHandler);
-    globalRedirector = Blog::instance();
+    qInstallMessageHandler(Blogger::messageHandler);
+    globalRedirector = Blogger::instance();
 
     m_rangeSlider = new RangeSlider(Qt::Horizontal, RangeSlider::Option::DoubleHandles, nullptr);
     ui->horizontalLayout->insertWidget(1, m_rangeSlider);

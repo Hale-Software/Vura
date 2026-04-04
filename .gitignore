@@ -11,6 +11,7 @@
 !/src
 !/scripts
 !/share
+!/shared
 !/tests
 !.clang-format
 !.editorconfig

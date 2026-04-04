@@ -17,37 +17,31 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QSettings>
-#include <QMediaPlayer>
+#include <QObject>
+#include <QFile>
+#include <QString>
 #include <QDebug>
 
-#include "../components/RangeSlider.h"
+#include "vura-overloads.h"
+#include "vura-data.h"
 
-#include <util/blogger.h>
 
-
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class TestWindow;
-}
-
-QT_END_NAMESPACE
-
-class TestWindow : public QMainWindow {
+class VuraSerializer : public QObject
+{
     Q_OBJECT
-
 public:
-    explicit TestWindow(QWidget *parent = nullptr);
+    explicit VuraSerializer(QObject *parent = nullptr);
 
-    ~TestWindow() override;
+    void Save(const QString& fileName, QList<ApplicationData> applicationData);
+    void Save(const QString& fileName, QList<HotkeysData> hotkeysData);
+    void Save(const QString& fileName, QList<MarkersData> markersData);
+    void Save(const QString& fileName, QList<PlaylistData> playlistData);
+    void Save(const QString& fileName, QList<ProjectData> projectData);
 
-private:
-    Ui::TestWindow *ui;
-    QMediaPlayer *m_player;
-    Blogger* blog;
-    QString videoFileName = "C:\\Users\\halea\\Videos\\Extra\\paularamos-kissingcontest.mp4";
-    RangeSlider *m_rangeSlider;
+    static QList<ApplicationData> LoadApplicationData(const QString& fileName);
+    static QList<HotkeysData> LoadHotkeysData(const QString& fileName);
+    static QList<MarkersData> LoadMarkersData(const QString& fileName);
+    static QList<PlaylistData> LoadPlaylistData(const QString& fileName);
+    static QList<ProjectData> LoadProjectData(const QString& fileName);
 
 };

@@ -28,8 +28,13 @@
 #endif
 
 // Global pointer to Logger for use in messageHandler
-static Blog* globalRedirector = nullptr;
+static Blogger* globalRedirector = nullptr;
 
+// Simulate application crash
+void simulateCrash() {
+    int *ptr = nullptr;
+    *ptr = 42; // Accessing address 0 causes a SIGSEGV/Access Violation
+}
 
 /*!
     @class MainWindow
@@ -46,8 +51,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->statusBar()->setSizeGripEnabled(true);
 
     // Set the global redirector and install the custom message handler
-    qInstallMessageHandler(Blog::messageHandler);
-    globalRedirector = Blog::instance();
+    qInstallMessageHandler(Blogger::messageHandler);
+    globalRedirector = Blogger::instance();
     qInfo() << "Starting application...";
 
     QString name = qgetenv("USER");
@@ -295,7 +300,7 @@ void MainWindow::processOpenParams(int argc, char *argv[])
 
 void MainWindow::testFunction()
 {
-
+    simulateCrash();
 }
 
 
