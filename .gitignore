@@ -42,6 +42,7 @@
 !/docs/HOTKEYS.md
 !/docs/SETTINGS.md
 !/docs/TODO.md
+!/docs/BUILD_FOLDER.md
 
 # Exclude lock files
 *.lock.json
