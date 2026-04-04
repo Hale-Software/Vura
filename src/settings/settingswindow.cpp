@@ -71,6 +71,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->hotkeyFilterTextBox, &QKeySequenceEdit::keySequenceChanged, this, &SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged);
     connect(ui->hotkeyFilterClearButton, &QPushButton::clicked, this, &SettingsWindow::hotkeyFilterClearButton_Clicked);
     connect(ui->setOverrideWindowsHotkeys, &QCheckBox::checkStateChanged, this, &SettingsWindow::setOverrideWindowsHotkeys_Checked);
+    connect(ui->resetHotkeys, &QPushButton::clicked, this, &SettingsWindow::resetHotkeys_Clicked);
 
     connect(ui->stashServer, &QLineEdit::textChanged, this, &SettingsWindow::stashServer_TextChanged);
 
@@ -115,6 +116,7 @@ void SettingsWindow::loadSettings()
     m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
     m_playbackSpeedAdjustmentFine = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
     m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
     m_updateChannel = settings.value("updateChannel", "stable").toString();
     m_autoUpdate = settings.value("autoUpdate", true).toBool();
@@ -163,6 +165,7 @@ void SettingsWindow::loadSettings()
     ui->playbackSpeedAdjustment->setText(QString::number(m_playbackSpeedAdjustment));
     ui->playbackSpeedAdjustmentFine->setText(QString::number(m_playbackSpeedAdjustmentFine));
     ui->volumeStep->setValue(m_volumeStep);
+    ui->jumpToEndPercentage->setValue(m_jumpToEndPercentage);
     ui->hideCursorWhenPlaying->setChecked(m_hideCursorWhenPlaying);
     ui->hideCursorTime->setValue(m_hideCursorTime);
     ui->systemTray->setChecked(m_systemTray);
@@ -370,6 +373,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("playbackSpeedAdjustment", m_playbackSpeedAdjustment);
     settings.setValue("playbackSpeedAdjustmentFine", m_playbackSpeedAdjustmentFine);
     settings.setValue("volumeStep", m_volumeStep);
+    settings.setValue("jumpToEndPercentage", m_jumpToEndPercentage);
     settings.setValue("maxRecentFiles", m_maxRecentFiles);
     settings.setValue("updateChannel", m_updateChannel);
     settings.setValue("autoUpdate", m_autoUpdate);
@@ -804,6 +808,19 @@ void SettingsWindow::extraLargeJump_TextChanged(const QString &text)
     }
 }
 
+void SettingsWindow::jumpToEndPercentage_Changed(double value)
+{
+    if (value != m_jumpToEndPercentage) {
+        if (value < 0.0) {
+            ui->jumpToEndPercentage->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->jumpToEndPercentage->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_jumpToEndPercentage = value;
+            settingsChanged();
+        }
+    }
+}
+
 void SettingsWindow::theme_Changed(int index)
 {
     QString selectedTheme = ui->theme->itemText(index);
@@ -851,6 +868,15 @@ void SettingsWindow::setOverrideWindowsHotkeys_Checked(bool state)
     } else {
         m_setOverrideWindowsHotkeys = false;
     }
+    settingsChanged();
+}
+
+void SettingsWindow::resetHotkeys_Clicked()
+{
+    QSettings settings;
+    settings.beginGroup("Hotkeys");
+    settings.remove(""); // Removes the group and all its keys
+    settings.endGroup();
     settingsChanged();
 }
 

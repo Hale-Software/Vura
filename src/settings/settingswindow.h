@@ -98,6 +98,7 @@ public slots:
     void mediumJump_TextChanged(const QString &text);
     void largeJump_TextChanged(const QString &text);
     void extraLargeJump_TextChanged(const QString &text);
+    void jumpToEndPercentage_Changed(double value);
 
     // Appearance Settings
     void theme_Changed(int index);
@@ -114,6 +115,7 @@ public slots:
     void hotkeyFilterClearButton_Clicked();
     void hotkey_Changed(int id, QString action, QString oldHotkey, QString newHotkey);
     void setOverrideWindowsHotkeys_Checked(bool state);
+    void resetHotkeys_Clicked();
 
     // Advanced Settings
     void stashServer_TextChanged(const QString &text);
@@ -172,6 +174,7 @@ private:
     int m_continuePlayback;
     bool m_pauseOnLastFrameOfVideo;
     bool m_setOverrideWindowsHotkeys;
+    double m_jumpToEndPercentage;
 
     // Appearance Settings
     QString m_theme;

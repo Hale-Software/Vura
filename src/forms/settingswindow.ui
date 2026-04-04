@@ -106,7 +106,7 @@
      <item>
       <widget class="QStackedWidget" name="settingsPageDisplay">
        <property name="currentIndex">
-        <number>0</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="generalPage">
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -136,7 +136,7 @@
               <x>0</x>
               <y>0</y>
               <width>686</width>
-              <height>1421</height>
+              <height>1441</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -703,7 +703,7 @@
                 <item row="7" column="1">
                  <widget class="QLineEdit" name="extraLargeJump"/>
                 </item>
-                <item row="8" column="0">
+                <item row="9" column="0">
                  <spacer name="horizontalSpacer_5">
                   <property name="orientation">
                    <enum>Qt::Orientation::Horizontal</enum>
@@ -727,6 +727,23 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="QLineEdit" name="playbackSpeedAdjustment"/>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>Jump to End Percentage</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="DoubleSpinBoxIgnoreWheel" name="jumpToEndPercentage">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -774,8 +791,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>343</width>
-              <height>163</height>
+              <width>694</width>
+              <height>650</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -936,8 +953,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>96</width>
-              <height>26</height>
+              <width>694</width>
+              <height>608</height>
              </rect>
             </property>
            </widget>
@@ -981,8 +998,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>96</width>
-              <height>26</height>
+              <width>694</width>
+              <height>608</height>
              </rect>
             </property>
            </widget>
@@ -1157,8 +1174,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>96</width>
-              <height>26</height>
+              <width>694</width>
+              <height>536</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1187,6 +1204,13 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <widget class="QPushButton" name="resetHotkeys">
+             <property name="text">
+              <string>Set Hotkeys to Default</string>
+             </property>
+            </widget>
+           </item>
            <item>
             <spacer name="horizontalSpacer_8">
              <property name="orientation">
@@ -1235,8 +1259,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>288</width>
-              <height>134</height>
+              <width>287</width>
+              <height>133</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_10">

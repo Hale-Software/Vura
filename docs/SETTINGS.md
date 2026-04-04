@@ -37,7 +37,7 @@
 | continuePlayback                | 1                            | int    |
 | pauseOnLastFrameOfVideo         | false                        | bool   |
 | setOverrideWindowsHotkeys       | true                         | bool   |
-|                                 |                              |        |
+| jumpToEndPercentage             | 0.05                         | double |
 |                                 |                              |        |
 |                                 |                              |        |
 |                                 |                              |        |

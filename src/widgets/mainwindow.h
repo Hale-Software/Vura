@@ -205,6 +205,8 @@ public slots:
     void toggleShuffle();
     void clearPlaylist();
     void takeSnapshot();
+    void jumpToEnd();
+    void showVideoResolution(bool showing);
 
 
 signals:
@@ -242,6 +244,7 @@ private slots:
     void displayErrorMessage();
     void sourceChanged(const QUrl &media);
     void playbackRateChanged(qreal rate);
+    void videoFrameChanged(const QVideoFrame &frame);
 
     void showPlaylistContextMenu(const QPoint &pos);
     void playlistContextMenu_AddFileAction();
@@ -327,6 +330,8 @@ private:
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
     bool m_setOverrideWindowsHotkeys = true;
+    bool m_showingVideoResolution = false;
+    QString m_videoResolution;
 
     // SETTINGS
     // =======================================================================================================
@@ -356,6 +361,7 @@ private:
     double m_volumeStep = 0.10;
     bool m_durationLabelShowRemainingTime = false;
     QString m_theme = "System";
+    double m_jumpToEndPercentage = 0.0;
 
     //
     // =======================================================================================================

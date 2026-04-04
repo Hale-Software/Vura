@@ -18,7 +18,7 @@
 #include <QApplication>
 #include <QDebug>
 
-#include <QBreakpadHandler.h>
+//#include <QBreakpadHandler.h>
 
 #include "widgets/mainwindow.h"
 #include <util/singleinstance.h>
@@ -52,12 +52,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (winCrashHandler) {
-        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
+//    if (winCrashHandler) {
+//        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
 
-    } else {
-        qCritical() << "Failed to initialize the Windows Crash Handler";
-    }
+//    } else {
+//        qCritical() << "Failed to initialize the Windows Crash Handler";
+//    }
 
 #endif
 

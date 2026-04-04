@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
     connect(m_menuBar, &MenuBar::videoSeek, this, &MainWindow::videoSeek);
     connect(m_menuBar, &MenuBar::videoJumpToTime, this, &MainWindow::videoJumpToTime);
+    connect(m_menuBar, &MenuBar::videoJumpToEnd, this, &MainWindow::jumpToEnd);
     connect(m_menuBar, &MenuBar::restartVideo, this, &MainWindow::restartVideo);
     connect(m_menuBar, &MenuBar::changeVolume, this, &MainWindow::changeVolume);
     connect(m_menuBar, &MenuBar::toggleMute, this, &MainWindow::toggleMute);
@@ -157,6 +158,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
     connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
     connect(m_menuBar, &MenuBar::takeSnapshot, this, &MainWindow::takeSnapshot);
+    connect(m_menuBar, &MenuBar::showVideoResolution, this, &MainWindow::showVideoResolution);
 
     this->setMenuBar(m_menuBar);
 
@@ -190,6 +192,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_player, &QMediaPlayer::sourceChanged, this, &MainWindow::sourceChanged);
     connect(m_player, &QMediaPlayer::tracksChanged, this, &MainWindow::tracksChanged);
     connect(m_player, &QMediaPlayer::playbackRateChanged, this, &MainWindow::playbackRateChanged);
+
+    //connect(m_videoSink, &QVideoSink::videoSizeChanged, [](const QSize &size) {
+    //    qDebug() << "Video Resolution:" << size.width() << "x" << size.height();
+    //});
+    //connect(m_videoSink, &QVideoSink::videoFrameChanged, [](const QVideoFrame &frame) {
+    //    QSize frameSize = frame.size();
+    //    qDebug() << "Current Frame Size:" << frameSize;
+    //});
+    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &MainWindow::videoFrameChanged);
 
 
     // Configure UI items
@@ -303,6 +314,13 @@ void MainWindow::testFunction()
     simulateCrash();
 }
 
+void MainWindow::videoFrameChanged(const QVideoFrame &frame)
+{
+    if (frame.isValid()) {
+        m_videoResolution = QString::number(frame.height());
+        setApplicationWindowTitle();
+    }
+}
 
 
 #pragma region CONTEXT MENUS
@@ -1307,6 +1325,24 @@ void MainWindow::takeSnapshot()
     image.save(fullPath, "JPEG");
 }
 
+void MainWindow::jumpToEnd()
+{
+    if (m_player->isAvailable()) {
+        qint64 duration = m_player->duration();
+        qint64 subtractDuration = duration * m_jumpToEndPercentage;
+        qint64 newPosition = duration - subtractDuration;
+
+        if (newPosition > 0 && newPosition < duration) {
+            m_player->setPosition(newPosition);
+        }
+    }
+}
+
+void MainWindow::showVideoResolution(bool showing)
+{
+    m_showingVideoResolution = showing;
+}
+
 
 #pragma endregion
 
@@ -1490,6 +1526,7 @@ void MainWindow::loadSettings()
     m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
     m_theme = settings.value("theme", "System").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
 
     if (timer->isActive())
         timer->stop();
@@ -1770,7 +1807,15 @@ void MainWindow::setApplicationWindowTitle()
     QString windowTitle;
 
     if (!m_player->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
+        if (m_showingVideoResolution) {
+            if (m_videoResolution.isEmpty()) {
+                windowTitle = QString("%1 [%2] - Vura %3").arg(strippedFileName(m_currentFile), "UNKNOWN RES", VURA_VERSION_STRING);
+            } else {
+                windowTitle = QString("%1 [%2p] - Vura %3").arg(strippedFileName(m_currentFile), m_videoResolution, VURA_VERSION_STRING);
+            }
+        } else {
+            windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
+        }
         m_systemTrayIcon->setToolTip(strippedFileName(m_currentFile));
         m_sourceLoaded = false;
 

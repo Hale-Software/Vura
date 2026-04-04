@@ -126,12 +126,14 @@ signals:
     void toggleSceneTransitionMarkers();
     void toggleStripMarkers();
     void showMediaInformation();
+    void showVideoResolution(bool showing);
 
     // Playback
     void changePlaybackSpeed(double mrate);
     void setPlaybackSpeedNormal();
     void videoSeek(int mseconds);
     void videoJumpToTime(int position);
+    void videoJumpToEnd();
     void togglePlayPause();
     void nextVideo();
     void previousVideo();
@@ -218,6 +220,7 @@ private slots:
 
     void showMediaInformation_Clicked();
     void showLogFileViewer_Clicked();
+    void showVideoResolution_Clicked();
 
 
     // Playback Menu
@@ -241,6 +244,7 @@ private slots:
     void jumpBackwardExtraLarge_Clicked();
 
     void jumpToTime_Clicked();
+    void jumpToEnd_Clicked();
     void togglePlayPause_Clicked();
     void nextVideo_Clicked();
     void previousVideo_Clicked();
@@ -391,7 +395,8 @@ private:
     QAction *m_toggleStripMarkersAction = nullptr;
 
     QAction *m_showMediaInformationAction = nullptr;
-    QAction *m_showLogFileViewerAction = nullptr;
+    //QAction *m_showLogFileViewerAction = nullptr;
+    QAction *m_showVideoResolutionAction = nullptr;
 
     // Playback
     QAction *m_playbackSpeedFasterAction = nullptr;
@@ -414,6 +419,7 @@ private:
     QAction *m_jumpBackwardExtraLargeAction = nullptr;
 
     QAction *m_jumpToTimeAction = nullptr;
+    QAction *m_jumpToEndAction = nullptr;
     QAction *m_togglePlayAction = nullptr;
     QAction *m_nextVideoAction = nullptr;
     QAction *m_previousVideoAction = nullptr;
@@ -499,6 +505,7 @@ private:
     int m_jumpExtraLarge = 0;
     QString m_stashServerUrl = "";
     int m_maxRecentFiles = 0;
+    bool m_showingVideoResolution = false;
 
     void setHotkeys();
     void refreshMenuItems();

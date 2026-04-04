@@ -110,7 +110,6 @@ void Hotkeys::setDefaultHotkeys()
     // View
     hotkeyMap["Toggle Playlist"] = "Ctrl+P";
     hotkeyMap["Toggle Status Bar"] = "Ctrl+B";
-    hotkeyMap["Log Viewer"] = "Ctrl+L";
     hotkeyMap["Toggle Video Controls"] = "Ctrl+V";
     hotkeyMap["Media Information"] = "";
     hotkeyMap["Toggle Tags"] = "";
@@ -147,6 +146,7 @@ void Hotkeys::setDefaultHotkeys()
 
     // Help
     hotkeyMap["Help"] = "F1";
+    hotkeyMap["View Current Log"] = "Ctrl+L";
     hotkeyMap["About"] = "";
 
 
