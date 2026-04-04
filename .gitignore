@@ -6,7 +6,6 @@
 !/additional_install_files
 !/build-aux
 !/cmake
-!/deps
 !/libvura
 !/src
 !/scripts
@@ -28,6 +27,12 @@
 !COPYING
 !INSTALL
 !README.md
+
+# Exclude dependencies
+!/deps/CMakeLists.txt
+!/deps/blake2
+!/deps/json11
+!/deps/xxHash
 
 # Exclude installer files
 !/installer/installer.iss
