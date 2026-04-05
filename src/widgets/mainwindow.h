@@ -17,58 +17,37 @@
 
 #pragma once
 
+#include <QMainWindow>
 #include <QMediaMetaData>
 #include <QMediaPlayer>
 #include <QMediaDevices>
 #include <QWidget>
-#include <QMainWindow>
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>
-#include <QShortcut>
-#include <QKeySequence>
 #include <QApplication>
 #include <QAudioDevice>
 #include <QAudioOutput>
-#include <QBoxLayout>
-#include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QLineEdit>
-#include <QListView>
 #include <QMediaDevices>
 #include <QMediaFormat>
 #include <QMediaMetaData>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QSlider>
 #include <QStandardPaths>
 #include <QStatusBar>
-#include <QVBoxLayout>
 #include <QAudioBufferOutput>
 #include <QString>
 #include <QMenuBar>
-#include <QMenu>
 #include <QDebug>
 #include <QUrl>
 #include <QtMath>
-#include <QDirIterator>
 #include <QPointer>
-#include <QPixmap>
-#include <QActionGroup>
-#include <QProcess>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QGuiApplication>
 #include <QScreen>
-#include <QInputDialog>
-#include <QTimeEdit>
 #include <QDialog>
-#include <QDialogButtonBox>
-#include <QKeyEvent>
-#include <QTableWidget>
 #include <QFileInfo>
 #include <QDesktopServices>
 #include <QStandardItemModel>
@@ -81,8 +60,9 @@
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
-#include <vura-startup.h>
 #include <vura-helpers.h>
+#include <vura-settings.h>
+#include <vura-startup.h>
 #include <util/blogger.h>
 #include <util/messagebox.h>
 #include <media-io/media-functions.h>
@@ -97,7 +77,6 @@
 #include "../utility/playlist.h"
 #include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
-#include "../dialogs/editmarker.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
 #include "../dialogs/updatewindow.h"
@@ -105,22 +84,6 @@
 #include "../dialogs/helpdialog.h"
 #include "../dialogs/convertmediadialog.h"
 
-
-QT_BEGIN_NAMESPACE
-class QAbstractItemView;
-class QLabel;
-class QMediaPlayer;
-class QModelIndex;
-class QPushButton;
-class QComboBox;
-class QSlider;
-class QStatusBar;
-class QVideoWidget;
-class QAudioBufferOutput;
-QT_END_NAMESPACE
-
-class PlaylistModel;
-class AudioLevelMeter;
 
 namespace Ui {
 class MainWindow;
@@ -143,11 +106,31 @@ public:
     void setMainWindowVisibility(bool state);
     void processOpenParams(int argc, char *argv[]);
 
+    void initApplication();
+    void initSystemTrayIcon();
+    void initMenuBar();
+    void initStatusBar();
+    void initVideoControls();
+    void initVideoPlayer();
+    void initUI();
+    void initAudioDevices();
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
     void addFileToPlaylistContextMenu(const QString &file);
     void addFolderToPlaylistContextMenu(const QString &path);
     bool isPlayerAvailable() const;
+    bool loadPlaylist(const QUrl &url);
+    void setTrackInfo(const QString &info);
+    void setStatusInfo(const QString &info);
+    void updateDurationInfo(qint64 currentInfo);
+    static QString trackName(const QMediaMetaData &metaData, int index);
+    void showNotImplemented_Message();
+    void loadFile(const QString &fileName);
+    void setApplicationWindowTitle();
+    void setToolTips();
+    static void setStyleSheet();
+    bool createUserDirs();
+    static qint64 fileHash(const QString& filePath);
 
 public slots:
     void showMediaInformation();
@@ -166,14 +149,7 @@ public slots:
     void savePlaylist(const QString &filePath, const QString &type);
     void togglePlaylist();
     void toggleStatusBar();
-    void toggleMarkers();
-    void toggleCumshotMarkers();
-    void toggleCyanMarkers();
-    void toggleDialogMarkers();
-    void toggleMagentaMarkers();
-    void toggleOrangeMarkers();
-    void toggleSceneTransitionMarkers();
-    void toggleStripMarkers();
+    void toggleMarkers(const QString &markerType);
     void showLogFileViewer();
     void toggleVideoControls();
     void togglePlayPause();
@@ -276,21 +252,33 @@ private:
     Ui::MainWindow *ui;
     Blogger* blog;
     MediaFunctions *mediaFunctions;
+    VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
-    ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     QTimer *timer;
-    int m_x = 0;
-    int m_y = 0;
+    QMediaPlayer *m_player = nullptr;
+    QAudioOutput *m_audioOutput = nullptr;
+    Playlist *m_playlist = nullptr;
+    QLabel *m_statusLabel = nullptr;
+    QStatusBar *m_statusBar = nullptr;
+    PlaylistModel *m_playlistModel = nullptr;
+    QAbstractItemView *m_playlistView = nullptr;
+    QMediaDevices m_mediaDevices;
+    QPoint m_pos;
+    QString m_trackInfo;
+    QString m_statusInfo;
+    qint64 m_duration;
+    int videoTrack;
+    int audioOutput;
+    int audioTrack;
+    int subtitleTrack;
     bool m_showingCursor = true;
     bool m_fromFullscreen = false;
     qint64 m_lastPosition = 0;
     QString m_currentUser = "UNKNOWN";
 
-    bool wroteTestFile = false;
-
-    // WINDOWS
+    // DIALOGS
     // =======================================================================================================
     QPointer<LogViewer> m_logViewer;
     QPointer<SettingsWindow> m_settingsWindow;
@@ -305,14 +293,11 @@ private:
     QPointer<VideoControlWidget> m_videoControlWidget;
     VideoSlider *m_videoSlider;
     bool m_sourceLoaded = false;
-    bool m_playing = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;
     bool m_showingVideoControls = false;
-    bool m_showingSubtitles = false;
     bool m_isMuted = false;
     bool m_playlistLoaded = false;
-    bool m_subtitlesLoaded = false;
     float m_volume = 50;
     float m_playbackSpeed = 1.0;
     QString m_currentFile;
@@ -334,82 +319,9 @@ private:
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
-    bool m_setOverrideWindowsHotkeys = true;
     bool m_showingVideoResolution = false;
-    QString m_videoResolution;
-
-    // SETTINGS
-    // =======================================================================================================
-    QString m_locale = "en-US";
-    bool m_showStatusBarOnStart = false;
-    bool m_showPlaylistOnStart = false;
-    bool m_showVideoControlsOnStart = false;
-    bool m_hashFile = false;
-    int m_jumpSmall = 0;
-    int m_jumpMedium = 0;
-    int m_jumpLarge = 0;
-    int m_jumpExtraLarge = 0;
-    int m_maxRecentFiles = 0;
-    bool m_hideCursorWhenPlaying = false;
-    int m_hideCursorTime = 0;
-    bool m_systemTray = true;
-    int m_mediaChangeNotification = 1;
-    bool m_showVideoControlsWhenFullscreen = false;
-    bool m_startInMinimalViewMode = false;
-    bool m_pausePlaybackWhenMinimized = false;
-    bool m_allowOnlyOneInstance = false;
-    bool m_oneInstanceFromFileManager = true;
-    int m_continuePlayback = 1;
-    bool m_pauseOnLastFrameOfVideo = false;
-    double m_playbackSpeedAdjustment = 0.0;
-    double m_playbackSpeedFineAdjustment = 0.0;
-    double m_volumeStep = 0.10;
     bool m_durationLabelShowRemainingTime = false;
-    QString m_theme = "System";
-    double m_jumpToEndPercentage = 0.0;
-
-    //
-    // =======================================================================================================
-    QMediaPlayer *m_player = nullptr;
-    QAudioOutput *m_audioOutput = nullptr;
-    Playlist *m_playlist = nullptr;
-    QLabel *m_statusLabel = nullptr;
-    QStatusBar *m_statusBar = nullptr;
-    PlaylistModel *m_playlistModel = nullptr;
-    QAbstractItemView *m_playlistView = nullptr;
-    QString m_trackInfo;
-    QString m_statusInfo;
-    qint64 m_duration;
-    QMediaDevices m_mediaDevices;
-    int videoTrack;
-    int audioOutput;
-    int audioTrack;
-    int subtitleTrack;
-    QPoint m_pos;
-
-    // FUNCTIONS
-    // =======================================================================================================
-    bool loadPlaylist(const QUrl &url);
-    void setTrackInfo(const QString &info);
-    void setStatusInfo(const QString &info);
-    void updateDurationInfo(qint64 currentInfo);
-    QString trackName(const QMediaMetaData &metaData, int index);
-    void showNotImplemented_Message();
-    void loadFile(const QString &fileName);
-    void setApplicationWindowTitle();
-    void setToolTips();
-    void setStyleSheet();
-    bool createUserDirs();
-    void showErrorMessage(const QString &message);
-    qint64 fileHash(const QString& filePath);
-    void initApplication();
-    void initSystemTrayIcon();
-    void initMenuBar();
-    void initStatusBar();
-    void initVideoControls();
-    void initVideoPlayer();
-    void initUI();
-    void initAudioDevices();
+    QString m_videoResolution;
 
 };
 

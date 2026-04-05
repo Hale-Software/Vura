@@ -120,14 +120,7 @@ signals:
     void togglePlaylist();
     void toggleStatusBar();
     void toggleVideoControls();
-    void toggleMarkers();
-    void toggleCumshotMarkers();
-    void toggleCyanMarkers();
-    void toggleDialogMarkers();
-    void toggleMagentaMarkers();
-    void toggleOrangeMarkers();
-    void toggleSceneTransitionMarkers();
-    void toggleStripMarkers();
+    void toggleMarkers(const QString &markerType);
     void showMediaInformation();
     void showVideoResolution(bool showing);
 

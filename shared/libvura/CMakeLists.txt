@@ -19,6 +19,7 @@ target_sources(
         #vura-file-handler.h
         vura-helpers.h
         vura-hotkeys.h
+        vura-settings.h
         vura-startup.h
 
         PRIVATE
@@ -30,6 +31,7 @@ target_sources(
         #vura-file-handler.cpp
         vura-helpers.cpp
         vura-hotkeys.cpp
+        vura-settings.cpp
         vura-startup.cpp
 )
 

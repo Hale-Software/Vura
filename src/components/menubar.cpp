@@ -1408,42 +1408,42 @@ void MenuBar::toggleStatusBar_Clicked()
 
 void MenuBar::toggleMarkers_Clicked()
 {
-    emit toggleMarkers();
+    emit toggleMarkers("marker");
 }
 
 void MenuBar::toggleCumshotMarkers_Clicked()
 {
-    emit toggleCumshotMarkers();
+    emit toggleMarkers("cumshot");
 }
 
 void MenuBar::toggleCyanMarkers_Clicked()
 {
-    emit toggleCyanMarkers();
+    emit toggleMarkers("cyan");
 }
 
 void MenuBar::toggleDialogMarkers_Clicked()
 {
-    emit toggleDialogMarkers();
+    emit toggleMarkers("dialog");
 }
 
 void MenuBar::toggleMagentaMarkers_Clicked()
 {
-    emit toggleMagentaMarkers();
+    emit toggleMarkers("magenta");
 }
 
 void MenuBar::toggleOrangeMarkers_Clicked()
 {
-    emit toggleOrangeMarkers();
+    emit toggleMarkers("orange");
 }
 
 void MenuBar::toggleSceneTransitionMarkers_Clicked()
 {
-    emit toggleSceneTransitionMarkers();
+    emit toggleMarkers("scene");
 }
 
 void MenuBar::toggleStripMarkers_Clicked()
 {
-    emit toggleStripMarkers();
+    emit toggleMarkers("strip");
 }
 
 void MenuBar::showLogFileViewer_Clicked()
