@@ -118,6 +118,8 @@ public slots:
     void resetHotkeys_Clicked();
 
     // Advanced Settings
+    void applicationDataFile_TextChanged(const QString &text);
+    void applicationDataFileBrowse_Clicked();
     void stashServer_TextChanged(const QString &text);
 
 signals:
@@ -175,6 +177,7 @@ private:
     bool m_pauseOnLastFrameOfVideo;
     bool m_setOverrideWindowsHotkeys;
     double m_jumpToEndPercentage;
+    QString m_applicationDataFile;
 
     // Appearance Settings
     QString m_theme;

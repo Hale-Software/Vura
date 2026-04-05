@@ -31,6 +31,21 @@ enum MarkerTypes {
     ORANGE_MARKER
 };
 
+// File Headers
+inline uint32_t ApplicationDataSignature = 0x80F6E4F4;
+inline uint32_t HotkeysDataSignature = 0x80F6E8EB;
+inline uint32_t MarkersDataSignature = 0x80F6F6ED;
+inline uint32_t PlaylistDataSignature = 0x80F6F0EC;
+inline uint32_t ProjectDataSignature = 0xF6F0F2EA;
+
+struct FileHeader
+{
+    uint32_t signature;
+    uint32_t version = 0x31;
+};
+
+
+// File Data
 struct ApplicationData {
     QString fileName;
     qint64 position;
@@ -59,5 +74,6 @@ struct ProjectData {
 };
 
 
-class VuraData {};
+class VuraData
+{};
 

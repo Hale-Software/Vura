@@ -22,6 +22,23 @@
 #include "vura-data.h"
 
 
+QDataStream &operator<<(QDataStream &out, const FileHeader &fileHeader);
+QDataStream &operator>>(QDataStream &in, FileHeader &fileHeader);
+
+inline QDataStream &operator<<(QDataStream &out, const FileHeader &fileHeader)
+{
+    out << fileHeader.signature << fileHeader.version;
+    return out;
+}
+
+inline QDataStream &operator>>(QDataStream &in, FileHeader &fileHeader)
+{
+    fileHeader = FileHeader();
+    in >> fileHeader.signature >> fileHeader.version;
+    return in;
+}
+
+
 QDataStream &operator<<(QDataStream &out, const ApplicationData &applicationData);
 QDataStream &operator>>(QDataStream &in, ApplicationData &applicationData);
 

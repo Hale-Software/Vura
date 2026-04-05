@@ -1,4 +1,7 @@
 #include "vura-settings.h"
+#include "constants.h"
+
+#include <vura-config.h>
 
 
 VuraSettings::VuraSettings(QObject *parent) : QObject(parent)
@@ -11,6 +14,11 @@ VuraSettings::~VuraSettings() {}
 void VuraSettings::loadSettings()
 {
     QSettings settings;
+
+    QString defaultApplicationDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/appdata.vdt";
+    if (VURA_BUILD_TYPE == "Debug") {
+        defaultApplicationDataFile = constants::ApplicationDebugFolder + "/appdata.vdt";
+    }
 
     m_locale = settings.value("language", "en-US").toString();
     m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
@@ -39,6 +47,7 @@ void VuraSettings::loadSettings()
     m_theme = settings.value("theme", "System").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
     m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
+    m_applicationDataFile = settings.value("applicationDataFile", defaultApplicationDataFile).toString();
 }
 
 QString VuraSettings::locale()
@@ -179,4 +188,9 @@ double VuraSettings::jumpToEndPercentage()
 bool VuraSettings::setOverrideWindowsHotkeys()
 {
     return m_setOverrideWindowsHotkeys;
+}
+
+QString VuraSettings::applicationDataFile()
+{
+    return m_applicationDataFile;
 }

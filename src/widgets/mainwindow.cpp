@@ -35,9 +35,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    initApplication();
     vuraSettings = new VuraSettings();
     emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
+    initApplication();
 
     m_videoMarkers = new VideoMarkers;
 
@@ -101,9 +101,9 @@ void MainWindow::initApplication()
     VuraStartup startup;
     startup.Initialize();
 
-    QFileInfo applicationFile("application-data.vdt");
+    QFileInfo applicationFile(vuraSettings->applicationDataFile());
     if (applicationFile.exists()) {
-        applicationData = VuraSerializer::LoadApplicationData("application-data.vdt");
+        applicationData = VuraSerializer::LoadApplicationData(vuraSettings->applicationDataFile());
     }
 
     qDebug() << "Application initialized.";
@@ -1375,7 +1375,7 @@ void MainWindow::continuePlaybackRibbon(const bool con)
         m_player->setPosition(currentVideoData.position);
         ui->verticalLayout->removeWidget(m_continuePlaybackRibbon);
         delete m_continuePlaybackRibbon;
-        
+
     } else {
         ui->verticalLayout->removeWidget(m_continuePlaybackRibbon);
         delete m_continuePlaybackRibbon;
@@ -1618,7 +1618,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 
     VuraSerializer serializer;
-    serializer.Save("application-data.vdt", applicationData);
+    serializer.Save(vuraSettings->applicationDataFile(), applicationData);
 
     if (vuraSettings->hashFile()) {
         if (!m_currentFileHash.isEmpty())

@@ -73,6 +73,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->setOverrideWindowsHotkeys, &QCheckBox::checkStateChanged, this, &SettingsWindow::setOverrideWindowsHotkeys_Checked);
     connect(ui->resetHotkeys, &QPushButton::clicked, this, &SettingsWindow::resetHotkeys_Clicked);
 
+    connect(ui->applicationDataFile, &QLineEdit::textChanged, this, &SettingsWindow::applicationDataFile_TextChanged);
+    connect(ui->applicationDataFileBrowse, &QPushButton::clicked, this, &SettingsWindow::applicationDataFileBrowse_Clicked);
     connect(ui->stashServer, &QLineEdit::textChanged, this, &SettingsWindow::stashServer_TextChanged);
 
     loadSettings();
@@ -93,9 +95,15 @@ void SettingsWindow::pageSelection_Changed()
 void SettingsWindow::loadSettings()
 {
     QSettings settings;
+
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = constants::ApplicationDebugFolder + "/vura-debug/markers.json";
+        defaultMarkerFile = constants::ApplicationDebugFolder + "/markers.json";
+    }
+
+    QString defaultApplicationDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/appdata.vdt";
+    if (VURA_BUILD_TYPE == "Debug") {
+        defaultApplicationDataFile = constants::ApplicationDebugFolder + "/appdata.vdt";
     }
 
     // Load Settings
@@ -135,6 +143,7 @@ void SettingsWindow::loadSettings()
     m_fontSize = settings.value("fontSize", 10).toInt();
     m_stashServerUrl = settings.value("stashServerUrl", "http://127.0.0.1:9999").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    m_applicationDataFile = settings.value("applicationDataFile", defaultApplicationDataFile).toString();
 
     // Populate UI Values
     if (m_language == "en-US") {
@@ -189,6 +198,7 @@ void SettingsWindow::loadSettings()
 
     ui->appearanceFontScaleText->setText(QString::number(m_fontSize));
     ui->stashServer->setText(m_stashServerUrl);
+    ui->applicationDataFile->setText(m_applicationDataFile);
 }
 
 void SettingsWindow::loadHotkeys()
@@ -393,6 +403,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("continuePlayback", m_continuePlayback);
     settings.setValue("pauseOnLastFrameOfVideo", m_pauseOnLastFrameOfVideo);
     settings.setValue("setOverrideWindowsHotkeys", m_setOverrideWindowsHotkeys);
+    settings.setValue("applicationDataFile", m_applicationDataFile);
 
     settings.beginGroup("Hotkeys");
     settings.remove("");
@@ -878,6 +889,49 @@ void SettingsWindow::resetHotkeys_Clicked()
     settings.remove(""); // Removes the group and all its keys
     settings.endGroup();
     settingsChanged();
+}
+
+void SettingsWindow::applicationDataFile_TextChanged(const QString &text)
+{
+    if (text.isEmpty()) {
+        ui->applicationDataFile->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->applicationDataFile->setStyleSheet("QLineEdit { border: none; }");
+        if (text != m_applicationDataFile) {
+            m_applicationDataFile = text;
+            settingsChanged();
+        }
+    }
+}
+
+void SettingsWindow::applicationDataFileBrowse_Clicked()
+{
+    QSettings settings;
+
+    // File filters
+    QStringList fileFilters;
+    fileFilters << "Vura App Data Files (*.vdt)";
+    fileFilters << "All Files (*.*)";
+
+    // Create open file dialog.
+    QFileDialog fileDialog(this);
+    fileDialog.setNameFilters(fileFilters);
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setWindowTitle(tr("Open Application Data File"));
+    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::AppDataLocation).toString());
+
+    if (fileDialog.exec() == QDialog::Accepted) {
+        QStringList selectedFiles = fileDialog.selectedFiles();
+        if (!selectedFiles.isEmpty()) {
+            m_applicationDataFile = selectedFiles.first();
+            ui->applicationDataFile->setText(m_applicationDataFile);
+            settingsChanged();
+
+            // Set last file directory where file was opened.
+            QString lastFileDirectory = selectedFiles.last();
+            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
+        }
+    }
 }
 
 void SettingsWindow::stashServer_TextChanged(const QString &text)

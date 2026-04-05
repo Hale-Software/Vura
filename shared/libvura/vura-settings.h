@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QDebug>
 
 
@@ -42,6 +43,7 @@ public:
     QString theme();
     double jumpToEndPercentage();
     bool setOverrideWindowsHotkeys();
+    QString applicationDataFile();
 
 private:
     QString m_locale = "en-US";
@@ -72,5 +74,6 @@ private:
     QString m_theme = "System";
     double m_jumpToEndPercentage = 0.0;
     bool m_setOverrideWindowsHotkeys = false;
+    QString m_applicationDataFile = "";
 
 };

@@ -33,6 +33,10 @@ void VuraSerializer::Save(const QString &fileName, QList<ApplicationData> applic
     QDataStream out(&file);
     out.setVersion(QDataStream::Qt_6_10);
 
+    FileHeader fileHeader;
+    fileHeader.signature = ApplicationDataSignature;
+    out << fileHeader;
+
     foreach (ApplicationData data, applicationData)
     {
         out << data.fileName << data.position;
@@ -134,6 +138,7 @@ void VuraSerializer::Save(const QString& fileName, QList<ProjectData> projectDat
 
 QList<ApplicationData> VuraSerializer::LoadApplicationData(const QString& fileName)
 {
+    FileHeader fileHeader;
     QList<ApplicationData> applicationData;
 
     QFile file(fileName);
@@ -147,7 +152,15 @@ QList<ApplicationData> VuraSerializer::LoadApplicationData(const QString& fileNa
     QDataStream in(&file);
     in.setVersion(QDataStream::Qt_6_10);
 
-    in >> applicationData;
+    in >> fileHeader;
+
+    if (fileHeader.signature == ApplicationDataSignature) {
+        qDebug() << "Application data file signature matches.";
+        in >> applicationData;
+
+    } else {
+        qDebug() << "Application data file signature does not match.";
+    }
 
     file.close();
 
