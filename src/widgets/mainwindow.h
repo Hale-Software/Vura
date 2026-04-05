@@ -49,7 +49,6 @@
 #include <QVBoxLayout>
 #include <QAudioBufferOutput>
 #include <QString>
-//#include <QVideoWidget>
 #include <QMenuBar>
 #include <QMenu>
 #include <QDebug>
@@ -83,7 +82,10 @@
 
 #include <constants.h>
 #include <vura-startup.h>
+#include <vura-helpers.h>
+#include <util/blogger.h>
 #include <util/messagebox.h>
+#include <media-io/media-functions.h>
 
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
@@ -101,8 +103,7 @@
 #include "../dialogs/updatewindow.h"
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
-
-#include <util/blogger.h>
+#include "../dialogs/convertmediadialog.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -133,6 +134,7 @@ class MainWindow : public QMainWindow
     friend class HAboutDialog;
     friend class LogViewer;
     friend class HUpdate;
+    friend class ConvertMediaDialog;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -198,8 +200,6 @@ public slots:
     void clearOutMarker();
     void goToInMarker();
     void goToOutMarker();
-    void addInMarker();
-    void addOutMarker();
     void createSubclip();
     void testFunction();
     void setLoop(int loopOption);
@@ -208,6 +208,8 @@ public slots:
     void takeSnapshot();
     void jumpToEnd();
     void showVideoResolution(bool showing);
+    void convertSave();
+    void streamMedia();
 
 
 signals:
@@ -273,6 +275,7 @@ protected:
 private:
     Ui::MainWindow *ui;
     Blogger* blog;
+    MediaFunctions *mediaFunctions;
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
@@ -295,6 +298,7 @@ private:
     QPointer<UpdateDialog> m_updateDialog;
     QPointer<MediaInformation> m_mediaInformation;
     QPointer<HelpDialog> m_helpDialog;
+    QPointer<ConvertMediaDialog> m_convertMediaDialog;
 
     // VARIABLES
     // =======================================================================================================
@@ -385,7 +389,6 @@ private:
 
     // FUNCTIONS
     // =======================================================================================================
-    bool isPlaylist(const QUrl &url);
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
@@ -393,22 +396,20 @@ private:
     QString trackName(const QMediaMetaData &metaData, int index);
     void showNotImplemented_Message();
     void loadFile(const QString &fileName);
-    QString strippedFileName(const QString &fileName);
-    QString timestampString(qint64 position);
     void setApplicationWindowTitle();
     void setToolTips();
     void setStyleSheet();
     bool createUserDirs();
-
-
-    // VIDEO EDITING FUNCTIONS
-    // =======================================================================================================
     void showErrorMessage(const QString &message);
-    void extractSubclipFromVideo();
-    QString createTimestampString(qint64 pos);
-    QString generateSubclipFilenameWithIncrement(const QString& directoryPath, const QString& baseFileName, const QString& extension);
-
     qint64 fileHash(const QString& filePath);
+    void initApplication();
+    void initSystemTrayIcon();
+    void initMenuBar();
+    void initStatusBar();
+    void initVideoControls();
+    void initVideoPlayer();
+    void initUI();
+    void initAudioDevices();
 
 };
 

@@ -162,6 +162,8 @@ void MenuBar::createMenuActions()
     m_clearRecentFilesAction = new QAction(tr("Clear"), this);
 
     // File Menu
+    m_convertSaveAction = new QAction(tr("Convert/Save..."), this);
+    m_streamAction = new QAction(tr("Stream..."), this);
 
     // View Menu
 
@@ -434,6 +436,9 @@ void MenuBar::buildMenus()
     m_fileMenu->addAction(m_savePlaylistAction);
     m_fileMenu->addAction(m_saveACopyAction);
     m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_convertSaveAction);
+    m_fileMenu->addAction(m_streamAction);
+    m_fileMenu->addSeparator();
     m_fileMenu->addMenu(m_fileImportMenu);
     m_fileMenu->addMenu(m_fileExportMenu);
     m_fileMenu->addSeparator();
@@ -652,7 +657,10 @@ void MenuBar::setActionConnections()
     connect(m_toggleSceneMarkersAction, &QAction::triggered, this, &MenuBar::toggleSceneTransitionMarkers_Clicked);
     connect(m_toggleStripMarkersAction, &QAction::triggered, this, &MenuBar::toggleStripMarkers_Clicked);
     //connect(, &QAction::triggered, this, &MenuBar::);
+
     // File Menu
+    connect(m_convertSaveAction, &QAction::triggered, this, &MenuBar::convertSave_Clicked);
+    connect(m_streamAction, &QAction::triggered, this, &MenuBar::stream_Clicked);
 
     // View Menu
 
@@ -1331,6 +1339,16 @@ void MenuBar::savePlaylist_Clicked()
 }
 
 void MenuBar::saveACopy_Clicked() {}
+
+void MenuBar::convertSave_Clicked()
+{
+    emit convertSave();
+}
+
+void MenuBar::stream_Clicked()
+{
+    emit stream();
+}
 
 void MenuBar::importProject_Clicked() {}
 

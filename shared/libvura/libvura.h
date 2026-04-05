@@ -15,19 +15,11 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#ifndef LIBVURA_H
-#define LIBVURA_H
-
-#include <QDebug>
-
+#pragma once
 
 class Libvura
 {
 public:
     Libvura();
 
-    void Test();
-
 };
-
-#endif  // LIBVURA_H

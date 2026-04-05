@@ -43,6 +43,7 @@ target_sources(
         forms/LogUploadDialog.ui
         forms/FeedbackDialog.ui
         forms/markerdialog.ui
+        forms/convertmediadialog.ui
 )
 
 qt_add_ios_ffmpeg_libraries(vura)

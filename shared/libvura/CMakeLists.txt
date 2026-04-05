@@ -17,6 +17,7 @@ target_sources(
         vura-error.h
         vura-overloads.h
         #vura-file-handler.h
+        vura-helpers.h
         vura-hotkeys.h
         vura-startup.h
 
@@ -27,8 +28,19 @@ target_sources(
         vura-defs.h
         vura-error.cpp
         #vura-file-handler.cpp
+        vura-helpers.cpp
         vura-hotkeys.cpp
         vura-startup.cpp
+)
+
+# Media-io Directory
+target_sources(
+        libvura
+        PUBLIC
+        media-io/media-functions.h
+
+        PRIVATE
+        media-io/media-functions.cpp
 )
 
 # Models Directory
