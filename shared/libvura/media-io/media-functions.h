@@ -10,6 +10,9 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QFileInfo>
+#include <QImage>
+#include <QtMultimedia/QVideoFrame>
+#include <QTime>
 
 
 class MediaFunctions : public QObject
@@ -24,6 +27,7 @@ public:
     bool isPlaylist(const QUrl &url);
     QString strippedFileName(const QString &fileName);
     QString timestampString(qint64 position, qint64 duration);
+    void takeSnapshot(const QString &filename, const int &position, const QVideoFrame &frame);
 
 };
 

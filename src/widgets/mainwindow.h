@@ -60,7 +60,9 @@
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
+#include <vura-data.h>
 #include <vura-helpers.h>
+#include <vura-serializer.h>
 #include <vura-settings.h>
 #include <vura-startup.h>
 #include <util/blogger.h>
@@ -124,7 +126,6 @@ public:
     void setStatusInfo(const QString &info);
     void updateDurationInfo(qint64 currentInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
-    void showNotImplemented_Message();
     void loadFile(const QString &fileName);
     void setApplicationWindowTitle();
     void setToolTips();
@@ -186,6 +187,7 @@ public slots:
     void showVideoResolution(bool showing);
     void convertSave();
     void streamMedia();
+    void continuePlaybackRibbon(bool con);
 
 
 signals:
@@ -251,7 +253,10 @@ protected:
 private:
     Ui::MainWindow *ui;
     Blogger* blog;
+    QList<ApplicationData> applicationData;
+    ApplicationData currentVideoData;
     MediaFunctions *mediaFunctions;
+    ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
@@ -298,8 +303,8 @@ private:
     bool m_showingVideoControls = false;
     bool m_isMuted = false;
     bool m_playlistLoaded = false;
-    float m_volume = 50;
-    float m_playbackSpeed = 1.0;
+    double m_volume = 50;
+    double m_playbackSpeed = 1.0;
     QString m_currentFile;
     QString m_currentFileHash;
     VideoMarkers *m_videoMarkers;

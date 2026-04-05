@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED Core Widgets Network)
+find_package(Qt6 REQUIRED Core Widgets Network MultimediaWidgets)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
@@ -19,6 +19,7 @@ target_sources(
         #vura-file-handler.h
         vura-helpers.h
         vura-hotkeys.h
+        vura-serializer.h
         vura-settings.h
         vura-startup.h
 
@@ -31,6 +32,7 @@ target_sources(
         #vura-file-handler.cpp
         vura-helpers.cpp
         vura-hotkeys.cpp
+        vura-serializer.cpp
         vura-settings.cpp
         vura-startup.cpp
 )
@@ -78,5 +80,5 @@ target_sources(
 #        util/windows/windowskeyboardhandler.cpp
 #)
 
-target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
+target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network Qt6::MultimediaWidgets)
 target_include_directories(libvura INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

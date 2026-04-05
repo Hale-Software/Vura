@@ -117,6 +117,40 @@ QString MediaFunctions::timestampString(qint64 position, qint64 duration)
     return tStr;
 }
 
+void MediaFunctions::takeSnapshot(const QString &filename, const int &position, const QVideoFrame &frame)
+{
+    QString fullPath;
+    int index = 0;
 
+    // TODO: Add setting for screenshot location.
+    const QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura/Screenshots";
+    const QString fileBaseName = strippedFileName(filename);
+    // Extract base name without extension for numbering
+    QString nameWithoutExt = QFileInfo(fileBaseName).baseName();
+
+    QString format = "mm-ss";
+    if (position > 3600)
+        format = "hh-mm-ss";
+
+    const QTime currentTime(
+        (position / 3600) % 60,
+        (position / 60) % 60,
+        position % 60,
+        (position * 1000) % 1000);
+
+    QString positionString = currentTime.toString(format);
+
+    do {
+        if (index == 0) {
+            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2.jpg").arg(nameWithoutExt, positionString));
+        } else {
+            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2 (%3).jpg").arg(nameWithoutExt, positionString, QString::number(index)));
+        }
+        index++;
+    } while (QFile::exists(fullPath)); // Check if file exists
+
+    const QImage image = frame.toImage();
+    image.save(fullPath, "JPEG");
+}
 
 

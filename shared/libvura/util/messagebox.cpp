@@ -35,8 +35,8 @@ void ErrorBox(QWidget *parent, const char *msg, ...)
 }
 
 QMessageBox::StandardButton VMessageBox::question(QWidget *parent, const QString &title, const QString &text,
-                            QMessageBox::StandardButtons buttons,
-                            QMessageBox::StandardButton defaultButton)
+                                                  const QMessageBox::StandardButtons buttons,
+                                                  const QMessageBox::StandardButton defaultButton)
 {
     QMessageBox mb(QMessageBox::Question, title, text, QMessageBox::NoButton, parent);
     mb.setDefaultButton(defaultButton);
@@ -45,6 +45,7 @@ QMessageBox::StandardButton VMessageBox::question(QWidget *parent, const QString
         QPushButton *button = mb.addButton(QMessageBox::Ok);
         button->setText(tr("OK"));
     }
+
 #define add_button(x)                                               \
 if (buttons & QMessageBox::x) {                             \
 QPushButton *button = mb.addButton(QMessageBox::x); \
@@ -73,18 +74,25 @@ void VMessageBox::information(QWidget *parent, const QString &title, const QStri
     mb.exec();
 }
 
-void VMessageBox::warning(QWidget *parent, const QString &title, const QString &text, bool enableRichText)
+void VMessageBox::warning(QWidget *parent, const QString &title, const QString &text, const bool enableRichText)
 {
     QMessageBox mb(QMessageBox::Warning, title, text, QMessageBox::NoButton, parent);
     if (enableRichText)
         mb.setTextFormat(Qt::RichText);
     mb.addButton(tr("OK"), QMessageBox::AcceptRole);
     mb.exec();
+
+    qWarning() << text;
 }
 
-void VMessageBox::critical(QWidget *parent, const QString &title, const QString &text)
+void VMessageBox::critical(QWidget *parent, const QString &title, const QString &text, const bool exitApplication)
 {
     QMessageBox mb(QMessageBox::Critical, title, text, QMessageBox::NoButton, parent);
     mb.addButton(tr("OK"), QMessageBox::AcceptRole);
     mb.exec();
+
+    qCritical() << text;
+
+    if (exitApplication)
+        QCoreApplication::exit(1);
 }

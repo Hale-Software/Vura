@@ -18,8 +18,10 @@
 #pragma once
 
 #include <QObject>
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QDebug>
 
 
 class VMessageBox : public QObject {
@@ -28,12 +30,12 @@ class VMessageBox : public QObject {
 public:
     static QMessageBox::StandardButton question(
             QWidget *parent, const QString &title, const QString &text,
-            QMessageBox::StandardButtons buttons = QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel),
+            QMessageBox::StandardButtons buttons = QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No),
             QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
 
     static void information(QWidget *parent, const QString &title, const QString &text);
     static void warning(QWidget *parent, const QString &title, const QString &text, bool enableRichText = false);
-    static void critical(QWidget *parent, const QString &title, const QString &text);
+    static void critical(QWidget *parent, const QString &title, const QString &text, bool exitApplication = true);
 
 };
 
