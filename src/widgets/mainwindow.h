@@ -83,6 +83,7 @@
 
 #include <constants.h>
 #include <vura-startup.h>
+#include <util/messagebox.h>
 
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
@@ -92,7 +93,6 @@
 #include "../components/videocontrolwidget.h"
 #include "../components/system-tray.h"
 #include "../utility/playlist.h"
-#include "../utility/qt-wrappers.h"
 #include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/editmarker.h"

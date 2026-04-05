@@ -129,7 +129,7 @@ void LogViewer::refreshMessages()
     ui->textArea->clear();
     QFile logFile(m_openedLogFile, this);
     if (!logFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        VuraErrorBox(this, "Error opening log file");
+        ErrorBox(this, "Error opening log file");
     } else {
         QTextStream t(&logFile);
         while (!t.atEnd()) {
@@ -203,7 +203,7 @@ void LogViewer::clearButton_Clicked()
             if (f.open(QFile::WriteOnly | QFile::Truncate)) {
                 f.close();
             } else {
-                VuraErrorBox(this, "Failed to clear log file.");
+                ErrorBox(this, "Failed to clear log file.");
             }
         }
     }

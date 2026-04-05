@@ -29,9 +29,8 @@
 #include <QString>
 
 #include <constants.h>
-#include "../utility/qt-wrappers.h"
-
 #include <util/blogger.h>
+#include <util/messagebox.h>
 
 
 QT_BEGIN_NAMESPACE

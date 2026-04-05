@@ -870,7 +870,7 @@ void MainWindow::openFolder(const QString &folderPath)
             if (!isPlaylist(fileUrl)) {
                 m_playlist->addMedia(fileUrl);
             } else {
-                VuraMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
+                VMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
             }
         }
 

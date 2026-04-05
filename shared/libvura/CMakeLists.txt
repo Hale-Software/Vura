@@ -46,9 +46,11 @@ target_sources(
         libvura
         PUBLIC
         util/blogger.h
+        util/messagebox.h
         util/singleinstance.h
         PRIVATE
         util/blogger.cpp
+        util/messagebox.cpp
         util/singleinstance.cpp
 )
 

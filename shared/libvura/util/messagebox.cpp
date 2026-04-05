@@ -15,10 +15,10 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "qt-wrappers.h"
+#include "messagebox.h"
 
 
-static inline void VuraErrorBoxva(QWidget *parent, const char *msg, va_list args)
+static inline void ErrorBoxva(QWidget *parent, const char *msg, va_list args)
 {
     char full_message[8192];
     vsnprintf(full_message, sizeof(full_message), msg, args);
@@ -26,15 +26,15 @@ static inline void VuraErrorBoxva(QWidget *parent, const char *msg, va_list args
     QMessageBox::critical(parent, "Error", full_message);
 }
 
-void VuraErrorBox(QWidget *parent, const char *msg, ...)
+void ErrorBox(QWidget *parent, const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
-    VuraErrorBoxva(parent, msg, args);
+    ErrorBoxva(parent, msg, args);
     va_end(args);
 }
 
-QMessageBox::StandardButton VuraMessageBox::question(QWidget *parent, const QString &title, const QString &text,
+QMessageBox::StandardButton VMessageBox::question(QWidget *parent, const QString &title, const QString &text,
                             QMessageBox::StandardButtons buttons,
                             QMessageBox::StandardButton defaultButton)
 {
@@ -66,14 +66,14 @@ button->setText(tr(#x));                            \
     return (QMessageBox::StandardButton)mb.exec();
 }
 
-void VuraMessageBox::information(QWidget *parent, const QString &title, const QString &text)
+void VMessageBox::information(QWidget *parent, const QString &title, const QString &text)
 {
     QMessageBox mb(QMessageBox::Information, title, text, QMessageBox::NoButton, parent);
     mb.addButton(tr("OK"), QMessageBox::AcceptRole);
     mb.exec();
 }
 
-void VuraMessageBox::warning(QWidget *parent, const QString &title, const QString &text, bool enableRichText)
+void VMessageBox::warning(QWidget *parent, const QString &title, const QString &text, bool enableRichText)
 {
     QMessageBox mb(QMessageBox::Warning, title, text, QMessageBox::NoButton, parent);
     if (enableRichText)
@@ -82,7 +82,7 @@ void VuraMessageBox::warning(QWidget *parent, const QString &title, const QStrin
     mb.exec();
 }
 
-void VuraMessageBox::critical(QWidget *parent, const QString &title, const QString &text)
+void VMessageBox::critical(QWidget *parent, const QString &title, const QString &text)
 {
     QMessageBox mb(QMessageBox::Critical, title, text, QMessageBox::NoButton, parent);
     mb.addButton(tr("OK"), QMessageBox::AcceptRole);
