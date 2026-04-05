@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    initApplication();
     loadSettings();
 
     m_videoMarkers = new VideoMarkers;
