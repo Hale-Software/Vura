@@ -16,7 +16,6 @@
  ******************************************************************************/
 
 #include "menubar.h"
-#include "utility/hotkeys.h"
 #include <config.h>
 
 
@@ -689,7 +688,7 @@ void MenuBar::setActionConnections()
 // TODO: Organize code
 void MenuBar::setHotkeys()
 {
-    Hotkeys m_hotkeys;
+    VuraHotkeys m_hotkeys;
 
     if (m_initialised) {
         // Remove current hotkeys for actions

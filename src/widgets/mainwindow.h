@@ -82,6 +82,8 @@
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
+#include <vura-startup.h>
+
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
@@ -91,7 +93,6 @@
 #include "../components/system-tray.h"
 #include "../utility/playlist.h"
 #include "../utility/qt-wrappers.h"
-#include "../utility/startup.h"
 #include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/editmarker.h"

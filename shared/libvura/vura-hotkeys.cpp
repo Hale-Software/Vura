@@ -1,24 +1,7 @@
-/*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
-
-     This program is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
-     the Free Software Foundation, either version 3 of the License, or
-     (at your option) any later version.
-
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
-
-#include "hotkeys.h"
+#include "vura-hotkeys.h"
 
 
-Hotkeys::Hotkeys(QObject *parent) : QObject(parent)
+VuraHotkeys::VuraHotkeys(QObject *parent) : QObject(parent)
 {
     QSettings settings;
     settings.beginGroup("Hotkeys");
@@ -34,7 +17,7 @@ Hotkeys::Hotkeys(QObject *parent) : QObject(parent)
     }
 }
 
-void Hotkeys::setMenuItemHotkey(QAction &action)
+void VuraHotkeys::setMenuItemHotkey(QAction &action)
 {
     if (!action.text().isEmpty()) {
         if (action.text() == "Play/Pause") {
@@ -50,12 +33,12 @@ void Hotkeys::setMenuItemHotkey(QAction &action)
     }
 }
 
-void Hotkeys::removeMenuItemHotkey(QAction &action)
+void VuraHotkeys::removeMenuItemHotkey(QAction &action)
 {
     action.setShortcut(QKeySequence());
 }
 
-void Hotkeys::setDefaultHotkeys()
+void VuraHotkeys::setDefaultHotkeys()
 {
     QSettings settings;
     QMap<QString, QString> hotkeyMap;

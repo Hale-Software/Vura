@@ -5,6 +5,8 @@ find_package(Qt6 REQUIRED Core Widgets Network)
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
 
+configure_file(vura-config.h.in vura-config.h)
+
 # Root Directory
 target_sources(
         libvura
@@ -15,6 +17,8 @@ target_sources(
         vura-error.h
         vura-overloads.h
         #vura-file-handler.h
+        vura-hotkeys.h
+        vura-startup.h
 
         PRIVATE
         constants.cpp
@@ -23,6 +27,8 @@ target_sources(
         vura-defs.h
         vura-error.cpp
         #vura-file-handler.cpp
+        vura-hotkeys.cpp
+        vura-startup.cpp
 )
 
 # Models Directory
@@ -58,4 +64,3 @@ target_sources(
 
 target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 target_include_directories(libvura INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-

@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
 
     // Application startup initialization
-    Startup startup;
+    VuraStartup startup;
     startup.Initialize();
 
     loadSettings();
