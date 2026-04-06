@@ -75,11 +75,11 @@ void VuraHotkeys::setDefaultHotkeys()
     hotkeyMap["Jump Fwd Large"] = "W";
     hotkeyMap["Jump Fwd Medium"] = "S";
     hotkeyMap["Jump Fwd Small"] = "X";
-    hotkeyMap["Faster"] = "Num++";
-    hotkeyMap["Faster (fine)"] = "Ctrl+Num++";
+    hotkeyMap["Faster"] = "+";
+    hotkeyMap["Faster (fine)"] = "Ctrl++";
     hotkeyMap["Normal"] = "=";
-    hotkeyMap["Slower"] = "Num+-";
-    hotkeyMap["Slower (fine)"] = "Ctrl+Num+-";
+    hotkeyMap["Slower"] = "-";
+    hotkeyMap["Slower (fine)"] = "Ctrl+-";
 
     // Audio
     hotkeyMap["Decrease Volume"] = "Down";

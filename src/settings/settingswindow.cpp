@@ -55,8 +55,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->oneInstanceFromFileManager, &QCheckBox::checkStateChanged, this, &SettingsWindow::oneInstanceFromFileManager_Checked);
     connect(ui->continuePlayback, &QComboBox::currentIndexChanged, this, &SettingsWindow::continuePlayback_Changed);
     connect(ui->pauseOnLastFrameOfVideo, &QCheckBox::checkStateChanged, this, &SettingsWindow::pauseOnLastFrameOfVideo_Checked);
-    connect(ui->playbackSpeedAdjustment, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustment_TextChanged);
-    connect(ui->playbackSpeedAdjustmentFine, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustmentFine_TextChanged);
+    connect(ui->playbackSpeedAdjustment, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::playbackSpeedAdjustment_Changed);
+    connect(ui->playbackSpeedAdjustmentFine, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::playbackSpeedAdjustmentFine_Changed);
     connect(ui->volumeStep, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::volumeStep_Changed);
     connect(ui->frameWalk, &QLineEdit::textChanged, this, &SettingsWindow::frameWalk_TextChanged);
     connect(ui->smallJump, &QLineEdit::textChanged, this, &SettingsWindow::smallJump_TextChanged);
@@ -171,8 +171,8 @@ void SettingsWindow::loadSettings()
     ui->mediumJump->setText(QString::number(m_mediumJump));
     ui->largeJump->setText(QString::number(m_largeJump));
     ui->extraLargeJump->setText(QString::number(m_extraLargeJump));
-    ui->playbackSpeedAdjustment->setText(QString::number(m_playbackSpeedAdjustment));
-    ui->playbackSpeedAdjustmentFine->setText(QString::number(m_playbackSpeedAdjustmentFine));
+    ui->playbackSpeedAdjustment->setValue(m_playbackSpeedAdjustment);
+    ui->playbackSpeedAdjustmentFine->setValue(m_playbackSpeedAdjustmentFine);
     ui->volumeStep->setValue(m_volumeStep);
     ui->jumpToEndPercentage->setValue(m_jumpToEndPercentage);
     ui->hideCursorWhenPlaying->setChecked(m_hideCursorWhenPlaying);
@@ -715,27 +715,27 @@ void SettingsWindow::pauseOnLastFrameOfVideo_Checked(int state)
     settingsChanged();
 }
 
-void SettingsWindow::playbackSpeedAdjustment_TextChanged(const QString &text)
+void SettingsWindow::playbackSpeedAdjustment_Changed(double value)
 {
-    if (text.isEmpty()) {
-        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
-    } else {
-        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border: none; }");
-        if (text.toInt() != m_playbackSpeedAdjustment) {
-            m_playbackSpeedAdjustment = text.toInt();
+    if (value != m_playbackSpeedAdjustment) {
+        if (value < 0) {
+            ui->playbackSpeedAdjustment->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->playbackSpeedAdjustment->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_playbackSpeedAdjustment = value;
             settingsChanged();
         }
     }
 }
 
-void SettingsWindow::playbackSpeedAdjustmentFine_TextChanged(const QString &text)
+void SettingsWindow::playbackSpeedAdjustmentFine_Changed(double value)
 {
-    if (text.isEmpty()) {
-        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
-    } else {
-        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border: none; }");
-        if (text.toInt() != m_playbackSpeedAdjustmentFine) {
-            m_playbackSpeedAdjustmentFine = text.toInt();
+    if (value != m_playbackSpeedAdjustmentFine) {
+        if (value < 0) {
+            ui->playbackSpeedAdjustmentFine->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->playbackSpeedAdjustmentFine->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_playbackSpeedAdjustmentFine = value;
             settingsChanged();
         }
     }

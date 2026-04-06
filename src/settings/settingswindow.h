@@ -90,8 +90,8 @@ public slots:
     void continuePlayback_Changed(int i);
     void pauseOnLastFrameOfVideo_Checked(int state);
 
-    void playbackSpeedAdjustment_TextChanged(const QString &text);
-    void playbackSpeedAdjustmentFine_TextChanged(const QString &text);
+    void playbackSpeedAdjustment_Changed(double value);
+    void playbackSpeedAdjustmentFine_Changed(double value);
     void volumeStep_Changed(double value);
     void frameWalk_TextChanged(const QString &text);
     void smallJump_TextChanged(const QString &text);

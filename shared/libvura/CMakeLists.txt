@@ -13,26 +13,21 @@ target_sources(
         PUBLIC
         constants.h
         libvura.h
-        vura-data.h
+        vura-datafile-handler.h
         vura-error.h
-        vura-overloads.h
-        #vura-file-handler.h
         vura-helpers.h
         vura-hotkeys.h
-        vura-serializer.h
         vura-settings.h
         vura-startup.h
 
         PRIVATE
         constants.cpp
         libvura.cpp
-        vura-data.cpp
+        vura-datafile-handler.cpp
         vura-defs.h
         vura-error.cpp
-        #vura-file-handler.cpp
         vura-helpers.cpp
         vura-hotkeys.cpp
-        vura-serializer.cpp
         vura-settings.cpp
         vura-startup.cpp
 )

@@ -60,9 +60,8 @@
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
-#include <vura-data.h>
+#include <vura-datafile-handler.h>
 #include <vura-helpers.h>
-#include <vura-serializer.h>
 #include <vura-settings.h>
 #include <vura-startup.h>
 #include <util/blogger.h>
@@ -253,8 +252,9 @@ protected:
 private:
     Ui::MainWindow *ui;
     Blogger* blog;
-    QList<ApplicationData> applicationData;
-    ApplicationData currentVideoData;
+    ApplicationData *applicationData;
+    QList<MarkersData> markersData;
+
     MediaFunctions *mediaFunctions;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;
@@ -327,6 +327,10 @@ private:
     bool m_showingVideoResolution = false;
     bool m_durationLabelShowRemainingTime = false;
     QString m_videoResolution;
+
+    void loadApplicationData();
+    void loadMarkersData();
+    void saveMarkersData();
 
 };
 
