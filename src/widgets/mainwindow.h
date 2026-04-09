@@ -76,7 +76,6 @@
 #include "../components/videocontrolwidget.h"
 #include "../components/system-tray.h"
 #include "../utility/playlist.h"
-#include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
@@ -252,8 +251,6 @@ protected:
 private:
     Ui::MainWindow *ui;
     Blogger* blog;
-    ApplicationData *applicationData;
-    QList<MarkersData> markersData;
 
     MediaFunctions *mediaFunctions;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
@@ -307,8 +304,6 @@ private:
     double m_playbackSpeed = 1.0;
     QString m_currentFile;
     QString m_currentFileHash;
-    VideoMarkers *m_videoMarkers;
-    QMap<QString,QList<double>> m_videoMarkersList;
     QString m_markerValue;
     int m_markerIndex;
     int m_inMarker;
@@ -331,6 +326,7 @@ private:
     void loadApplicationData();
     void loadMarkersData();
     void saveMarkersData();
+    QList<MarkersData> markersDataList;
 
 };
 

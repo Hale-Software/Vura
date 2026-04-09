@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
     initApplication();
 
-    m_videoMarkers = new VideoMarkers;
+    loadMarkersData();
 
     initSystemTrayIcon();
     initMenuBar();
@@ -65,20 +65,7 @@ MainWindow::~MainWindow()
 void MainWindow::testFunction()
 {
     //VuraHelpers::simulateApplicationCrash();
-    //VMessageBox::critical(this, "Vura", "Test of critical message box.");
-
-    QString markersDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.vvm";
-
-    if (!VuraHelpers::fileExists(markersDataFile)) {
-        DataFileHandler::createBlankMarkersDataFile(markersDataFile);
-    }
-
-    MarkersData newData;
-    newData.fileName = m_currentFile;
-    newData.markerType = "marker";
-    newData.markerTimestamp = VuraHelpers::qint64ToInt(m_player->position());
-
-    DataFileHandler::write(markersDataFile, newData);
+    VMessageBox::critical(this, "Vura", "Test of critical message box.");
 }
 
 
@@ -89,7 +76,6 @@ void MainWindow::loadApplicationData()
 
 void MainWindow::loadMarkersData()
 {
-    /*
     if (m_currentFile.isEmpty()) {
         qDebug() << "Current file empty. Skipping load markers data";
         return;
@@ -97,47 +83,37 @@ void MainWindow::loadMarkersData()
 
     QString markersDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.vvm";
 
-    if (!VuraHelpers::fileExists(markersDataFile)) {
-        DataFileHandler::createBlankMarkersDataFile(markersDataFile);
-    }
+    markersDataList.clear();
+    markersDataList = DataFileHandler::readMarkersDataFromFile(markersDataFile, m_currentFile);
 
-    markersData.clear();
-    markersData = DataFileHandler::searchEntryInMarkersDataFile(markersDataFile, VuraHelpers::QStringToChar(m_currentFile));
+    //if (!VuraHelpers::fileExists(markersDataFile)) {
+        //markersDataList = DataFileHandler::readMarkersDataFromFile(markersDataFile);
+        //DataFileHandler::createBlankMarkersDataFile(markersDataFile);
+    //}
 
-    int i = 1;
-    for (MarkersData mdata : markersData) {
-        qDebug() << "Marker [" << QString::number(i) << "] - Type: [" << mdata.markerType << "] Position: [" << QString::number(mdata.markerTimestamp) << "]";
-    }
-    */
+    //markersData.clear();
+    //markersData = DataFileHandler::searchEntryInMarkersDataFile(markersDataFile, VuraHelpers::QStringToChar(m_currentFile));
+
+    //int i = 1;
+    //for (MarkersData mdata : markersData) {
+    //    qDebug() << "Marker [" << QString::number(i) << "] - Type: [" << mdata.markerType << "] Position: [" << QString::number(mdata.markerTimestamp) << "]";
+    //}
 }
+
 
 void MainWindow::saveMarkersData()
 {
-    /*
-    if (m_currentFile.isEmpty()) {
-        qDebug() << "Current file empty. Skipping save markers data";
+    if (markersDataList.count() == 0) {
+        qDebug() << "Markers data list is empty. Skipping save markers data";
         return;
     }
 
     QString markersDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.vvm";
+    DataFileHandler::writeMarkersDataToFile(markersDataFile, markersDataList);
 
-    if (!VuraHelpers::fileExists(markersDataFile)) {
-        DataFileHandler::createBlankMarkersDataFile(markersDataFile);
-    }
-
-    for (auto i = m_videoMarkersList.cbegin(); i != m_videoMarkersList.cend(); ++i) {
-
-        for (double markerTimestamp : i.value()) {
-            MarkersData newData;
-            newData.fileName = m_currentFile;
-            newData.markerName = "";
-            newData.markerType = i.key();
-            newData.markerTimestamp = markerTimestamp;
-
-            DataFileHandler::write(markersDataFile, newData);
-        }
-    }
-    */
+    //if (!VuraHelpers::fileExists(markersDataFile)) {
+    //    DataFileHandler::createBlankMarkersDataFile(markersDataFile);
+    //}
 }
 
 
@@ -694,23 +670,27 @@ void MainWindow::playlistPositionChanged(const int currentItem)
 void MainWindow::sourceChanged(const QUrl &media)
 {
     if (vuraSettings->hashFile()) {
-        if (!m_currentFileHash.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
+        if (!m_currentFileHash.isEmpty()) {
+            // TODO: Add file hash to video marker
+            //m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
+        }
 
         m_currentFileHash = QString::number(fileHash(media.toLocalFile()));
-        m_videoMarkersList = m_videoMarkers->getMarkers(m_currentFileHash);
+        //m_videoMarkersList = m_videoMarkers->getMarkers(m_currentFileHash);
     } else {
         if (!m_currentFile.isEmpty()) {
-            //saveMarkersData();
-            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
+            saveMarkersData();
+            //m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
         }
 
         //loadMarkersData();
-        m_videoMarkersList = m_videoMarkers->getMarkers(media.toString());
+        //m_videoMarkersList = m_videoMarkers->getMarkers(media.toString());
     }
     m_currentFile = media.toString();
     qInfo() << "New media source loaded: " << m_currentFile;
-    m_videoSlider->setMarkers(m_videoMarkersList);
+    loadMarkersData();
+    m_videoSlider->setMarkers(markersDataList);
+    //m_videoSlider->setMarkers(m_videoMarkersList);
 
     setApplicationWindowTitle();
 
@@ -1259,11 +1239,13 @@ void MainWindow::addMarker(const QString &markerType)
         const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
         const double sliderPercent = (distanceFromMin / sliderRange);
 
-        QList<double> marker = m_videoMarkersList.value(markerType);
-        marker.append(sliderPercent);
-        m_videoMarkersList.insert(markerType, marker);
+        MarkersData newData;
+        newData.fileName = m_currentFile;
+        newData.markerType = markerType;
+        newData.markerTimestamp = sliderPercent;
+        markersDataList.append(newData);
 
-        m_videoSlider->setMarkers(m_videoMarkersList);
+        m_videoSlider->setMarkers(markersDataList);
     }
 }
 
@@ -1292,8 +1274,8 @@ void MainWindow::clearSelectedMarker()
 
 void MainWindow::clearMarkers()
 {
-    m_videoMarkersList.clear();
-    m_videoSlider->setMarkers(m_videoMarkersList);
+    markersDataList.clear();
+    m_videoSlider->setMarkers(markersDataList);
 }
 
 void MainWindow::clearInMarker()
@@ -1626,12 +1608,14 @@ void MainWindow::displayErrorMessage()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (vuraSettings->hashFile()) {
-        if (!m_currentFileHash.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
+        //if (!m_currentFileHash.isEmpty())
+            //m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
     } else {
-        if (!m_currentFile.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
+        //if (!m_currentFile.isEmpty())
+            //m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
     }
+    saveMarkersData();
+
     event->accept();
 }
 

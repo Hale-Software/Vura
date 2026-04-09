@@ -63,9 +63,9 @@ void VideoSlider::setVideoLoaded(bool isLoaded)
     m_videoLoaded = isLoaded;
 }
 
-void VideoSlider::setMarkers(QMap<QString,QList<double>> markers)
+void VideoSlider::setMarkers(QList<MarkersData> markersDataList)
 {
-    m_markers = markers;
+    m_markersDataList = markersDataList;
     update();
 }
 
@@ -73,80 +73,14 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
 {
     double newVal = 0.0;
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
-
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    foreach(const double marker, markerList) {
-        if (marker > currentPercent + 0.001) {
+    for (MarkersData md : m_markersDataList) {
+        if (md.markerTimestamp > currentPercent + 0.001) {
             if (newVal != 0.0) {
-                if (marker < newVal) {
-                    newVal = marker;
+                if (md.markerTimestamp < newVal) {
+                    newVal = md.markerTimestamp;
                 }
             } else {
-                newVal = marker;
+                newVal = md.markerTimestamp;
             }
         }
     }
@@ -161,80 +95,14 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
 {
     double newVal = 0.0;
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
-
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    foreach(const double marker, markerList) {
-        if (marker < currentPercent - 0.001) {
+    for (MarkersData md : m_markersDataList) {
+        if (md.markerTimestamp < currentPercent - 0.001) {
             if (newVal != 0.0) {
-                if (marker > newVal) {
-                    newVal = marker;
+                if (md.markerTimestamp > newVal) {
+                    newVal = md.markerTimestamp;
                 }
             } else {
-                newVal = marker;
+                newVal = md.markerTimestamp;
             }
         }
     }
@@ -324,107 +192,54 @@ void VideoSlider::paintEvent(QPaintEvent *event)
         }
     }
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
+    for (MarkersData md : m_markersDataList) {
+        bool showingMarker = false;
 
-    // Draw markers.
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        if (md.markerType == "marker") {
+            if (showMarkers) {
                 painter.setPen(QPen(Qt::green, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw scene markers.
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "scene") {
+            if (showSceneMarkers) {
                 painter.setPen(QPen(Qt::blue, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw cumshot markers.
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "cumshot") {
+            if (showCumshotMarkers) {
                 painter.setPen(QPen(Qt::white, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw strip markers.
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "strip") {
+            if (showStripMarkers) {
                 painter.setPen(QPen(Qt::red, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw dialog markers.
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "dialog") {
+            if (showDialogMarkers) {
                 painter.setPen(QPen(Qt::yellow, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw cyan markers.
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "cyan") {
+            if (showCyanMarkers) {
                 painter.setPen(QPen(Qt::cyan, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
             }
-        }
-    }
-
-    // Draw magenta markers.
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (md.markerType == "magenta") {
+            if (showMagentaMarkers) {
                 painter.setPen(QPen(Qt::magenta, m_markerWidth));
-                int x = marker * this->width();
-                painter.drawLine(x, 0, x, m_markerHeight);
+                showingMarker = true;
+            }
+        } else if (md.markerType == "orange") {
+            if (showOrangeMarkers) {
+                painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
+                showingMarker = true;
             }
         }
-    }
 
-    // Draw orange markers.
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
-                painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
-                int x = marker * this->width();
+        if (showingMarker) {
+            if (md.markerTimestamp > this->minimum() && md.markerTimestamp < this->maximum()) {
+                int x = md.markerTimestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
         }

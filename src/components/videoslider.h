@@ -28,6 +28,8 @@
 #include <QMouseEvent>
 #include <QDebug>
 
+#include <vura-datafile-handler.h>
+
 
 class VideoSlider : public QWidget
 {
@@ -40,7 +42,7 @@ public:
     void setMaximum(int mmaximum);
     void setValue(int mvalue);
     void setVideoLoaded(bool isLoaded);
-    void setMarkers(QMap<QString,QList<double>> markers);
+    void setMarkers(QList<MarkersData> markersDataList);
     void jumpToNextMarker(double currentPercent);
     void jumpToPreviousMarker(double currentPercent);
 
@@ -78,7 +80,7 @@ protected:
 
 private:
     QTimer *timer;
-    QMap<QString,QList<double>> m_markers;
+    QList<MarkersData> m_markersDataList;
     bool m_showingIndicator = false;
     int m_minimum = 0;
     int m_maximum = 100;

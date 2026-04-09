@@ -3,6 +3,50 @@
 
 DataFileHandler::DataFileHandler(QObject *parent) : QObject(parent) {}
 
+void DataFileHandler::writeMarkersDataToFile(const QString &fileName, QList<MarkersData> data)
+{
+    QList<MarkersData> existing;
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_6_10);
+
+        stream >> existing;
+
+        for (MarkersData md : existing) {
+            if (md.fileName != data[0].fileName) {
+                data.append(md);
+            }
+        }
+
+        stream << data;
+        file.close();
+    }
+}
+
+QList<MarkersData> DataFileHandler::readMarkersDataFromFile(const QString &fileName, const QString &searchFilename)
+{
+    QList<MarkersData> data;
+    QList<MarkersData> results;
+    QFile file(fileName);
+    if (file.open(QIODevice::ReadOnly)) {
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_6_10);
+
+        stream >> data;
+        file.close();
+    }
+
+    for (MarkersData md : data) {
+        if (md.fileName == searchFilename) {
+            results.append(md);
+        }
+    }
+
+    return results;
+}
+
+/*
 // Create blank files
 bool DataFileHandler::createBlankApplicationDataFile(const QString &fileName)
 {
@@ -61,6 +105,7 @@ bool DataFileHandler::createBlankMarkersDataFile(const QString &fileName)
     return true;
 }
 
+/*
 bool DataFileHandler::createBlankPlaylistDataFile(const QString &fileName)
 {
     FileHeader fileHeader;
@@ -252,6 +297,7 @@ QList<HotkeysData> DataFileHandler::readHotkeysDataFile(const QString &fileName)
     return results;
 }
 
+
 QList<MarkersData> DataFileHandler::readMarkersDataFile(const QString &fileName)
 {
     FileHeader fileHeader;
@@ -435,6 +481,7 @@ HotkeysData DataFileHandler::searchEntryInHotkeysDataFile(const QString &fileNam
     return result;
 }
 
+
 bool DataFileHandler::searchEntryInMarkersDataFile(const QString &fileName, const MarkersData &data)
 {
     FileHeader fileHeader;
@@ -469,7 +516,7 @@ bool DataFileHandler::searchEntryInMarkersDataFile(const QString &fileName, cons
     return found;
 }
 
-/*
+
 MarkersData DataFileHandler::searchEntryInMarkersDataFile(const QString &fileName, const char searchMarkersType[75], const char searchFilename[260])
 {
     FileHeader fileHeader;
@@ -510,7 +557,6 @@ MarkersData DataFileHandler::searchEntryInMarkersDataFile(const QString &fileNam
 
     return result;
 }
-*/
 
 PlaylistData DataFileHandler::searchEntryInPlaylistDataFile(const QString &fileName, const char searchFilename[260])
 {
@@ -578,6 +624,7 @@ ProjectData DataFileHandler::searchEntryInProjectDataFile(const QString &fileNam
     return result;
 }
 
+
 QList<MarkersData> DataFileHandler::searchEntryInMarkersDataFile_ToList(const QString &fileName,
                                                                         const QString &searchFilename)
 {
@@ -607,6 +654,7 @@ QList<MarkersData> DataFileHandler::searchEntryInMarkersDataFile_ToList(const QS
 
     return results;
 }
+
 
 // Modify entry in data file
 bool DataFileHandler::modify(const QString &fileName, const char searchFilename[260], const ApplicationData &data)
@@ -714,6 +762,7 @@ bool DataFileHandler::modify(const QString &fileName, const int searchModifier, 
     return found;
 }
 
+
 bool DataFileHandler::modify(const QString &fileName, const QString &searchFilename, const MarkersData &data)
 {
     FileHeader fileHeader;
@@ -748,6 +797,7 @@ bool DataFileHandler::modify(const QString &fileName, const QString &searchFilen
 
     return found;
 }
+
 
 bool DataFileHandler::modify(const QString &fileName, const char searchFilename[260], const PlaylistData &data)
 {
@@ -956,6 +1006,7 @@ bool DataFileHandler::deleteEntryInHotkeysDataFile(const QString &fileName, int 
     return found;
 }
 
+
 bool DataFileHandler::deleteEntryInMarkersDataFile(const QString &fileName, const QString &searchFilename)
 {
     FileHeader fileHeader;
@@ -1001,7 +1052,7 @@ bool DataFileHandler::deleteEntryInMarkersDataFile(const QString &fileName, cons
     return found;
 }
 
-/*
+
 bool DataFileHandler::deleteEntryInMarkersDataFile(const QString &fileName, const char searchMarkersType[75], const char searchFilename[260])
 {
     FileHeader fileHeader;
@@ -1051,7 +1102,6 @@ bool DataFileHandler::deleteEntryInMarkersDataFile(const QString &fileName, cons
 
     return found;
 }
-*/
 
 bool DataFileHandler::deleteEntryInPlaylistDataFile(const QString &fileName, const char searchFilename[260])
 {
@@ -1184,6 +1234,7 @@ bool DataFileHandler::writeToFile(const QString &fileName, HotkeysData data)
     return true;
 }
 
+
 bool DataFileHandler::writeToFile(const QString &fileName, MarkersData data)
 {
     FileHeader fileHeader;
@@ -1203,6 +1254,7 @@ bool DataFileHandler::writeToFile(const QString &fileName, MarkersData data)
 
     return true;
 }
+
 
 bool DataFileHandler::writeToFile(const QString &fileName, PlaylistData data)
 {
@@ -1276,6 +1328,7 @@ bool DataFileHandler::appendToFile(const QString &fileName, HotkeysData data)
     return true;
 }
 
+
 bool DataFileHandler::appendToFile(const QString &fileName, MarkersData data)
 {
     std::ofstream file(fileName.toStdString(), std::ios::binary | std::ios::app);
@@ -1291,6 +1344,7 @@ bool DataFileHandler::appendToFile(const QString &fileName, MarkersData data)
 
     return true;
 }
+
 
 bool DataFileHandler::appendToFile(const QString &fileName, PlaylistData data)
 {
@@ -1323,3 +1377,4 @@ bool DataFileHandler::appendToFile(const QString &fileName, ProjectData data)
 
     return true;
 }
+*/
