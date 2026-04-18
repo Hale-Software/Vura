@@ -1,5 +1,3 @@
-include(cmake/feature-sparkle.cmake)
-
 target_compile_options(vura PRIVATE -Wno-quoted-include-in-framework-header -Wno-comma)
 
 list(APPEND _frontend_objcxx_compile_options -fobjc-arc -fmodules -fcxx-modules)

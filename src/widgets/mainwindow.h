@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
@@ -60,7 +61,7 @@
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
-#include <vura-datafile-handler.h>
+#include <data/video-markers.h>
 #include <vura-helpers.h>
 #include <vura-settings.h>
 #include <vura-startup.h>
@@ -76,7 +77,6 @@
 #include "../components/videocontrolwidget.h"
 #include "../components/system-tray.h"
 #include "../utility/playlist.h"
-#include "../utility/videomarkers.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
@@ -252,8 +252,7 @@ protected:
 private:
     Ui::MainWindow *ui;
     Blogger* blog;
-    ApplicationData *applicationData;
-    QList<MarkersData> markersData;
+    QList<VuraVideoMarker> videoMarkers;
 
     MediaFunctions *mediaFunctions;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
@@ -307,8 +306,6 @@ private:
     double m_playbackSpeed = 1.0;
     QString m_currentFile;
     QString m_currentFileHash;
-    VideoMarkers *m_videoMarkers;
-    QMap<QString,QList<double>> m_videoMarkersList;
     QString m_markerValue;
     int m_markerIndex;
     int m_inMarker;
@@ -327,10 +324,7 @@ private:
     bool m_showingVideoResolution = false;
     bool m_durationLabelShowRemainingTime = false;
     QString m_videoResolution;
-
-    void loadApplicationData();
-    void loadMarkersData();
-    void saveMarkersData();
+    QString m_markerFile;
 
 };
 

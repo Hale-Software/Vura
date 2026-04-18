@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "vura-settings.h"
 #include "constants.h"
 
@@ -48,6 +66,7 @@ void VuraSettings::loadSettings()
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
     m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
     m_applicationDataFile = settings.value("applicationDataFile", defaultApplicationDataFile).toString();
+    m_markerFile = settings.value("markerFile").toString();
 }
 
 QString VuraSettings::locale()
@@ -193,4 +212,9 @@ bool VuraSettings::setOverrideWindowsHotkeys()
 QString VuraSettings::applicationDataFile()
 {
     return m_applicationDataFile;
+}
+
+QString VuraSettings::markerFile()
+{
+    return m_markerFile;
 }

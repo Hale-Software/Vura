@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "videoslider.h"
@@ -63,7 +64,7 @@ void VideoSlider::setVideoLoaded(bool isLoaded)
     m_videoLoaded = isLoaded;
 }
 
-void VideoSlider::setMarkers(QMap<QString,QList<double>> markers)
+void VideoSlider::setMarkers(QList<VuraVideoMarker> markers)
 {
     m_markers = markers;
     update();
@@ -73,80 +74,86 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
 {
     double newVal = 0.0;
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
+    for (const VuraVideoMarker &marker : m_markers) {
+        if (marker.markerType == "marker" && showMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
 
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    foreach(const double marker, markerList) {
-        if (marker > currentPercent + 0.001) {
-            if (newVal != 0.0) {
-                if (marker < newVal) {
-                    newVal = marker;
+                } else {
+                    newVal = marker.timestamp;
                 }
-            } else {
-                newVal = marker;
+            }
+        } else if (marker.markerType == "scene" && showSceneMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "strip" && showStripMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+            if (marker.timestamp > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp < newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
             }
         }
     }
@@ -161,80 +168,86 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
 {
     double newVal = 0.0;
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
+    for (const VuraVideoMarker &marker : m_markers) {
+        if (marker.markerType == "marker" && showMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
 
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            markerList.append(marker);
-        }
-    }
-
-    foreach(const double marker, markerList) {
-        if (marker < currentPercent - 0.001) {
-            if (newVal != 0.0) {
-                if (marker > newVal) {
-                    newVal = marker;
+                } else {
+                    newVal = marker.timestamp;
                 }
-            } else {
-                newVal = marker;
+            }
+        } else if (marker.markerType == "scene" && showSceneMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "strip" && showStripMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
+            }
+        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+            if (marker.timestamp < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestamp > newVal)
+                        newVal = marker.timestamp;
+
+                } else {
+                    newVal = marker.timestamp;
+                }
             }
         }
     }
@@ -324,107 +337,53 @@ void VideoSlider::paintEvent(QPaintEvent *event)
         }
     }
 
-    QList<double> markerList;
-    QList<double> markers = m_markers.value("marker").toList();
-    QList<double> sceneMarkers = m_markers.value("scene").toList();
-    QList<double> cumshotMarkers = m_markers.value("cumshot").toList();
-    QList<double> stripMarkers = m_markers.value("strip").toList();
-    QList<double> dialogMarkers = m_markers.value("dialog").toList();
-    QList<double> cyanMarkers = m_markers.value("cyan").toList();
-    QList<double> magentaMarkers = m_markers.value("magenta").toList();
-    QList<double> orangeMarkers = m_markers.value("orange").toList();
-
-    // Draw markers.
-    if (showMarkers) {
-        foreach(const double marker, markers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+    for (const VuraVideoMarker &marker : m_markers) {
+        if (marker.markerType == "marker" && showMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::green, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw scene markers.
-    if (showSceneMarkers) {
-        foreach(const double marker, sceneMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "scene" && showSceneMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::blue, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw cumshot markers.
-    if (showCumshotMarkers) {
-        foreach(const double marker, cumshotMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::white, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw strip markers.
-    if (showStripMarkers) {
-        foreach(const double marker, stripMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "strip" && showStripMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::red, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw dialog markers.
-    if (showDialogMarkers) {
-        foreach(const double marker, dialogMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::yellow, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw cyan markers.
-    if (showCyanMarkers) {
-        foreach(const double marker, cyanMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::cyan, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw magenta markers.
-    if (showMagentaMarkers) {
-        foreach(const double marker, magentaMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::magenta, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        }
-    }
-
-    // Draw orange markers.
-    if (showOrangeMarkers) {
-        foreach(const double marker, orangeMarkers)
-        {
-            if (marker > this->minimum() && marker < this->maximum()) {
+        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+            if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
-                int x = marker * this->width();
+                int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
         }

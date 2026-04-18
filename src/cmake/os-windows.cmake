@@ -1,11 +1,3 @@
-if(NOT TARGET VURA::blake2)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/deps/blake2" "${CMAKE_BINARY_DIR}/deps/blake2")
-endif()
-
-if(NOT TARGET VURA::json11)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/deps/json11" json11)
-endif()
-
 configure_file(cmake/windows/vura.rc.in vura.rc)
 
 target_sources(
@@ -18,25 +10,12 @@ target_sources(
         vura.rc
 )
 
-target_link_libraries(
-        vura
-        PRIVATE
-        VURA::blake2
-        VURA::json11
-)
-
-#target_compile_definitions(vura PRIVATE PSAPI_VERSION=2)
-
-#target_link_options(vura PRIVATE /IGNORE:4099 $<$<CONFIG:DEBUG>:/NODEFAULTLIB:MSVCRT>)
-
 # Set commit for untagged version comparisons in the Windows updater
 if(VURA_VERSION MATCHES ".+g[a-f0-9]+.*")
     string(REGEX REPLACE ".+g([a-f0-9]+).*$" "\\1" VURA_COMMIT ${VURA_VERSION})
 else()
     set(VURA_COMMIT "")
 endif()
-
-#add_subdirectory(updater)
 
 set_property(TARGET vura APPEND PROPERTY AUTORCC_OPTIONS --format-version 1)
 

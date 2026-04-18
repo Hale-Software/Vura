@@ -18,9 +18,6 @@ set_target_properties(
                    AUTOUIC_SEARCH_PATHS forms
 )
 
-# https://doc.qt.io/qt-6/qtglobal.html#QT_ENABLE_STRICT_MODE_UP_TO
-#target_compile_definitions(vura PRIVATE QT_ENABLE_STRICT_MODE_UP_TO=0xFF0000)
-
 set_property(TARGET vura APPEND PROPERTY AUTOUIC_SEARCH_PATHS forms)
 
 target_sources(

@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
@@ -28,6 +29,8 @@
 #include <QMouseEvent>
 #include <QDebug>
 
+#include <data/video-markers.h>
+
 
 class VideoSlider : public QWidget
 {
@@ -40,7 +43,7 @@ public:
     void setMaximum(int mmaximum);
     void setValue(int mvalue);
     void setVideoLoaded(bool isLoaded);
-    void setMarkers(QMap<QString,QList<double>> markers);
+    void setMarkers(QList<VuraVideoMarker> markers);
     void jumpToNextMarker(double currentPercent);
     void jumpToPreviousMarker(double currentPercent);
 
@@ -78,7 +81,7 @@ protected:
 
 private:
     QTimer *timer;
-    QMap<QString,QList<double>> m_markers;
+    QList<VuraVideoMarker> m_markers;
     bool m_showingIndicator = false;
     int m_minimum = 0;
     int m_maximum = 100;

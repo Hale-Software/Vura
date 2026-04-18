@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-#add_subdirectory("${CMAKE_SOURCE_DIR}/shared/VuraCrashHandler" VuraCrashHandler)
 add_subdirectory("${CMAKE_SOURCE_DIR}/shared/libvura" libvura)
 
 # Define source and destination directories
@@ -29,10 +28,7 @@ target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOUR
 target_link_libraries(
         vura PRIVATE
         xxhash
-        #VURA::qBreakpad
-#        VURA::VuruCrashHandler
         VURA::libvura
-        #WinToast
 )
 
 include(cmake/ui-components.cmake)
@@ -88,9 +84,5 @@ install(TARGETS vura
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-#if (MSVC)
-#    qt_add_win_app_sdk(vura)
-#endif()
 
 qt_finalize_executable(vura)

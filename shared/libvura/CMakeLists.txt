@@ -32,7 +32,17 @@ target_sources(
         vura-startup.cpp
 )
 
-# Media-io Directory
+# data Directory
+target_sources(
+        libvura
+        PUBLIC
+        data/video-markers.h
+
+        PRIVATE
+        data/video-markers.cpp
+)
+
+# media-io Directory
 target_sources(
         libvura
         PUBLIC
@@ -42,7 +52,7 @@ target_sources(
         media-io/media-functions.cpp
 )
 
-# Models Directory
+# models Directory
 target_sources(
         libvura
         PUBLIC
@@ -52,7 +62,7 @@ target_sources(
         models/logmessages.cpp
 )
 
-# Util Directory
+# util Directory
 target_sources(
         libvura
         PUBLIC
@@ -65,7 +75,7 @@ target_sources(
         util/singleinstance.cpp
 )
 
-# Util/Windows Directory
+# util/windows Directory
 #target_sources(
 #        libvura
 #        PUBLIC
