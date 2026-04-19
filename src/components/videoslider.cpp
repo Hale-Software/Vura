@@ -59,9 +59,62 @@ void VideoSlider::setValue(int mvalue)
     update();
 }
 
+void VideoSlider::setSliderPercent(double percent)
+{
+    m_sliderPercent = percent;
+}
+
 void VideoSlider::setVideoLoaded(bool isLoaded)
 {
     m_videoLoaded = isLoaded;
+}
+
+void VideoSlider::setShowingMarkers(bool value)
+{
+    m_showingMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingCumshotMarkers(bool value)
+{
+    m_showingCumshotMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingCyanMarkers(bool value)
+{
+    m_showingCyanMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingDialogMarkers(bool value)
+{
+    m_showingDialogMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingMagentaMarkers(bool value)
+{
+    m_showingMagentaMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingOrangeMarkers(bool value)
+{
+    m_showingOrangeMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingSceneMarkers(bool value)
+{
+    m_showingSceneMarkers = value;
+    update();
+}
+
+void VideoSlider::setShowingStripMarkers(bool value)
+{
+    m_showingStripMarkers = value;
+    update();
 }
 
 void VideoSlider::setMarkers(QList<VuraVideoMarker> markers)
@@ -75,7 +128,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
     double newVal = 0.0;
 
     for (const VuraVideoMarker &marker : m_markers) {
-        if (marker.markerType == "marker" && showMarkers) {
+        if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -85,7 +138,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "scene" && showSceneMarkers) {
+        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -95,7 +148,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -105,7 +158,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "strip" && showStripMarkers) {
+        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -115,7 +168,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -125,7 +178,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -135,7 +188,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -145,7 +198,7 @@ void VideoSlider::jumpToNextMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
@@ -169,7 +222,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
     double newVal = 0.0;
 
     for (const VuraVideoMarker &marker : m_markers) {
-        if (marker.markerType == "marker" && showMarkers) {
+        if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -179,7 +232,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "scene" && showSceneMarkers) {
+        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -189,7 +242,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -199,7 +252,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "strip" && showStripMarkers) {
+        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -209,7 +262,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -219,7 +272,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -229,7 +282,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -239,7 +292,7 @@ void VideoSlider::jumpToPreviousMarker(double currentPercent)
                     newVal = marker.timestamp;
                 }
             }
-        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
@@ -264,9 +317,27 @@ int VideoSlider::maximum() const { return m_maximum; }
 
 int VideoSlider::value() const { return m_value; }
 
+double VideoSlider::sliderPercent() const { return m_sliderPercent; }
+
 bool VideoSlider::isSliderDown() const { return m_isSliderDown; }
 
 bool VideoSlider::isVideoLoaded() const { return m_videoLoaded; }
+
+bool VideoSlider::showMarkers() const { return m_showingMarkers; }
+
+bool VideoSlider::showCumshotMarkers() const { return m_showingCumshotMarkers; }
+
+bool VideoSlider::showCyanMarkers() const { return m_showingCyanMarkers; }
+
+bool VideoSlider::showDialogMarkers() const { return m_showingDialogMarkers; }
+
+bool VideoSlider::showMagentaMarkers() const { return m_showingMagentaMarkers; }
+
+bool VideoSlider::showOrangeMarkers() const { return m_showingOrangeMarkers; }
+
+bool VideoSlider::showSceneMarkers() const { return m_showingSceneMarkers; }
+
+bool VideoSlider::showStripMarkers() const { return m_showingStripMarkers; }
 
 void VideoSlider::hideIndicator()
 {
@@ -338,49 +409,49 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     }
 
     for (const VuraVideoMarker &marker : m_markers) {
-        if (marker.markerType == "marker" && showMarkers) {
+        if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::green, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "scene" && showSceneMarkers) {
+        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::blue, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "cumshot" && showCumshotMarkers) {
+        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::white, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "strip" && showStripMarkers) {
+        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::red, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "dialog" && showDialogMarkers) {
+        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::yellow, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "cyan" && showCyanMarkers) {
+        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::cyan, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "magenta" && showMagentaMarkers) {
+        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::magenta, m_markerWidth));
                 int x = marker.timestamp * this->width();
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-        } else if (marker.markerType == "orange" && showOrangeMarkers) {
+        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
             if (marker.timestamp > this->minimum() && marker.timestamp < this->maximum()) {
                 painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
                 int x = marker.timestamp * this->width();

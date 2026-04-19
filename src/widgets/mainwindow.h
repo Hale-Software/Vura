@@ -58,6 +58,10 @@
 #include <QVideoSink>
 #include <QVideoFrame>
 
+#include <cmath>
+#include <limits>
+#include <iostream>
+
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
@@ -243,6 +247,8 @@ private slots:
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
 
+    void finishedUpdatingPlayerPosition();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -310,14 +316,6 @@ private:
     int m_markerIndex;
     int m_inMarker;
     int m_outMarker;
-    bool m_showingMarkers = true;
-    bool m_showingCumshotMarkers = true;
-    bool m_showingCyanMarkers = true;
-    bool m_showingDialogMarkers = true;
-    bool m_showingMagentaMarkers = true;
-    bool m_showingOrangeMarkers = true;
-    bool m_showingSceneMarkers = true;
-    bool m_showingStripMarkers = true;
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
@@ -325,6 +323,8 @@ private:
     bool m_durationLabelShowRemainingTime = false;
     QString m_videoResolution;
     QString m_markerFile;
+
+    void updatePlayerPosition();
 
 };
 
