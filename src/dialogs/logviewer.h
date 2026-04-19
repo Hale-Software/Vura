@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,22 +13,23 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
 
 #include <QDialog>
 #include <QPushButton>
-#include <QTextBrowser>
+#include <QTableView>
 #include <QComboBox>
-#include <QCheckBox>
-#include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include <QList>
 #include <QString>
 
 #include <constants.h>
+#include <models/log-viewer-model.h>
 #include <util/blogger.h>
 #include <util/messagebox.h>
 
@@ -52,24 +53,23 @@ public:
     void openFile(const QString &fileName);
 
 public slots:
-    void message(QString message);
+    void message(const QString &message) const;
+    void newLogMessage(const QString &timestamp, const QString &verbosity, const QString &msg);
 
 private slots:
-    //void AddLine(int type, const QString &text);
     void openButton_Clicked();
     void clearButton_Clicked();
     void closeButton_Clicked();
     void verbosityIndexChanged(int index);
-    void simplify_Clicked();
 
 private:
     Ui::LogViewer *ui;
     int m_verbosity = 0;
-    bool m_simplify = true;
     QString m_currentLogFile;
     QString m_openedLogFile;
+    LogViewerModel *m_logViewerModel;
 
     void refreshMessages();
-    void messageFormatter(QString message);
+    void messageFormatter(const QString &message) const;
 
 };

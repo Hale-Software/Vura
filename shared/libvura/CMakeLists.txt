@@ -54,9 +54,11 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        models/log-viewer-model.h
         models/logmessages.h
 
         PRIVATE
+        models/log-viewer-model.cpp
         models/logmessages.cpp
 )
 
