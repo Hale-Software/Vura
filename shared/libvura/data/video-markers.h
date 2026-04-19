@@ -38,6 +38,7 @@ struct VuraVideoMarker
     QString fileName;
     QString markerName;
     QString markerType;
+    QString comments;
     double timestamp;
 
     void read(const QJsonObject &json)
@@ -54,6 +55,9 @@ struct VuraVideoMarker
         if (json.contains("markerType") && json["markerType"].isString())
             markerType = json["markerType"].toString();
 
+        if (json.contains("comments") && json["comments"].isString())
+            comments = json["comments"].toString();
+
         if (json.contains("timestamp") && json["timestamp"].isDouble())
             timestamp = json["timestamp"].toDouble();
     }
@@ -65,6 +69,7 @@ struct VuraVideoMarker
         obj["fileName"] = fileName;
         obj["markerName"] = markerName;
         obj["markerType"] = markerType;
+        obj["comments"] = comments;
         obj["timestamp"] = timestamp;
         return obj;
     }

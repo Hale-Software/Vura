@@ -147,6 +147,7 @@ signals:
     void previousMarker();
     void clearMarkers();
     void clearSelectedMarker();
+    void editSelectedMarker();
 
     // Audio
     void setAudioOutput(const QAudioDevice &moutput);

@@ -1,13 +1,13 @@
 target_sources(
         vura PRIVATE
-        dialogs/editmarker.cpp
-        dialogs/editmarker.h
         dialogs/about.cpp
         dialogs/about.h
         dialogs/convertmediadialog.cpp
         dialogs/convertmediadialog.h
         dialogs/logviewer.cpp
         dialogs/logviewer.h
+        dialogs/MarkerEditDialog.cpp
+        dialogs/MarkerEditDialog.h
         dialogs/missingfiles.cpp
         dialogs/missingfiles.h
         dialogs/permissions.cpp
