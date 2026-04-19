@@ -18,7 +18,6 @@ target_sources(
         vura-helpers.h
         vura-hotkeys.h
         vura-settings.h
-        vura-startup.h
 
         PRIVATE
         constants.cpp
@@ -29,7 +28,6 @@ target_sources(
         vura-helpers.cpp
         vura-hotkeys.cpp
         vura-settings.cpp
-        vura-startup.cpp
 )
 
 # data Directory
