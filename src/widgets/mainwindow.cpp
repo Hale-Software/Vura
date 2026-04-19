@@ -1586,6 +1586,8 @@ void MainWindow::editSelectedMarker()
         m_markerEditDialog = new MarkerEditDialog(selectedMarker, m_duration, this);
         m_markerEditDialog->show();
         m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        m_markerEditDialog->setNextButton_Enabled(isNextMarkerAvailable(selectedMarker));
+        m_markerEditDialog->setPrevButton_Enabled(isPreviousMarkerAvailable(selectedMarker));
 
         connect(m_markerEditDialog, &MarkerEditDialog::markerEdited, this, &MainWindow::markerEdited);
         connect(m_markerEditDialog, &MarkerEditDialog::markerDeleted, this, &MainWindow::markerDeleted);
@@ -1648,12 +1650,62 @@ void MainWindow::markerDeleted(const VuraVideoMarker &videoMarker)
 
 void MainWindow::getPrevMarker(const VuraVideoMarker &videoMarker)
 {
+    VuraVideoMarker previousMarker;
+    previousMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
 
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.timestamp < videoMarker.timestamp) {
+            if (std::isnan(previousMarker.timestamp)) {
+                previousMarker = marker;
+
+            } else {
+                if (marker.timestamp > previousMarker.timestamp) {
+                    previousMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(previousMarker.timestamp)) {
+        qDebug() << "No previous marker found.";
+
+    } else {
+        m_videoSlider->jumpToPreviousMarker(previousMarker.timestamp);
+        updatePlayerPosition();
+        m_markerEditDialog->loadVideoMarker(previousMarker);
+        m_markerEditDialog->setNextButton_Enabled(isNextMarkerAvailable(previousMarker));
+        m_markerEditDialog->setPrevButton_Enabled(isNextMarkerAvailable(previousMarker));
+    }
 }
 
 void MainWindow::getNextMarker(const VuraVideoMarker &videoMarker)
 {
+    VuraVideoMarker nextMarker;
+    nextMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
 
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.timestamp > videoMarker.timestamp) {
+            if (std::isnan(nextMarker.timestamp)) {
+                nextMarker = marker;
+
+            } else {
+                if (marker.timestamp < nextMarker.timestamp) {
+                    nextMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(nextMarker.timestamp)) {
+        qDebug() << "No next marker found.";
+
+    } else {
+        m_videoSlider->jumpToNextMarker(nextMarker.timestamp);
+        updatePlayerPosition();
+        m_markerEditDialog->loadVideoMarker(nextMarker);
+        m_markerEditDialog->setNextButton_Enabled(isNextMarkerAvailable(nextMarker));
+        m_markerEditDialog->setPrevButton_Enabled(isNextMarkerAvailable(nextMarker));
+    }
 }
 
 void MainWindow::clearMarkers()
@@ -2324,4 +2376,52 @@ bool MainWindow::checkMarkerProximity()
     }
 
     return markerDetected;
+}
+
+bool MainWindow::isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker)
+{
+    VuraVideoMarker previousMarker;
+    previousMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.timestamp < videoMarker.timestamp) {
+            if (std::isnan(previousMarker.timestamp)) {
+                previousMarker = marker;
+
+            } else {
+                if (marker.timestamp > previousMarker.timestamp) {
+                    previousMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(previousMarker.timestamp)) {
+        return false;
+    }
+    return true;
+}
+
+bool MainWindow::isNextMarkerAvailable(const VuraVideoMarker &videoMarker)
+{
+    VuraVideoMarker nextMarker;
+    nextMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.timestamp > videoMarker.timestamp) {
+            if (std::isnan(nextMarker.timestamp)) {
+                nextMarker = marker;
+
+            } else {
+                if (marker.timestamp < nextMarker.timestamp) {
+                    nextMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(nextMarker.timestamp)) {
+        return false;
+    }
+    return true;
 }

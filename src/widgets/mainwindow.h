@@ -335,6 +335,8 @@ private:
 
     void updatePlayerPosition();
     bool checkMarkerProximity();
+    bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
+    bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
 
 };
 

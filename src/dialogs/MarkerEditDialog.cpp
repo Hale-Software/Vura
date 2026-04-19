@@ -33,7 +33,7 @@ MarkerEditDialog::MarkerEditDialog(const VuraVideoMarker &videoMarker, int video
     connect(ui->markerName, &QLineEdit::textChanged, this, &MarkerEditDialog::name_TextChanged);
     connect(ui->timestamp, &QLineEdit::textChanged, this, &MarkerEditDialog::timestamp_TextChanged);
     connect(ui->markerType, &QComboBox::currentIndexChanged, this, &MarkerEditDialog::type_IndexChanged);
-    //connect(ui->comments, &QTextEdit::textChanged, this, &MarkerEditDialog::comments_TextChanged);
+    connect(ui->comments, &QTextEdit::textChanged, this, &MarkerEditDialog::comments_TextChanged);
     connect(ui->deleteButton, &QPushButton::clicked, this, &MarkerEditDialog::deleteButton_Clicked);
     connect(ui->previousButton, &QPushButton::clicked, this, &MarkerEditDialog::prevButton_Clicked);
     connect(ui->nextButton, &QPushButton::clicked, this, &MarkerEditDialog::nextButton_Clicked);
@@ -76,6 +76,7 @@ void MarkerEditDialog::saveMarker()
     m_videoMarker.timestamp = sliderPercent;
 
     m_videoMarker.markerType = ui->markerType->currentText().toLower();
+    m_videoMarker.comments = ui->comments->toPlainText();
 
     emit markerEdited(m_videoMarker);
     m_unsavedChanges = false;
@@ -133,6 +134,16 @@ void MarkerEditDialog::loadVideoMarker(const VuraVideoMarker &videoMarker)
     populateUI();
 }
 
+void MarkerEditDialog::setPrevButton_Enabled(bool enabled)
+{
+    ui->previousButton->setEnabled(enabled);
+}
+
+void MarkerEditDialog::setNextButton_Enabled(bool enabled)
+{
+    ui->nextButton->setEnabled(enabled);
+}
+
 void MarkerEditDialog::name_TextChanged(const QString &text)
 {
     if (text != m_videoMarker.markerName) {
@@ -144,6 +155,9 @@ void MarkerEditDialog::timestamp_TextChanged(const QString &text)
 {
     if (text != durationToTimestampString()) {
         m_unsavedChanges = true;
+        QString timestampString = ui->timestamp->text();
+        QString windowTitle = "Marker @ " + timestampString;
+        this->setWindowTitle(windowTitle);
     }
 }
 
@@ -154,7 +168,12 @@ void MarkerEditDialog::type_IndexChanged(int index)
     }
 }
 
-void MarkerEditDialog::comments_TextChanged(const QString &text) {}
+void MarkerEditDialog::comments_TextChanged()
+{
+    if (ui->comments->toPlainText() != m_videoMarker.comments) {
+        m_unsavedChanges = true;
+    }
+}
 
 void MarkerEditDialog::deleteButton_Clicked()
 {
@@ -209,12 +228,15 @@ QString MarkerEditDialog::durationToTimestampString() const
     return currentTime.toString(format);
 }
 
-void MarkerEditDialog::populateUI() const
+void MarkerEditDialog::populateUI()
 {
     QString timestampString = durationToTimestampString();
+    QString windowTitle = "Marker @ " + timestampString;
+    this->setWindowTitle(windowTitle);
 
     ui->markerName->setText(m_videoMarker.markerName);
     ui->timestamp->setText(timestampString);
+    ui->comments->setText(m_videoMarker.comments);
 
     if (m_videoMarker.markerType == "marker") {
         ui->markerType->setCurrentIndex(0);

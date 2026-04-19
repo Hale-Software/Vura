@@ -60,10 +60,12 @@ protected:
 public slots:
     void forceClose();
     void loadVideoMarker(const VuraVideoMarker &videoMarker);
+    void setNextButton_Enabled(bool enabled);
+    void setPrevButton_Enabled(bool enabled);
     void name_TextChanged(const QString &text);
     void timestamp_TextChanged(const QString &text);
     void type_IndexChanged(int index);
-    void comments_TextChanged(const QString &text);
+    void comments_TextChanged();
     void deleteButton_Clicked();
     void prevButton_Clicked();
     void nextButton_Clicked();
@@ -78,6 +80,6 @@ private:
     bool m_forceClose = false;
 
     QString durationToTimestampString() const;
-    void populateUI() const;
+    void populateUI();
 
 };
