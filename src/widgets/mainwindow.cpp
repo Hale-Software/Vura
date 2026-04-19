@@ -145,6 +145,7 @@ void MainWindow::initMenuBar()
     connect(this, &MainWindow::updateVideoTracks, m_menuBar, &MenuBar::updateVideoTracks);
     connect(this, &MainWindow::updateSubtitleTracks, m_menuBar, &MenuBar::updateSubtitleTracks);
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
+    connect(this, &MainWindow::setClearSelectedMarkerEnabled, m_menuBar, &MenuBar::setClearSelectedMarkerEnabled);
 
     connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
     connect(m_menuBar, &MenuBar::emergencyCollapse, this, &MainWindow::emergencyCollapse);
@@ -583,6 +584,7 @@ void MainWindow::positionChanged(qint64 progress)
         m_videoSlider->setValue(static_cast<int>(progress));
 
     updateDurationInfo(progress / 1000);
+    updateMarkerMenuItems();
 }
 
 QString MainWindow::trackName(const QMediaMetaData &metaData, const int index)
@@ -1969,6 +1971,11 @@ qint64 MainWindow::fileHash(const QString &filePath)
 #pragma endregion
 
 
+void MainWindow::updateMarkerMenuItems()
+{
+    emit setClearSelectedMarkerEnabled(checkMarkerProximity());
+}
+
 void MainWindow::updatePlayerPosition()
 {
     if (!m_player->isPlaying() && m_player->mediaStatus() != QMediaPlayer::NoMedia) {
@@ -1980,4 +1987,85 @@ void MainWindow::updatePlayerPosition()
 void MainWindow::finishedUpdatingPlayerPosition()
 {
     m_player->pause();
+}
+
+bool MainWindow::checkMarkerProximity()
+{
+    bool markerDetected = false;
+
+    const double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    const double sliderPercent = (distanceFromMin / sliderRange);
+
+    constexpr double markerRange = 0.005;
+
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.markerType == "marker" && m_videoSlider->showMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "cumshot" && m_videoSlider->showCumshotMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "cyan" && m_videoSlider->showCyanMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "dialog" && m_videoSlider->showDialogMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "magenta" && m_videoSlider->showMagentaMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "orange" && m_videoSlider->showOrangeMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "scene" && m_videoSlider->showSceneMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        } else if (marker.markerType == "strip" && m_videoSlider->showStripMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                markerDetected = true;
+
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                markerDetected = true;
+
+            }
+        }
+    }
+
+    return markerDetected;
 }

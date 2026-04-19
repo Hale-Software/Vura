@@ -135,6 +135,7 @@ public:
     bool initApplicationDirs();
     bool initUserDirs();
     static qint64 fileHash(const QString& filePath);
+    void updateMarkerMenuItems();
 
 public slots:
     void showMediaInformation();
@@ -211,6 +212,7 @@ signals:
     void setVideoControlsShowing(bool showing);
     void refreshSettings();
     void setOverrideWindowsHotkeys(bool value);
+    void setClearSelectedMarkerEnabled(bool enabled);
     void quitProgram();
 
 
@@ -325,6 +327,7 @@ private:
     QString m_markerFile;
 
     void updatePlayerPosition();
+    bool checkMarkerProximity();
 
 };
 
