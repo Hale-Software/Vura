@@ -27,11 +27,6 @@ bool VideoMarkers::createBlankFile(const QString &fileName)
     const QJsonDocument doc(blankObj);
     const QByteArray data = doc.toJson();
 
-    //QJsonArray blankArray;
-    //blankObj["blank"] = blankArray;
-    //QJsonDocument doc = QJsonDocument(blankObj);
-    //QByteArray data = QJsonDocument(doc).toJson();
-
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         file.write(data);
