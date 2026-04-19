@@ -26,9 +26,9 @@ target_sources(
         forms/vura.qrc
         forms/mainwindow.ui
         forms/settingswindow.ui
-        forms/editmarker.ui
         forms/videocontrolwidget.ui
         forms/logviewer.ui
+        forms/MarkerEditDialog.ui
         forms/missingfiles.ui
         forms/permissions.ui
         forms/updatewindow.ui

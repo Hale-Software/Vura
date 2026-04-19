@@ -83,6 +83,7 @@
 #include "../settings/settingswindow.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
+#include "../dialogs/MarkerEditDialog.h"
 #include "../dialogs/updatewindow.h"
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
@@ -100,6 +101,7 @@ class MainWindow : public QMainWindow
     friend class HSettingsWindow;
     friend class HAboutDialog;
     friend class LogViewer;
+    friend class MarkerEditDialog;
     friend class HUpdate;
     friend class ConvertMediaDialog;
 
@@ -176,6 +178,7 @@ public slots:
     void nextMarker();
     void previousMarker();
     void clearSelectedMarker();
+    void editSelectedMarker();
     void clearMarkers();
     void clearInMarker();
     void clearOutMarker();
@@ -192,7 +195,10 @@ public slots:
     void convertSave();
     void streamMedia();
     void continuePlaybackRibbon(bool con);
-
+    void markerEdited(const VuraVideoMarker &videoMarker);
+    void markerDeleted(const VuraVideoMarker &videoMarker);
+    void getPrevMarker(const VuraVideoMarker &videoMarker);
+    void getNextMarker(const VuraVideoMarker &videoMarker);
 
 signals:
     void setActiveAudioDevice(const QAudioDevice &audioDevice);
@@ -299,6 +305,7 @@ private:
     QPointer<MediaInformation> m_mediaInformation;
     QPointer<HelpDialog> m_helpDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
+    QPointer<MarkerEditDialog> m_markerEditDialog;
 
     // VARIABLES
     // =======================================================================================================

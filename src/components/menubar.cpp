@@ -878,7 +878,6 @@ void MenuBar::refreshMenuItems()
     m_clearInAndOutMarkerAction->setEnabled(m_fileLoaded);
     m_clearMarkersAction->setEnabled(m_fileLoaded);
     m_clearOutMarkerAction->setEnabled(m_fileLoaded);
-    m_editMarkerAction->setEnabled(m_fileLoaded);
     m_goToInMarkerAction->setEnabled(m_fileLoaded);
     m_goToNextMarkerAction->setEnabled(m_fileLoaded);
     m_goToOutMarkerAction->setEnabled(m_fileLoaded);
@@ -1136,6 +1135,7 @@ void MenuBar::videoControlsShowing(bool showing)
 void MenuBar::setClearSelectedMarkerEnabled(bool enabled)
 {
     m_clearSelectedMarkerAction->setEnabled(enabled);
+    m_editMarkerAction->setEnabled(enabled);
 }
 
 void MenuBar::settingsUpdatedSlot()
@@ -1735,7 +1735,10 @@ void MenuBar::clearAllMarkers_Clicked()
     }
 }
 
-void MenuBar::editMarker_Clicked() {}
+void MenuBar::editMarker_Clicked()
+{
+    emit editSelectedMarker();
+}
 
 void MenuBar::addSceneTransitionMarker_Clicked()
 {

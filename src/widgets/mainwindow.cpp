@@ -180,6 +180,7 @@ void MainWindow::initMenuBar()
     connect(m_menuBar, &MenuBar::nextMarker, this, &MainWindow::nextMarker);
     connect(m_menuBar, &MenuBar::previousMarker, this, &MainWindow::previousMarker);
     connect(m_menuBar, &MenuBar::clearSelectedMarker, this, &MainWindow::clearSelectedMarker);
+    connect(m_menuBar, &MenuBar::editSelectedMarker, this, &MainWindow::editSelectedMarker);
     connect(m_menuBar, &MenuBar::clearMarkers, this, &MainWindow::clearMarkers);
     connect(m_menuBar, &MenuBar::clearInMarker, this, &MainWindow::clearInMarker);
     connect(m_menuBar, &MenuBar::clearOutMarker, this, &MainWindow::clearOutMarker);
@@ -1398,6 +1399,261 @@ void MainWindow::clearSelectedMarker()
             qDebug() << "Failed to find selected marker in video marker list.";
         }
     }
+}
+
+void MainWindow::editSelectedMarker()
+{
+    qDebug() << "Edit selected marker function called.";
+    const double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    const double sliderPercent = (distanceFromMin / sliderRange);
+
+    VuraVideoMarker selectedMarker;
+    selectedMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+    constexpr double markerRange = 0.005;
+
+    for (const VuraVideoMarker &marker : videoMarkers) {
+        if (marker.markerType == "marker" && m_videoSlider->showMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "cumshot" && m_videoSlider->showCumshotMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "cyan" && m_videoSlider->showCyanMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "dialog" && m_videoSlider->showDialogMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "magenta" && m_videoSlider->showMagentaMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "orange" && m_videoSlider->showOrangeMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "scene" && m_videoSlider->showSceneMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        } else if (marker.markerType == "strip" && m_videoSlider->showStripMarkers()) {
+            if (marker.timestamp > sliderPercent && (marker.timestamp - sliderPercent) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp < selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            } else if (marker.timestamp < sliderPercent && (sliderPercent - marker.timestamp) <= markerRange) {
+                if (std::isnan(selectedMarker.timestamp)) {
+                    selectedMarker = marker;
+
+                } else {
+                    if (marker.timestamp > selectedMarker.timestamp) {
+                        selectedMarker = marker;
+                    }
+                }
+            }
+        }
+    }
+
+    if (std::isnan(selectedMarker.timestamp)) {
+        qDebug() << "No marker found withing range: " << QString::number(markerRange);
+
+    } else {
+        if (m_markerEditDialog)
+            m_markerEditDialog->close();
+
+        m_markerEditDialog = new MarkerEditDialog(selectedMarker, m_duration, this);
+        m_markerEditDialog->show();
+        m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+
+        connect(m_markerEditDialog, &MarkerEditDialog::markerEdited, this, &MainWindow::markerEdited);
+        connect(m_markerEditDialog, &MarkerEditDialog::markerDeleted, this, &MainWindow::markerDeleted);
+        connect(m_markerEditDialog, &MarkerEditDialog::getPrevMarker, this, &MainWindow::getPrevMarker);
+        connect(m_markerEditDialog, &MarkerEditDialog::getNextMarker, this, &MainWindow::getNextMarker);
+    }
+}
+
+void MainWindow::markerEdited(const VuraVideoMarker &videoMarker)
+{
+    int index = 0;
+    int markerIndex = -1;
+
+    QListIterator<VuraVideoMarker> i(videoMarkers);
+    while (i.hasNext()) {
+        VuraVideoMarker item = i.next();
+        if (item.id == videoMarker.id) {
+            markerIndex = index;
+        }
+        index++;
+    }
+
+    if (markerIndex >= 0) {
+        videoMarkers.removeAt(markerIndex);
+        videoMarkers.append(videoMarker);
+        m_videoSlider->setMarkers(videoMarkers);
+        qDebug() << "Edited video marker ID: " << videoMarker.id;
+
+    } else {
+        qDebug() << "Failed to find selected marker in video marker list.";
+    }
+}
+
+void MainWindow::markerDeleted(const VuraVideoMarker &videoMarker)
+{
+    int index = 0;
+    int markerIndex = -1;
+
+    QListIterator<VuraVideoMarker> i(videoMarkers);
+    while (i.hasNext()) {
+        VuraVideoMarker item = i.next();
+        if (item.id == videoMarker.id) {
+            markerIndex = index;
+        }
+        index++;
+    }
+
+    if (markerIndex >= 0) {
+        videoMarkers.removeAt(markerIndex);
+        m_videoSlider->setMarkers(videoMarkers);
+        qDebug() << "Deleted video marker ID: " << videoMarker.id;
+
+    } else {
+        qDebug() << "Failed to find selected marker in video marker list.";
+    }
+
+    if (m_markerEditDialog)
+        m_markerEditDialog->forceClose();
+}
+
+void MainWindow::getPrevMarker(const VuraVideoMarker &videoMarker)
+{
+
+}
+
+void MainWindow::getNextMarker(const VuraVideoMarker &videoMarker)
+{
+
 }
 
 void MainWindow::clearMarkers()
