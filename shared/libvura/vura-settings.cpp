@@ -33,9 +33,16 @@ void VuraSettings::loadSettings()
 {
     QSettings settings;
 
-    QString defaultApplicationDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/appdata.vdt";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultApplicationDataFile = constants::ApplicationDebugFolder + "/appdata.vdt";
+        m_markerFile = constants::ApplicationDebugFolder + "/global.json";
+    } else {
+        QString videoMarkerDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.json";
+        m_markerFile = videoMarkerDataFile;
+    }
+
+    if (!QFile::exists(m_markerFile)) {
+        qDebug() << "Marker data file doesn't exist. Creating blank marker data file.";
+        VideoMarkers::createBlankFile(m_markerFile);
     }
 
     m_locale = settings.value("language", "en-US").toString();
@@ -65,8 +72,6 @@ void VuraSettings::loadSettings()
     m_theme = settings.value("theme", "System").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
     m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
-    m_applicationDataFile = settings.value("applicationDataFile", defaultApplicationDataFile).toString();
-    m_markerFile = settings.value("markerFile").toString();
 }
 
 QString VuraSettings::locale()
@@ -207,11 +212,6 @@ double VuraSettings::jumpToEndPercentage()
 bool VuraSettings::setOverrideWindowsHotkeys()
 {
     return m_setOverrideWindowsHotkeys;
-}
-
-QString VuraSettings::applicationDataFile()
-{
-    return m_applicationDataFile;
 }
 
 QString VuraSettings::markerFile()

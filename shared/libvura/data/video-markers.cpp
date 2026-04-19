@@ -23,11 +23,14 @@ VideoMarkers::VideoMarkers(QObject *parent) : QObject(parent) {}
 
 bool VideoMarkers::createBlankFile(const QString &fileName)
 {
-    QJsonObject blankObj;
-    QJsonArray blankArray;
-    blankObj["blank"] = blankArray;
-    QJsonDocument doc = QJsonDocument(blankObj);
-    QByteArray data = QJsonDocument(doc).toJson();
+    const QJsonObject blankObj;
+    const QJsonDocument doc(blankObj);
+    const QByteArray data = doc.toJson();
+
+    //QJsonArray blankArray;
+    //blankObj["blank"] = blankArray;
+    //QJsonDocument doc = QJsonDocument(blankObj);
+    //QByteArray data = QJsonDocument(doc).toJson();
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -51,7 +54,7 @@ bool VideoMarkers::write(const QString &fileName, const QString &videoFileName, 
         return false;
     }
 
-    QByteArray rawData = file.readAll();
+    const QByteArray rawData = file.readAll();
     file.close();
 
     QJsonDocument doc = QJsonDocument::fromJson(rawData);
@@ -181,14 +184,14 @@ QString VideoMarkers::generateMarkerID(const QString &fileName)
     return markerID;
 }
 
-QString VideoMarkers::generateRandomString(int length)
+QString VideoMarkers::generateRandomString(const int length)
 {
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     QString randomString;
     randomString.reserve(length);
 
     for(int i = 0; i < length; ++i) {
-        int index = QRandomGenerator::global()->bounded(possibleCharacters.length());
+        const int index = QRandomGenerator::global()->bounded(possibleCharacters.length());
         randomString.append(possibleCharacters.at(index));
     }
     return randomString;

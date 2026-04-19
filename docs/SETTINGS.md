@@ -20,7 +20,6 @@
 | rememberWindowSize              | true                         | bool   |
 | maxLogFiles                     | 10                           | int    |
 | logToFile                       | true                         | bool   |
-| markerFile                      | AppDataLocation/markers.json | string |
 | theme                           | System                       | string |
 | fontSize                        | 10                           | int    |
 | updateChannel                   | stable                       | string |
@@ -39,7 +38,6 @@
 | setOverrideWindowsHotkeys       | true                         | bool   |
 | jumpToEndPercentage             | 0.05                         | double |
 | screenshotSaveLocation          |                              | string |
-| applicationDataFile             | AppDataLocation/appdata.vdt  | string |
 |                                 |                              |        |
 |                                 |                              |        |
 |                                 |                              |        |

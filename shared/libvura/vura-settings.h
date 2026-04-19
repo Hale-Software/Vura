@@ -19,9 +19,12 @@
 #pragma once
 
 #include <QObject>
+#include <QFile>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QDebug>
+
+#include "data/video-markers.h"
 
 
 class VuraSettings : public QObject
@@ -61,7 +64,6 @@ public:
     QString theme();
     double jumpToEndPercentage();
     bool setOverrideWindowsHotkeys();
-    QString applicationDataFile();
     QString markerFile();
 
 private:
@@ -93,7 +95,6 @@ private:
     QString m_theme = "System";
     double m_jumpToEndPercentage = 0.0;
     bool m_setOverrideWindowsHotkeys = false;
-    QString m_applicationDataFile = "";
     QString m_markerFile = "";
 
 };

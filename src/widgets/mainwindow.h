@@ -64,7 +64,6 @@
 #include <data/video-markers.h>
 #include <vura-helpers.h>
 #include <vura-settings.h>
-#include <vura-startup.h>
 #include <util/blogger.h>
 #include <util/messagebox.h>
 #include <media-io/media-functions.h>
@@ -129,7 +128,8 @@ public:
     void setApplicationWindowTitle();
     void setToolTips();
     static void setStyleSheet();
-    bool createUserDirs();
+    bool initApplicationDirs();
+    bool initUserDirs();
     static qint64 fileHash(const QString& filePath);
 
 public slots:

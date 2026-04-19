@@ -35,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    if (!initApplicationDirs()) {
+        VMessageBox::critical(this, "Vura", "Failed to initialize application directories.");
+    }
+
     vuraSettings = new VuraSettings();
     emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
     initApplication();
@@ -90,14 +94,10 @@ void MainWindow::initApplication()
     }
     m_currentUser = name;
 
-    createUserDirs();
+    initUserDirs();
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
-
-    // Application startup initialization
-    VuraStartup startup;
-    startup.Initialize();
 
     qDebug() << "Application initialized.";
 }
@@ -1692,7 +1692,44 @@ void MainWindow::setStyleSheet()
     }
 }
 
-bool MainWindow::createUserDirs()
+bool MainWindow::initApplicationDirs()
+{
+    // Application Directories
+    QStringList directoryList;
+    QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (VURA_BUILD_TYPE == "Debug") {
+        appDataDir = constants::ApplicationDebugFolder;
+    }
+    directoryList << appDataDir;
+    directoryList << appDataDir + "/crashes";
+    directoryList << appDataDir + "/logs";
+    directoryList << appDataDir + "/updates";
+
+    for (const QString &directory : directoryList) {
+        if (!QDir(directory).exists()) {
+            if (!QDir().mkpath(directory))
+                return false;
+        }
+    }
+
+    /*
+    foreach (QString directory, directoryList)
+    {
+        if (!QDir(directory).exists()) {
+            qDebug() << "Directory " << directory << " does not exist. Creating...";
+            if (QDir().mkpath(directory)) {
+                qDebug() << "Created directory: " << directory;
+            } else {
+                qWarning() << "Could not create directory: " << directory;
+                statusGood = false;
+            }
+        }
+    }
+    */
+    return true;
+}
+
+bool MainWindow::initUserDirs()
 {
     // User Directories
     QStringList directoryList;
