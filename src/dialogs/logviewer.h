@@ -28,9 +28,10 @@
 #include <QTextStream>
 #include <QString>
 
-#include "constants.h"
-#include "../utility/logger.h"
-#include "../utility/qt-wrappers.h"
+#include <constants.h>
+#include <util/blogger.h>
+#include <util/messagebox.h>
+
 
 QT_BEGIN_NAMESPACE
 

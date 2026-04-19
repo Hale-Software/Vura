@@ -27,7 +27,7 @@
 #include <QSettings>
 #include <QDebug>
 
-#include "../constants.h"
+#include <constants.h>
 
 
 class SystemTray : public QSystemTrayIcon

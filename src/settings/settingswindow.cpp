@@ -55,8 +55,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->oneInstanceFromFileManager, &QCheckBox::checkStateChanged, this, &SettingsWindow::oneInstanceFromFileManager_Checked);
     connect(ui->continuePlayback, &QComboBox::currentIndexChanged, this, &SettingsWindow::continuePlayback_Changed);
     connect(ui->pauseOnLastFrameOfVideo, &QCheckBox::checkStateChanged, this, &SettingsWindow::pauseOnLastFrameOfVideo_Checked);
-    connect(ui->playbackSpeedAdjustment, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustment_TextChanged);
-    connect(ui->playbackSpeedAdjustmentFine, &QLineEdit::textChanged, this, &SettingsWindow::playbackSpeedAdjustmentFine_TextChanged);
+    connect(ui->playbackSpeedAdjustment, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::playbackSpeedAdjustment_Changed);
+    connect(ui->playbackSpeedAdjustmentFine, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::playbackSpeedAdjustmentFine_Changed);
     connect(ui->volumeStep, &QDoubleSpinBox::valueChanged, this, &SettingsWindow::volumeStep_Changed);
     connect(ui->frameWalk, &QLineEdit::textChanged, this, &SettingsWindow::frameWalk_TextChanged);
     connect(ui->smallJump, &QLineEdit::textChanged, this, &SettingsWindow::smallJump_TextChanged);
@@ -71,7 +71,10 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->hotkeyFilterTextBox, &QKeySequenceEdit::keySequenceChanged, this, &SettingsWindow::hotkeyFilterTextBox_KeySequenceChanged);
     connect(ui->hotkeyFilterClearButton, &QPushButton::clicked, this, &SettingsWindow::hotkeyFilterClearButton_Clicked);
     connect(ui->setOverrideWindowsHotkeys, &QCheckBox::checkStateChanged, this, &SettingsWindow::setOverrideWindowsHotkeys_Checked);
+    connect(ui->resetHotkeys, &QPushButton::clicked, this, &SettingsWindow::resetHotkeys_Clicked);
 
+    connect(ui->applicationDataFile, &QLineEdit::textChanged, this, &SettingsWindow::applicationDataFile_TextChanged);
+    connect(ui->applicationDataFileBrowse, &QPushButton::clicked, this, &SettingsWindow::applicationDataFileBrowse_Clicked);
     connect(ui->stashServer, &QLineEdit::textChanged, this, &SettingsWindow::stashServer_TextChanged);
 
     loadSettings();
@@ -92,9 +95,15 @@ void SettingsWindow::pageSelection_Changed()
 void SettingsWindow::loadSettings()
 {
     QSettings settings;
+
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = constants::ApplicationDebugFolder + "/vura-debug/markers.json";
+        defaultMarkerFile = constants::ApplicationDebugFolder + "/markers.json";
+    }
+
+    QString defaultApplicationDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/appdata.vdt";
+    if (VURA_BUILD_TYPE == "Debug") {
+        defaultApplicationDataFile = constants::ApplicationDebugFolder + "/appdata.vdt";
     }
 
     // Load Settings
@@ -115,6 +124,7 @@ void SettingsWindow::loadSettings()
     m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
     m_playbackSpeedAdjustmentFine = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
     m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
+    m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
     m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
     m_updateChannel = settings.value("updateChannel", "stable").toString();
     m_autoUpdate = settings.value("autoUpdate", true).toBool();
@@ -133,6 +143,7 @@ void SettingsWindow::loadSettings()
     m_fontSize = settings.value("fontSize", 10).toInt();
     m_stashServerUrl = settings.value("stashServerUrl", "http://127.0.0.1:9999").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    m_applicationDataFile = settings.value("applicationDataFile", defaultApplicationDataFile).toString();
 
     // Populate UI Values
     if (m_language == "en-US") {
@@ -160,9 +171,10 @@ void SettingsWindow::loadSettings()
     ui->mediumJump->setText(QString::number(m_mediumJump));
     ui->largeJump->setText(QString::number(m_largeJump));
     ui->extraLargeJump->setText(QString::number(m_extraLargeJump));
-    ui->playbackSpeedAdjustment->setText(QString::number(m_playbackSpeedAdjustment));
-    ui->playbackSpeedAdjustmentFine->setText(QString::number(m_playbackSpeedAdjustmentFine));
+    ui->playbackSpeedAdjustment->setValue(m_playbackSpeedAdjustment);
+    ui->playbackSpeedAdjustmentFine->setValue(m_playbackSpeedAdjustmentFine);
     ui->volumeStep->setValue(m_volumeStep);
+    ui->jumpToEndPercentage->setValue(m_jumpToEndPercentage);
     ui->hideCursorWhenPlaying->setChecked(m_hideCursorWhenPlaying);
     ui->hideCursorTime->setValue(m_hideCursorTime);
     ui->systemTray->setChecked(m_systemTray);
@@ -186,6 +198,7 @@ void SettingsWindow::loadSettings()
 
     ui->appearanceFontScaleText->setText(QString::number(m_fontSize));
     ui->stashServer->setText(m_stashServerUrl);
+    ui->applicationDataFile->setText(m_applicationDataFile);
 }
 
 void SettingsWindow::loadHotkeys()
@@ -370,6 +383,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("playbackSpeedAdjustment", m_playbackSpeedAdjustment);
     settings.setValue("playbackSpeedAdjustmentFine", m_playbackSpeedAdjustmentFine);
     settings.setValue("volumeStep", m_volumeStep);
+    settings.setValue("jumpToEndPercentage", m_jumpToEndPercentage);
     settings.setValue("maxRecentFiles", m_maxRecentFiles);
     settings.setValue("updateChannel", m_updateChannel);
     settings.setValue("autoUpdate", m_autoUpdate);
@@ -389,6 +403,7 @@ void SettingsWindow::saveSettings()
     settings.setValue("continuePlayback", m_continuePlayback);
     settings.setValue("pauseOnLastFrameOfVideo", m_pauseOnLastFrameOfVideo);
     settings.setValue("setOverrideWindowsHotkeys", m_setOverrideWindowsHotkeys);
+    settings.setValue("applicationDataFile", m_applicationDataFile);
 
     settings.beginGroup("Hotkeys");
     settings.remove("");
@@ -700,27 +715,27 @@ void SettingsWindow::pauseOnLastFrameOfVideo_Checked(int state)
     settingsChanged();
 }
 
-void SettingsWindow::playbackSpeedAdjustment_TextChanged(const QString &text)
+void SettingsWindow::playbackSpeedAdjustment_Changed(double value)
 {
-    if (text.isEmpty()) {
-        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
-    } else {
-        ui->playbackSpeedAdjustment->setStyleSheet("QLineEdit { border: none; }");
-        if (text.toInt() != m_playbackSpeedAdjustment) {
-            m_playbackSpeedAdjustment = text.toInt();
+    if (value != m_playbackSpeedAdjustment) {
+        if (value < 0) {
+            ui->playbackSpeedAdjustment->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->playbackSpeedAdjustment->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_playbackSpeedAdjustment = value;
             settingsChanged();
         }
     }
 }
 
-void SettingsWindow::playbackSpeedAdjustmentFine_TextChanged(const QString &text)
+void SettingsWindow::playbackSpeedAdjustmentFine_Changed(double value)
 {
-    if (text.isEmpty()) {
-        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
-    } else {
-        ui->playbackSpeedAdjustmentFine->setStyleSheet("QLineEdit { border: none; }");
-        if (text.toInt() != m_playbackSpeedAdjustmentFine) {
-            m_playbackSpeedAdjustmentFine = text.toInt();
+    if (value != m_playbackSpeedAdjustmentFine) {
+        if (value < 0) {
+            ui->playbackSpeedAdjustmentFine->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->playbackSpeedAdjustmentFine->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_playbackSpeedAdjustmentFine = value;
             settingsChanged();
         }
     }
@@ -804,6 +819,19 @@ void SettingsWindow::extraLargeJump_TextChanged(const QString &text)
     }
 }
 
+void SettingsWindow::jumpToEndPercentage_Changed(double value)
+{
+    if (value != m_jumpToEndPercentage) {
+        if (value < 0.0) {
+            ui->jumpToEndPercentage->setStyleSheet("QDoubleSpinBox { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+        } else {
+            ui->jumpToEndPercentage->setStyleSheet("QDoubleSpinBox { border: none; }");
+            m_jumpToEndPercentage = value;
+            settingsChanged();
+        }
+    }
+}
+
 void SettingsWindow::theme_Changed(int index)
 {
     QString selectedTheme = ui->theme->itemText(index);
@@ -852,6 +880,58 @@ void SettingsWindow::setOverrideWindowsHotkeys_Checked(bool state)
         m_setOverrideWindowsHotkeys = false;
     }
     settingsChanged();
+}
+
+void SettingsWindow::resetHotkeys_Clicked()
+{
+    QSettings settings;
+    settings.beginGroup("Hotkeys");
+    settings.remove(""); // Removes the group and all its keys
+    settings.endGroup();
+    settingsChanged();
+}
+
+void SettingsWindow::applicationDataFile_TextChanged(const QString &text)
+{
+    if (text.isEmpty()) {
+        ui->applicationDataFile->setStyleSheet("QLineEdit { border-width: 1px; border-style: solid; border-color: rgb(255, 0, 0); }");
+    } else {
+        ui->applicationDataFile->setStyleSheet("QLineEdit { border: none; }");
+        if (text != m_applicationDataFile) {
+            m_applicationDataFile = text;
+            settingsChanged();
+        }
+    }
+}
+
+void SettingsWindow::applicationDataFileBrowse_Clicked()
+{
+    QSettings settings;
+
+    // File filters
+    QStringList fileFilters;
+    fileFilters << "Vura App Data Files (*.vdt)";
+    fileFilters << "All Files (*.*)";
+
+    // Create open file dialog.
+    QFileDialog fileDialog(this);
+    fileDialog.setNameFilters(fileFilters);
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setWindowTitle(tr("Open Application Data File"));
+    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::AppDataLocation).toString());
+
+    if (fileDialog.exec() == QDialog::Accepted) {
+        QStringList selectedFiles = fileDialog.selectedFiles();
+        if (!selectedFiles.isEmpty()) {
+            m_applicationDataFile = selectedFiles.first();
+            ui->applicationDataFile->setText(m_applicationDataFile);
+            settingsChanged();
+
+            // Set last file directory where file was opened.
+            QString lastFileDirectory = selectedFiles.last();
+            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
+        }
+    }
 }
 
 void SettingsWindow::stashServer_TextChanged(const QString &text)

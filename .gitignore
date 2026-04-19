@@ -6,10 +6,11 @@
 !/additional_install_files
 !/build-aux
 !/cmake
-!/deps
+!/libvura
 !/src
 !/scripts
 !/share
+!/shared
 !/tests
 !.clang-format
 !.editorconfig
@@ -27,6 +28,12 @@
 !INSTALL
 !README.md
 
+# Exclude dependencies
+!/deps/CMakeLists.txt
+!/deps/blake2
+!/deps/json11
+!/deps/xxHash
+
 # Exclude installer files
 !/installer/installer.iss
 !/installer/vura.ico
@@ -35,6 +42,7 @@
 !/docs/HOTKEYS.md
 !/docs/SETTINGS.md
 !/docs/TODO.md
+!/docs/BUILD_FOLDER.md
 
 # Exclude lock files
 *.lock.json

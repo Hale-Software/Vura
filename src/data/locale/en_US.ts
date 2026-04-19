@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="es_419" sourcelanguage="en_US">
 <context>
     <name>AboutDialog</name>
     <message>
         <location filename="../../forms/about.ui" line="17"/>
         <location filename="../../forms/about.ui" line="162"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Acerca de</translation>
     </message>
     <message>
         <location filename="../../forms/about.ui" line="91"/>
         <source>Vura</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/about.ui" line="98"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión</translation>
     </message>
     <message>
         <location filename="../../forms/about.ui" line="172"/>
         <source>Authors</source>
-        <translation type="unfinished"></translation>
+        <translation>Autores</translation>
     </message>
     <message>
         <location filename="../../forms/about.ui" line="182"/>
         <source>License</source>
-        <translation type="unfinished"></translation>
+        <translation>Licencia</translation>
     </message>
 </context>
 <context>
@@ -93,28 +93,28 @@
     <message>
         <location filename="../../settings/hotkeywidget.ui" line="14"/>
         <source>HotkeyWidget</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../settings/hotkeywidget.ui" line="41"/>
         <source>Vura.Action</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../settings/hotkeywidget.ui" line="89"/>
         <source>Reset to the default hotkey combination.</source>
-        <translation type="unfinished"></translation>
+        <translation>Restablecer a la combinación de teclas predeterminada.</translation>
     </message>
     <message>
         <location filename="../../settings/hotkeywidget.ui" line="92"/>
         <location filename="../../settings/hotkeywidget.ui" line="114"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../settings/hotkeywidget.ui" line="108"/>
         <source>Clear the saved hotkey combination.</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrar la combinación de teclas de acceso rápido guardada.</translation>
     </message>
 </context>
 <context>
@@ -122,7 +122,7 @@
     <message>
         <location filename="../../utility/hotkeys.cpp" line="25"/>
         <source>Space</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -130,67 +130,67 @@
     <message>
         <location filename="../../forms/logviewer.ui" line="14"/>
         <source>Log Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>Visor de Registros</translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="51"/>
         <source>DEBUG</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="56"/>
         <source>INFO</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="61"/>
         <source>WARNING</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="66"/>
         <source>ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="71"/>
         <source>CRITICAL</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="76"/>
         <source>FATAL</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="100"/>
         <source>Simplify</source>
-        <translation type="unfinished"></translation>
+        <translation>simplificar</translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="123"/>
         <source>Open File</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir archivo</translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="133"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Claro</translation>
     </message>
     <message>
         <location filename="../../forms/logviewer.ui" line="140"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Cerca</translation>
     </message>
     <message>
         <location filename="../../dialogs/logviewer.cpp" line="155"/>
         <source>Open Log File</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../dialogs/logviewer.cpp" line="157"/>
         <source>Log Files (*.log);;All Files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -204,7 +204,7 @@
         <location filename="../../forms/mainwindow.ui" line="121"/>
         <location filename="../../forms/mainwindow.ui" line="185"/>
         <source>--:--</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="167"/>
@@ -340,12 +340,12 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="348"/>
         <source>Cut</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="353"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="358"/>
@@ -355,7 +355,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="363"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="368"/>
@@ -390,7 +390,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="398"/>
         <source>Consolidate Duplicates</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="403"/>
@@ -405,7 +405,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="413"/>
         <source>Check Spelling</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="418"/>
@@ -460,7 +460,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="468"/>
         <source>Clear Guides...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="473"/>
@@ -481,7 +481,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="496"/>
         <source>Composite Video</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="501"/>
@@ -491,52 +491,52 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="506"/>
         <source>10%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="511"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="516"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="521"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="526"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="531"/>
         <source>150%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="536"/>
         <source>200%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="541"/>
         <source>400%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="546"/>
         <source>800%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="551"/>
         <source>1600%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="556"/>
@@ -822,7 +822,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="843"/>
         <source>Chapter</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="848"/>
@@ -977,7 +977,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="1033"/>
         <source>Always Fit Window</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1041"/>
@@ -987,62 +987,62 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="1056"/>
         <source>1:4 Quarter</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1061"/>
         <source>1:2 Half</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1066"/>
         <source>1:1 Original</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1071"/>
         <source>2:1 Double</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1081"/>
         <source>16:9</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1086"/>
         <source>4:3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1091"/>
         <source>1:1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1096"/>
         <source>16:10</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1101"/>
         <source>2.21:1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1106"/>
         <source>2.35:1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1111"/>
         <source>2.39:1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1116"/>
         <source>5:4</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1126"/>
@@ -1052,7 +1052,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="1131"/>
         <source>Automatic</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1136"/>
@@ -1062,7 +1062,7 @@
     <message>
         <location filename="../../forms/mainwindow.ui" line="1141"/>
         <source>Auto</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../forms/mainwindow.ui" line="1156"/>

@@ -16,7 +16,6 @@
  ******************************************************************************/
 
 #include "menubar.h"
-#include "utility/hotkeys.h"
 #include <config.h>
 
 
@@ -119,6 +118,7 @@ void MenuBar::createMenuActions()
     m_inMarkerAction = new QAction(tr("Mark In"), this);
     m_outMarkerAction = new QAction(tr("Mark Out"), this);
     m_jumpToTimeAction = new QAction(tr("Jump to Specific Time..."), this);
+    m_jumpToEndAction = new QAction(tr("Jump to End"), this);
     m_nextVideoAction = new QAction(tr("Next Video"), this);
     m_nextFrameAction = new QAction(tr("Next Frame"), this);
     m_togglePlayAction = new QAction(tr("Play/Pause"), this);
@@ -146,7 +146,8 @@ void MenuBar::createMenuActions()
     m_toggleFullscreenAction = new QAction(tr("Fullscreen"), this);
     m_takeSnapshotAction = new QAction(tr("Take Snapshot\tPrtSc"), this);
     m_showMediaInformationAction = new QAction(tr("Media Information"), this);
-    m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
+    //m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
+    m_showVideoResolutionAction = new QAction(tr("Show Video Resolution in Titlebar"), this);
     m_togglePlaylistAction = new QAction(tr("Toggle Playlist"), this);
     m_toggleStatusBarAction = new QAction(tr("Toggle Status Bar"), this);
     m_toggleVideoControlsAction = new QAction(tr("Toggle Video Controls"), this);
@@ -161,6 +162,8 @@ void MenuBar::createMenuActions()
     m_clearRecentFilesAction = new QAction(tr("Clear"), this);
 
     // File Menu
+    m_convertSaveAction = new QAction(tr("Convert/Save..."), this);
+    m_streamAction = new QAction(tr("Stream..."), this);
 
     // View Menu
 
@@ -234,6 +237,7 @@ void MenuBar::setActionsDefaultProperties()
     m_inMarkerAction->setEnabled(false);
     m_outMarkerAction->setEnabled(false);
     m_jumpToTimeAction->setEnabled(false);
+    m_jumpToEndAction->setEnabled(false);
     m_nextVideoAction->setEnabled(false);
     m_nextFrameAction->setEnabled(false);
     m_previousVideoAction->setEnabled(false);
@@ -273,6 +277,8 @@ void MenuBar::setActionsDefaultProperties()
     // File Menu
 
     // View Menu
+    m_showVideoResolutionAction->setCheckable(true);
+    m_showVideoResolutionAction->setChecked(false);
 
     // Playback Menu
 
@@ -430,6 +436,9 @@ void MenuBar::buildMenus()
     m_fileMenu->addAction(m_savePlaylistAction);
     m_fileMenu->addAction(m_saveACopyAction);
     m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_convertSaveAction);
+    m_fileMenu->addAction(m_streamAction);
+    m_fileMenu->addSeparator();
     m_fileMenu->addMenu(m_fileImportMenu);
     m_fileMenu->addMenu(m_fileExportMenu);
     m_fileMenu->addSeparator();
@@ -447,7 +456,8 @@ void MenuBar::buildMenus()
     m_viewMenu->addSeparator();
     m_viewMenu->addAction(m_showMediaInformationAction);
     m_viewMenu->addSeparator();
-    m_viewMenu->addAction(m_showLogFileViewerAction);
+    //m_viewMenu->addAction(m_showLogFileViewerAction);
+    m_viewMenu->addAction(m_showVideoResolutionAction);
 
     m_playbackMenu->addMenu(m_playbackSpeedMenu);
     m_playbackMenu->addSeparator();
@@ -457,6 +467,7 @@ void MenuBar::buildMenus()
     m_playbackMenu->addMenu(m_jumpForwardMenu);
     m_playbackMenu->addMenu(m_jumpBackwardMenu);
     m_playbackMenu->addAction(m_jumpToTimeAction);
+    m_playbackMenu->addAction(m_jumpToEndAction);
     m_playbackMenu->addSeparator();
     m_playbackMenu->addAction(m_togglePlayAction);
     m_playbackMenu->addAction(m_nextVideoAction);
@@ -604,6 +615,7 @@ void MenuBar::setActionConnections()
     connect(m_inMarkerAction, &QAction::triggered, this, &MenuBar::addInMarker_Clicked);
     connect(m_outMarkerAction, &QAction::triggered, this, &MenuBar::addOutMarker_Clicked);
     connect(m_jumpToTimeAction, &QAction::triggered, this, &MenuBar::jumpToTime_Clicked);
+    connect(m_jumpToEndAction, &QAction::triggered, this, &MenuBar::jumpToEnd_Clicked);
     connect(m_nextVideoAction, &QAction::triggered, this, &MenuBar::nextVideo_Clicked);
     connect(m_nextFrameAction, &QAction::triggered, this, &MenuBar::nextFrame_Clicked);
     connect(m_togglePlayAction, &QAction::triggered, this, &MenuBar::togglePlayPause_Clicked);
@@ -631,7 +643,8 @@ void MenuBar::setActionConnections()
     connect(m_toggleFullscreenAction, &QAction::triggered, this, &MenuBar::toggleFullscreen_Clicked);
     connect(m_takeSnapshotAction, &QAction::triggered, this, &MenuBar::takeSnapshot_Clicked);
     connect(m_showMediaInformationAction, &QAction::triggered, this, &MenuBar::showMediaInformation_Clicked);
-    connect(m_showLogFileViewerAction, &QAction::triggered, this, &MenuBar::showLogFileViewer_Clicked);
+    //connect(m_showLogFileViewerAction, &QAction::triggered, this, &MenuBar::showLogFileViewer_Clicked);
+    connect(m_showVideoResolutionAction, &QAction::triggered, this, &MenuBar::showVideoResolution_Clicked);
     connect(m_togglePlaylistAction, &QAction::triggered, this, &MenuBar::togglePlaylist_Clicked);
     connect(m_toggleStatusBarAction, &QAction::triggered, this, &MenuBar::toggleStatusBar_Clicked);
     connect(m_toggleVideoControlsAction, &QAction::triggered, this, &MenuBar::toggleVideoControls_Clicked);
@@ -644,7 +657,10 @@ void MenuBar::setActionConnections()
     connect(m_toggleSceneMarkersAction, &QAction::triggered, this, &MenuBar::toggleSceneTransitionMarkers_Clicked);
     connect(m_toggleStripMarkersAction, &QAction::triggered, this, &MenuBar::toggleStripMarkers_Clicked);
     //connect(, &QAction::triggered, this, &MenuBar::);
+
     // File Menu
+    connect(m_convertSaveAction, &QAction::triggered, this, &MenuBar::convertSave_Clicked);
+    connect(m_streamAction, &QAction::triggered, this, &MenuBar::stream_Clicked);
 
     // View Menu
 
@@ -680,7 +696,7 @@ void MenuBar::setActionConnections()
 // TODO: Organize code
 void MenuBar::setHotkeys()
 {
-    Hotkeys m_hotkeys;
+    VuraHotkeys m_hotkeys;
 
     if (m_initialised) {
         // Remove current hotkeys for actions
@@ -747,7 +763,8 @@ void MenuBar::setHotkeys()
         m_hotkeys.removeMenuItemHotkey(*m_toggleFullscreenAction);
         m_hotkeys.removeMenuItemHotkey(*m_takeSnapshotAction);
         m_hotkeys.removeMenuItemHotkey(*m_showMediaInformationAction);
-        m_hotkeys.removeMenuItemHotkey(*m_showLogFileViewerAction);
+        //m_hotkeys.removeMenuItemHotkey(*m_showLogFileViewerAction);
+        m_hotkeys.removeMenuItemHotkey(*m_viewCurrentLogAction);
         m_hotkeys.removeMenuItemHotkey(*m_togglePlaylistAction);
         m_hotkeys.removeMenuItemHotkey(*m_toggleStatusBarAction);
         m_hotkeys.removeMenuItemHotkey(*m_toggleVideoControlsAction);
@@ -821,7 +838,8 @@ void MenuBar::setHotkeys()
     m_hotkeys.setMenuItemHotkey(*m_toggleFullscreenAction);
     m_hotkeys.setMenuItemHotkey(*m_takeSnapshotAction);
     m_hotkeys.setMenuItemHotkey(*m_showMediaInformationAction);
-    m_hotkeys.setMenuItemHotkey(*m_showLogFileViewerAction);
+    //m_hotkeys.setMenuItemHotkey(*m_showLogFileViewerAction);
+    m_hotkeys.setMenuItemHotkey(*m_viewCurrentLogAction);
     m_hotkeys.setMenuItemHotkey(*m_togglePlaylistAction);
     m_hotkeys.setMenuItemHotkey(*m_toggleStatusBarAction);
     m_hotkeys.setMenuItemHotkey(*m_toggleVideoControlsAction);
@@ -868,6 +886,7 @@ void MenuBar::refreshMenuItems()
     m_inMarkerAction->setEnabled(m_fileLoaded);
     m_outMarkerAction->setEnabled(m_fileLoaded);
     m_jumpToTimeAction->setEnabled(m_fileLoaded);
+    m_jumpToEndAction->setEnabled(m_fileLoaded);
     m_nextVideoAction->setEnabled(m_fileLoaded);
     m_nextFrameAction->setEnabled(m_fileLoaded);
     m_previousVideoAction->setEnabled(m_fileLoaded);
@@ -1321,6 +1340,16 @@ void MenuBar::savePlaylist_Clicked()
 
 void MenuBar::saveACopy_Clicked() {}
 
+void MenuBar::convertSave_Clicked()
+{
+    emit convertSave();
+}
+
+void MenuBar::stream_Clicked()
+{
+    emit stream();
+}
+
 void MenuBar::importProject_Clicked() {}
 
 void MenuBar::importCaptions_Clicked() {}
@@ -1379,42 +1408,42 @@ void MenuBar::toggleStatusBar_Clicked()
 
 void MenuBar::toggleMarkers_Clicked()
 {
-    emit toggleMarkers();
+    emit toggleMarkers("marker");
 }
 
 void MenuBar::toggleCumshotMarkers_Clicked()
 {
-    emit toggleCumshotMarkers();
+    emit toggleMarkers("cumshot");
 }
 
 void MenuBar::toggleCyanMarkers_Clicked()
 {
-    emit toggleCyanMarkers();
+    emit toggleMarkers("cyan");
 }
 
 void MenuBar::toggleDialogMarkers_Clicked()
 {
-    emit toggleDialogMarkers();
+    emit toggleMarkers("dialog");
 }
 
 void MenuBar::toggleMagentaMarkers_Clicked()
 {
-    emit toggleMagentaMarkers();
+    emit toggleMarkers("magenta");
 }
 
 void MenuBar::toggleOrangeMarkers_Clicked()
 {
-    emit toggleOrangeMarkers();
+    emit toggleMarkers("orange");
 }
 
 void MenuBar::toggleSceneTransitionMarkers_Clicked()
 {
-    emit toggleSceneTransitionMarkers();
+    emit toggleMarkers("scene");
 }
 
 void MenuBar::toggleStripMarkers_Clicked()
 {
-    emit toggleStripMarkers();
+    emit toggleMarkers("strip");
 }
 
 void MenuBar::showLogFileViewer_Clicked()
@@ -1437,6 +1466,17 @@ void MenuBar::showMediaInformation_Clicked()
     emit showMediaInformation();
 }
 
+void MenuBar::showVideoResolution_Clicked()
+{
+    if (m_showingVideoResolution) {
+        m_showingVideoResolution = false;
+    } else {
+        m_showingVideoResolution = true;
+    }
+
+    emit showVideoResolution(m_showingVideoResolution);
+    m_showVideoResolutionAction->setChecked(m_showingVideoResolution);
+}
 
 
 // Playback Menu
@@ -1557,6 +1597,11 @@ void MenuBar::jumpToTime_Clicked()
 
         emit videoJumpToTime(mseconds);
     }
+}
+
+void MenuBar::jumpToEnd_Clicked()
+{
+    emit videoJumpToEnd();
 }
 
 void MenuBar::restartVideo_Clicked()

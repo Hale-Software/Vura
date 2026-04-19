@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
+add_subdirectory("${CMAKE_SOURCE_DIR}/shared/libvura" libvura)
+
 # Define source and destination directories
 set(DATA_DIR "${CMAKE_SOURCE_DIR}/src/data")
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -26,7 +28,7 @@ target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOUR
 target_link_libraries(
         vura PRIVATE
         xxhash
-        VURA::qBreakpad
+        VURA::libvura
 )
 
 include(cmake/ui-components.cmake)
@@ -42,10 +44,7 @@ configure_file(cmake/templates/config.h.in config.h)
 target_sources(
         vura PRIVATE
         main.cpp
-        main.h
         config.h
-        constants.cpp
-        constants.h
 )
 
 if (OS_WINDOWS)

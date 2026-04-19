@@ -40,7 +40,7 @@
 #include <QStandardPaths>
 
 #include "hotkeywidget.h"
-#include "../constants.h"
+#include <constants.h>
 
 namespace Ui {
 class SettingsWindow;
@@ -90,14 +90,15 @@ public slots:
     void continuePlayback_Changed(int i);
     void pauseOnLastFrameOfVideo_Checked(int state);
 
-    void playbackSpeedAdjustment_TextChanged(const QString &text);
-    void playbackSpeedAdjustmentFine_TextChanged(const QString &text);
+    void playbackSpeedAdjustment_Changed(double value);
+    void playbackSpeedAdjustmentFine_Changed(double value);
     void volumeStep_Changed(double value);
     void frameWalk_TextChanged(const QString &text);
     void smallJump_TextChanged(const QString &text);
     void mediumJump_TextChanged(const QString &text);
     void largeJump_TextChanged(const QString &text);
     void extraLargeJump_TextChanged(const QString &text);
+    void jumpToEndPercentage_Changed(double value);
 
     // Appearance Settings
     void theme_Changed(int index);
@@ -114,8 +115,11 @@ public slots:
     void hotkeyFilterClearButton_Clicked();
     void hotkey_Changed(int id, QString action, QString oldHotkey, QString newHotkey);
     void setOverrideWindowsHotkeys_Checked(bool state);
+    void resetHotkeys_Clicked();
 
     // Advanced Settings
+    void applicationDataFile_TextChanged(const QString &text);
+    void applicationDataFileBrowse_Clicked();
     void stashServer_TextChanged(const QString &text);
 
 signals:
@@ -172,6 +176,8 @@ private:
     int m_continuePlayback;
     bool m_pauseOnLastFrameOfVideo;
     bool m_setOverrideWindowsHotkeys;
+    double m_jumpToEndPercentage;
+    QString m_applicationDataFile;
 
     // Appearance Settings
     QString m_theme;

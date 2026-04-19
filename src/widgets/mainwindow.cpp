@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "mainwindow.h"
@@ -21,32 +22,71 @@
 #include <config.h>
 #include <qglobal.h>
 
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
+
 // Global pointer to Logger for use in messageHandler
-static Logger* globalRedirector = nullptr;
-
-
-/*!
-    @class MainWindow
-
-    @brief The main window of the Vura application.
-
- */
+static Blogger* globalRedirector = nullptr;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
+    if (!initApplicationDirs()) {
+        VMessageBox::critical(this, "Vura", "Failed to initialize application directories.");
+    }
+
+    vuraSettings = new VuraSettings();
+    emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
+    initApplication();
+
+    initSystemTrayIcon();
+    initMenuBar();
+    initStatusBar();
+    initVideoControls();
+    initVideoPlayer();
+    initUI();
+    initAudioDevices();
+
+    if (!isPlayerAvailable())
+        VMessageBox::critical(this, "Vura", "The QMediaPlayer object does not have a valid service. Please check the media service plugins are installed.");
+
+    setToolTips();
+    setStyleSheet();
+
+    qDebug() << "Application startup complete.";
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::testFunction()
+{
+    //VuraHelpers::simulateApplicationCrash();
+    //VMessageBox::critical(this, "Vura", "Test of critical message box.");
+}
+
+
+#pragma region STARTUP FUNCTIONS
+
+
+void MainWindow::initApplication()
+{
+    qDebug() << "Initializing Application...";
+
     this->setMouseTracking(true);
     this->statusBar()->setSizeGripEnabled(true);
 
     // Set the global redirector and install the custom message handler
-    qInstallMessageHandler(Logger::messageHandler);
-    globalRedirector = Logger::instance();
-    qInfo() << "Starting application...";
+    qInstallMessageHandler(Blogger::messageHandler);
+    globalRedirector = Blogger::instance();
+
+    mediaFunctions = new MediaFunctions();
 
     QString name = qgetenv("USER");
     if (name.isEmpty()) {
@@ -54,22 +94,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     m_currentUser = name;
 
-    createUserDirs();
+    initUserDirs();
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
 
-    // Application startup initialization
-    Startup startup;
-    startup.Initialize();
+    qDebug() << "Application initialized.";
+}
 
-    loadSettings();
-    m_videoMarkers = new VideoMarkers;
+void MainWindow::initSystemTrayIcon()
+{
+    qDebug() << "Initializing system tray icon...";
 
-
-    // Configure system tray icon
     m_systemTrayIcon = new SystemTray(this);
-    if (m_systemTray) {
+    if (vuraSettings->systemTray()) {
         m_systemTrayIcon->show();
     } else {
         m_systemTrayIcon->hide();
@@ -88,8 +126,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_systemTrayIcon, &SystemTray::previousVideo, this, &MainWindow::previousVideo);
     connect(m_systemTrayIcon, &SystemTray::exit, this, &MainWindow::exitApplication);
 
+    qDebug() << "System tray icon initialized.";
+}
 
-    // Configure menu bar
+void MainWindow::initMenuBar()
+{
+    qDebug() << "Initializing menu bar...";
+
     m_menuBar = new MenuBar(this);
     connect(this, &MainWindow::setPlayerStatus, m_menuBar, &MenuBar::setPlayerStatus);
     connect(this, &MainWindow::refreshSettings, m_menuBar, &MenuBar::refreshSettings);
@@ -104,11 +147,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this, &MainWindow::updateRecentFiles, m_menuBar, &MenuBar::updateRecentFiles);
 
     connect(m_menuBar, &MenuBar::showMediaInformation, this, &MainWindow::showMediaInformation);
-    //connect(m_menuBar, &MenuBar::showPreferences, this, &MainWindow::showPreferences);
-    //connect(m_menuBar, &MenuBar::showAbout, this, &MainWindow::showAbout);
-    //connect(m_menuBar, &MenuBar::showHelp, this, &MainWindow::showHelp);
-    //connect(m_menuBar, &MenuBar::showUpdates, this, &MainWindow::showUpdates);
-    //connect(m_menuBar, &MenuBar::showFeedback, this, &MainWindow::showFeedback);
     connect(m_menuBar, &MenuBar::emergencyCollapse, this, &MainWindow::emergencyCollapse);
     connect(m_menuBar, &MenuBar::exitApplication, this, &MainWindow::exitApplication);
     connect(m_menuBar, &MenuBar::openFiles, this, &MainWindow::openFiles);
@@ -120,14 +158,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::togglePlaylist, this, &MainWindow::togglePlaylist);
     connect(m_menuBar, &MenuBar::toggleStatusBar, this, &MainWindow::toggleStatusBar);
     connect(m_menuBar, &MenuBar::toggleMarkers, this, &MainWindow::toggleMarkers);
-    connect(m_menuBar, &MenuBar::toggleCumshotMarkers, this, &MainWindow::toggleCumshotMarkers);
-    connect(m_menuBar, &MenuBar::toggleCyanMarkers, this, &MainWindow::toggleCyanMarkers);
-    connect(m_menuBar, &MenuBar::toggleDialogMarkers, this, &MainWindow::toggleDialogMarkers);
-    connect(m_menuBar, &MenuBar::toggleMagentaMarkers, this, &MainWindow::toggleMagentaMarkers);
-    connect(m_menuBar, &MenuBar::toggleOrangeMarkers, this, &MainWindow::toggleOrangeMarkers);
-    connect(m_menuBar, &MenuBar::toggleSceneTransitionMarkers, this, &MainWindow::toggleSceneTransitionMarkers);
-    connect(m_menuBar, &MenuBar::toggleStripMarkers, this, &MainWindow::toggleStripMarkers);
-    //connect(m_menuBar, &MenuBar::showLogFileViewer, this, &MainWindow::showLogFileViewer);
     connect(m_menuBar, &MenuBar::toggleVideoControls, this, &MainWindow::toggleVideoControls);
     connect(m_menuBar, &MenuBar::togglePlayPause, this, &MainWindow::togglePlayPause);
     connect(m_menuBar, &MenuBar::nextVideo, this, &MainWindow::nextVideo);
@@ -136,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
     connect(m_menuBar, &MenuBar::videoSeek, this, &MainWindow::videoSeek);
     connect(m_menuBar, &MenuBar::videoJumpToTime, this, &MainWindow::videoJumpToTime);
+    connect(m_menuBar, &MenuBar::videoJumpToEnd, this, &MainWindow::jumpToEnd);
     connect(m_menuBar, &MenuBar::restartVideo, this, &MainWindow::restartVideo);
     connect(m_menuBar, &MenuBar::changeVolume, this, &MainWindow::changeVolume);
     connect(m_menuBar, &MenuBar::toggleMute, this, &MainWindow::toggleMute);
@@ -156,25 +187,43 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_menuBar, &MenuBar::createSubclip, this, &MainWindow::createSubclip);
     connect(m_menuBar, &MenuBar::testFunction, this, &MainWindow::testFunction);
     connect(m_menuBar, &MenuBar::takeSnapshot, this, &MainWindow::takeSnapshot);
+    connect(m_menuBar, &MenuBar::showVideoResolution, this, &MainWindow::showVideoResolution);
+    connect(m_menuBar, &MenuBar::convertSave, this, &MainWindow::convertSave);
+    connect(m_menuBar, &MenuBar::stream, this, &MainWindow::streamMedia);
 
     this->setMenuBar(m_menuBar);
 
+    qDebug() << "Menu bar initialized.";
+}
 
-    // Configure status bar
+void MainWindow::initStatusBar()
+{
+    qDebug() << "Initializing status bar...";
+
     m_statusLabel = new QLabel;
     ui->statusBar->addPermanentWidget(m_statusLabel);
     ui->statusBar->setSizeGripEnabled(false);
-    ui->statusBar->setVisible(m_showStatusBarOnStart);
-    m_showingStatusBar = m_showStatusBarOnStart;
+    ui->statusBar->setVisible(vuraSettings->showStatusBarOnStart());
+    m_showingStatusBar = vuraSettings->showStatusBarOnStart();
     emit setStatusBarShowing(m_showingStatusBar);
 
+    qDebug() << "Status bar initialized.";
+}
 
-    // Configure Video Controls
-    if (m_showVideoControlsOnStart)
+void MainWindow::initVideoControls()
+{
+    qDebug() << "Initializing video controls...";
+
+    if (vuraSettings->showVideoControlsOnStart())
         toggleVideoControls();
 
+    qDebug() << "Video controls initialized.";
+}
 
-    // Configure Video Player
+void MainWindow::initVideoPlayer()
+{
+    qDebug() << "Initializing video player...";
+
     m_player = new QMediaPlayer(this);
     m_audioOutput = new QAudioOutput(this);
     m_player->setAudioOutput(m_audioOutput);
@@ -189,9 +238,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_player, &QMediaPlayer::sourceChanged, this, &MainWindow::sourceChanged);
     connect(m_player, &QMediaPlayer::tracksChanged, this, &MainWindow::tracksChanged);
     connect(m_player, &QMediaPlayer::playbackRateChanged, this, &MainWindow::playbackRateChanged);
+    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &MainWindow::videoFrameChanged);
 
+    qDebug() << "Video player initialized.";
+}
 
-    // Configure UI items
+void MainWindow::initUI()
+{
+    qDebug() << "Initializing UI...";
+
     m_videoSlider = new VideoSlider(this);
     ui->horizontalLayout_3->removeWidget(ui->placeholder);
     ui->horizontalLayout_3->insertWidget(1, m_videoSlider);
@@ -201,9 +256,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->playlistView->setModel(m_playlistModel);
     ui->playlistView->setCurrentIndex(m_playlistModel->index(m_playlist->currentIndex(), 0));
 
-    if (!m_showPlaylistOnStart)
+    if (!vuraSettings->showPlaylistOnStart())
         ui->playlistView->hide();
-    m_showingPlaylist = m_showPlaylistOnStart;
+
+    m_showingPlaylist = vuraSettings->showPlaylistOnStart();
     emit setPlaylistShowing(m_showingPlaylist);
 
     connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::seek);
@@ -214,8 +270,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->playlistView, &QListView::customContextMenuRequested, this, &MainWindow::showPlaylistContextMenu);
     connect(ui->duration, &ClickableLabel::clicked, this, &MainWindow::durationLabel_Clicked);
 
+    qDebug() << "UI Initialized.";
+}
 
-    //
+void MainWindow::initAudioDevices()
+{
+    qDebug() << "Initializing audio devices...";
+
     QList<QAudioDevice> audioDevices;
     audioDevices.append(QAudioDevice());
     for (auto &device : QMediaDevices::audioOutputs()) {
@@ -234,20 +295,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         emit setActiveAudioDevice(m_audioOutput->device());
     });
 
-    if (!isPlayerAvailable()) {
-        qWarning() << "The QMediaPlayer object does not have a valid service. Please check the media service plugins are installed.";
-    }
-
-    setToolTips();
-    setStyleSheet();
+    qDebug() << "Audio devices initialized.";
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
 
-void MainWindow::testFunction() {}
+#pragma endregion
 
 
 #pragma region CONTEXT MENUS
@@ -255,14 +307,14 @@ void MainWindow::testFunction() {}
 
 void MainWindow::openFolderContextMenu(const QString &path)
 {
-    qDebug() << "Open folder from context Menu";
     if (m_playlist->mediaCount() > 0) {
-        QMessageBox::StandardButton confirmationBox;
-        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
-                                      QMessageBox::Yes | QMessageBox::No);
+        const QMessageBox::StandardButton confirmationBox = VMessageBox::question(
+            this,
+            tr("Save Playlist"),
+            tr("Do you want to save your playlist before its closed?"));
 
         if (confirmationBox == QMessageBox::Yes) {
-            // Save playlist
+            // TODO: Save playlist
         }
     }
     m_playlist->clear();
@@ -277,13 +329,13 @@ void MainWindow::openFolderContextMenu(const QString &path)
 
     const int previousMediaCount = m_playlist->mediaCount();
     for (auto &url : fileList) {
-        if (!isPlaylist(url)) {
+        if (!mediaFunctions->isPlaylist(url)) {
             m_playlist->addMedia(url);
         }
     }
 
     if (m_playlist->mediaCount() > previousMediaCount) {
-        auto index = m_playlistModel->index(previousMediaCount, 0);
+        const auto index = m_playlistModel->index(previousMediaCount, 0);
         ui->playlistView->setCurrentIndex(index);
         jump(index);
     }
@@ -291,14 +343,14 @@ void MainWindow::openFolderContextMenu(const QString &path)
 
 void MainWindow::openFileContextMenu(const QString &file)
 {
-    qDebug() << "Open file from context Menu";
     if (m_playlist->mediaCount() > 0) {
-        QMessageBox::StandardButton confirmationBox;
-        confirmationBox = QMessageBox::question(this, "Save Playlist", "Do you want to save your playlist before its closed?",
-                                      QMessageBox::Yes | QMessageBox::No);
+        const QMessageBox::StandardButton confirmationBox = VMessageBox::question(
+            this,
+            tr("Save Playlist"),
+            tr("Do you want to save your playlist before its closed?"));
 
         if (confirmationBox == QMessageBox::Yes) {
-            // Save playlist
+            // TODO: Save playlist
         }
     }
     m_playlist->clear();
@@ -306,17 +358,17 @@ void MainWindow::openFileContextMenu(const QString &file)
     const int previousMediaCount = m_playlist->mediaCount();
     if (!file.isEmpty()) {
         QUrl url = QUrl::fromLocalFile(file);
-        if (!isPlaylist(url)) {
+        if (!mediaFunctions->isPlaylist(url)) {
             m_playlist->addMedia(url);
             if (m_playlist->mediaCount() > previousMediaCount) {
-                auto index = m_playlistModel->index(previousMediaCount, 0);
+                const auto index = m_playlistModel->index(previousMediaCount, 0);
                 ui->playlistView->setCurrentIndex(index);
                 jump(index);
             }
         } else {
             m_playlist->loadPlaylist(file);
             if (m_playlist->mediaCount() > previousMediaCount) {
-                auto index = m_playlistModel->index(previousMediaCount, 0);
+                const auto index = m_playlistModel->index(previousMediaCount, 0);
                 ui->playlistView->setCurrentIndex(index);
                 jump(index);
             }
@@ -326,14 +378,13 @@ void MainWindow::openFileContextMenu(const QString &file)
 
 void MainWindow::addFileToPlaylistContextMenu(const QString &file)
 {
-    qDebug() << "Add file to playlist from context Menu";
     const int previousMediaCount = m_playlist->mediaCount();
     if (!file.isEmpty()) {
         QUrl url = QUrl::fromLocalFile(file);
-        if (!isPlaylist(url)) {
+        if (!mediaFunctions->isPlaylist(url)) {
             m_playlist->addMedia(url);
             if (m_playlist->mediaCount() > previousMediaCount) {
-                auto index = m_playlistModel->index(previousMediaCount, 0);
+                const auto index = m_playlistModel->index(previousMediaCount, 0);
                 ui->playlistView->setCurrentIndex(index);
                 jump(index);
             }
@@ -343,7 +394,6 @@ void MainWindow::addFileToPlaylistContextMenu(const QString &file)
 
 void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
 {
-    qDebug() << "Add folder to playlist from context Menu";
     QList<QUrl> fileList;
 
     QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
@@ -354,13 +404,13 @@ void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
 
     const int previousMediaCount = m_playlist->mediaCount();
     for (auto &url : fileList) {
-        if (!isPlaylist(url)) {
+        if (!mediaFunctions->isPlaylist(url)) {
             m_playlist->addMedia(url);
         }
     }
 
     if (m_playlist->mediaCount() > previousMediaCount) {
-        auto index = m_playlistModel->index(previousMediaCount, 0);
+        const auto index = m_playlistModel->index(previousMediaCount, 0);
         ui->playlistView->setCurrentIndex(index);
         jump(index);
     }
@@ -368,7 +418,7 @@ void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
 
 void MainWindow::showPlaylistContextMenu(const QPoint &pos)
 {
-    QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
+    const QPoint globalPos = ui->playlistView->mapToGlobal(pos); // Map to global position
     m_pos = pos;
 
     if (m_playlist->mediaCount() > 0) {
@@ -454,7 +504,7 @@ void MainWindow::playlistContextMenu_SaveAction() {}
 
 void MainWindow::playlistContextMenu_PlayVideoAction()
 {
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    const QModelIndex index = ui->playlistView->indexAt(m_pos);
     m_playlist->setCurrentIndex(index.row());
 }
 
@@ -466,21 +516,21 @@ void MainWindow::playlistContextMenu_InformationVideoAction() {}
 
 void MainWindow::playlistContextMenu_ShowFolderVideoAction()
 {
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
-    QVariant data = index.data(); // Get the data
-    QString text = data.toString();
-    QFileInfo info(text);
-    QString directoryPath = info.absoluteDir().absolutePath();
+    const QModelIndex index = ui->playlistView->indexAt(m_pos);
+    const QVariant data = index.data(); // Get the data
+    const QString text = data.toString();
+    const QFileInfo info(text);
+    const QString directoryPath = info.absoluteDir().absolutePath();
     QUrl folderUrl = QUrl::fromLocalFile(directoryPath);
     if (!QDesktopServices::openUrl(folderUrl)) {
-        // Handle error if the folder couldn't be opened
-        qWarning() << "Could not open folder: " << directoryPath.toStdString();
+        const QString warningMessage = tr("Could not open folder: ") + directoryPath;
+        VMessageBox::warning(this, "Vura", warningMessage);
     }
 }
 
 void MainWindow::playlistContextMenu_RemoveSelectedVideoAction()
 {
-    QModelIndex index = ui->playlistView->indexAt(m_pos);
+    const QModelIndex index = ui->playlistView->indexAt(m_pos);
     if (index.row() == m_playlist->currentIndex()) {
         m_playlist->next();
     }
@@ -535,11 +585,11 @@ void MainWindow::positionChanged(qint64 progress)
     updateDurationInfo(progress / 1000);
 }
 
-QString MainWindow::trackName(const QMediaMetaData &metaData, int index)
+QString MainWindow::trackName(const QMediaMetaData &metaData, const int index)
 {
     QString name;
-    QString title = metaData.stringValue(QMediaMetaData::Title);
-    QLocale::Language lang = metaData.value(QMediaMetaData::Language).value<QLocale::Language>();
+    const QString title = metaData.stringValue(QMediaMetaData::Title);
+    const auto lang = metaData.value(QMediaMetaData::Language).value<QLocale::Language>();
 
     if (title.isEmpty()) {
         if (lang == QLocale::Language::AnyLanguage)
@@ -562,7 +612,7 @@ void MainWindow::tracksChanged()
     emit updateSubtitleTracks(m_player->subtitleTracks());
 }
 
-void MainWindow::playlistPositionChanged(int currentItem)
+void MainWindow::playlistPositionChanged(const int currentItem)
 {
     ui->playlistView->setCurrentIndex(m_playlistModel->index(currentItem, 0));
     m_player->setSource(m_playlist->currentMedia());
@@ -570,35 +620,22 @@ void MainWindow::playlistPositionChanged(int currentItem)
 
 void MainWindow::sourceChanged(const QUrl &media)
 {
-    if (m_hashFile) {
-        if (!m_currentFileHash.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
+    VideoMarkers::write(vuraSettings->markerFile(), m_currentFile, videoMarkers);
+    videoMarkers.clear();
 
-        m_currentFileHash = QString::number(fileHash(media.toLocalFile()));
-        m_videoMarkersList = m_videoMarkers->getMarkers(m_currentFileHash);
-    } else {
-        if (!m_currentFile.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
-
-        m_videoMarkersList = m_videoMarkers->getMarkers(media.toString());
-    }
     m_currentFile = media.toString();
     qInfo() << "New media source loaded: " << m_currentFile;
-    m_videoSlider->setMarkers(m_videoMarkersList);
+    videoMarkers = VideoMarkers::read(vuraSettings->markerFile(), m_currentFile);
+    m_videoSlider->setMarkers(videoMarkers);
 
     setApplicationWindowTitle();
 
     QByteArray byteArray = m_currentFile.toUtf8();
-    if (m_playing) {
-        m_player->play();
-    } else {
-        m_player->pause();
-    }
     m_inMarker = 0;
     m_outMarker = 0;
 }
 
-void MainWindow::statusChanged(QMediaPlayer::MediaStatus status)
+void MainWindow::statusChanged(const QMediaPlayer::MediaStatus status)
 {
     // handle status message
     switch (status) {
@@ -629,7 +666,7 @@ void MainWindow::statusChanged(QMediaPlayer::MediaStatus status)
     }
 }
 
-void MainWindow::bufferingProgress(float progress)
+void MainWindow::bufferingProgress(const float progress)
 {
     if (m_player->mediaStatus() == QMediaPlayer::StalledMedia)
         setStatusInfo(tr("Stalled %1%").arg(qRound(progress * 100.)));
@@ -640,6 +677,14 @@ void MainWindow::bufferingProgress(float progress)
 void MainWindow::playbackRateChanged(qreal rate)
 {
     ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
+}
+
+void MainWindow::videoFrameChanged(const QVideoFrame &frame)
+{
+    if (frame.isValid()) {
+        m_videoResolution = QString::number(frame.height());
+        setApplicationWindowTitle();
+    }
 }
 
 
@@ -701,7 +746,12 @@ void MainWindow::showUpdates()
     m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void MainWindow::showFeedback() {}
+void MainWindow::showFeedback()
+{
+    VMessageBox::information(this,
+        "Vura",
+        "Sorry this function has not been implemented yet.");
+}
 
 void MainWindow::emergencyCollapse()
 {
@@ -717,7 +767,7 @@ void MainWindow::exitApplication()
     this->close();
 }
 
-void MainWindow::openFiles(const QStringList &fileList, bool localFile)
+void MainWindow::openFiles(const QStringList &fileList, const bool localFile)
 {
     QSettings settings;
 
@@ -730,7 +780,7 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
         if (localFile) {
             QUrl url = QUrl::fromLocalFile(fileName);
 
-            if (!isPlaylist(url)) {
+            if (!mediaFunctions->isPlaylist(url)) {
                 files.removeAll(fileName);
                 files.prepend(fileName);
                 m_playlist->addMedia(url);
@@ -746,15 +796,15 @@ void MainWindow::openFiles(const QStringList &fileList, bool localFile)
 
     if (!loadedNewPlaylist) {
         if (m_playlist->mediaCount() > previousMediaCount) {
-            auto index = m_playlistModel->index(previousMediaCount, 0);
+            const auto index = m_playlistModel->index(previousMediaCount, 0);
             ui->playlistView->setCurrentIndex(index);
             jump(index);
         }
     } else {
-        // Added opened playlist code
+        // TODO: Added opened playlist code
     }
 
-    while (files.size() > m_maxRecentFiles) {
+    while (files.size() > vuraSettings->maxRecentFiles()) {
         files.removeLast();
     }
     settings.setValue("recentFileList", files);
@@ -794,24 +844,34 @@ void MainWindow::openFolder(const QString &folderPath)
         }
 
         for (auto &fileUrl : filesList) {
-            if (!isPlaylist(fileUrl)) {
+            if (!mediaFunctions->isPlaylist(fileUrl)) {
                 m_playlist->addMedia(fileUrl);
             } else {
-                VuraMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
+                VMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
             }
         }
 
         if (m_playlist->mediaCount() > previousMediaCount) {
-            auto index = m_playlistModel->index(previousMediaCount, 0);
+            const auto index = m_playlistModel->index(previousMediaCount, 0);
             ui->playlistView->setCurrentIndex(index);
             jump(index);
         }
     }
 }
 
-void MainWindow::saveFile(const QString &filePath) {}
+void MainWindow::saveFile(const QString &filePath)
+{
+    VMessageBox::information(this,
+        "Vura",
+        "Sorry this function has not been implemented yet.");
+}
 
-void MainWindow::savePlaylist(const QString &filePath, const QString &type) {}
+void MainWindow::savePlaylist(const QString &filePath, const QString &type)
+{
+    VMessageBox::information(this,
+        "Vura",
+        "Sorry this function has not been implemented yet.");
+}
 
 void MainWindow::togglePlaylist()
 {
@@ -837,84 +897,80 @@ void MainWindow::toggleStatusBar()
     emit setStatusBarShowing(m_showingStatusBar);
 }
 
-void MainWindow::toggleMarkers()
+void MainWindow::toggleMarkers(const QString &markerType)
 {
-    if (m_videoSlider->showMarkers) {
-        m_videoSlider->showMarkers = false;
-    } else {
-        m_videoSlider->showMarkers = true;
-    }
-    emit setMarkerShowing("marker", m_videoSlider->showMarkers);
-}
+    if (markerType == "marker") {
+        if (m_videoSlider->showMarkers) {
+            m_videoSlider->showMarkers = false;
+        } else {
+            m_videoSlider->showMarkers = true;
+        }
 
-void MainWindow::toggleCumshotMarkers()
-{
-    if (m_videoSlider->showCumshotMarkers) {
-        m_videoSlider->showCumshotMarkers = false;
-    } else {
-        m_videoSlider->showCumshotMarkers = true;
-    }
-    emit setMarkerShowing("cumshot", m_videoSlider->showCumshotMarkers);
-}
+        emit setMarkerShowing(markerType, m_videoSlider->showMarkers);
 
-void MainWindow::toggleCyanMarkers()
-{
-    if (m_videoSlider->showCyanMarkers) {
-        m_videoSlider->showCyanMarkers = false;
-    } else {
-        m_videoSlider->showCyanMarkers = true;
-    }
-    emit setMarkerShowing("cyan", m_videoSlider->showCyanMarkers);
-}
+    } else if (markerType == "cumshot") {
+        if (m_videoSlider->showCumshotMarkers) {
+            m_videoSlider->showCumshotMarkers = false;
+        } else {
+            m_videoSlider->showCumshotMarkers = true;
+        }
 
-void MainWindow::toggleDialogMarkers()
-{
-    if (m_videoSlider->showDialogMarkers) {
-        m_videoSlider->showDialogMarkers = false;
-    } else {
-        m_videoSlider->showDialogMarkers = true;
-    }
-    emit setMarkerShowing("dialog", m_videoSlider->showDialogMarkers);
-}
+        emit setMarkerShowing(markerType, m_videoSlider->showCumshotMarkers);
 
-void MainWindow::toggleMagentaMarkers()
-{
-    if (m_videoSlider->showMagentaMarkers) {
-        m_videoSlider->showMagentaMarkers = false;
-    } else {
-        m_videoSlider->showMagentaMarkers = true;
-    }
-    emit setMarkerShowing("magenta", m_videoSlider->showMagentaMarkers);
-}
+    } else if (markerType == "cyan") {
+        if (m_videoSlider->showCyanMarkers) {
+            m_videoSlider->showCyanMarkers = false;
+        } else {
+            m_videoSlider->showCyanMarkers = true;
+        }
 
-void MainWindow::toggleOrangeMarkers()
-{
-    if (m_videoSlider->showOrangeMarkers) {
-        m_videoSlider->showOrangeMarkers = false;
-    } else {
-        m_videoSlider->showOrangeMarkers = true;
-    }
-    emit setMarkerShowing("orange", m_videoSlider->showOrangeMarkers);
-}
+        emit setMarkerShowing(markerType, m_videoSlider->showCyanMarkers);
 
-void MainWindow::toggleSceneTransitionMarkers()
-{
-    if (m_videoSlider->showSceneMarkers) {
-        m_videoSlider->showSceneMarkers = false;
-    } else {
-        m_videoSlider->showSceneMarkers = true;
-    }
-    emit setMarkerShowing("scene", m_videoSlider->showSceneMarkers);
-}
+    } else if (markerType == "dialog") {
+        if (m_videoSlider->showDialogMarkers) {
+            m_videoSlider->showDialogMarkers = false;
+        } else {
+            m_videoSlider->showDialogMarkers = true;
+        }
 
-void MainWindow::toggleStripMarkers()
-{
-    if (m_videoSlider->showStripMarkers) {
-        m_videoSlider->showStripMarkers = false;
-    } else {
-        m_videoSlider->showStripMarkers = true;
+        emit setMarkerShowing(markerType, m_videoSlider->showDialogMarkers);
+
+    } else if (markerType == "magenta") {
+        if (m_videoSlider->showMagentaMarkers) {
+            m_videoSlider->showMagentaMarkers = false;
+        } else {
+            m_videoSlider->showMagentaMarkers = true;
+        }
+
+        emit setMarkerShowing(markerType, m_videoSlider->showMagentaMarkers);
+
+    } else if (markerType == "orange") {
+        if (m_videoSlider->showOrangeMarkers) {
+            m_videoSlider->showOrangeMarkers = false;
+        } else {
+            m_videoSlider->showOrangeMarkers = true;
+        }
+
+        emit setMarkerShowing(markerType, m_videoSlider->showOrangeMarkers);
+
+    } else if (markerType == "scene") {
+        if (m_videoSlider->showSceneMarkers) {
+            m_videoSlider->showSceneMarkers = false;
+        } else {
+            m_videoSlider->showSceneMarkers = true;
+        }
+
+        emit setMarkerShowing(markerType, m_videoSlider->showSceneMarkers);
+
+    } else if (markerType == "strip") {
+        if (m_videoSlider->showStripMarkers) {
+            m_videoSlider->showStripMarkers = false;
+        } else {
+            m_videoSlider->showStripMarkers = true;
+        }
+
+        emit setMarkerShowing(markerType, m_videoSlider->showStripMarkers);
     }
-    emit setMarkerShowing("strip", m_videoSlider->showStripMarkers);
 }
 
 void MainWindow::showLogFileViewer()
@@ -963,10 +1019,8 @@ void MainWindow::togglePlayPause()
     if (m_player->isAvailable()) {
         if (m_player->isPlaying()) {
             m_player->pause();
-            m_playing = false;
         } else {
             m_player->play();
-            m_playing = true;
         }
     }
 }
@@ -987,16 +1041,16 @@ void MainWindow::previousVideo()
     }
 }
 
-void MainWindow::changePlaybackSpeed(double mrate)
+void MainWindow::changePlaybackSpeed(const double mrate)
 {
-    float newSpeed = m_playbackSpeed + mrate;
+    double newSpeed = m_playbackSpeed + mrate;
     if (newSpeed <= 0) {
         newSpeed = 0.05;
 
     } else if (newSpeed > 7.5) {
         newSpeed = 7.5;
-
     }
+
     m_player->setPlaybackRate(newSpeed);
     m_playbackSpeed = m_player->playbackRate();
 }
@@ -1007,18 +1061,18 @@ void MainWindow::setPlaybackSpeedNormal()
     m_playbackSpeed = m_player->playbackRate();
 }
 
-void MainWindow::videoSeek(int mseconds)
+void MainWindow::videoSeek(const int mseconds)
 {
     qint64 zeroNum = 0;
     if (m_player->isAvailable()) {
-        qint64 hduration = m_player->duration();
+        const qint64 duration = m_player->duration();
         qint64 newPosition = m_player->position() + mseconds;
 
-        if (newPosition < hduration && newPosition > zeroNum) {
+        if (newPosition < duration && newPosition > zeroNum) {
             m_player->setPosition(newPosition);
 
-        } else if (newPosition >= hduration) {
-            m_player->setPosition(hduration);
+        } else if (newPosition >= duration) {
+            m_player->setPosition(duration);
 
         } else if (newPosition <= zeroNum) {
             m_player->setPosition(zeroNum);
@@ -1026,7 +1080,7 @@ void MainWindow::videoSeek(int mseconds)
     }
 }
 
-void MainWindow::videoJumpToTime(int position)
+void MainWindow::videoJumpToTime(const int position)
 {
     if (position <= m_player->duration()) {
         m_player->setPosition(position);
@@ -1040,15 +1094,16 @@ void MainWindow::restartVideo()
     m_player->setPosition(0);
 }
 
-void MainWindow::changeVolume(double mvolume)
+void MainWindow::changeVolume(const double mvolume)
 {
-    float n_volume = m_audioOutput->volume() + mvolume;
-    if (n_volume > 1.0) {
-        n_volume = 1.0;
-    } else if (n_volume < 0.0) {
-        n_volume = 0.0;
+    double newVolume = m_audioOutput->volume() + mvolume;
+    if (newVolume > 1.0) {
+        newVolume = 1.0;
+    } else if (newVolume < 0.0) {
+        newVolume = 0.0;
     }
-    m_audioOutput->setVolume(n_volume);
+
+    m_audioOutput->setVolume(newVolume);
     m_volume = m_audioOutput->volume();
 }
 
@@ -1060,6 +1115,7 @@ void MainWindow::toggleMute()
         m_audioOutput->setMuted(true);
     }
     m_isMuted = m_audioOutput->isMuted();
+
     emit setMuted(m_isMuted);
 }
 
@@ -1108,39 +1164,55 @@ void MainWindow::setSubtitleTrack(const int mtrack)
 
 void MainWindow::addMarker(const QString &markerType)
 {
-    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
-    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
-    double sliderPercent = (distanceFromMin / sliderRange);
+    if (markerType == "in") {
+        m_inMarker = m_player->position();
 
-    QList<double> marker = m_videoMarkersList.value(markerType);
-    marker.append(sliderPercent);
-    m_videoMarkersList.insert(markerType, marker);
+    } else if (markerType == "out") {
+        m_outMarker = m_player->position();
 
-    m_videoSlider->setMarkers(m_videoMarkersList);
+    } else {
+        const double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+        const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+        const double sliderPercent = (distanceFromMin / sliderRange);
+
+        VuraVideoMarker marker;
+        marker.id = VideoMarkers::generateMarkerID(vuraSettings->markerFile());
+        marker.fileName = m_currentFile;
+        marker.markerType = markerType;
+        marker.timestamp = sliderPercent;
+
+        videoMarkers.append(marker);
+        m_videoSlider->setMarkers(videoMarkers);
+    }
 }
 
 void MainWindow::nextMarker()
 {
-    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
-    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
-    double sliderPercent = (distanceFromMin / sliderRange);
+    const double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    const double sliderPercent = (distanceFromMin / sliderRange);
     m_videoSlider->jumpToNextMarker(sliderPercent);
 }
 
 void MainWindow::previousMarker()
 {
-    double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
-    double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
-    double sliderPercent = (distanceFromMin / sliderRange);
+    const double distanceFromMin = (m_videoSlider->value() - m_videoSlider->minimum());
+    const double sliderRange = (m_videoSlider->maximum() - m_videoSlider->minimum());
+    const double sliderPercent = (distanceFromMin / sliderRange);
     m_videoSlider->jumpToPreviousMarker(sliderPercent);
 }
 
-void MainWindow::clearSelectedMarker() {}
+void MainWindow::clearSelectedMarker()
+{
+    VMessageBox::information(this,
+        "Vura",
+        "Sorry this function has not been implemented yet.");
+}
 
 void MainWindow::clearMarkers()
 {
-    m_videoMarkersList.clear();
-    m_videoSlider->setMarkers(m_videoMarkersList);
+    videoMarkers.clear();
+    m_videoSlider->setMarkers(videoMarkers);
 }
 
 void MainWindow::clearInMarker()
@@ -1165,19 +1237,13 @@ void MainWindow::goToOutMarker()
         m_player->setPosition(m_outMarker);
 }
 
-void MainWindow::addInMarker()
-{
-    m_inMarker = m_player->position();
-}
-
-void MainWindow::addOutMarker()
-{
-    m_outMarker = m_player->position();
-}
-
 void MainWindow::createSubclip()
 {
-    extractSubclipFromVideo();
+    if (m_inMarker == 0 || m_outMarker == 0) {
+        VMessageBox::warning(this, "Create Subclip", "In or out marker is empty.");
+    } else {
+        mediaFunctions->extractSubclipFromVideo(m_currentFile, m_inMarker, m_outMarker);
+    }
 }
 
 void MainWindow::setLoop(const int loopOption)
@@ -1199,7 +1265,6 @@ void MainWindow::setLoop(const int loopOption)
         m_playlistLoopOne = false;
         m_playlistLoopNone = true;
         m_playlist->setPlaybackMode(Playlist::Sequential);
-
     }
 }
 
@@ -1215,41 +1280,58 @@ void MainWindow::clearPlaylist()
 
 void MainWindow::takeSnapshot()
 {
-    QString fullPath;
-    int index = 0;
+    mediaFunctions->takeSnapshot(m_currentFile, static_cast<int>(m_player->position()), m_videoSink->videoFrame());
+}
 
-    QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura/Screenshots";
-    QString fileBaseName = strippedFileName(m_currentFile);
-    // Extract base name without extension for numbering
-    QString nameWithoutExt = QFileInfo(fileBaseName).baseName();
+void MainWindow::jumpToEnd()
+{
+    if (m_player->isAvailable()) {
+        const qint64 duration = m_player->duration();
+        const qint64 subtractDuration = duration * vuraSettings->jumpToEndPercentage();
+        qint64 newPosition = duration - subtractDuration;
 
-    QString positionString;
-    const int currentPosition = static_cast<int>(m_player->position());
-    QString format = "mm-ss";
-    if (m_player->position() > 3600)
-        format = "hh-mm-ss";
-
-    const QTime currentTime(
-        (currentPosition / 3600) % 60,
-        (currentPosition / 60) % 60,
-        currentPosition % 60,
-        (currentPosition * 1000) % 1000);
-
-    positionString = currentTime.toString(format);
-
-    do {
-        if (index == 0) {
-            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2.jpg").arg(nameWithoutExt, positionString));
-        } else {
-            fullPath = QDir(documentsDir).absoluteFilePath(QString("%1-%2 (%3).jpg").arg(nameWithoutExt, positionString, QString::number(index)));
+        if (newPosition > 0 && newPosition < duration) {
+            m_player->setPosition(newPosition);
         }
-        index++;
-    } while (QFile::exists(fullPath)); // Check if file exists
+    }
+}
 
+void MainWindow::showVideoResolution(const bool showing)
+{
+    m_showingVideoResolution = showing;
+}
 
-    QVideoFrame frame = m_videoSink->videoFrame();
-    QImage image = frame.toImage();
-    image.save(fullPath, "JPEG");
+void MainWindow::convertSave()
+{
+    if (m_convertMediaDialog)
+        m_convertMediaDialog->close();
+
+    m_convertMediaDialog = new ConvertMediaDialog(this, "Convert/Save");
+    m_convertMediaDialog->show();
+    m_convertMediaDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::streamMedia()
+{
+    if (m_convertMediaDialog)
+        m_convertMediaDialog->close();
+
+    m_convertMediaDialog = new ConvertMediaDialog(this, "Stream");
+    m_convertMediaDialog->show();
+    m_convertMediaDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::continuePlaybackRibbon(const bool con)
+{
+    if (con) {
+        //m_player->setPosition(currentVideoData.position);
+        ui->verticalLayout->removeWidget(m_continuePlaybackRibbon);
+        delete m_continuePlaybackRibbon;
+
+    } else {
+        ui->verticalLayout->removeWidget(m_continuePlaybackRibbon);
+        delete m_continuePlaybackRibbon;
+    }
 }
 
 
@@ -1259,7 +1341,7 @@ void MainWindow::takeSnapshot()
 #pragma region VIDEO CONTROLS
 
 
-void MainWindow::seek(int mseconds)
+void MainWindow::seek(const int mseconds)
 {
     m_player->setPosition(mseconds);
 }
@@ -1276,19 +1358,18 @@ void MainWindow::jump(const QModelIndex &index)
         m_playlist->setCurrentIndex(index.row());
 }
 
-void MainWindow::jumpTo(int mseconds)
+void MainWindow::jumpTo(const int mseconds)
 {
-    qDebug() << "Jump To command called.";
     qint64 zeroNum = 0;
     if (m_player->isAvailable()) {
-        qint64 hduration = m_player->duration();
+        const qint64 duration = m_player->duration();
         qint64 newPosition = m_player->position() + mseconds;
 
-        if (newPosition < hduration && newPosition > zeroNum) {
+        if (newPosition < duration && newPosition > zeroNum) {
             m_player->setPosition(newPosition);
 
-        } else if (newPosition >= hduration) {
-            m_player->setPosition(hduration);
+        } else if (newPosition >= duration) {
+            m_player->setPosition(duration);
 
         } else if (newPosition <= zeroNum) {
             m_player->setPosition(zeroNum);
@@ -1303,99 +1384,10 @@ void MainWindow::durationLabel_Clicked()
 
     } else {
         m_durationLabelShowRemainingTime = true;
-
     }
 
     if (m_lastPosition > 0)
         updateDurationInfo(m_lastPosition);
-}
-
-
-#pragma endregion
-
-
-#pragma region VIDEO EDITING FUNCTIONS
-
-
-void MainWindow::extractSubclipFromVideo()
-{
-    if (m_inMarker <= 0 || m_outMarker <= 0) {
-        showErrorMessage("Missing In Marker or Out Marker");
-        return;
-    }
-
-    QString startTimestamp = createTimestampString(m_inMarker);
-    QString endTimestamp = createTimestampString(m_outMarker);
-
-    // Get the user's documents location as a QString
-    QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    QString applicationFolder = "vura";
-    QFileInfo fileInfo(m_currentFile);
-    QString projectFolder = fileInfo.baseName();
-    QString fileName = "subclip";
-    QString dirPath = QDir::cleanPath(documentsPath + QDir::separator() + applicationFolder + QDir::separator() + projectFolder);
-
-    // Check if project folder exists.
-    QDir dir;
-
-    if (dir.mkpath(dirPath)) {
-        qDebug() << "Successfully created project directory (and parent directories if needed):" << dirPath;
-    } else {
-        qDebug() << "Failed to create project directory:" << dirPath;
-    }
-
-    QString outputFile = generateSubclipFilenameWithIncrement(dirPath, fileName, "mp4");
-
-    qDebug() << "Input file: " << m_currentFile;
-    qDebug() << "Output file: " << outputFile;
-    qDebug() << "Start timestamp: " << startTimestamp;
-    qDebug() << "End timestamp: " << endTimestamp;
-
-    QProcess *ffmpegProc = new QProcess(this);
-    QStringList arguments;
-    arguments << "-ss" << startTimestamp << "-to" << endTimestamp << "-i" << m_currentFile << "-c" << "copy" << outputFile;
-
-    // Optional: Connect signals to handle output/errors
-    connect(ffmpegProc, &QProcess::readyReadStandardError, [=]() {
-        qWarning() << ffmpegProc->readAllStandardError();
-    });
-
-    ffmpegProc->start("ffmpeg", arguments);
-    // Use ffmpegProc->waitForFinished(); if synchronous behavior is needed
-}
-
-QString MainWindow::createTimestampString(qint64 pos)
-{
-    // Convert to seconds
-    qint64 totalSeconds = pos / 1000;
-
-    // Format as mm:ss or hh:mm:ss
-    QTime time((totalSeconds / 3600) % 24, (totalSeconds / 60) % 60, totalSeconds % 60);
-    QString format = (totalSeconds >= 3600) ? "hh:mm:ss" : "mm:ss";
-    QString timestamp = time.toString(format);
-
-    // 'timestamp' is now a QString (e.g., "01:30" or "01:05:10")
-    return timestamp;
-}
-
-QString MainWindow::generateSubclipFilenameWithIncrement(const QString &directoryPath, const QString &baseFileName, const QString &extension)
-{
-    QString fullPath;
-    int index = 0;
-
-    // Extract base name without extension for numbering
-    QString nameWithoutExt = QFileInfo(baseFileName).baseName();
-
-    do {
-        if (index == 0) {
-            fullPath = QDir(directoryPath).absoluteFilePath(baseFileName + "." + extension);
-        } else {
-            fullPath = QDir(directoryPath).absoluteFilePath(nameWithoutExt + QString::number(index) + "." + extension);
-        }
-        index++;
-    } while (QFile::exists(fullPath)); // Check if file exists
-
-    return fullPath;
 }
 
 
@@ -1407,45 +1399,59 @@ QString MainWindow::generateSubclipFilenameWithIncrement(const QString &director
 
 void MainWindow::loadSettings()
 {
-    QSettings settings;
-
-    m_locale = settings.value("language", "en-US").toString();
-    m_showStatusBarOnStart = settings.value("showStatusBarOnStart", false).toBool();
-    m_showPlaylistOnStart = settings.value("showPlaylistOnStart", false).toBool();
-    m_showVideoControlsOnStart = settings.value("showVideoControlsOnStart", false).toBool();
-    m_hashFile = settings.value("hashFile", false).toBool();
-    m_jumpSmall = settings.value("jumpSmall", 5).toInt();
-    m_jumpMedium = settings.value("jumpMedium", 15).toInt();
-    m_jumpLarge = settings.value("jumpLarge", 30).toInt();
-    m_jumpExtraLarge = settings.value("jumpExtraLarge", 90).toInt();
-    m_maxRecentFiles = settings.value("maxRecentFiles", 9).toInt();
-    m_hideCursorWhenPlaying = settings.value("hideCursorWhenPlaying", true).toBool();
-    m_hideCursorTime = settings.value("hideCursorTime", 2000).toInt();
-    m_systemTray = settings.value("systemTray", true).toBool();
-    m_mediaChangeNotification = settings.value("mediaChangeNotification", 1).toInt();
-    m_showVideoControlsWhenFullscreen = settings.value("showVideoControlsWhenFullscreen", false).toBool();
-    m_startInMinimalViewMode = settings.value("startInMinimalViewMode", false).toBool();
-    m_pausePlaybackWhenMinimized = settings.value("pausePlaybackWhenMinimized", false).toBool();
-    m_allowOnlyOneInstance = settings.value("allowOnlyOneInstance", false).toBool();
-    m_oneInstanceFromFileManager = settings.value("oneInstanceFromFileManager", true).toBool();
-    m_continuePlayback = settings.value("continuePlayback", 1).toInt();
-    m_pauseOnLastFrameOfVideo = settings.value("pauseOnLastFrameOfVideo", false).toBool();
-    m_playbackSpeedAdjustment = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
-    m_playbackSpeedFineAdjustment = settings.value("playbackSpeedFineAdjustment", 0.25).toDouble();
-    m_volumeStep = settings.value("volumeStep", 0.10).toDouble();
-    m_theme = settings.value("theme", "System").toString();
-    m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
+    vuraSettings->loadSettings();
 
     if (timer->isActive())
         timer->stop();
 
     emit refreshSettings();
-    emit setOverrideWindowsHotkeys(m_setOverrideWindowsHotkeys);
+    emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
 }
 
-void MainWindow::showErrorMessage(const QString &message)
+void MainWindow::setMainWindowVisibility(const bool state)
 {
-    QMessageBox::warning(this, tr("vura"), message);
+    if (state) {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+    }
+}
+
+void MainWindow::processOpenParams(int argc, char *argv[])
+{
+    if (argc > 2) {
+        const QString pathParam = QString::fromUtf8(argv[2]);
+
+        QFileInfo pathParamInfo(pathParam);
+        if (pathParamInfo.isFile()) {
+
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                addFileToPlaylistContextMenu(pathParam);
+
+            } else {
+                addFileToPlaylistContextMenu(pathParam);
+            }
+
+        } else if (pathParamInfo.isDir()) {
+            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
+                addFolderToPlaylistContextMenu(pathParam);
+
+            } else {
+                addFolderToPlaylistContextMenu(pathParam);
+            }
+        }
+
+    } else if (argc > 1) {
+        QString pathName = QString::fromUtf8(argv[1]);
+        if (pathName.isEmpty()) {
+            VMessageBox::critical(this, "Vura Error", "File requested is empty.");
+            this->close();
+
+        } else {
+            openFileContextMenu(pathName);
+        }
+    }
 }
 
 void MainWindow::setTrackInfo(const QString &info)
@@ -1492,7 +1498,7 @@ void MainWindow::updateDurationInfo(const qint64 currentInfo)
 
         positionString = currentTime.toString(format);
 
-        if (m_durationLabelShowRemainingTime) {
+        if (vuraSettings->durationLabelShowRemainingTime()) {
             const int remainingInfo = currentDuration - currentPosition;
 
             const QTime remainingTime(
@@ -1531,18 +1537,14 @@ void MainWindow::displayErrorMessage()
 {
     if (m_player->error() == QMediaPlayer::NoError)
         return;
+
     setStatusInfo(m_player->errorString());
+    VMessageBox::warning(this, "Vura", m_player->errorString());
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (m_hashFile) {
-        if (!m_currentFileHash.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFileHash, m_videoMarkersList);
-    } else {
-        if (!m_currentFile.isEmpty())
-            m_videoMarkers->saveMarkers(m_currentFile, m_videoMarkersList);
-    }
+    VideoMarkers::write(vuraSettings->markerFile(), m_currentFile, videoMarkers);
     event->accept();
 }
 
@@ -1567,23 +1569,23 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr
 void MainWindow::changeEvent(QEvent *event) {
     if (event->type() == QEvent::WindowStateChange) {
         if (this->isMinimized()) {
-            if (m_pausePlaybackWhenMinimized)
+            if (vuraSettings->pausePlaybackWhenMinimized())
                 m_player->pause();
         }
     }
     QMainWindow::changeEvent(event);
 }
 
-bool MainWindow::event(QEvent *e)
+bool MainWindow::event(QEvent *event)
 {
-    switch (e->type()) {
+    switch (event->type()) {
         case QEvent::HoverMove:
-            if (m_hideCursorWhenPlaying) {
+            if (vuraSettings->hideCursorWhenPlaying()) {
                 if (ui->videoWidget->rect().contains(QCursor::pos())) {
-                    if (m_playing) {
+                    if (m_player->isPlaying()) {
                         timer->stop();
                         ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-                        timer->start(m_hideCursorTime);
+                        timer->start(vuraSettings->hideCursorTime());
 
                     } else {
                         timer->stop();
@@ -1600,12 +1602,11 @@ bool MainWindow::event(QEvent *e)
             }
 
         case QEvent::HoverEnter:
-            if (m_playing)
-                timer->start(m_hideCursorTime);
-
+            if (m_player->isPlaying())
+                timer->start(vuraSettings->hideCursorTime());
 
         default:
-            return QMainWindow::event(e);
+            return QMainWindow::event(event);
     }
 }
 
@@ -1616,21 +1617,10 @@ bool MainWindow::event(QEvent *e)
 #pragma region FUNCTIONS
 
 
-bool MainWindow::isPlaylist(const QUrl &url)
-{
-    QFileInfo fileInfo(url.toString());
-    QString fileExtension = fileInfo.suffix();
-
-    if (fileExtension == "hlist")
-        return true;
-
-    return false;
-}
-
 bool MainWindow::loadPlaylist(const QUrl &url)
 {
     if (m_playlistLoaded) {
-        QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(
             this,
             "Close Playlist",
             "Are you sure you want to close the current playlist and load the selected one?",
@@ -1648,66 +1638,16 @@ bool MainWindow::loadPlaylist(const QUrl &url)
     return false;
 }
 
-void MainWindow::showNotImplemented_Message()
-{
-    QMessageBox::information(
-        this,
-        "Not Implemented",
-        "Sorry this function has not been implemented yet."
-        );
-}
-
 void MainWindow::loadFile(const QString &fileName)
 {
     const int previousMediaCount = m_playlist->mediaCount();
     m_playlist->addMedia(fileName);
 
     if (m_playlist->mediaCount() > previousMediaCount) {
-        auto index = m_playlistModel->index(previousMediaCount, 0);
+        const auto index = m_playlistModel->index(previousMediaCount, 0);
         ui->playlistView->setCurrentIndex(index);
         jump(index);
     }
-}
-
-QString MainWindow::strippedFileName(const QString &fileName)
-{
-    return QFileInfo(fileName).fileName();
-}
-
-QString MainWindow::timestampString(qint64 position)
-{
-    QString tStr;
-    if (position || m_duration) {
-        QTime currentTime((position / 3600) % 60, (position / 60) % 60, position % 60,
-                          (position * 1000) % 1000);
-        QTime totalTime((m_duration / 3600) % 60, (m_duration / 60) % 60, m_duration % 60,
-                        (m_duration * 1000) % 1000);
-        QString format = "mm:ss";
-        if (m_duration > 3600)
-            format = "hh:mm:ss";
-        tStr = currentTime.toString(format) + " / " + totalTime.toString(format);
-    }
-    return tStr;
-}
-
-qint64 MainWindow::fileHash(const QString& filePath)
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) return 0;
-
-    XXH64_state_t* state = XXH64_createState();
-    XXH64_reset(state, 0); // Seed 0
-
-    char buffer[8192];
-    qint64 bytesRead;
-    while ((bytesRead = file.read(buffer, sizeof(buffer))) > 0) {
-        XXH64_update(state, buffer, bytesRead);
-    }
-
-    XXH64_hash_t hash = XXH64_digest(state);
-    XXH64_freeState(state);
-    file.close();
-    return hash;
 }
 
 void MainWindow::setApplicationWindowTitle()
@@ -1715,15 +1655,22 @@ void MainWindow::setApplicationWindowTitle()
     QString windowTitle;
 
     if (!m_player->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2").arg(strippedFileName(m_currentFile), VURA_VERSION_STRING);
-        m_systemTrayIcon->setToolTip(strippedFileName(m_currentFile));
+        if (m_showingVideoResolution) {
+            if (m_videoResolution.isEmpty()) {
+                windowTitle = QString("%1 [%2] - Vura %3").arg(mediaFunctions->strippedFileName(m_currentFile), "UNKNOWN RES", VURA_VERSION_STRING);
+            } else {
+                windowTitle = QString("%1 [%2p] - Vura %3").arg(mediaFunctions->strippedFileName(m_currentFile), m_videoResolution, VURA_VERSION_STRING);
+            }
+        } else {
+            windowTitle = QString("%1 - Vura %2").arg(mediaFunctions->strippedFileName(m_currentFile), VURA_VERSION_STRING);
+        }
+        m_systemTrayIcon->setToolTip(mediaFunctions->strippedFileName(m_currentFile));
         m_sourceLoaded = false;
 
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
         m_systemTrayIcon->setToolTip("Vura media player");
         m_sourceLoaded = true;
-
     }
 
     setWindowTitle(windowTitle);
@@ -1740,17 +1687,53 @@ void MainWindow::setStyleSheet()
 {
     QFile file(":/styles/dark.qss");
     if (file.open(QFile::ReadOnly)) {
-        QString styleSheet = QLatin1String(file.readAll());
+        const QString styleSheet = QLatin1String(file.readAll());
         qApp->setStyleSheet(styleSheet);
     }
 }
 
-bool MainWindow::createUserDirs()
+bool MainWindow::initApplicationDirs()
+{
+    // Application Directories
+    QStringList directoryList;
+    QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (VURA_BUILD_TYPE == "Debug") {
+        appDataDir = constants::ApplicationDebugFolder;
+    }
+    directoryList << appDataDir;
+    directoryList << appDataDir + "/crashes";
+    directoryList << appDataDir + "/logs";
+    directoryList << appDataDir + "/updates";
+
+    for (const QString &directory : directoryList) {
+        if (!QDir(directory).exists()) {
+            if (!QDir().mkpath(directory))
+                return false;
+        }
+    }
+
+    /*
+    foreach (QString directory, directoryList)
+    {
+        if (!QDir(directory).exists()) {
+            qDebug() << "Directory " << directory << " does not exist. Creating...";
+            if (QDir().mkpath(directory)) {
+                qDebug() << "Created directory: " << directory;
+            } else {
+                qWarning() << "Could not create directory: " << directory;
+                statusGood = false;
+            }
+        }
+    }
+    */
+    return true;
+}
+
+bool MainWindow::initUserDirs()
 {
     // User Directories
-    qDebug() << "Running user directory initialization...";
     QStringList directoryList;
-    QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura";
+    const QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Vura";
     directoryList << documentsDir;
     directoryList << documentsDir + "/Clips";
     directoryList << documentsDir + "/Screenshots";
@@ -1771,6 +1754,26 @@ bool MainWindow::createUserDirs()
     }
 
     return true;
+}
+
+qint64 MainWindow::fileHash(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) return 0;
+
+    XXH64_state_t* state = XXH64_createState();
+    XXH64_reset(state, 0); // Seed 0
+
+    char buffer[8192];
+    qint64 bytesRead;
+    while ((bytesRead = file.read(buffer, sizeof(buffer))) > 0) {
+        XXH64_update(state, buffer, bytesRead);
+    }
+
+    XXH64_hash_t hash = XXH64_digest(state);
+    XXH64_freeState(state);
+    file.close();
+    return hash;
 }
 
 

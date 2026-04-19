@@ -42,7 +42,8 @@
 #include <QPointer>
 #include <QDebug>
 
-#include "../constants.h"
+#include <constants.h>
+#include <vura-hotkeys.h>
 
 #include "../dialogs/about.h"
 #include "../dialogs/FeedbackDialog.h"
@@ -111,27 +112,24 @@ signals:
     void saveFile(const QString &filePath);
     void savePlaylist(const QString &filePath, const QString &type);
     void emergencyCollapse();
+    void convertSave();
+    void stream();
     void exitApplication();
 
     // View
     void togglePlaylist();
     void toggleStatusBar();
     void toggleVideoControls();
-    void toggleMarkers();
-    void toggleCumshotMarkers();
-    void toggleCyanMarkers();
-    void toggleDialogMarkers();
-    void toggleMagentaMarkers();
-    void toggleOrangeMarkers();
-    void toggleSceneTransitionMarkers();
-    void toggleStripMarkers();
+    void toggleMarkers(const QString &markerType);
     void showMediaInformation();
+    void showVideoResolution(bool showing);
 
     // Playback
     void changePlaybackSpeed(double mrate);
     void setPlaybackSpeedNormal();
     void videoSeek(int mseconds);
     void videoJumpToTime(int position);
+    void videoJumpToEnd();
     void togglePlayPause();
     void nextVideo();
     void previousVideo();
@@ -188,6 +186,9 @@ private slots:
     void savePlaylist_Clicked();
     void saveACopy_Clicked();
 
+    void convertSave_Clicked();
+    void stream_Clicked();
+
     void importProject_Clicked();
     void importCaptions_Clicked();
     void importMarkers_Clicked();
@@ -218,6 +219,7 @@ private slots:
 
     void showMediaInformation_Clicked();
     void showLogFileViewer_Clicked();
+    void showVideoResolution_Clicked();
 
 
     // Playback Menu
@@ -241,6 +243,7 @@ private slots:
     void jumpBackwardExtraLarge_Clicked();
 
     void jumpToTime_Clicked();
+    void jumpToEnd_Clicked();
     void togglePlayPause_Clicked();
     void nextVideo_Clicked();
     void previousVideo_Clicked();
@@ -363,6 +366,9 @@ private:
     QAction *m_savePlaylistAction = nullptr;
     QAction *m_saveACopyAction = nullptr;
 
+    QAction *m_convertSaveAction = nullptr;
+    QAction *m_streamAction = nullptr;
+
     QAction *m_importProjectAction = nullptr;
     QAction *m_importCaptionsAction = nullptr;
     QAction *m_importMarkersAction = nullptr;
@@ -391,7 +397,8 @@ private:
     QAction *m_toggleStripMarkersAction = nullptr;
 
     QAction *m_showMediaInformationAction = nullptr;
-    QAction *m_showLogFileViewerAction = nullptr;
+    //QAction *m_showLogFileViewerAction = nullptr;
+    QAction *m_showVideoResolutionAction = nullptr;
 
     // Playback
     QAction *m_playbackSpeedFasterAction = nullptr;
@@ -414,6 +421,7 @@ private:
     QAction *m_jumpBackwardExtraLargeAction = nullptr;
 
     QAction *m_jumpToTimeAction = nullptr;
+    QAction *m_jumpToEndAction = nullptr;
     QAction *m_togglePlayAction = nullptr;
     QAction *m_nextVideoAction = nullptr;
     QAction *m_previousVideoAction = nullptr;
@@ -499,6 +507,7 @@ private:
     int m_jumpExtraLarge = 0;
     QString m_stashServerUrl = "";
     int m_maxRecentFiles = 0;
+    bool m_showingVideoResolution = false;
 
     void setHotkeys();
     void refreshMenuItems();

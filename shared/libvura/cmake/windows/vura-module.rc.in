@@ -1,0 +1,24 @@
+1 VERSIONINFO
+FILEVERSION ${VURA_VERSION_MAJOR},${VURA_VERSION_MINOR},${VURA_VERSION_PATCH},0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName", "${VURA_COMPANY_NAME}"
+      VALUE "FileDescription", "VURA Library"
+      VALUE "FileVersion", "${VURA_VERSION_CANONICAL}"
+      VALUE "ProductName", "${VURA_PRODUCT_NAME}"
+      VALUE "ProductVersion", "${VURA_VERSION_CANONICAL}"
+      VALUE "Comments", "${VURA_COMMENTS}"
+      VALUE "LegalCopyright", "${VURA_LEGAL_COPYRIGHT}"
+      VALUE "InternalName", "libvura"
+      VALUE "OriginalFilename", "libvura"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04B0
+  END
+END

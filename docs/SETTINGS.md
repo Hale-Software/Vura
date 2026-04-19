@@ -20,7 +20,6 @@
 | rememberWindowSize              | true                         | bool   |
 | maxLogFiles                     | 10                           | int    |
 | logToFile                       | true                         | bool   |
-| markerFile                      | AppDataLocation/markers.json | string |
 | theme                           | System                       | string |
 | fontSize                        | 10                           | int    |
 | updateChannel                   | stable                       | string |
@@ -37,9 +36,8 @@
 | continuePlayback                | 1                            | int    |
 | pauseOnLastFrameOfVideo         | false                        | bool   |
 | setOverrideWindowsHotkeys       | true                         | bool   |
-|                                 |                              |        |
-|                                 |                              |        |
-|                                 |                              |        |
+| jumpToEndPercentage             | 0.05                         | double |
+| screenshotSaveLocation          |                              | string |
 |                                 |                              |        |
 |                                 |                              |        |
 |                                 |                              |        |

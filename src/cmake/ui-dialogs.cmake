@@ -4,6 +4,8 @@ target_sources(
         dialogs/editmarker.h
         dialogs/about.cpp
         dialogs/about.h
+        dialogs/convertmediadialog.cpp
+        dialogs/convertmediadialog.h
         dialogs/logviewer.cpp
         dialogs/logviewer.h
         dialogs/missingfiles.cpp
@@ -18,4 +20,6 @@ target_sources(
         dialogs/LogUploadDialog.h
         dialogs/FeedbackDialog.cpp
         dialogs/FeedbackDialog.h
+        dialogs/markerdialog.cpp
+        dialogs/markerdialog.h
 )
