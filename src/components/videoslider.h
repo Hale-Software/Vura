@@ -42,7 +42,16 @@ public:
     void setMinimum(int mminimum);
     void setMaximum(int mmaximum);
     void setValue(int mvalue);
+    void setSliderPercent(double percent);
     void setVideoLoaded(bool isLoaded);
+    void setShowingMarkers(bool value);
+    void setShowingCumshotMarkers(bool value);
+    void setShowingCyanMarkers(bool value);
+    void setShowingDialogMarkers(bool value);
+    void setShowingMagentaMarkers(bool value);
+    void setShowingOrangeMarkers(bool value);
+    void setShowingSceneMarkers(bool value);
+    void setShowingStripMarkers(bool value);
     void setMarkers(QList<VuraVideoMarker> markers);
     void jumpToNextMarker(double currentPercent);
     void jumpToPreviousMarker(double currentPercent);
@@ -50,16 +59,17 @@ public:
     int minimum() const;
     int maximum() const;
     int value() const;
+    double sliderPercent() const;
     bool isSliderDown() const;
     bool isVideoLoaded() const;
-    bool showMarkers = true;
-    bool showCumshotMarkers = true;
-    bool showCyanMarkers = true;
-    bool showDialogMarkers = true;
-    bool showMagentaMarkers = true;
-    bool showOrangeMarkers = true;
-    bool showSceneMarkers = true;
-    bool showStripMarkers = true;
+    bool showMarkers() const;
+    bool showCumshotMarkers() const;
+    bool showCyanMarkers() const;
+    bool showDialogMarkers() const;
+    bool showMagentaMarkers() const;
+    bool showOrangeMarkers() const;
+    bool showSceneMarkers() const;
+    bool showStripMarkers() const;
 
 signals:
     void valueChanged(int value);
@@ -83,9 +93,18 @@ private:
     QTimer *timer;
     QList<VuraVideoMarker> m_markers;
     bool m_showingIndicator = false;
+    bool m_showingMarkers = true;
+    bool m_showingCumshotMarkers = true;
+    bool m_showingCyanMarkers = true;
+    bool m_showingDialogMarkers = true;
+    bool m_showingMagentaMarkers = true;
+    bool m_showingOrangeMarkers = true;
+    bool m_showingSceneMarkers = true;
+    bool m_showingStripMarkers = true;
     int m_minimum = 0;
     int m_maximum = 100;
     int m_value = 0;
+    double m_sliderPercent = 0.0;
     bool m_isSliderDown = false;
     bool m_videoLoaded = false;
 

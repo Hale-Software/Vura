@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "menubar.h"
@@ -877,7 +878,6 @@ void MenuBar::refreshMenuItems()
     m_clearInAndOutMarkerAction->setEnabled(m_fileLoaded);
     m_clearMarkersAction->setEnabled(m_fileLoaded);
     m_clearOutMarkerAction->setEnabled(m_fileLoaded);
-    m_clearSelectedMarkerAction->setEnabled(m_fileLoaded);
     m_editMarkerAction->setEnabled(m_fileLoaded);
     m_goToInMarkerAction->setEnabled(m_fileLoaded);
     m_goToNextMarkerAction->setEnabled(m_fileLoaded);
@@ -1131,6 +1131,11 @@ void MenuBar::statusBarShowing(bool showing)
 void MenuBar::videoControlsShowing(bool showing)
 {
     m_toggleVideoControlsAction->setChecked(showing);
+}
+
+void MenuBar::setClearSelectedMarkerEnabled(bool enabled)
+{
+    m_clearSelectedMarkerAction->setEnabled(enabled);
 }
 
 void MenuBar::settingsUpdatedSlot()

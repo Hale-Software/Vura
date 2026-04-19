@@ -58,6 +58,10 @@
 #include <QVideoSink>
 #include <QVideoFrame>
 
+#include <cmath>
+#include <limits>
+#include <iostream>
+
 #include <xxHash/xxhash.h>
 
 #include <constants.h>
@@ -131,6 +135,7 @@ public:
     bool initApplicationDirs();
     bool initUserDirs();
     static qint64 fileHash(const QString& filePath);
+    void updateMarkerMenuItems();
 
 public slots:
     void showMediaInformation();
@@ -207,6 +212,7 @@ signals:
     void setVideoControlsShowing(bool showing);
     void refreshSettings();
     void setOverrideWindowsHotkeys(bool value);
+    void setClearSelectedMarkerEnabled(bool enabled);
     void quitProgram();
 
 
@@ -242,6 +248,8 @@ private slots:
     void durationLabel_Clicked();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
+
+    void finishedUpdatingPlayerPosition();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -310,14 +318,6 @@ private:
     int m_markerIndex;
     int m_inMarker;
     int m_outMarker;
-    bool m_showingMarkers = true;
-    bool m_showingCumshotMarkers = true;
-    bool m_showingCyanMarkers = true;
-    bool m_showingDialogMarkers = true;
-    bool m_showingMagentaMarkers = true;
-    bool m_showingOrangeMarkers = true;
-    bool m_showingSceneMarkers = true;
-    bool m_showingStripMarkers = true;
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;
@@ -325,6 +325,9 @@ private:
     bool m_durationLabelShowRemainingTime = false;
     QString m_videoResolution;
     QString m_markerFile;
+
+    void updatePlayerPosition();
+    bool checkMarkerProximity();
 
 };
 
