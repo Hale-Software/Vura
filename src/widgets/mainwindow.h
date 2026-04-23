@@ -72,6 +72,7 @@
 #include <util/messagebox.h>
 #include <media-io/media-functions.h>
 
+#include "VuraDockWidget.h"
 #include "../models/playlistmodel.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"

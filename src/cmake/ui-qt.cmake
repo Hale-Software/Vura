@@ -41,6 +41,7 @@ target_sources(
         forms/FeedbackDialog.ui
         forms/markerdialog.ui
         forms/convertmediadialog.ui
+        forms/VuraDockWidget.ui
 )
 
 qt_add_ios_ffmpeg_libraries(vura)
