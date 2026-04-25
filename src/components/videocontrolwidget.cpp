@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "videocontrolwidget.h"
@@ -47,14 +48,14 @@ VideoControlWidget::~VideoControlWidget()
 
 void VideoControlWidget::refreshUI()
 {
-    double volumeDouble = ui->volumeSlider->value();
-    int val = qRound(volumeDouble);
-    QString volumeString = QString::number(val) + "%";
+    const double volumeDouble = ui->volumeSlider->value();
+    const int val = qRound(volumeDouble);
+    const QString volumeString = QString::number(val) + "%";
     ui->volumeLabel->setText(volumeString);
     m_volumeLevel = val;
 
-    QSettings settings;
-    QString theme = settings.value("theme", "System").toString();
+    const QSettings settings;
+    const QString theme = settings.value("theme", "System").toString();
 
     if (m_playerState == QMediaPlayer::StoppedState || m_playerState == QMediaPlayer::PausedState) {
         ui->playButton->setIcon(setButtonIcon("play", theme));
@@ -105,7 +106,7 @@ QMediaPlayer::PlaybackState VideoControlWidget::state() const
     return m_playerState;
 }
 
-void VideoControlWidget::setState(QMediaPlayer::PlaybackState state)
+void VideoControlWidget::setState(const QMediaPlayer::PlaybackState state)
 {
     m_playerState = state;
     refreshUI();
@@ -113,14 +114,15 @@ void VideoControlWidget::setState(QMediaPlayer::PlaybackState state)
 
 float VideoControlWidget::volume() const
 {
-    qreal linearVolume = QAudio::convertVolume(ui->volumeSlider->value() / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
+    const qreal linearVolume = QAudio::convertVolume(ui->volumeSlider->value() / static_cast<qreal>(100),
+                            QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
 
     return linearVolume;
 }
 
-void VideoControlWidget::setVolume(float volume)
+void VideoControlWidget::setVolume(const double volume)
 {
-    qreal logarithmicVolume = QAudio::convertVolume(volume, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
+    const qreal logarithmicVolume = QAudio::convertVolume(volume, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
     ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
 
     refreshUI();
@@ -128,7 +130,7 @@ void VideoControlWidget::setVolume(float volume)
 
 bool VideoControlWidget::isMuted() const { return m_playerMuted; }
 
-void VideoControlWidget::setMuted(bool muted)
+void VideoControlWidget::setMuted(const bool muted)
 {
     m_playerMuted = muted;
     refreshUI();
@@ -138,8 +140,6 @@ void VideoControlWidget::playClicked()
 {
     if (m_playerState == QMediaPlayer::PlayingState) {
         emit pause();
-    } else if (m_playerState == QMediaPlayer::PausedState) {
-        emit play();
     } else {
         emit play();
     }
