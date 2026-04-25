@@ -51,7 +51,7 @@
          <number>0</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,1">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,0">
           <property name="topMargin">
            <number>0</number>
           </property>
@@ -69,25 +69,13 @@
            </widget>
           </item>
           <item>
-           <widget class="QListView" name="playlistView">
+           <widget class="PlaylistTableView" name="playlistTableView">
             <property name="contextMenuPolicy">
              <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
             </property>
-            <property name="acceptDrops">
-             <bool>true</bool>
-            </property>
-            <property name="dragEnabled">
-             <bool>true</bool>
-            </property>
-            <property name="dragDropMode">
-             <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
-            </property>
-            <property name="defaultDropAction">
-             <enum>Qt::DropAction::MoveAction</enum>
-            </property>
-            <property name="resizeMode">
-             <enum>QListView::ResizeMode::Adjust</enum>
-            </property>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
            </widget>
           </item>
          </layout>
@@ -131,7 +119,7 @@
           <item>
            <widget class="QWidget" name="placeholder" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -139,13 +127,13 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>30</height>
+              <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>30</height>
+              <height>20</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -1427,6 +1415,11 @@
    <extends>QWidget</extends>
    <header location="global">&lt;QtMultimediaWidgets&gt;</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlaylistTableView</class>
+   <extends>QTableView</extends>
+   <header location="global">components/PlaylistTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

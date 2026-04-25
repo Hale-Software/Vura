@@ -56,10 +56,12 @@ target_sources(
         PUBLIC
         models/log-viewer-model.h
         models/logmessages.h
+        models/vura-playlistmodel.h
 
         PRIVATE
         models/log-viewer-model.cpp
         models/logmessages.cpp
+        models/vura-playlistmodel.cpp
 )
 
 # util Directory
@@ -68,10 +70,13 @@ target_sources(
         PUBLIC
         util/blogger.h
         util/messagebox.h
+        util/playlistmanager.h
         util/singleinstance.h
+
         PRIVATE
         util/blogger.cpp
         util/messagebox.cpp
+        util/playlistmanager.cpp
         util/singleinstance.cpp
 )
 

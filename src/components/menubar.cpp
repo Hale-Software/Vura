@@ -918,9 +918,9 @@ QString MenuBar::trackName(const QMediaMetaData &metaData, int index)
     return name;
 }
 
-void MenuBar::setActiveAudioDevice(const QAudioDevice &audioDevice)
+void MenuBar::setActiveAudioDevice(const QAudioDevice &device)
 {
-    m_activeAudioDevice = audioDevice;
+    m_activeAudioDevice = device;
 }
 
 void MenuBar::setActiveAudioTrack(int track)

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QObject>
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -84,7 +85,7 @@ public:
 
 public slots:
     void setPlayerStatus(bool loaded);
-    void setActiveAudioDevice(const QAudioDevice &audioDevice);
+    void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
     void setActiveSubtitleTrack(int track);
