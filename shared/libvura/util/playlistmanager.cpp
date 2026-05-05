@@ -50,15 +50,14 @@ void PlaylistManager::scanMediaDuration(const int row)
 
 void PlaylistManager::playTrack(const int index)
 {
+    bool wasPlaying = player->isPlaying();
+
     if (index >= 0 && index < model->m_media.size()) {
         currentIndex = index;
         player->setSource(model->m_media[index].url);
-        player->play();
 
-    } else if (index >= model->m_media.size()) {
-        currentIndex = 0;
-        player->setSource(model->m_media[index].url);
-        player->play();
+        if (wasPlaying)
+            player->play();
 
     } else {
         currentIndex = -1;

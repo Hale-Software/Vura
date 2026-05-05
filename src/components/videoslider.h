@@ -54,14 +54,8 @@ public:
 
     void SetRange(int minimum, int maximum);
 
-    double GetSliderPercent() const;
-    void setSliderPercent(double percent);
-
-    bool GetVideoLoaded() const;
-    void SetVideoLoaded(bool value);
-
-    bool GetIsSliderDown() const;
-    void SetIsSliderDown(bool value);
+    bool GetSliderPressed() const;
+    void SetSliderPressed(bool value);
 
     bool GetShowingMarkers() const;
     void SetShowingMarkers(bool value);
@@ -88,12 +82,8 @@ public:
     void SetShowingStripMarkers(bool value);
 
 signals:
-    void rangeChanged(int minimum, int maximum);
     void valueChanged(int value);
-    void sliderPressed();
-    void sliderMoved(int value);
-    void sliderReleased();
-    void sliderClicked(int mseconds);
+    void sliderPressed(bool pressed);
 
 public slots:
     void updateVideoSlider();
@@ -103,13 +93,8 @@ public slots:
     void goToNextMarker(double currentPercent);
     void goToPreviousMarker(double currentPercent);
 
-//private slots:
-//    void hideIndicator();
-
 protected:
     void paintEvent(QPaintEvent *event) override;
-    //void enterEvent(QEnterEvent *event) override;
-    //void leaveEvent(QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -118,11 +103,9 @@ protected:
     QRectF handleRect(int value) const;
 
 private:
-    Q_DISABLE_COPY(VideoSlider)
     int validLength() const;
     int valueFromPos(int x) const;
 
-    QTimer *timer;
     QList<VuraVideoMarker> *m_videoMarkers;
     int m_minimum;
     int m_maximum;
@@ -135,11 +118,7 @@ private:
     bool m_showingOrangeMarkers;
     bool m_showingSceneMarkers;
     bool m_showingStripMarkers;
-    bool m_showingIndicator;
-    double m_sliderPercent;
-    bool m_sliderClicked;
-    bool m_videoLoaded;
-    QColor m_backgroundColor;
+    bool m_sliderPressed;
     QColor m_emptySliderColor;
     QColor m_fullSliderColor;
     QColor m_caretColor;
@@ -148,9 +127,8 @@ private:
     QColor m_cumshotMarkerColor;
     QColor m_stripMarkerColor;
     QColor m_dialogMarkerColor;
-    bool m_firstHandlePressed;
-    bool m_secondHandlePressed;
     int m_delta;
     int m_interval;
+    double m_sliderBarHeightValue;
 
 };

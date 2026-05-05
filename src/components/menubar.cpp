@@ -20,14 +20,15 @@
 #include <config.h>
 
 
-MenuBar::MenuBar(QWidget *parent) : QMenuBar(parent)
+MenuBar::MenuBar(QMediaPlayer *player, QWidget *parent) : QMenuBar(parent), m_player(player)
 {
+    m_devices = new QMediaDevices(this);
+
     refreshSettings();
     createMenus();
     createMenuActions();
     setActionsDefaultProperties();
     createRecentFileActions();
-    createAudioDeviceActions();
     createAudioTrackActions();
     createVideoTrackActions();
     createSubtitleTrackActions();
@@ -63,8 +64,6 @@ void MenuBar::createMenus()
     m_viewMarkersMenu = new QMenu(tr("Toggle Markers"), this);
     m_logFilesMenu = new QMenu(tr("Log Files"), this);
     m_crashReportsMenu = new QMenu(tr("Crash Reports"), this);
-    // m_ = new QMenu(tr(""), this);
-
 }
 
 // TODO: Organize code
@@ -316,20 +315,6 @@ void MenuBar::createRecentFileActions()
 
 }
 
-void MenuBar::createAudioDeviceActions()
-{
-    // Create Audio Output Actions
-    for (int i = 0; i < 15; ++i) {
-        m_audioOutputActions[i] = new QAction(this);
-        m_audioOutputActions[i]->setCheckable(true);
-        m_audioOutputActions[i]->setChecked(false);
-        m_audioOutputActions[i]->setVisible(false);
-        connect(m_audioOutputActions[i], &QAction::triggered, this, &MenuBar::selectAudioOutput_Clicked);
-        m_audioDeviceMenu->addAction(m_audioOutputActions[i]);
-    }
-
-}
-
 void MenuBar::createAudioTrackActions()
 {
     // Create Audio Track Actions
@@ -476,6 +461,7 @@ void MenuBar::buildMenus()
     m_playbackMenu->addSeparator();
     m_playbackMenu->addAction(m_restartVideoAction);
 
+    //m_audioMenu->addMenu(m_audioDeviceMenu);
     m_audioMenu->addMenu(m_audioDeviceMenu);
     m_audioMenu->addMenu(m_audioTrackMenu);
     m_audioMenu->addSeparator();
@@ -572,6 +558,8 @@ void MenuBar::buildMenus()
 // TODO: Organize code
 void MenuBar::setActionConnections()
 {
+    connect(m_devices, &QMediaDevices::audioOutputsChanged, this, &MenuBar::refreshAudioDevices);
+
     connect(m_volumeIncreaseAction, &QAction::triggered, this, &MenuBar::increaseVolume_Clicked);
     connect(m_volumeDecreaseAction, &QAction::triggered, this, &MenuBar::decreaseVolume_Clicked);
     connect(m_volumeMuteAction, &QAction::triggered, this, &MenuBar::toggleMute_Clicked);
@@ -898,6 +886,43 @@ void MenuBar::refreshMenuItems()
     updateRecentFiles();
 }
 
+void MenuBar::refreshAudioDevices()
+{
+    m_audioDeviceMenu->clear(); // Remove old devices
+
+    QActionGroup *audioOutputActionGroup = new QActionGroup(m_audioDeviceMenu);
+    audioOutputActionGroup->setExclusive(true);
+
+    QAudioDevice defaultDevice = QMediaDevices::defaultAudioOutput();
+    const auto devices = QMediaDevices::audioOutputs();
+
+    for (const QAudioDevice &device : devices) {
+        QAction *action = m_audioDeviceMenu->addAction(device.description());
+        action->setCheckable(true);
+        action->setData(QVariant::fromValue(device));
+
+        // Check if this matches current default or currently active device
+        if (device.id() == defaultDevice.id()) {
+            action->setChecked(true);
+        }
+
+        audioOutputActionGroup->addAction(action);
+    }
+
+    // Connect trigger logic for the new group
+    connect(audioOutputActionGroup, &QActionGroup::triggered, this, [this](const QAction *action) {
+        if (!action || !m_player || !m_player->audioOutput()) {
+            return;
+        }
+
+        const auto device = action->data().value<QAudioDevice>();
+        if (!device.isNull()) {
+            m_player->audioOutput()->setDevice(device);
+        }
+    });
+}
+
+
 QString MenuBar::trackName(const QMediaMetaData &metaData, int index)
 {
     QString name;
@@ -916,11 +941,6 @@ QString MenuBar::trackName(const QMediaMetaData &metaData, int index)
             name = QStringLiteral("%1 - [%2]").arg(title).arg(QLocale::languageToString(lang));
     }
     return name;
-}
-
-void MenuBar::setActiveAudioDevice(const QAudioDevice &device)
-{
-    m_activeAudioDevice = device;
 }
 
 void MenuBar::setActiveAudioTrack(int track)
@@ -955,33 +975,6 @@ void MenuBar::refreshSettings()
 
     if (m_initialised)
         setHotkeys();
-}
-
-void MenuBar::updateAudioOutputs(QList<QAudioDevice> audioDevices)
-{
-    for (int j = 0; j < 15; ++j)
-        m_audioOutputActions[j]->setVisible(false);
-
-    m_audioOutputActions[0]->setText(tr("Default"));
-    m_audioOutputActions[0]->setData(QVariant::fromValue(QAudioDevice()));
-    m_audioOutputActions[0]->setVisible(true);
-    int i = 1;
-    for (auto &deviceInfo : audioDevices) {
-        if (i <= 15) {
-            m_audioOutputActions[i]->setText(deviceInfo.description());
-            m_audioOutputActions[i]->setData(QVariant::fromValue(deviceInfo));
-            m_audioOutputActions[i]->setVisible(true);
-            if (m_activeAudioDevice == deviceInfo) {
-                m_audioOutputActions[i]->setChecked(true);
-            }
-            ++i;
-        }
-    }
-
-    for (int j = i; j < 15; ++j)
-        m_audioOutputActions[j]->setVisible(false);
-
-    m_audioDeviceMenu->setEnabled(i > 1);
 }
 
 void MenuBar::updateAudioTracks(QList<QMediaMetaData> audioTracks)
@@ -1634,6 +1627,7 @@ void MenuBar::toggleMute_Clicked()
 
 void MenuBar::selectAudioOutput_Clicked()
 {
+    /*
     for (int i = 0; i < 15; ++i) {
         m_audioOutputActions[i]->setChecked(false);
     }
@@ -1644,6 +1638,7 @@ void MenuBar::selectAudioOutput_Clicked()
         emit setAudioOutput(device);
         action->setChecked(true);
     }
+    */
 }
 
 void MenuBar::selectAudioTrack_Clicked()

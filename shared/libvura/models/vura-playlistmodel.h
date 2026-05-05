@@ -21,8 +21,32 @@
 #include <QAbstractTableModel>
 #include <QUrl>
 #include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 class VuraPlaylistModel : public QAbstractTableModel {
+    enum class PlaylistType { Unknown, JSON, Binary, M3U };
+
+    static PlaylistType identifyPlaylist(const QString &fileName) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) return PlaylistType::Unknown;
+
+        // 1. Peek at the first few bytes (the "Signature")
+        QByteArray header = file.peek(4);
+
+        // Check for Binary Magic Number (0x504C5354)
+        if (header.toHex() == "504c5354") return PlaylistType::Binary;
+
+        // Check for M3U Header
+        if (header.startsWith("#EXT")) return PlaylistType::M3U;
+
+        // Check for JSON (Starts with '{' or '[')
+        if (header.startsWith('{') || header.startsWith('[')) return PlaylistType::JSON;
+
+        return PlaylistType::Unknown;
+    }
+
 public:
     struct Track { QString name; QUrl url; QString duration; };
     QList<Track> m_media;
@@ -37,5 +61,29 @@ public:
                   int destinationChild) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     void updateDuration(int row, const QString &duration);
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    void saveJson(const QString &fileName);
+    void loadJson(const QString &fileName);
+
+    void loadFile(const QString &path)
+    {
+        PlaylistType type = identifyPlaylist(path);
+
+        switch(type) {
+            case PlaylistType::Binary:
+                //loadBinary(path);
+                break;
+            case PlaylistType::JSON:
+                loadJson(path);
+                break;
+            case PlaylistType::M3U:
+                //parseM3U(path); // A simple line-by-line reader
+                break;
+            default:
+                // Trigger QMessageBox error
+                break;
+        }
+    }
 };
 

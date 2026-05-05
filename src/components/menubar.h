@@ -22,7 +22,12 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QMediaDevices>
 #include <QAudioDevice>
+#include <QMetaType>
 #include <QMediaMetaData>
 #include <QSettings>
 #include <QMap>
@@ -70,13 +75,12 @@ class MenuBar : public QMenuBar {
     friend class SettingsWindow;
 
 public:
-    explicit MenuBar(QWidget *parent = nullptr);
+    explicit MenuBar(QMediaPlayer *player, QWidget *parent = nullptr);
 
     void createMenus();
     void createMenuActions();
     void setActionsDefaultProperties();
     void createRecentFileActions();
-    void createAudioDeviceActions();
     void createAudioTrackActions();
     void createVideoTrackActions();
     void createSubtitleTrackActions();
@@ -84,13 +88,12 @@ public:
     void setActionConnections();
 
 public slots:
+    void refreshAudioDevices();
     void setPlayerStatus(bool loaded);
-    void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
     void setActiveSubtitleTrack(int track);
     void refreshSettings();
-    void updateAudioOutputs(QList<QAudioDevice> audioDevices);
     void updateAudioTracks(QList<QMediaMetaData> audioTracks);
     void updateVideoTracks(QList<QMediaMetaData> videoTracks);
     void updateSubtitleTracks(QList<QMediaMetaData> subtitleTracks);
@@ -320,6 +323,9 @@ private slots:
 
 
 private:
+    QMediaPlayer *m_player = nullptr;
+    QMediaDevices *m_devices;
+
     QPointer<AboutDialog> m_aboutDialog = nullptr;
     QPointer<FeedbackDialog> m_feedbackDialog = nullptr;
     QPointer<HelpDialog> m_helpDialog = nullptr;
@@ -454,7 +460,8 @@ private:
     QAction *m_orangeMarkerAction = nullptr;
 
     // Audio
-    QAction *m_audioOutputActions[15];
+    //QAction *m_audioOutputActions[15];
+    //QActionGroup *m_audioOutputActionGroup = nullptr;
     QAction *m_audioTrackActions[15];
     QAction *m_volumeIncreaseAction = nullptr;
     QAction *m_volumeDecreaseAction = nullptr;

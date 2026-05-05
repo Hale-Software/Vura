@@ -44,10 +44,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     initApplication();
 
     initSystemTrayIcon();
+    initVideoPlayer();
     initMenuBar();
     initStatusBar();
     initVideoControls();
-    initVideoPlayer();
+    //initVideoPlayer();
     initVideoSlider();
     initUI();
     initAudioDevices();
@@ -134,14 +135,14 @@ void MainWindow::initMenuBar()
 {
     qDebug() << "Initializing menu bar...";
 
-    m_menuBar = new MenuBar(this);
+    m_menuBar = new MenuBar(m_player, this);
     connect(this, &MainWindow::setPlayerStatus, m_menuBar, &MenuBar::setPlayerStatus);
     connect(this, &MainWindow::refreshSettings, m_menuBar, &MenuBar::refreshSettings);
-    connect(this, &MainWindow::setActiveAudioDevice, m_menuBar, &MenuBar::setActiveAudioDevice);
+    //connect(this, &MainWindow::setActiveAudioDevice, m_menuBar, &MenuBar::setActiveAudioDevice);
     connect(this, &MainWindow::setActiveAudioTrack, m_menuBar, &MenuBar::setActiveAudioTrack);
     connect(this, &MainWindow::setActiveVideoTrack, m_menuBar, &MenuBar::setActiveVideoTrack);
     connect(this, &MainWindow::setActiveSubtitleTrack, m_menuBar, &MenuBar::setActiveSubtitleTrack);
-    connect(this, &MainWindow::updateAudioOutputs, m_menuBar, &MenuBar::updateAudioOutputs);
+    //connect(this, &MainWindow::updateAudioOutputs, m_menuBar, &MenuBar::updateAudioOutputs);
     connect(this, &MainWindow::updateAudioTracks, m_menuBar, &MenuBar::updateAudioTracks);
     connect(this, &MainWindow::updateVideoTracks, m_menuBar, &MenuBar::updateVideoTracks);
     connect(this, &MainWindow::updateSubtitleTracks, m_menuBar, &MenuBar::updateSubtitleTracks);
@@ -264,7 +265,7 @@ void MainWindow::initUI()
 
     ui->playlistTableView->setModel(m_vuraPlaylistModel);
     ui->playlistTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->playlistTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->playlistTableView->horizontalHeader()->setStretchLastSection(false);
 
     // Double-click a row to play that track
     connect(ui->playlistTableView, &QTableView::doubleClicked, [=](const QModelIndex &index) {
@@ -274,6 +275,9 @@ void MainWindow::initUI()
     connect(ui->playlistTableView, &QTableView::customContextMenuRequested, this, &MainWindow::showPlaylistTableContextMenu);
     connect(ui->duration, &ClickableLabel::clicked, this, &MainWindow::durationLabel_Clicked);
 
+    if (!vuraSettings->showPlaylistOnStart())
+        ui->playlistTableView->hide();
+
     m_showingPlaylist = vuraSettings->showPlaylistOnStart();
     emit setPlaylistShowing(m_showingPlaylist);
 
@@ -282,6 +286,7 @@ void MainWindow::initUI()
 
 void MainWindow::initAudioDevices()
 {
+    /*
     qDebug() << "Initializing audio devices...";
 
     QList<QAudioDevice> audioDevices;
@@ -303,6 +308,7 @@ void MainWindow::initAudioDevices()
     });
 
     qDebug() << "Audio devices initialized.";
+    */
 }
 
 
@@ -456,7 +462,7 @@ void MainWindow::durationChanged(qint64 duration)
 
 void MainWindow::positionChanged(qint64 progress)
 {
-    if (!m_videoSlider->GetIsSliderDown())
+    if (!m_videoSlider->GetSliderPressed())
         m_videoSlider->setValue(static_cast<int>(progress));
 
     updateDurationInfo(progress / 1000);
@@ -1064,6 +1070,8 @@ void MainWindow::addMarker(const QString &markerType)
 
         videoMarkers.append(marker);
     }
+
+    emit updateVideoSlider();
 }
 
 void MainWindow::nextMarker()
@@ -1283,6 +1291,7 @@ void MainWindow::clearSelectedMarker()
             qDebug() << "Failed to find selected marker in video marker list.";
         }
     }
+    emit updateVideoSlider();
 }
 
 void MainWindow::editSelectedMarker()
@@ -1478,6 +1487,7 @@ void MainWindow::editSelectedMarker()
         connect(m_markerEditDialog, &MarkerEditDialog::getPrevMarker, this, &MainWindow::getPrevMarker);
         connect(m_markerEditDialog, &MarkerEditDialog::getNextMarker, this, &MainWindow::getNextMarker);
     }
+    emit updateVideoSlider();
 }
 
 void MainWindow::markerEdited(const VuraVideoMarker &videoMarker)
@@ -1502,6 +1512,8 @@ void MainWindow::markerEdited(const VuraVideoMarker &videoMarker)
     } else {
         qDebug() << "Failed to find selected marker in video marker list.";
     }
+
+    emit updateVideoSlider();
 }
 
 void MainWindow::markerDeleted(const VuraVideoMarker &videoMarker)
@@ -1528,6 +1540,8 @@ void MainWindow::markerDeleted(const VuraVideoMarker &videoMarker)
 
     if (m_markerEditDialog)
         m_markerEditDialog->forceClose();
+
+    emit updateVideoSlider();
 }
 
 void MainWindow::getPrevMarker(const VuraVideoMarker &videoMarker)
@@ -1593,6 +1607,7 @@ void MainWindow::getNextMarker(const VuraVideoMarker &videoMarker)
 void MainWindow::clearMarkers()
 {
     videoMarkers.clear();
+    emit updateVideoSlider();
 }
 
 void MainWindow::clearInMarker()
@@ -1901,10 +1916,6 @@ void MainWindow::updateDurationInfo(const qint64 currentInfo)
     ui->duration->setText(durationString);
     ui->position->setText(positionString);
     ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
-
-    if (currentInfo > 0) {
-        m_videoSlider->SetVideoLoaded(true);
-    }
 }
 
 void MainWindow::displayErrorMessage()
@@ -2315,13 +2326,13 @@ void MainWindow::initVideoSlider()
     //connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::seek);
     //connect(m_videoSlider, &VideoSlider::sliderClicked, this, &MainWindow::seek);
     //connect(m_videoSlider, &VideoSlider::markerSelected, this, &MainWindow::seek);
-    //connect(this, &MainWindow::updateVideoSlider, m_videoSlider, &VideoSlider::updateVideoSlider);
-    connect(m_videoSlider, &VideoSlider::rangeChanged, this, &MainWindow::rangeChanged);
-    connect(m_videoSlider, &VideoSlider::valueChanged, this, &MainWindow::valueChanged);
+    connect(this, &MainWindow::updateVideoSlider, m_videoSlider, &VideoSlider::updateVideoSlider);
+    //connect(m_videoSlider, &VideoSlider::rangeChanged, this, &MainWindow::rangeChanged);
+    connect(m_videoSlider, &VideoSlider::valueChanged, m_player, &QMediaPlayer::setPosition);
     connect(m_videoSlider, &VideoSlider::sliderPressed, this, &MainWindow::sliderPressed);
-    connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::sliderMoved);
-    connect(m_videoSlider, &VideoSlider::sliderReleased, this, &MainWindow::sliderReleased);
-    connect(m_videoSlider, &VideoSlider::sliderClicked, this, &MainWindow::sliderClicked);
+    //connect(m_videoSlider, &VideoSlider::sliderMoved, this, &MainWindow::sliderMoved);
+    //connect(m_videoSlider, &VideoSlider::sliderReleased, this, &MainWindow::sliderReleased);
+    //connect(m_videoSlider, &VideoSlider::sliderClicked, this, &MainWindow::sliderClicked);
     connect(m_player, &QMediaPlayer::positionChanged, m_videoSlider, &VideoSlider::setValue);
     connect(m_player, &QMediaPlayer::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
 }
@@ -2330,7 +2341,15 @@ void MainWindow::rangeChanged(int minimum, int maximum) {}
 
 void MainWindow::valueChanged(int value) {}
 
-void MainWindow::sliderPressed() {}
+void MainWindow::sliderPressed(bool pressed)
+{
+    if (pressed) {
+        m_player->pause();
+
+    } else {
+        m_player->play();
+    }
+}
 
 void MainWindow::sliderMoved(int value) {}
 

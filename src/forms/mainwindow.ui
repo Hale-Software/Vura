@@ -112,14 +112,14 @@
              <string>--:--</string>
             </property>
             <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QWidget" name="placeholder" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -133,7 +133,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>20</height>
+              <height>16777215</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -146,7 +146,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>25</height>
+              <height>0</height>
              </size>
             </property>
             <property name="font">
@@ -158,7 +158,7 @@
              <string>x1</string>
             </property>
             <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -179,7 +179,7 @@
              <string>--:--</string>
             </property>
             <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing</set>
+             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
             </property>
            </widget>
           </item>

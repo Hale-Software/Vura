@@ -71,3 +71,57 @@ void VuraPlaylistModel::updateDuration(const int row, const QString &duration)
     m_media[row].duration = duration;
     emit dataChanged(index(row, 1), index(row, 1), {Qt::DisplayRole});
 }
+
+QVariant VuraPlaylistModel::headerData(const int section, const Qt::Orientation orientation, const int role) const {
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+        switch (section) {
+            case 0:
+                return QString(tr("Title"));
+
+            case 1:
+                return QString(tr("Duration"));
+
+            default:
+                return QVariant();
+        }
+    }
+    return QAbstractTableModel::headerData(section, orientation, role);
+}
+
+void VuraPlaylistModel::saveJson(const QString &fileName) {
+    QJsonArray trackArray;
+    for (const Track &track : m_media) {
+        QJsonObject trackObj;
+        trackObj["name"] = track.name;
+        trackObj["url"] = track.url.toString();
+        trackObj["duration"] = track.duration;
+        trackArray.append(trackObj);
+    }
+
+    QJsonDocument doc(trackArray);
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+        file.close();
+    }
+}
+
+void VuraPlaylistModel::loadJson(const QString &fileName) {
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) return;
+
+    QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonArray trackArray = doc.array();
+
+    beginResetModel();
+    m_media.clear();
+    for (const QJsonValue &value : trackArray) {
+        QJsonObject obj = value.toObject();
+        m_media.append({obj["name"].toString(), QUrl(obj["url"].toString()), obj["duration"].toString()});
+    }
+    endResetModel();
+}
+
+
+

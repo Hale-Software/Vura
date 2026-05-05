@@ -205,7 +205,7 @@ public slots:
     // Video Slider
     void rangeChanged(int minimum, int maximum);
     void valueChanged(int value);
-    void sliderPressed();
+    void sliderPressed(bool pressed);
     void sliderMoved(int value);
     void sliderReleased();
     void sliderClicked(int mseconds);
