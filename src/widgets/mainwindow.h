@@ -276,12 +276,10 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    Blogger* blog;
     QList<VuraVideoMarker> videoMarkers;
     VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
     PlaylistManager *m_playlistManager = nullptr;
 
-    MediaFunctions *mediaFunctions;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
@@ -296,11 +294,11 @@ private:
     QPoint m_pos;
     QString m_trackInfo;
     QString m_statusInfo;
-    qint64 m_duration;
-    int videoTrack;
-    int audioOutput;
-    int audioTrack;
-    int subtitleTrack;
+    qint64 m_duration = 0;
+    int videoTrack = 0;
+    int audioOutput = 0;
+    int audioTrack = 0;
+    int subtitleTrack = 0;
     bool m_showingCursor = true;
     bool m_fromFullscreen = false;
     qint64 m_lastPosition = 0;
@@ -320,7 +318,7 @@ private:
     // VARIABLES
     // =======================================================================================================
     QPointer<VideoControlWidget> m_videoControlWidget;
-    VideoSlider *m_videoSlider;
+    VideoSlider *m_videoSlider = nullptr;
     bool m_sourceLoaded = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;
@@ -332,9 +330,9 @@ private:
     QString m_currentFile;
     QString m_currentFileHash;
     QString m_markerValue;
-    int m_markerIndex;
-    int m_inMarker;
-    int m_outMarker;
+    int m_markerIndex = 0;
+    int m_inMarker = 0;
+    int m_outMarker = 0;
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;

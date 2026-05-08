@@ -31,7 +31,7 @@
 // Global pointer to Logger for use in messageHandler
 static Blogger* globalRedirector = nullptr;
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), timer(new QTimer(this))
 {
     ui->setupUi(this);
 
@@ -97,8 +97,6 @@ void MainWindow::initApplication()
     qInstallMessageHandler(Blogger::messageHandler);
     globalRedirector = Blogger::instance();
 
-    mediaFunctions = new MediaFunctions();
-
     QString name = qgetenv("USER");
     if (name.isEmpty()) {
         name = qgetenv("USERNAME");
@@ -107,7 +105,6 @@ void MainWindow::initApplication()
 
     initUserDirs();
 
-    timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
 
     qDebug() << "Application initialized.";
@@ -352,7 +349,7 @@ void MainWindow::openFolderContextMenu(const QString &path)
 
     const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
     for (auto &url : fileList) {
-        if (!mediaFunctions->isPlaylist(url)) {
+        if (!MediaFunctions::isPlaylist(url)) {
             m_vuraPlaylistModel->addMedia(url);
         }
     }
@@ -383,7 +380,7 @@ void MainWindow::openFileContextMenu(const QString &file)
     const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
     if (!file.isEmpty()) {
         QUrl url = QUrl::fromLocalFile(file);
-        if (!mediaFunctions->isPlaylist(url)) {
+        if (!MediaFunctions::isPlaylist(url)) {
             m_vuraPlaylistModel->addMedia(url);
             if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
                 const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
@@ -677,7 +674,7 @@ void MainWindow::openFiles(const QStringList &fileList, const bool localFile)
         if (localFile) {
             QUrl url = QUrl::fromLocalFile(fileName);
 
-            if (!mediaFunctions->isPlaylist(url)) {
+            if (!MediaFunctions::isPlaylist(url)) {
                 m_vuraPlaylistModel->addMedia(url);
                 files.removeAll(fileName);
                 files.prepend(fileName);
@@ -747,7 +744,7 @@ void MainWindow::openFolder(const QString &folderPath)
         }
 
         for (auto &fileUrl : filesList) {
-            if (!mediaFunctions->isPlaylist(fileUrl)) {
+            if (!MediaFunctions::isPlaylist(fileUrl)) {
                 m_vuraPlaylistModel->addMedia(fileUrl);
             } else {
                 VMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
@@ -1647,7 +1644,8 @@ void MainWindow::createSubclip()
     if (m_inMarker == 0 || m_outMarker == 0) {
         VMessageBox::warning(this, "Create Subclip", "In or out marker is empty.");
     } else {
-        mediaFunctions->extractSubclipFromVideo(m_currentFile, m_inMarker, m_outMarker);
+        MediaFunctions mediaFunctions;
+        mediaFunctions.extractSubclipFromVideo(m_currentFile, m_inMarker, m_outMarker);
     }
 }
 
@@ -1685,7 +1683,7 @@ void MainWindow::clearPlaylist()
 
 void MainWindow::takeSnapshot()
 {
-    mediaFunctions->takeSnapshot(m_currentFile, static_cast<int>(m_player->position()), m_videoSink->videoFrame());
+    MediaFunctions::takeSnapshot(m_currentFile, static_cast<int>(m_player->position()), m_videoSink->videoFrame());
 }
 
 void MainWindow::jumpToEnd()
@@ -2054,14 +2052,14 @@ void MainWindow::setApplicationWindowTitle()
     if (!m_player->source().isEmpty()) {
         if (m_showingVideoResolution) {
             if (m_videoResolution.isEmpty()) {
-                windowTitle = QString("%1 [%2] - Vura %3").arg(mediaFunctions->strippedFileName(m_currentFile), "UNKNOWN RES", VURA_VERSION_STRING);
+                windowTitle = QString("%1 [%2] - Vura %3").arg(MediaFunctions::strippedFileName(m_currentFile), "UNKNOWN RES", VURA_VERSION_STRING);
             } else {
-                windowTitle = QString("%1 [%2p] - Vura %3").arg(mediaFunctions->strippedFileName(m_currentFile), m_videoResolution, VURA_VERSION_STRING);
+                windowTitle = QString("%1 [%2p] - Vura %3").arg(MediaFunctions::strippedFileName(m_currentFile), m_videoResolution, VURA_VERSION_STRING);
             }
         } else {
-            windowTitle = QString("%1 - Vura %2").arg(mediaFunctions->strippedFileName(m_currentFile), VURA_VERSION_STRING);
+            windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_currentFile), VURA_VERSION_STRING);
         }
-        m_systemTrayIcon->setToolTip(mediaFunctions->strippedFileName(m_currentFile));
+        m_systemTrayIcon->setToolTip(MediaFunctions::strippedFileName(m_currentFile));
         m_sourceLoaded = false;
 
     } else {
