@@ -254,91 +254,31 @@ void VideoSlider::SetSliderPressed(const bool value)
     m_sliderPressed = value;
 }
 
-bool VideoSlider::GetShowingMarkers() const
+bool VideoSlider::getMarkerTypesVisible(const QString &markerType) const
 {
-    return m_showingMarkers;
+    if (markerType == "marker") return m_showingMarkers;
+    if (markerType == "cumshot") return m_showingCumshotMarkers;
+    if (markerType == "cyan") return m_showingCyanMarkers;
+    if (markerType == "dialog") return m_showingDialogMarkers;
+    if (markerType == "magenta") return m_showingMagentaMarkers;
+    if (markerType == "orange") return m_showingOrangeMarkers;
+    if (markerType == "scene") return m_showingSceneMarkers;
+    if (markerType == "strip") return m_showingStripMarkers;
+
+    return false;
 }
 
-void VideoSlider::SetShowingMarkers(const bool value)
+void VideoSlider::setMarkerTypeVisible(const QString& markerType, const bool visible)
 {
-    m_showingMarkers = value;
-    update();
-}
+    if (markerType == "marker") m_showingMarkers = visible;
+    if (markerType == "cumshot") m_showingCumshotMarkers = visible;
+    if (markerType == "cyan") m_showingCyanMarkers = visible;
+    if (markerType == "dialog") m_showingDialogMarkers = visible;
+    if (markerType == "magenta") m_showingMagentaMarkers = visible;
+    if (markerType == "orange") m_showingOrangeMarkers = visible;
+    if (markerType == "scene") m_showingSceneMarkers = visible;
+    if (markerType == "strip") m_showingStripMarkers = visible;
 
-bool VideoSlider::GetShowingCumshotMarkers() const
-{
-    return m_showingCumshotMarkers;
-}
-
-void VideoSlider::SetShowingCumshotMarkers(const bool value)
-{
-    m_showingCumshotMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingCyanMarkers() const
-{
-    return m_showingCyanMarkers;
-}
-
-void VideoSlider::SetShowingCyanMarkers(const bool value)
-{
-    m_showingCyanMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingDialogMarkers() const
-{
-    return m_showingDialogMarkers;
-}
-
-void VideoSlider::SetShowingDialogMarkers(const bool value)
-{
-    m_showingDialogMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingMagentaMarkers() const
-{
-    return m_showingMagentaMarkers;
-}
-
-void VideoSlider::SetShowingMagentaMarkers(const bool value)
-{
-    m_showingMagentaMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingOrangeMarkers() const
-{
-    return m_showingOrangeMarkers;
-}
-
-void VideoSlider::SetShowingOrangeMarkers(const bool value)
-{
-    m_showingOrangeMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingSceneMarkers() const
-{
-    return m_showingSceneMarkers;
-}
-
-void VideoSlider::SetShowingSceneMarkers(const bool value)
-{
-    m_showingSceneMarkers = value;
-    update();
-}
-
-bool VideoSlider::GetShowingStripMarkers() const
-{
-    return m_showingStripMarkers;
-}
-
-void VideoSlider::SetShowingStripMarkers(const bool value)
-{
-    m_showingStripMarkers = value;
     update();
 }
 

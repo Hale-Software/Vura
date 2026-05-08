@@ -57,29 +57,8 @@ public:
     bool GetSliderPressed() const;
     void SetSliderPressed(bool value);
 
-    bool GetShowingMarkers() const;
-    void SetShowingMarkers(bool value);
-
-    bool GetShowingCumshotMarkers() const;
-    void SetShowingCumshotMarkers(bool value);
-
-    bool GetShowingCyanMarkers() const;
-    void SetShowingCyanMarkers(bool value);
-
-    bool GetShowingDialogMarkers() const;
-    void SetShowingDialogMarkers(bool value);
-
-    bool GetShowingMagentaMarkers() const;
-    void SetShowingMagentaMarkers(bool value);
-
-    bool GetShowingOrangeMarkers() const;
-    void SetShowingOrangeMarkers(bool value);
-
-    bool GetShowingSceneMarkers() const;
-    void SetShowingSceneMarkers(bool value);
-
-    bool GetShowingStripMarkers() const;
-    void SetShowingStripMarkers(bool value);
+    bool getMarkerTypesVisible(const QString& markerType) const;
+    void setMarkerTypeVisible(const QString& markerType, bool visible);
 
 signals:
     void valueChanged(int value);

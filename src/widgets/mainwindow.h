@@ -140,6 +140,8 @@ public:
     bool initUserDirs();
     static qint64 fileHash(const QString& filePath);
     void updateMarkerMenuItems();
+    VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
+    double getSliderPercent() const;
 
 public slots:
     void showMediaInformation();
