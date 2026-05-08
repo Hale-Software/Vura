@@ -837,6 +837,8 @@ void MenuBar::setHotkeys()
     m_hotkeys.setMenuItemHotkey(*m_saveAsAction);
     m_hotkeys.setMenuItemHotkey(*m_savePlaylistAction);
 
+    m_testFunctionAction->setShortcut(QKeySequence("Ctrl+Alt+T"));
+
     m_initialised = true;
 }
 

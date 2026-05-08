@@ -71,6 +71,15 @@ void MainWindow::testFunction()
 {
     //VuraHelpers::simulateApplicationCrash();
     //VMessageBox::critical(this, "Vura", "Test of critical message box.");
+    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    m_vuraPlaylistModel->addMedia(QUrl("file:///C:/Users/halea/Videos/Veronica-R-My-Dirty-Maid.mp4"));
+    if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
+        const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
+        if (index.isValid()) {
+            ui->playlistTableView->setCurrentIndex(index);
+            m_playlistManager->playTrack(index.row());
+        }
+    }
 }
 
 
