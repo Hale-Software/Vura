@@ -31,12 +31,12 @@ VuraSettings::~VuraSettings() {}
 
 void VuraSettings::loadSettings()
 {
-    QSettings settings;
+    const QSettings settings;
 
     if (VURA_BUILD_TYPE == "Debug") {
         m_markerFile = constants::ApplicationDebugFolder + "/global.json";
     } else {
-        QString videoMarkerDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.json";
+        const QString videoMarkerDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.json";
         m_markerFile = videoMarkerDataFile;
     }
 
@@ -79,122 +79,122 @@ QString VuraSettings::locale()
     return m_locale;
 }
 
-bool VuraSettings::showStatusBarOnStart()
+bool VuraSettings::showStatusBarOnStart() const
 {
     return m_showStatusBarOnStart;
 }
 
-bool VuraSettings::showPlaylistOnStart()
+bool VuraSettings::showPlaylistOnStart() const
 {
     return m_showPlaylistOnStart;
 }
 
-bool VuraSettings::showVideoControlsOnStart()
+bool VuraSettings::showVideoControlsOnStart() const
 {
     return m_showVideoControlsOnStart;
 }
 
-bool VuraSettings::hashFile()
+bool VuraSettings::hashFile() const
 {
     return m_hashFile;
 }
 
-int VuraSettings::jumpSmall()
+int VuraSettings::jumpSmall() const
 {
     return m_jumpSmall;
 }
 
-int VuraSettings::jumpMedium()
+int VuraSettings::jumpMedium() const
 {
     return m_jumpMedium;
 }
 
-int VuraSettings::jumpLarge()
+int VuraSettings::jumpLarge() const
 {
     return m_jumpLarge;
 }
 
-int VuraSettings::jumpExtraLarge()
+int VuraSettings::jumpExtraLarge() const
 {
     return m_jumpExtraLarge;
 }
 
-int VuraSettings::maxRecentFiles()
+int VuraSettings::maxRecentFiles() const
 {
     return m_maxRecentFiles;
 }
 
-bool VuraSettings::hideCursorWhenPlaying()
+bool VuraSettings::hideCursorWhenPlaying() const
 {
     return m_hideCursorWhenPlaying;
 }
 
-int VuraSettings::hideCursorTime()
+int VuraSettings::hideCursorTime() const
 {
     return m_hideCursorTime;
 }
 
-bool VuraSettings::systemTray()
+bool VuraSettings::systemTray() const
 {
     return m_systemTray;
 }
 
-int VuraSettings::mediaChangeNotification()
+int VuraSettings::mediaChangeNotification() const
 {
     return m_mediaChangeNotification;
 }
 
-bool VuraSettings::showVideoControlsWhenFullscreen()
+bool VuraSettings::showVideoControlsWhenFullscreen() const
 {
     return m_showVideoControlsWhenFullscreen;
 }
 
-bool VuraSettings::startInMinimalViewMode()
+bool VuraSettings::startInMinimalViewMode() const
 {
     return m_startInMinimalViewMode;
 }
 
-bool VuraSettings::pausePlaybackWhenMinimized()
+bool VuraSettings::pausePlaybackWhenMinimized() const
 {
     return m_pausePlaybackWhenMinimized;
 }
 
-bool VuraSettings::allowOnlyOneInstance()
+bool VuraSettings::allowOnlyOneInstance() const
 {
     return m_allowOnlyOneInstance;
 }
 
-bool VuraSettings::oneInstanceFromFileManager()
+bool VuraSettings::oneInstanceFromFileManager() const
 {
     return m_oneInstanceFromFileManager;
 }
 
-int VuraSettings::continuePlayback()
+int VuraSettings::continuePlayback() const
 {
     return m_continuePlayback;
 }
 
-bool VuraSettings::pauseOnLastFrameOfVideo()
+bool VuraSettings::pauseOnLastFrameOfVideo() const
 {
     return m_pauseOnLastFrameOfVideo;
 }
 
-double VuraSettings::playbackSpeedAdjustment()
+double VuraSettings::playbackSpeedAdjustment() const
 {
     return m_playbackSpeedAdjustment;
 }
 
-double VuraSettings::playbackSpeedFineAdjustment()
+double VuraSettings::playbackSpeedFineAdjustment() const
 {
     return m_playbackSpeedFineAdjustment;
 }
 
-double VuraSettings::volumeStep()
+double VuraSettings::volumeStep() const
 {
     return m_volumeStep;
 }
 
-bool VuraSettings::durationLabelShowRemainingTime()
+bool VuraSettings::durationLabelShowRemainingTime() const
 {
     return m_durationLabelShowRemainingTime;
 }
@@ -204,12 +204,12 @@ QString VuraSettings::theme()
     return m_theme;
 }
 
-double VuraSettings::jumpToEndPercentage()
+double VuraSettings::jumpToEndPercentage() const
 {
     return m_jumpToEndPercentage;
 }
 
-bool VuraSettings::setOverrideWindowsHotkeys()
+bool VuraSettings::setOverrideWindowsHotkeys() const
 {
     return m_setOverrideWindowsHotkeys;
 }
