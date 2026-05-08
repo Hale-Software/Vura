@@ -58,7 +58,6 @@ bool VuraPlaylistModel::moveRows(const QModelIndex &sourceParent, int sourceRow,
     return true;
 }
 
-
 Qt::ItemFlags VuraPlaylistModel::flags(const QModelIndex &index) const {
     Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
     if (index.isValid())
@@ -123,5 +122,44 @@ void VuraPlaylistModel::loadJson(const QString &fileName) {
     endResetModel();
 }
 
+void VuraPlaylistModel::loadFile(const QString &path)
+{
+    PlaylistType type = identifyPlaylist(path);
+
+    switch(type) {
+        case PlaylistType::Binary:
+            //loadBinary(path);
+            break;
+        case PlaylistType::JSON:
+            loadJson(path);
+            break;
+        case PlaylistType::M3U:
+            //parseM3U(path); // A simple line-by-line reader
+            break;
+        default:
+            // Trigger QMessageBox error
+            break;
+    }
+}
+
+VuraPlaylistModel::PlaylistType VuraPlaylistModel::identifyPlaylist(const QString &fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) return PlaylistType::Unknown;
+
+    // 1. Peek at the first few bytes (the "Signature")
+    QByteArray header = file.peek(4);
+
+    // Check for Binary Magic Number (0x504C5354)
+    if (header.toHex() == "504c5354") return PlaylistType::Binary;
+
+    // Check for M3U Header
+    if (header.startsWith("#EXT")) return PlaylistType::M3U;
+
+    // Check for JSON (Starts with '{' or '[')
+    if (header.startsWith('{') || header.startsWith('[')) return PlaylistType::JSON;
+
+    return PlaylistType::Unknown;
+}
 
 

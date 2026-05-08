@@ -258,6 +258,7 @@ void MainWindow::initUI()
     ui->playlistTableView->setDragDropOverwriteMode(false); // Crucial: inserts rather than replaces
     ui->playlistTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->playlistTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    //ui->playlistTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 
     // In MainWindow.cpp
     m_vuraPlaylistModel = new VuraPlaylistModel();

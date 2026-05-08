@@ -64,6 +64,22 @@ target_sources(
         models/vura-playlistmodel.cpp
 )
 
+# playlist Directory
+target_sources(
+        libvura
+        PUBLIC
+        #playlist/playlist-model.h
+        #playlist/vura-playlist.h
+        #playlist/vura-playlist-file-parser.h
+        #playlist/vura-playlist-private.h
+
+        PRIVATE
+        #playlist/playlist-model.cpp
+        #playlist/vura-playlist.cpp
+        #playlist/vura-playlist-file-parser.cpp
+        #playlist/vura-playlist-private.cpp
+)
+
 # util Directory
 target_sources(
         libvura

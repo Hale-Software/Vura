@@ -19,36 +19,49 @@
 #pragma once
 
 #include <QAbstractTableModel>
-#include <QUrl>
+#include <QMap>
+#include <QVariant>
 #include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
+#include <QUrl>
+#include <memory>
 
-class VuraPlaylistModel : public QAbstractTableModel {
-    enum class PlaylistType { Unknown, JSON, Binary, M3U };
+#include "vura-playlist.h"
 
-    static PlaylistType identifyPlaylist(const QString &fileName);
+
+class PlaylistModel : public QAbstractTableModel
+{
+    Q_OBJECT
 
 public:
+    enum Column { Title = 0, ColumnCount = 2 };
     struct Track { QString name; QUrl url; QString duration; };
     QList<Track> m_media;
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override { return m_media.size(); }
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override { return 2; } // Track Name
+    explicit PlaylistModel(QObject *parent = nullptr);
+    ~PlaylistModel();
 
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &child) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::DisplayRole) override;
 
-    void addMedia(const QUrl &url);
-    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    void updateDuration(int row, const QString &duration);
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    void saveJson(const QString &fileName);
-    void loadJson(const QString &fileName);
+    Playlist *playlist() const;
 
-    void loadFile(const QString &path);
+private slots:
+    void beginInsertItems(int start, int end);
+    void endInsertItems();
+    void beginRemoveItems(int start, int end);
+    void endRemoveItems();
+    void changeItems(int start, int end);
+
+private:
+    std::unique_ptr<Playlist> m_playlist;
+    QMap<QModelIndex, QVariant> m_data;
+    int m_columnCount = 2; // Number of columns
 
 };
-
