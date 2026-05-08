@@ -12,7 +12,10 @@ target_sources(
         libvura
         PUBLIC
         constants.h
+        filemanager.h
         libvura.h
+        markermanager.h
+        mediacontroller.h
         vura-datafile-handler.h
         vura-error.h
         vura-helpers.h
@@ -21,7 +24,10 @@ target_sources(
 
         PRIVATE
         constants.cpp
+        filemanager.cpp
         libvura.cpp
+        markermanager.cpp
+        mediacontroller.cpp
         vura-datafile-handler.cpp
         vura-defs.h
         vura-error.cpp
