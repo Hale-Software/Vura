@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.2.1'
+#define MyAppVersion '0.4.0'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -20,7 +20,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=..\build\release\src\data\license\license.txt
 OutputDir=..\installer
-OutputBaseFilename=vura-0.2.1-win64
+OutputBaseFilename=vura-0.4.0-win64
 SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
