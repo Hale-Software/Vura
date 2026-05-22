@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,7 +13,6 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
  ******************************************************************************/
 
 #include "blogger.h"
@@ -135,11 +134,6 @@ QString Blogger::getLogFileName()
     return m_logFileName;
 }
 
-QList<BloggerMessage> Blogger::getMessages()
-{
-    return m_messages;
-}
-
 void Blogger::clearLogFile()
 {
     m_logFile.close();
@@ -163,6 +157,9 @@ QString Blogger::m_message(QtMsgType type, const QMessageLogContext &context, co
     QTextStream stream(&output);
 
     stream << QDateTime::currentDateTime().toString("[HH:mm:ss.zzz] ");
+    stream << "[" << context.file << "] ";
+    stream << "[" << context.line << "] ";
+    stream << "[" << context.function << "] ";
 
     // Add message type prefix
     switch (type) {
@@ -190,44 +187,7 @@ QString Blogger::m_message(QtMsgType type, const QMessageLogContext &context, co
 void Blogger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     QSettings settings;
 
-    Q_UNUSED(context);
-
-    QString timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
-    QString verbosity;
-    QString message = msg;
-
-    QByteArray localMsg = msg.toLocal8Bit();
-    QString output;
-    QTextStream stream(&output);
-
-    stream << QDateTime::currentDateTime().toString("[HH:mm:ss.zzz] ");
-
-    // Add message type prefix
-    switch (type) {
-        case QtDebugMsg:
-            stream << "[DEBUG] - ";
-            verbosity = "DEBUG";
-            break;
-        case QtInfoMsg:
-            stream << "[INFO] - ";
-            verbosity = "INFO";
-            break;
-        case QtWarningMsg:
-            stream << "[WARN] - ";
-            verbosity = "WARNING";
-            break;
-        case QtCriticalMsg:
-            stream << "[CRITICAL] - ";
-            verbosity = "CRITICAL";
-            break;
-        case QtFatalMsg:
-            stream << "[FATAL] - ";
-            verbosity = "FATAL";
-            break;
-    }
-    stream << msg;  // Add the actual message content
-
-    //QString output = Blogger::instance()->m_message(type, context, msg);
+    QString output = Blogger::instance()->m_message(type, context, msg);
 
     // If log to file setting is on, write log to file.
     if (settings.value("logToFile", true).toBool()) {
@@ -238,15 +198,8 @@ void Blogger::messageHandler(QtMsgType type, const QMessageLogContext& context, 
         }
     }
 
-    BloggerMessage bloggerMessage;
-    bloggerMessage.timestamp = timestamp;
-    bloggerMessage.verbosity = verbosity;
-    bloggerMessage.message = message;
-    Blogger::instance()->m_messages.append(bloggerMessage);
-
     // Emit new log message
     emit Blogger::instance()->message(output);
-    emit Blogger::instance()->newLogMessage(timestamp, verbosity, message);
 
     // Also output to the standard console for development visibility
     fprintf(stderr, "%s", output.toLocal8Bit().constData());
