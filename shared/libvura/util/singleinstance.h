@@ -20,6 +20,8 @@
 #include <QObject>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QStringList>
+#include <QDataStream>
 
 
 class SingleInstance : public QObject
@@ -30,14 +32,21 @@ public:
     explicit SingleInstance(QObject *parent = nullptr);
 
     void listen(const QString &name);
+
+    // Returns true if a previous instance is running.
+    // If argc/argv contain a path argument, it is forwarded to the running instance.
     static bool hasPrevious(const QString &name, int argc, char *argv[]);
 
-    signals:
-        void newInstance();
-    void sendParamsToInstance();
+signals:
+    void newInstance();
+
+    // Emitted when the running instance receives a path from a second launch.
+    // |path| is the file or folder path passed by the second instance.
+    void openPathRequested(const QString &path);
+
+private slots:
+    void onNewConnection();
 
 private:
-    QLocalSocket *m_socket;
     QLocalServer m_server;
-
 };

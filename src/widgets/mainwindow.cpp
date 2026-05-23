@@ -326,6 +326,7 @@ void MainWindow::initAudioDevices()
 
 void MainWindow::openFolderContextMenu(const QString &path)
 {
+    /*
     if (m_vuraPlaylistModel->m_media.count() > 0) {
         const QMessageBox::StandardButton confirmationBox = VMessageBox::question(
             this,
@@ -337,6 +338,7 @@ void MainWindow::openFolderContextMenu(const QString &path)
         }
     }
     m_vuraPlaylistModel->m_media.clear();
+    */
 
     QList<QUrl> fileList;
 
@@ -364,6 +366,7 @@ void MainWindow::openFolderContextMenu(const QString &path)
 
 void MainWindow::openFileContextMenu(const QString &file)
 {
+    /*
     if (m_vuraPlaylistModel->m_media.count() > 0) {
         const QMessageBox::StandardButton confirmationBox = VMessageBox::question(
             this,
@@ -375,6 +378,7 @@ void MainWindow::openFileContextMenu(const QString &file)
         }
     }
     m_vuraPlaylistModel->m_media.clear();
+    */
 
     const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
     if (!file.isEmpty()) {
