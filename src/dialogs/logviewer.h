@@ -28,7 +28,6 @@
 #include <QTextStream>
 #include <QString>
 
-#include <constants.h>
 #include <util/blogger.h>
 #include <util/messagebox.h>
 

@@ -23,7 +23,6 @@
 
 namespace constants {
 
-    extern const QString ApplicationDebugFolder;
     extern const QString MediaFileExtensions;
     extern const QString VideoFileExtensions;
     extern const QString AudioFileExtensions;

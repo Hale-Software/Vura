@@ -18,6 +18,7 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QDir>
 #include <QDebug>
 
 //#include <QBreakpadHandler.h>
@@ -38,21 +39,52 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
 
-    // Set Windows Crash Handler
 #ifdef Q_OS_WIN
+    // Handle Application Directories
+    if (VURA_BUILD_TYPE == "Debug") {
+        QString rootPath = "debug";
+        QString crashPath = "debug/crashes";
+        QString logPath = "debug/logs";
+        QString updatePath = "debug/updates";
+
+        QDir dir;
+        if (!dir.mkpath(rootPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application root directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(crashPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application crash directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(logPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application log directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(updatePath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application update directory.");
+            return 1;
+        }
+
+    }
+
+    // Set Windows Crash Handler
     bool winCrashHandler = true;
 
     QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
+        defaultCrashFileLocation = "debug/crashes";
     }
-
+/*
     if (!QDir(defaultCrashFileLocation).exists()) {
         if (!QDir().mkpath(defaultCrashFileLocation)) {
             QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
             winCrashHandler = false;
         }
     }
+*/
 
 //    if (winCrashHandler) {
 //        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);

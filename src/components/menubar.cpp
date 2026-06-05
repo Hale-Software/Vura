@@ -1879,7 +1879,7 @@ void MenuBar::actionShowLogFiles_Clicked()
 {
     QString logsDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logs";
     if (VURA_BUILD_TYPE == "Debug") {
-        logsDirString = constants::ApplicationDebugFolder + "/logs";
+        logsDirString = "debug/logs";
     }
 
     if (QDir(logsDirString).exists()) {
@@ -1920,7 +1920,7 @@ void MenuBar::actionShowCrashReports_Clicked()
 {
     QString crashesDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
     if (VURA_BUILD_TYPE == "Debug") {
-        crashesDirString = constants::ApplicationDebugFolder + "/crashes";
+        crashesDirString = "debug/crashes";
     }
 
     if (QDir(crashesDirString).exists()) {

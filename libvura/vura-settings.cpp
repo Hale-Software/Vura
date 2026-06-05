@@ -17,7 +17,6 @@
  ******************************************************************************/
 
 #include "vura-settings.h"
-#include "constants.h"
 
 #include <vura-config.h>
 
@@ -34,7 +33,7 @@ void VuraSettings::loadSettings()
     const QSettings settings;
 
     if (VURA_BUILD_TYPE == "Debug") {
-        m_markerFile = constants::ApplicationDebugFolder + "/global.json";
+        m_markerFile = "debug/global.json";
     } else {
         const QString videoMarkerDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/global.json";
         m_markerFile = videoMarkerDataFile;

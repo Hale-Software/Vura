@@ -1675,7 +1675,7 @@ bool MainWindow::initApplicationDirs()
     QStringList directoryList;
     QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (VURA_BUILD_TYPE == "Debug") {
-        appDataDir = constants::ApplicationDebugFolder;
+        return true;
     }
     directoryList << appDataDir;
     directoryList << appDataDir + "/crashes";

@@ -151,7 +151,7 @@ void LogViewer::openButton_Clicked()
     QString logDirString = "logs";
     QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (VURA_BUILD_TYPE == "Debug") {
-        appDataDirString = constants::ApplicationDebugFolder;
+        appDataDirString = "debug";
     }
     QDir appDataDir(appDataDirString);
     if (appDataDir.exists()) {
