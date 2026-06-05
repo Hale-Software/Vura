@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/shared/libvura" libvura)
+add_subdirectory("${CMAKE_SOURCE_DIR}/libvura" libvura)
 
 # Define source and destination directories
 set(DATA_DIR "${CMAKE_SOURCE_DIR}/src/data")
