@@ -72,7 +72,6 @@
 #include <media-io/media-functions.h>
 #include <models/vura-playlistmodel.h>
 
-#include "VuraDockWidget.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
 #include "../components/menubar.h"
