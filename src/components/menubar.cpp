@@ -398,10 +398,10 @@ void MenuBar::buildMenus()
     m_viewMarkersMenu->addAction(m_toggleSceneMarkersAction);
     m_viewMarkersMenu->addAction(m_toggleStripMarkersAction);
 
+    m_logFilesMenu->addAction(m_viewCurrentLogAction);
     m_logFilesMenu->addAction(m_showLogFilesAction);
     m_logFilesMenu->addAction(m_uploadCurrentLogFileAction);
     m_logFilesMenu->addAction(m_uploadPreviousLogFileAction);
-    m_logFilesMenu->addAction(m_viewCurrentLogAction);
 
     m_crashReportsMenu->addAction(m_showCrashReportsAction);
     m_crashReportsMenu->addAction(m_uploadPreviousCrashReportAction);
