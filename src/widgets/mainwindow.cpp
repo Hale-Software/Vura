@@ -1674,9 +1674,13 @@ bool MainWindow::initApplicationDirs()
     // Application Directories
     QStringList directoryList;
     QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (VURA_BUILD_TYPE == "Debug") {
+
+    const QString debugBuildType = "Debug";
+    const bool isDebugBuild = VURA_BUILD_TYPE == debugBuildType;
+    if (isDebugBuild) {
         return true;
     }
+
     directoryList << appDataDir;
     directoryList << appDataDir + "/crashes";
     directoryList << appDataDir + "/logs";
@@ -1731,26 +1735,6 @@ bool MainWindow::initUserDirs()
     }
 
     return true;
-}
-
-qint64 MainWindow::fileHash(const QString &filePath)
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) return 0;
-
-    XXH64_state_t* state = XXH64_createState();
-    XXH64_reset(state, 0); // Seed 0
-
-    char buffer[8192];
-    qint64 bytesRead;
-    while ((bytesRead = file.read(buffer, sizeof(buffer))) > 0) {
-        XXH64_update(state, buffer, bytesRead);
-    }
-
-    XXH64_hash_t hash = XXH64_digest(state);
-    XXH64_freeState(state);
-    file.close();
-    return hash;
 }
 
 

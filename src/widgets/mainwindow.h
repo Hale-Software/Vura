@@ -62,8 +62,6 @@
 #include <limits>
 #include <iostream>
 
-#include <xxHash/xxhash.h>
-
 #include <constants.h>
 #include <data/video-markers.h>
 #include <vura-helpers.h>
@@ -138,7 +136,6 @@ public:
     static void setStyleSheet();
     bool initApplicationDirs();
     bool initUserDirs();
-    static qint64 fileHash(const QString& filePath);
     void updateMarkerMenuItems();
     VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
     double getSliderPercent() const;
@@ -330,7 +327,6 @@ private:
     double m_volume = 50;
     double m_playbackSpeed = 1.0;
     QString m_currentFile;
-    QString m_currentFileHash;
     QString m_markerValue;
     int m_markerIndex = 0;
     int m_inMarker = 0;

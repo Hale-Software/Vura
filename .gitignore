@@ -30,9 +30,6 @@
 
 # Exclude dependencies
 !/deps/CMakeLists.txt
-!/deps/blake2
-!/deps/json11
-!/deps/xxHash
 
 # Exclude installer files
 !/installer/installer.iss

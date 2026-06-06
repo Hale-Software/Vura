@@ -23,13 +23,7 @@ add_custom_command(TARGET vura POST_BUILD
         COMMENT "Copying authors file to build directory"
 )
 
-target_include_directories(vura PRIVATE "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_SOURCE_DIR}/src/deps")
-
-target_link_libraries(
-        vura PRIVATE
-        xxhash
-        VURA::libvura
-)
+target_link_libraries(vura PRIVATE VURA::libvura)
 
 include(cmake/ui-components.cmake)
 include(cmake/ui-dialogs.cmake)
