@@ -1,25 +1,25 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/libvura" libvura)
+#add_subdirectory("${CMAKE_SOURCE_DIR}/libvura" libvura)
 
-# Define source and destination directories
-set(DATA_DIR "${CMAKE_SOURCE_DIR}/src/data")
+# Define application assets source and destination directories
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Add a custom target to perform the copy operation
-add_custom_target(copy_data_files
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${DATA_DIR}" "${DESTINATION_DIR}/data"
-        COMMENT "Copying data files from source to build directory"
+add_custom_target(copy_asset_files
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${ASSETS_DIR}" "${DESTINATION_DIR}/assets"
+        COMMENT "Copying application asset files from source to build directory"
 )
 
 add_executable(vura)
 add_executable(VURA::vura ALIAS vura)
-add_dependencies(vura copy_data_files)
+add_dependencies(vura copy_asset_files)
 
 add_custom_command(TARGET vura POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         "${CMAKE_SOURCE_DIR}/AUTHORS"
-        "$<TARGET_FILE_DIR:vura>/data/AUTHORS"
+        "$<TARGET_FILE_DIR:vura>/assets/data/AUTHORS"
         COMMENT "Copying authors file to build directory"
 )
 
@@ -33,12 +33,12 @@ include(cmake/ui-settings.cmake)
 include(cmake/ui-utility.cmake)
 include(cmake/ui-widgets.cmake)
 
-configure_file(cmake/templates/config.h.in config.h)
+configure_file(cmake/templates/ui-config.h.in ui-config.h)
 
 target_sources(
         vura PRIVATE
         main.cpp
-        config.h
+        ui-config.h
 )
 
 if (OS_WINDOWS)

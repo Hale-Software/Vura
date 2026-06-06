@@ -5,69 +5,69 @@ find_package(Qt6 REQUIRED Core Widgets Network MultimediaWidgets)
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
 
-configure_file(vura-config.h.in vura-config.h)
+configure_file(libvura/config.h.in libvura/config.h)
 
 # Root Directory
 target_sources(
         libvura
         PUBLIC
-        constants.h
-        filemanager.h
-        libvura.h
-        markermanager.h
-        mediacontroller.h
-        vura-datafile-handler.h
-        vura-error.h
-        vura-helpers.h
-        vura-hotkeys.h
-        vura-settings.h
+        libvura/constants.h
+        libvura/filemanager.h
+        libvura/libvura.h
+        libvura/markermanager.h
+        libvura/mediacontroller.h
+        libvura/datafile-handler.h
+        libvura/error.h
+        libvura/helpers.h
+        libvura/hotkeys.h
+        libvura/settings.h
 
         PRIVATE
-        constants.cpp
-        filemanager.cpp
-        libvura.cpp
-        markermanager.cpp
-        mediacontroller.cpp
-        vura-datafile-handler.cpp
-        vura-defs.h
-        vura-error.cpp
-        vura-helpers.cpp
-        vura-hotkeys.cpp
-        vura-settings.cpp
+        libvura/constants.cpp
+        libvura/filemanager.cpp
+        libvura/libvura.cpp
+        libvura/markermanager.cpp
+        libvura/mediacontroller.cpp
+        libvura/datafile-handler.cpp
+        libvura/defs.h
+        libvura/error.cpp
+        libvura/helpers.cpp
+        libvura/hotkeys.cpp
+        libvura/settings.cpp
 )
 
 # data Directory
 target_sources(
         libvura
         PUBLIC
-        data/video-markers.h
+        libvura/data/video-markers.h
 
         PRIVATE
-        data/video-markers.cpp
+        libvura/data/video-markers.cpp
 )
 
 # media-io Directory
 target_sources(
         libvura
         PUBLIC
-        media-io/media-functions.h
+        libvura/media-io/media-functions.h
 
         PRIVATE
-        media-io/media-functions.cpp
+        libvura/media-io/media-functions.cpp
 )
 
 # models Directory
 target_sources(
         libvura
         PUBLIC
-        models/log-viewer-model.h
-        models/logmessages.h
-        models/vura-playlistmodel.h
+        libvura/models/log-viewer-model.h
+        libvura/models/logmessages.h
+        libvura/models/vura-playlistmodel.h
 
         PRIVATE
-        models/log-viewer-model.cpp
-        models/logmessages.cpp
-        models/vura-playlistmodel.cpp
+        libvura/models/log-viewer-model.cpp
+        libvura/models/logmessages.cpp
+        libvura/models/vura-playlistmodel.cpp
 )
 
 # playlist Directory
@@ -90,16 +90,16 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        util/blogger.h
-        util/messagebox.h
-        util/playlistmanager.h
-        util/singleinstance.h
+        libvura/util/blogger.h
+        libvura/util/messagebox.h
+        libvura/util/playlistmanager.h
+        libvura/util/singleinstance.h
 
         PRIVATE
-        util/blogger.cpp
-        util/messagebox.cpp
-        util/playlistmanager.cpp
-        util/singleinstance.cpp
+        libvura/util/blogger.cpp
+        libvura/util/messagebox.cpp
+        libvura/util/playlistmanager.cpp
+        libvura/util/singleinstance.cpp
 )
 
 # util/windows Directory
@@ -113,4 +113,4 @@ target_sources(
 #)
 
 target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network Qt6::MultimediaWidgets)
-target_include_directories(libvura INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

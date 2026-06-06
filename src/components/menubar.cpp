@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "menubar.h"
-#include <config.h>
+#include <ui-config.h>
 
 
 MenuBar::MenuBar(QMediaPlayer *player, QWidget *parent) : QMenuBar(parent), m_player(player)

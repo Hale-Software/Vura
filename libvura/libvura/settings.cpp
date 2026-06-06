@@ -16,9 +16,9 @@
 
  ******************************************************************************/
 
-#include "vura-settings.h"
+#include "settings.h"
 
-#include <vura-config.h>
+#include <libvura/config.h>
 
 
 VuraSettings::VuraSettings(QObject *parent) : QObject(parent)

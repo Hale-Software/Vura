@@ -1,4 +1,4 @@
-#include "vura-hotkeys.h"
+#include "hotkeys.h"
 
 
 VuraHotkeys::VuraHotkeys(QObject *parent) : QObject(parent)

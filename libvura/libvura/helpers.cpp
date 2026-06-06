@@ -1,4 +1,4 @@
-#include "vura-helpers.h"
+#include "helpers.h"
 
 
 void VuraHelpers::simulateApplicationCrash()

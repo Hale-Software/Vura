@@ -28,8 +28,8 @@
 #include <QTextStream>
 #include <QString>
 
-#include <util/blogger.h>
-#include <util/messagebox.h>
+#include <libvura/util/blogger.h>
+#include <libvura/util/messagebox.h>
 
 
 QT_BEGIN_NAMESPACE

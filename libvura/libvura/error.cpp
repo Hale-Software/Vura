@@ -15,7 +15,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "vura-error.h"
+#include "error.h"
 
 VuraError::VuraError(QObject *parent) : QObject(parent) {}
 

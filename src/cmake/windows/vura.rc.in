@@ -14,7 +14,7 @@ BEGIN
       VALUE "OriginalFilename", "vura"
       VALUE "ProductName", "Vura"
       VALUE "ProductVersion", "${VURA_VERSION_CANONICAL}"
-      VALUE "Comments", "Free and open source video player and editor designed for customization"
+      VALUE "Comments", "${VURA_COMMENTS}"
       VALUE "LegalCopyright", "${VURA_LEGAL_COPYRIGHT}"
     END
   END

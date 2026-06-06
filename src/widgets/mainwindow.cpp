@@ -19,7 +19,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <config.h>
+#include <ui-config.h>
 #include <qglobal.h>
 
 

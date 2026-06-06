@@ -18,7 +18,8 @@ endif()
 
 option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
 
-add_subdirectory(deps)
+#add_subdirectory(deps)
+add_subdirectory(libvura)
 add_subdirectory(src)
 
 if (ENABLE_TESTS)

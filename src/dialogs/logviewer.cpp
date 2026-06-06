@@ -18,7 +18,7 @@
 #include "logviewer.h"
 #include "ui_logviewer.h"
 
-#include <config.h>
+#include <ui-config.h>
 
 
 QString getVerbosityString(int verbosity)

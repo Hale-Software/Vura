@@ -62,15 +62,15 @@
 #include <limits>
 #include <iostream>
 
-#include <constants.h>
-#include <data/video-markers.h>
-#include <vura-helpers.h>
-#include <vura-settings.h>
-#include <util/blogger.h>
-#include <util/messagebox.h>
-#include <util/playlistmanager.h>
-#include <media-io/media-functions.h>
-#include <models/vura-playlistmodel.h>
+#include <libvura/constants.h>
+#include <libvura/data/video-markers.h>
+#include <libvura/helpers.h>
+#include <libvura/settings.h>
+#include <libvura/util/blogger.h>
+#include <libvura/util/messagebox.h>
+#include <libvura/util/playlistmanager.h>
+#include <libvura/media-io/media-functions.h>
+#include <libvura/models/vura-playlistmodel.h>
 
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"

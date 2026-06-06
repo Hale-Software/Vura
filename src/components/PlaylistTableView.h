@@ -22,7 +22,7 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 
-#include <models/vura-playlistmodel.h>
+#include <libvura/models/vura-playlistmodel.h>
 
 class PlaylistTableView : public QTableView {
 public:

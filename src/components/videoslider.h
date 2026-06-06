@@ -31,7 +31,7 @@
 #include <QList>
 #include <QDebug>
 
-#include <data/video-markers.h>
+#include <libvura/data/video-markers.h>
 
 
 class VideoSlider : public QWidget

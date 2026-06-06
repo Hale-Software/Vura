@@ -24,10 +24,10 @@
 //#include <QBreakpadHandler.h>
 
 #include "widgets/mainwindow.h"
-#include <util/singleinstance.h>
-#include <constants.h>
+#include <libvura/util/singleinstance.h>
+#include <libvura/constants.h>
 
-#include <config.h>
+#include <ui-config.h>
 
 
 int main(int argc, char *argv[])
@@ -41,7 +41,9 @@ int main(int argc, char *argv[])
 
 #ifdef Q_OS_WIN
     // Handle Application Directories
-    if (VURA_BUILD_TYPE == "Debug") {
+    const QString debugBuildType = "Debug";
+    const bool isDebugBuild = VURA_BUILD_TYPE == debugBuildType;
+    if (isDebugBuild) {
         QString rootPath = "debug";
         QString crashPath = "debug/crashes";
         QString logPath = "debug/logs";
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
     bool winCrashHandler = true;
 
     QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
-    if (VURA_BUILD_TYPE == "Debug") {
+    if (isDebugBuild) {
         defaultCrashFileLocation = "debug/crashes";
     }
 /*

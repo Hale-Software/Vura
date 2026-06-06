@@ -49,8 +49,8 @@
 #include <QPointer>
 #include <QDebug>
 
-#include <constants.h>
-#include <vura-hotkeys.h>
+#include <libvura/constants.h>
+#include <libvura/hotkeys.h>
 
 #include "../dialogs/about.h"
 #include "../dialogs/FeedbackDialog.h"

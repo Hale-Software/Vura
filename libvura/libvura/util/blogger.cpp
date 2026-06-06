@@ -17,7 +17,7 @@
 
 #include "blogger.h"
 
-#include <vura-config.h>
+#include <libvura/config.h>
 
 
 Blogger::Blogger(QObject* parent) : QObject(parent) {
