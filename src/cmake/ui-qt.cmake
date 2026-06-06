@@ -34,7 +34,6 @@ target_sources(
         forms/updatewindow.ui
         forms/whatsnew.ui
         forms/mediainformation.ui
-        forms/testwindow.ui
         forms/ContinuePlaybackRibbon.ui
         forms/helpdialog.ui
         forms/LogUploadDialog.ui
