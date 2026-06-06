@@ -23,4 +23,5 @@ target_sources(
         components/RangeSlider.h
         components/system-tray.cpp
         components/system-tray.h
+        components/PlaylistTableView.h
 )

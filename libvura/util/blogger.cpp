@@ -17,6 +17,8 @@
 
 #include "blogger.h"
 
+#include <vura-config.h>
+
 
 Blogger::Blogger(QObject* parent) : QObject(parent) {
     QSettings settings;
@@ -39,6 +41,9 @@ void Blogger::InitLogFile()
     // Set the log directory.
     QString logDirString = "logs";
     QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (VURA_BUILD_TYPE == "Debug") {
+        appDataDirString = "debug";
+    }
 
     QDir appDataDir(appDataDirString);
     if (appDataDir.exists()) {

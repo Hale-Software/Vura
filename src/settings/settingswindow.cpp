@@ -98,12 +98,12 @@ void SettingsWindow::loadSettings()
 
     QString defaultMarkerFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/markers.json";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultMarkerFile = constants::ApplicationDebugFolder + "/markers.json";
+        defaultMarkerFile = "debug/markers.json";
     }
 
     QString defaultApplicationDataFile = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/appdata.vdt";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultApplicationDataFile = constants::ApplicationDebugFolder + "/appdata.vdt";
+        defaultApplicationDataFile = "debug/appdata.vdt";
     }
 
     // Load Settings

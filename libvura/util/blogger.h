@@ -30,8 +30,6 @@
 #include <QCoreApplication>
 #include <QMessageBox>
 
-#include "../constants.h"
-
 
 class Blogger : public QObject
 {

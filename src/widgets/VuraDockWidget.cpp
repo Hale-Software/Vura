@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,21 +13,21 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
-#pragma once
+// You may need to build the project (run Qt uic code generator) to get "ui_VuraDockWidget.h" resolved
 
-#include <QString>
-#include <QStandardPaths>
+#include "VuraDockWidget.h"
+#include "ui_VuraDockWidget.h"
 
 
-namespace constants {
+VuraDockWidget::VuraDockWidget(QWidget *parent) : QWidget(parent), ui(new Ui::VuraDockWidget)
+{
+    ui->setupUi(this);
+}
 
-    extern const QString ApplicationDebugFolder;
-    extern const QString MediaFileExtensions;
-    extern const QString VideoFileExtensions;
-    extern const QString AudioFileExtensions;
-    extern const QString ApplicationFileExtensions;
-    extern const QString PlaylistFileExtensions;
-
+VuraDockWidget::~VuraDockWidget()
+{
+    delete ui;
 }

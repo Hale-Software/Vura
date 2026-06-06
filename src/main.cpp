@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,9 +13,12 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include <QApplication>
+#include <QMessageBox>
+#include <QDir>
 #include <QDebug>
 
 //#include <QBreakpadHandler.h>
@@ -36,21 +39,52 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
 
-    // Set Windows Crash Handler
 #ifdef Q_OS_WIN
+    // Handle Application Directories
+    if (VURA_BUILD_TYPE == "Debug") {
+        QString rootPath = "debug";
+        QString crashPath = "debug/crashes";
+        QString logPath = "debug/logs";
+        QString updatePath = "debug/updates";
+
+        QDir dir;
+        if (!dir.mkpath(rootPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application root directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(crashPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application crash directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(logPath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application log directory.");
+            return 1;
+        }
+
+        if (!dir.mkpath(updatePath)) {
+            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application update directory.");
+            return 1;
+        }
+
+    }
+
+    // Set Windows Crash Handler
     bool winCrashHandler = true;
 
     QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
     if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = constants::ApplicationDebugFolder + "/crashes";
+        defaultCrashFileLocation = "debug/crashes";
     }
-
+/*
     if (!QDir(defaultCrashFileLocation).exists()) {
         if (!QDir().mkpath(defaultCrashFileLocation)) {
             QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
             winCrashHandler = false;
         }
     }
+*/
 
 //    if (winCrashHandler) {
 //        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
@@ -62,56 +96,58 @@ int main(int argc, char *argv[])
 #endif
 
 
-    // Prevent many instances of the app to be launched
-    QString name = "com.hale-software.vura";
+    // Prevent many instances of the app from launching.
+    // hasPrevious() also forwards any path argument to the running instance
+    // before returning, so the running window will open it automatically.
+    const QString instanceName = "com.hale-software.vura";
     SingleInstance instance;
-    if (SingleInstance::hasPrevious(name, argc, argv)) {
+    if (SingleInstance::hasPrevious(instanceName, argc, argv)) {
         return EXIT_SUCCESS;
     }
 
-    instance.listen(name);
+    instance.listen(instanceName);
 
-    // Create and Show the app
+    // Create and show the main window.
     MainWindow mainWindow;
     mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
     mainWindow.show();
 
+    // Handle path arguments on the initial launch (same logic as before).
     if (argc > 2) {
-        QString pathParam = QString::fromUtf8(argv[2]);
+        const QString arg1 = QString::fromLocal8Bit(argv[1]);
+        const QString arg2 = QString::fromLocal8Bit(argv[2]);
 
-        QFileInfo pathParamInfo(pathParam);
-        if (pathParamInfo.isFile()) {
-
-            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                mainWindow.addFileToPlaylistContextMenu(pathParam);
-
-            } else {
-                mainWindow.addFileToPlaylistContextMenu(pathParam);
-            }
-
-        } else if (pathParamInfo.isDir()) {
-            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                mainWindow.addFolderToPlaylistContextMenu(pathParam);
-
-            } else {
-                mainWindow.addFolderToPlaylistContextMenu(pathParam);
-            }
+        QFileInfo info(arg2);
+        if (info.isFile()) {
+            mainWindow.addFileToPlaylistContextMenu(arg2);
+        } else if (info.isDir()) {
+            mainWindow.addFolderToPlaylistContextMenu(arg2);
         }
 
     } else if (argc > 1) {
-        QString pathName = QString::fromUtf8(argv[1]);
+        const QString pathName = QString::fromUtf8(argv[1]);
         if (pathName.isEmpty()) {
             QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
-
         } else {
             mainWindow.openFileContextMenu(pathName);
-
         }
     }
 
-    // Bring the main window to the front
-    QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { (&mainWindow)->setMainWindowVisibility(true); });
-    QObject::connect(&instance, &SingleInstance::sendParamsToInstance, &mainWindow, [&]() { (&mainWindow)->processOpenParams(argc, argv); });
+    // When a second instance is launched, bring this window to the front …
+    QObject::connect(&instance, &SingleInstance::newInstance,
+                     &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
+
+    // … and open whatever file or folder it was asked to open.
+    QObject::connect(&instance, &SingleInstance::openPathRequested,
+                     &mainWindow, [&](const QString &path) {
+        mainWindow.setMainWindowVisibility(true);
+        QFileInfo info(path);
+        if (info.isFile()) {
+            mainWindow.openFileContextMenu(path);
+        } else if (info.isDir()) {
+            mainWindow.openFolderContextMenu(path);
+        }
+    });
 
     return QApplication::exec();
 }

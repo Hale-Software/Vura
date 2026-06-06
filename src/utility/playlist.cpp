@@ -250,30 +250,30 @@ void Playlist::addMedia(const QList<QUrl> &items)
     emit mediaInserted(first, last);
 }
 
-bool Playlist::insertMedia(int pos, const QUrl &content)
+bool Playlist::insertMedia(int index, const QUrl &content)
 {
     Q_D(Playlist);
-    pos = qBound(0, pos, d->playlist.size());
-    emit mediaAboutToBeInserted(pos, pos);
-    d->playlist.insert(pos, content);
-    emit mediaInserted(pos, pos);
+    index = qBound(0, index, d->playlist.size());
+    emit mediaAboutToBeInserted(index, index);
+    d->playlist.insert(index, content);
+    emit mediaInserted(index, index);
     return true;
 }
 
-bool Playlist::insertMedia(int pos, const QList<QUrl> &items)
+bool Playlist::insertMedia(int index, const QList<QUrl> &items)
 {
     if (!items.size())
         return true;
 
     Q_D(Playlist);
-    pos = qBound(0, pos, d->playlist.size());
-    int last = pos + items.size() - 1;
-    emit mediaAboutToBeInserted(pos, last);
-    auto newList = d->playlist.mid(0, pos);
+    index = qBound(0, index, d->playlist.size());
+    int last = index + items.size() - 1;
+    emit mediaAboutToBeInserted(index, last);
+    auto newList = d->playlist.mid(0, index);
     newList += items;
-    newList += d->playlist.mid(pos);
+    newList += d->playlist.mid(index);
     d->playlist = newList;
-    emit mediaInserted(pos, last);
+    emit mediaInserted(index, last);
     return true;
 }
 
@@ -481,12 +481,12 @@ void Playlist::previous()
     emit currentMediaChanged(currentMedia());
 }
 
-void Playlist::setCurrentIndex(int playlistPosition)
+void Playlist::setCurrentIndex(int index)
 {
     Q_D(Playlist);
-    if (playlistPosition < 0 || playlistPosition >= d->playlist.size())
-        playlistPosition = -1;
-    d->currentPos = playlistPosition;
+    if (index < 0 || index >= d->playlist.size())
+        index = -1;
+    d->currentPos = index;
 
     emit currentIndexChanged(d->currentPos);
     emit currentMediaChanged(currentMedia());

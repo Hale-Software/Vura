@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
@@ -60,7 +61,7 @@ public:
 
 public slots:
     void setState(QMediaPlayer::PlaybackState state);
-    void setVolume(float volume);
+    void setVolume(double volume);
     void setMuted(bool muted);
     void refreshUI();
 
@@ -74,7 +75,7 @@ signals:
     void togglePlaylist();
     void setLoop(int loopOption);
     void shuffle();
-    void changeVolume(float volume);
+    void changeVolume(double volume);
     void changeMuting(bool muting);
     void changeRate(qreal rate);
 
@@ -93,10 +94,8 @@ private:
     bool m_playerMuted = false;
     LoopOption m_loopOption = LoopOption::LoopAll;
     bool m_isShuffle = false;
-    QSlider *m_volumeSlider;
-    QSlider *m_progressSlider;
     int m_volumeLevel = 100;
 
-    QIcon setButtonIcon(const QString &buttonName, const QString &theme);
+    static QIcon setButtonIcon(const QString &buttonName, const QString &theme);
 
 };

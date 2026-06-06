@@ -70,16 +70,17 @@
 #include <vura-settings.h>
 #include <util/blogger.h>
 #include <util/messagebox.h>
+#include <util/playlistmanager.h>
 #include <media-io/media-functions.h>
+#include <models/vura-playlistmodel.h>
 
-#include "../models/playlistmodel.h"
+#include "VuraDockWidget.h"
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
 #include "../components/menubar.h"
 #include "../components/videoslider.h"
 #include "../components/videocontrolwidget.h"
 #include "../components/system-tray.h"
-#include "../utility/playlist.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/about.h"
 #include "../dialogs/logviewer.h"
@@ -120,10 +121,11 @@ public:
     void initVideoPlayer();
     void initUI();
     void initAudioDevices();
+    void initVideoSlider();
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
-    void addFileToPlaylistContextMenu(const QString &file);
-    void addFolderToPlaylistContextMenu(const QString &path);
+    void addFileToPlaylistContextMenu(const QString &file) const;
+    void addFolderToPlaylistContextMenu(const QString &path) const;
     bool isPlayerAvailable() const;
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
@@ -138,6 +140,8 @@ public:
     bool initUserDirs();
     static qint64 fileHash(const QString& filePath);
     void updateMarkerMenuItems();
+    VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
+    double getSliderPercent() const;
 
 public slots:
     void showMediaInformation();
@@ -200,8 +204,16 @@ public slots:
     void getPrevMarker(const VuraVideoMarker &videoMarker);
     void getNextMarker(const VuraVideoMarker &videoMarker);
 
+    // Video Slider
+    void rangeChanged(int minimum, int maximum);
+    void valueChanged(int value);
+    void sliderPressed(bool pressed);
+    void sliderMoved(int value);
+    void sliderReleased();
+    void sliderClicked(int mseconds);
+
 signals:
-    void setActiveAudioDevice(const QAudioDevice &audioDevice);
+    void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
     void setActiveSubtitleTrack(int track);
@@ -219,6 +231,7 @@ signals:
     void refreshSettings();
     void setOverrideWindowsHotkeys(bool value);
     void setClearSelectedMarkerEnabled(bool enabled);
+    void updateVideoSlider();
     void quitProgram();
 
 
@@ -228,7 +241,6 @@ private slots:
     void positionChanged(qint64 progress);
     void tracksChanged();
     void seek(int mseconds);
-    void jump(const QModelIndex &index);
     void jumpTo(int mseconds);
     void playlistPositionChanged(int);
     void statusChanged(QMediaPlayer::MediaStatus status);
@@ -238,17 +250,18 @@ private slots:
     void playbackRateChanged(qreal rate);
     void videoFrameChanged(const QVideoFrame &frame);
 
-    void showPlaylistContextMenu(const QPoint &pos);
-    void playlistContextMenu_AddFileAction();
-    void playlistContextMenu_AddFolderAction();
-    void playlistContextMenu_AdvancedOpenAction();
-    void playlistContextMenu_SaveAction();
-    void playlistContextMenu_PlayVideoAction();
-    void playlistContextMenu_StreamVideoAction();
-    void playlistContextMenu_SaveVideoAction();
-    void playlistContextMenu_InformationVideoAction();
-    void playlistContextMenu_ShowFolderVideoAction();
-    void playlistContextMenu_RemoveSelectedVideoAction();
+    void showPlaylistTableContextMenu(const QPoint &pos);
+    //void showPlaylistContextMenu(const QPoint &pos);
+    //void playlistContextMenu_AddFileAction();
+    //void playlistContextMenu_AddFolderAction();
+    //void playlistContextMenu_AdvancedOpenAction();
+    //void playlistContextMenu_SaveAction();
+    //void playlistContextMenu_PlayVideoAction();
+    //void playlistContextMenu_StreamVideoAction();
+    //void playlistContextMenu_SaveVideoAction();
+    //void playlistContextMenu_InformationVideoAction();
+    //void playlistContextMenu_ShowFolderVideoAction();
+    //void playlistContextMenu_RemoveSelectedVideoAction();
 
     void hideCursor();
     void durationLabel_Clicked();
@@ -265,10 +278,10 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    Blogger* blog;
     QList<VuraVideoMarker> videoMarkers;
+    VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
+    PlaylistManager *m_playlistManager = nullptr;
 
-    MediaFunctions *mediaFunctions;
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
@@ -277,20 +290,17 @@ private:
     QTimer *timer;
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
-    Playlist *m_playlist = nullptr;
     QLabel *m_statusLabel = nullptr;
     QStatusBar *m_statusBar = nullptr;
-    PlaylistModel *m_playlistModel = nullptr;
-    QAbstractItemView *m_playlistView = nullptr;
     QMediaDevices m_mediaDevices;
     QPoint m_pos;
     QString m_trackInfo;
     QString m_statusInfo;
-    qint64 m_duration;
-    int videoTrack;
-    int audioOutput;
-    int audioTrack;
-    int subtitleTrack;
+    qint64 m_duration = 0;
+    int videoTrack = 0;
+    int audioOutput = 0;
+    int audioTrack = 0;
+    int subtitleTrack = 0;
     bool m_showingCursor = true;
     bool m_fromFullscreen = false;
     qint64 m_lastPosition = 0;
@@ -310,7 +320,7 @@ private:
     // VARIABLES
     // =======================================================================================================
     QPointer<VideoControlWidget> m_videoControlWidget;
-    VideoSlider *m_videoSlider;
+    VideoSlider *m_videoSlider = nullptr;
     bool m_sourceLoaded = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;
@@ -322,9 +332,9 @@ private:
     QString m_currentFile;
     QString m_currentFileHash;
     QString m_markerValue;
-    int m_markerIndex;
-    int m_inMarker;
-    int m_outMarker;
+    int m_markerIndex = 0;
+    int m_inMarker = 0;
+    int m_outMarker = 0;
     bool m_playlistLoopAll = true;
     bool m_playlistLoopOne = false;
     bool m_playlistLoopNone = false;

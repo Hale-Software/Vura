@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "media-functions.h"
 
 
@@ -21,7 +39,7 @@ void MediaFunctions::extractSubclipFromVideo(const QString &filename, const int 
     const QString dirPath = QDir::cleanPath(documentsPath + QDir::separator() + applicationFolder + QDir::separator() + "Clips" + QDir::separator() + projectFolder);
 
     // Check if project folder exists.
-    QDir dir;
+    const QDir dir;
 
     if (dir.mkpath(dirPath)) {
         qDebug() << "Successfully created project directory (and parent directories if needed):" << dirPath;
@@ -63,8 +81,7 @@ QString MediaFunctions::createTimestampString(const qint64 pos)
     return timestamp;
 }
 
-QString MediaFunctions::generateSubclipFilenameWithIncrement(const QString &directoryPath, const QString &baseFileName,
-                                                      const QString &extension)
+QString MediaFunctions::generateSubclipFilenameWithIncrement(const QString &directoryPath, const QString &baseFileName, const QString &extension)
 {
     QString fullPath;
     int index = 0;
@@ -87,8 +104,8 @@ QString MediaFunctions::generateSubclipFilenameWithIncrement(const QString &dire
 // TODO: Finish function
 bool MediaFunctions::isPlaylist(const QUrl &url)
 {
-    QFileInfo fileInfo(url.toString());
-    QString fileExtension = fileInfo.suffix();
+    const QFileInfo fileInfo(url.toString());
+    const QString fileExtension = fileInfo.suffix();
 
     if (fileExtension == "hlist")
         return true;
@@ -101,14 +118,12 @@ QString MediaFunctions::strippedFileName(const QString &fileName)
     return QFileInfo(fileName).fileName();
 }
 
-QString MediaFunctions::timestampString(qint64 position, qint64 duration)
+QString MediaFunctions::timestampString(const qint64 position, const qint64 duration)
 {
     QString tStr;
     if (position || duration) {
-        QTime currentTime((position / 3600) % 60, (position / 60) % 60, position % 60,
-                          (position * 1000) % 1000);
-        QTime totalTime((duration / 3600) % 60, (duration / 60) % 60, duration % 60,
-                        (duration * 1000) % 1000);
+        const QTime currentTime((position / 3600) % 60, (position / 60) % 60, position % 60, (position * 1000) % 1000);
+        const QTime totalTime((duration / 3600) % 60, (duration / 60) % 60, duration % 60, (duration * 1000) % 1000);
         QString format = "mm:ss";
         if (duration > 3600)
             format = "hh:mm:ss";
@@ -152,5 +167,3 @@ void MediaFunctions::takeSnapshot(const QString &filename, const int &position, 
     const QImage image = frame.toImage();
     image.save(fullPath, "JPEG");
 }
-
-

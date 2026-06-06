@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.2.1'
+#define MyAppVersion '0.6.1'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -20,7 +20,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=..\build\release\src\data\license\license.txt
 OutputDir=..\installer
-OutputBaseFilename=vura-0.2.1-win64
+OutputBaseFilename=vura-0.6.1-win64
 SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
@@ -191,7 +191,7 @@ Source: "..\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignorev
 Source: "..\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
+//Source: "..\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion

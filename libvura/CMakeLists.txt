@@ -12,7 +12,10 @@ target_sources(
         libvura
         PUBLIC
         constants.h
+        filemanager.h
         libvura.h
+        markermanager.h
+        mediacontroller.h
         vura-datafile-handler.h
         vura-error.h
         vura-helpers.h
@@ -21,7 +24,10 @@ target_sources(
 
         PRIVATE
         constants.cpp
+        filemanager.cpp
         libvura.cpp
+        markermanager.cpp
+        mediacontroller.cpp
         vura-datafile-handler.cpp
         vura-defs.h
         vura-error.cpp
@@ -54,10 +60,30 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        models/log-viewer-model.h
         models/logmessages.h
+        models/vura-playlistmodel.h
 
         PRIVATE
+        models/log-viewer-model.cpp
         models/logmessages.cpp
+        models/vura-playlistmodel.cpp
+)
+
+# playlist Directory
+target_sources(
+        libvura
+        PUBLIC
+        #playlist/playlist-model.h
+        #playlist/vura-playlist.h
+        #playlist/vura-playlist-file-parser.h
+        #playlist/vura-playlist-private.h
+
+        PRIVATE
+        #playlist/playlist-model.cpp
+        #playlist/vura-playlist.cpp
+        #playlist/vura-playlist-file-parser.cpp
+        #playlist/vura-playlist-private.cpp
 )
 
 # util Directory
@@ -66,10 +92,13 @@ target_sources(
         PUBLIC
         util/blogger.h
         util/messagebox.h
+        util/playlistmanager.h
         util/singleinstance.h
+
         PRIVATE
         util/blogger.cpp
         util/messagebox.cpp
+        util/playlistmanager.cpp
         util/singleinstance.cpp
 )
 

@@ -6,11 +6,11 @@
 !/additional_install_files
 !/build-aux
 !/cmake
+!/docs
 !/libvura
-!/src
 !/scripts
 !/share
-!/shared
+!/src
 !/tests
 !.clang-format
 !.editorconfig
@@ -37,12 +37,6 @@
 # Exclude installer files
 !/installer/installer.iss
 !/installer/vura.ico
-
-# Exclude docs
-!/docs/HOTKEYS.md
-!/docs/SETTINGS.md
-!/docs/TODO.md
-!/docs/BUILD_FOLDER.md
 
 # Exclude lock files
 *.lock.json

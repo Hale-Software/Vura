@@ -40,7 +40,6 @@
 #include <QStandardPaths>
 
 #include "hotkeywidget.h"
-#include <constants.h>
 
 namespace Ui {
 class SettingsWindow;

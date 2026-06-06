@@ -27,6 +27,8 @@
 #include <QEvent>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QString>
+#include <QList>
 #include <QDebug>
 
 #include <data/video-markers.h>
@@ -37,84 +39,75 @@ class VideoSlider : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSlider(QWidget *parent = nullptr);
+    explicit VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent = nullptr);
 
-    void setMinimum(int mminimum);
-    void setMaximum(int mmaximum);
-    void setValue(int mvalue);
-    void setSliderPercent(double percent);
-    void setVideoLoaded(bool isLoaded);
-    void setShowingMarkers(bool value);
-    void setShowingCumshotMarkers(bool value);
-    void setShowingCyanMarkers(bool value);
-    void setShowingDialogMarkers(bool value);
-    void setShowingMagentaMarkers(bool value);
-    void setShowingOrangeMarkers(bool value);
-    void setShowingSceneMarkers(bool value);
-    void setShowingStripMarkers(bool value);
-    void setMarkers(QList<VuraVideoMarker> markers);
-    void jumpToNextMarker(double currentPercent);
-    void jumpToPreviousMarker(double currentPercent);
+    QSize minimumSizeHint() const override;
 
-    int minimum() const;
-    int maximum() const;
-    int value() const;
-    double sliderPercent() const;
-    bool isSliderDown() const;
-    bool isVideoLoaded() const;
-    bool showMarkers() const;
-    bool showCumshotMarkers() const;
-    bool showCyanMarkers() const;
-    bool showDialogMarkers() const;
-    bool showMagentaMarkers() const;
-    bool showOrangeMarkers() const;
-    bool showSceneMarkers() const;
-    bool showStripMarkers() const;
+    int GetMinimun() const;
+    void SetMinimum(int minimum);
+
+    int GetMaximun() const;
+    void SetMaximum(int maximum);
+
+    int GetValue() const;
+    void SetValue(int value);
+
+    void SetRange(int minimum, int maximum);
+
+    bool GetSliderPressed() const;
+    void SetSliderPressed(bool value);
+
+    bool getMarkerTypesVisible(const QString& markerType) const;
+    void setMarkerTypeVisible(const QString& markerType, bool visible);
 
 signals:
     void valueChanged(int value);
-    void sliderPressed();
-    void sliderMoved(int value);
-    void sliderReleased();
-    void sliderClicked(int mseconds);
-    void markerSelected(int mseconds);
+    void sliderPressed(bool pressed);
 
-private slots:
-    void hideIndicator();
+public slots:
+    void updateVideoSlider();
+    void setValue(int value);
+    void setMinimum(int minimum);
+    void setMaximum(int maximum);
+    void goToNextMarker(double currentPercent);
+    void goToPreviousMarker(double currentPercent);
 
 protected:
-    void enterEvent(QEnterEvent *event) override;
-    void leaveEvent(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
 
-private:
-    QTimer *timer;
-    QList<VuraVideoMarker> m_markers;
-    bool m_showingIndicator = false;
-    bool m_showingMarkers = true;
-    bool m_showingCumshotMarkers = true;
-    bool m_showingCyanMarkers = true;
-    bool m_showingDialogMarkers = true;
-    bool m_showingMagentaMarkers = true;
-    bool m_showingOrangeMarkers = true;
-    bool m_showingSceneMarkers = true;
-    bool m_showingStripMarkers = true;
-    int m_minimum = 0;
-    int m_maximum = 100;
-    int m_value = 0;
-    double m_sliderPercent = 0.0;
-    bool m_isSliderDown = false;
-    bool m_videoLoaded = false;
+    QRectF carrotHandleRect() const;
+    QRectF handleRect(int value) const;
 
-    QColor m_emptySliderColor = QColor(110, 110, 110);
-    QColor m_fullSliderColor = QColor(0, 217, 255);
-    QColor m_caretColor = QColor(180, 180, 180);
-    QColor m_markerColor = QColor();
-    QColor m_sceneMarkerColor = QColor();
-    QColor m_cumshotMarkerColor = QColor();
-    QColor m_stripMarkerColor = QColor();
-    QColor m_dialogMarkerColor = QColor();
+private:
+    int validLength() const;
+    int valueFromPos(int x) const;
+
+    QList<VuraVideoMarker> *m_videoMarkers;
+    int m_minimum;
+    int m_maximum;
+    int m_value;
+    bool m_showingMarkers;
+    bool m_showingCumshotMarkers;
+    bool m_showingCyanMarkers;
+    bool m_showingDialogMarkers;
+    bool m_showingMagentaMarkers;
+    bool m_showingOrangeMarkers;
+    bool m_showingSceneMarkers;
+    bool m_showingStripMarkers;
+    bool m_sliderPressed;
+    QColor m_emptySliderColor;
+    QColor m_fullSliderColor;
+    QColor m_caretColor;
+    QColor m_markerColor;
+    QColor m_sceneMarkerColor;
+    QColor m_cumshotMarkerColor;
+    QColor m_stripMarkerColor;
+    QColor m_dialogMarkerColor;
+    int m_delta;
+    int m_interval;
+    double m_sliderBarHeightValue;
 
 };
