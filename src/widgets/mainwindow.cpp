@@ -41,6 +41,7 @@ m_statusLabel(new QLabel)
     }
 
     vuraSettings = new VuraSettings();
+    m_showingVideoResolution = vuraSettings->showingVideoResolutionInTitlebar();
     emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
     initApplication();
 
@@ -142,6 +143,7 @@ void MainWindow::initMenuBar()
     qDebug() << "Initializing menu bar...";
 
     m_menuBar = new MenuBar(m_player, this);
+    m_menuBar->setShowingVideoResolution(m_showingVideoResolution);
     connect(this, &MainWindow::setPlayerStatus, m_menuBar, &MenuBar::setPlayerStatus);
     connect(this, &MainWindow::refreshSettings, m_menuBar, &MenuBar::refreshSettings);
     //connect(this, &MainWindow::setActiveAudioDevice, m_menuBar, &MenuBar::setActiveAudioDevice);
@@ -1322,6 +1324,7 @@ void MainWindow::jumpToEnd()
 void MainWindow::showVideoResolution(const bool showing)
 {
     m_showingVideoResolution = showing;
+    vuraSettings->setShowingVideoResolutionInTitlebar(showing);
 }
 
 void MainWindow::convertSave()

@@ -65,6 +65,8 @@ public:
     double jumpToEndPercentage() const;
     bool setOverrideWindowsHotkeys() const;
     QString markerFile();
+    bool showingVideoResolutionInTitlebar() const;
+    void setShowingVideoResolutionInTitlebar(bool showing);
 
 private:
     QString m_locale = "en-US";
@@ -96,5 +98,6 @@ private:
     double m_jumpToEndPercentage = 0.0;
     bool m_setOverrideWindowsHotkeys = false;
     QString m_markerFile = "";
+    bool m_showingVideoResolutionInTitlebar = false;
 
 };

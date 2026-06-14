@@ -71,6 +71,7 @@ void VuraSettings::loadSettings()
     m_theme = settings.value("theme", "System").toString();
     m_setOverrideWindowsHotkeys = settings.value("setOverrideWindowsHotkeys", true).toBool();
     m_jumpToEndPercentage = settings.value("jumpToEndPercentage", 0.05).toDouble();
+    m_showingVideoResolutionInTitlebar = settings.value("showingVideoResolutionInTitlebar", false).toBool();
 }
 
 QString VuraSettings::locale()
@@ -216,4 +217,17 @@ bool VuraSettings::setOverrideWindowsHotkeys() const
 QString VuraSettings::markerFile()
 {
     return m_markerFile;
+}
+
+bool VuraSettings::showingVideoResolutionInTitlebar() const
+{
+    return m_showingVideoResolutionInTitlebar;
+}
+
+void VuraSettings::setShowingVideoResolutionInTitlebar(const bool showing)
+{
+    m_showingVideoResolutionInTitlebar = showing;
+    QSettings settings;
+    settings.setValue("showingVideoResolutionInTitlebar", showing);
+    settings.sync();
 }

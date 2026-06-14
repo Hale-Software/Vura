@@ -278,7 +278,7 @@ void MenuBar::setActionsDefaultProperties()
 
     // View Menu
     m_showVideoResolutionAction->setCheckable(true);
-    m_showVideoResolutionAction->setChecked(false);
+    //m_showVideoResolutionAction->setChecked(false);
 
     // Playback Menu
 
@@ -680,6 +680,12 @@ void MenuBar::setActionConnections()
     connect(m_whatsNewAction, &QAction::triggered, this, &MenuBar::actionWhatsNew_Clicked);
     connect(m_releaseNotesAction, &QAction::triggered, this, &MenuBar::actionReleaseNotes_Clicked);
 
+}
+
+void MenuBar::setShowingVideoResolution(bool showing)
+{
+    m_showingVideoResolution = showing;
+    m_showVideoResolutionAction->setChecked(showing);
 }
 
 // TODO: Organize code

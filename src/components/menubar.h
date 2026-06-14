@@ -86,6 +86,7 @@ public:
     void createSubtitleTrackActions();
     void buildMenus();
     void setActionConnections();
+    void setShowingVideoResolution(bool showing);
 
 public slots:
     void refreshAudioDevices();
