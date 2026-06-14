@@ -72,15 +72,15 @@ void MainWindow::testFunction()
 {
     //VuraHelpers::simulateApplicationCrash();
     //VMessageBox::critical(this, "Vura", "Test of critical message box.");
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
-    m_vuraPlaylistModel->addMedia(QUrl("file:///C:/Users/halea/Videos/Veronica-R-My-Dirty-Maid.mp4"));
-    if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-        const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-        if (index.isValid()) {
-            ui->playlistTableView->setCurrentIndex(index);
-            m_playlistManager->playTrack(index.row());
-        }
-    }
+    //const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    //m_vuraPlaylistModel->addMedia(QUrl("file:///C:/Users/halea/Videos/Veronica-R-My-Dirty-Maid.mp4"));
+    //if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
+    //    const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
+    //    if (index.isValid()) {
+    //        ui->playlistTableView->setCurrentIndex(index);
+    //        m_playlistManager->playTrack(index.row());
+    //    }
+    //}
 }
 
 
@@ -257,14 +257,14 @@ void MainWindow::initUI()
     qDebug() << "Initializing UI...";
 
     //ui->playlistTableView->setAcceptDrops(true);
-    ui->playlistTableView->setDragEnabled(true);
-    ui->playlistTableView->setAcceptDrops(true);
-    ui->playlistTableView->setDragDropMode(QAbstractItemView::InternalMove);
-    ui->playlistTableView->setDragDropOverwriteMode(false); // Crucial: inserts rather than replaces
-    ui->playlistTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->playlistTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    //ui->playlistTableView->setDragEnabled(true);
+    //ui->playlistTableView->setAcceptDrops(true);
+    //ui->playlistTableView->setDragDropMode(QAbstractItemView::InternalMove);
+    //ui->playlistTableView->setDragDropOverwriteMode(false); // Crucial: inserts rather than replaces
+    //ui->playlistTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //ui->playlistTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     //ui->playlistTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-
+/*
     // In MainWindow.cpp
     m_vuraPlaylistModel = new VuraPlaylistModel();
     m_playlistManager = new PlaylistManager(m_player, m_vuraPlaylistModel);
@@ -279,13 +279,28 @@ void MainWindow::initUI()
     });
 
     connect(ui->playlistTableView, &QTableView::customContextMenuRequested, this, &MainWindow::showPlaylistTableContextMenu);
-    connect(ui->duration, &ClickableLabel::clicked, this, &MainWindow::durationLabel_Clicked);
+*/
+    m_playlistModel = new PlaylistModel(this);
+    m_playlist = m_playlistModel->playlist();
+    ui->playlistView->setModel(m_playlistModel);
+    ui->playlistView->setCurrentIndex(m_playlistModel->index(m_playlist->currentIndex(), 0));
 
     if (!vuraSettings->showPlaylistOnStart())
-        ui->playlistTableView->hide();
-
+        ui->playlistView->hide();
     m_showingPlaylist = vuraSettings->showPlaylistOnStart();
     emit setPlaylistShowing(m_showingPlaylist);
+
+    connect(m_playlist, &Playlist::currentIndexChanged, this, &MainWindow::playlistPositionChanged);
+    connect(ui->playlistView, &QListView::activated, this, &MainWindow::jump);
+    connect(ui->playlistView, &QListView::customContextMenuRequested, this, &MainWindow::showPlaylistTableContextMenu);
+
+    connect(ui->duration, &ClickableLabel::clicked, this, &MainWindow::durationLabel_Clicked);
+
+    //if (!vuraSettings->showPlaylistOnStart())
+    //    ui->playlistTableView->hide();
+
+    //m_showingPlaylist = vuraSettings->showPlaylistOnStart();
+    //emit setPlaylistShowing(m_showingPlaylist);
 
     qDebug() << "UI Initialized.";
 }
@@ -348,19 +363,17 @@ void MainWindow::openFolderContextMenu(const QString &path)
         fileList.append(QUrl::fromLocalFile(it.filePath()));
     }
 
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    const int previousMediaCount = m_playlist->mediaCount();
     for (auto &url : fileList) {
         if (!MediaFunctions::isPlaylist(url)) {
-            m_vuraPlaylistModel->addMedia(url);
+            m_playlist->addMedia(url);
         }
     }
 
-    if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-        const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-        if (index.isValid()) {
-            ui->playlistTableView->setCurrentIndex(index);
-            m_playlistManager->playTrack(index.row());
-        }
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
     }
 }
 
@@ -380,17 +393,15 @@ void MainWindow::openFileContextMenu(const QString &file)
     m_vuraPlaylistModel->m_media.clear();
     */
 
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    const int previousMediaCount = m_playlist->mediaCount();
     if (!file.isEmpty()) {
         QUrl url = QUrl::fromLocalFile(file);
         if (!MediaFunctions::isPlaylist(url)) {
-            m_vuraPlaylistModel->addMedia(url);
-            if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-                const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-                if (index.isValid()) {
-                    ui->playlistTableView->setCurrentIndex(index);
-                    m_playlistManager->playTrack(index.row());
-                }
+            m_playlist->addMedia(url);
+            if (m_playlist->mediaCount() > previousMediaCount) {
+                auto index = m_playlistModel->index(previousMediaCount, 0);
+                ui->playlistView->setCurrentIndex(index);
+                jump(index);
             }
         } else {
             //m_playlist->loadPlaylist(file);
@@ -406,15 +417,36 @@ void MainWindow::openFileContextMenu(const QString &file)
 void MainWindow::addFileToPlaylistContextMenu(const QString &file) const
 {
     if (!file.isEmpty())
-        m_vuraPlaylistModel->addMedia(QUrl::fromLocalFile(file));
+        m_playlist->addMedia(QUrl::fromLocalFile(file));
 }
 
-void MainWindow::addFolderToPlaylistContextMenu(const QString &path) const
+void MainWindow::addFolderToPlaylistContextMenu(const QString &path)
 {
-    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
-    while (it.hasNext()) {
-        it.next();
-        m_vuraPlaylistModel->addMedia(QUrl::fromLocalFile(it.filePath()));
+    qDebug() << "Add Folder to Playlist path: " << path;
+    
+    const int previousMediaCount = m_playlist->mediaCount();
+
+    if (!path.isEmpty()) {
+        QList<QUrl> filesList;
+        QDirIterator folderIterator(path, QDir::Files | QDir::NoDotAndDotDot);
+        while (folderIterator.hasNext()) {
+            folderIterator.next();
+            filesList.append(QUrl::fromLocalFile(folderIterator.filePath()));
+        }
+
+        for (auto &fileUrl : filesList) {
+            if (!MediaFunctions::isPlaylist(fileUrl)) {
+                m_playlist->addMedia(fileUrl);
+            } else {
+                VMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
+            }
+        }
+
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
+        }
     }
 }
 
@@ -427,7 +459,7 @@ void MainWindow::showPlaylistTableContextMenu(const QPoint &pos)
     contextMenu.addAction(&action1);
 
     // Map the local widget position to global screen coordinates
-    contextMenu.exec(ui->playlistTableView->mapToGlobal(pos));
+    //contextMenu.exec(ui->playlistTableView->mapToGlobal(pos));
 }
 
 void MainWindow::systemTray_Clicked()
@@ -508,8 +540,8 @@ void MainWindow::tracksChanged()
 
 void MainWindow::playlistPositionChanged(const int currentItem)
 {
-    ui->playlistTableView->setCurrentIndex(m_vuraPlaylistModel->index(currentItem, 0));
-    m_playlistManager->playTrack(currentItem);
+    ui->playlistView->setCurrentIndex(m_playlistModel->index(currentItem, 0));
+    m_player->setSource(m_playlist->currentMedia());
 }
 
 void MainWindow::sourceChanged(const QUrl &media)
@@ -670,7 +702,7 @@ void MainWindow::openFiles(const QStringList &fileList, const bool localFile)
 
     QStringList files = settings.value("recentFileList").toStringList();
 
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    const int previousMediaCount = m_playlist->mediaCount();
     bool loadedNewPlaylist = false;
 
     for (const QString& fileName : fileList) {
@@ -678,7 +710,7 @@ void MainWindow::openFiles(const QStringList &fileList, const bool localFile)
             QUrl url = QUrl::fromLocalFile(fileName);
 
             if (!MediaFunctions::isPlaylist(url)) {
-                m_vuraPlaylistModel->addMedia(url);
+                m_playlist->addMedia(url);
                 files.removeAll(fileName);
                 files.prepend(fileName);
 
@@ -687,17 +719,15 @@ void MainWindow::openFiles(const QStringList &fileList, const bool localFile)
             }
 
         } else {
-            m_vuraPlaylistModel->addMedia(fileName);
+            m_playlist->addMedia(fileName);
         }
     }
 
     if (!loadedNewPlaylist) {
-        if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-            const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-            if (index.isValid()) {
-                ui->playlistTableView->setCurrentIndex(index);
-                m_playlistManager->playTrack(index.row());
-            }
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
         }
     } else {
         // TODO: Added opened playlist code
@@ -736,7 +766,7 @@ void MainWindow::closeAllFiles()
 
 void MainWindow::openFolder(const QString &folderPath)
 {
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
+    const int previousMediaCount = m_playlist->mediaCount();
 
     if (!folderPath.isEmpty()) {
         QList<QUrl> filesList;
@@ -748,18 +778,16 @@ void MainWindow::openFolder(const QString &folderPath)
 
         for (auto &fileUrl : filesList) {
             if (!MediaFunctions::isPlaylist(fileUrl)) {
-                m_vuraPlaylistModel->addMedia(fileUrl);
+                m_playlist->addMedia(fileUrl);
             } else {
                 VMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
             }
         }
 
-        if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-            const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-            if (index.isValid()) {
-                ui->playlistTableView->setCurrentIndex(index);
-                m_playlistManager->playTrack(index.row());
-            }
+        if (m_playlist->mediaCount() > previousMediaCount) {
+            auto index = m_playlistModel->index(previousMediaCount, 0);
+            ui->playlistView->setCurrentIndex(index);
+            jump(index);
         }
     }
 }
@@ -781,10 +809,10 @@ void MainWindow::savePlaylist(const QString &filePath, const QString &type)
 void MainWindow::togglePlaylist()
 {
     if (m_showingPlaylist) {
-        ui->playlistTableView->hide();
+        ui->playlistView->hide();
         m_showingPlaylist = false;
     } else {
-        ui->playlistTableView->show();
+        ui->playlistView->show();
         m_showingPlaylist = true;
     }
     emit setPlaylistShowing(m_showingPlaylist);
@@ -858,18 +886,28 @@ void MainWindow::togglePlayPause()
 
 void MainWindow::nextVideo()
 {
-    m_playlistManager->playNext();
+    if (m_player->isPlaying()) {
+        m_playlist->next();
+        m_player->play();
+    } else {
+        m_playlist->next();
+    }
 }
 
 void MainWindow::previousVideo()
 {
+    bool play = m_player->isPlaying();
+
     // Go to previous track if we are within the first 5 seconds of playback
     // Otherwise, seek to the beginning.
     if (m_player->position() <= 5000) {
-        m_playlistManager->playPrevious();
+        m_playlist->previous();
     } else {
         m_player->setPosition(0);
     }
+
+    if (play)
+        m_player->play();
 }
 
 void MainWindow::changePlaybackSpeed(const double mrate)
@@ -1260,7 +1298,7 @@ void MainWindow::toggleShuffle()
 
 void MainWindow::clearPlaylist()
 {
-    m_vuraPlaylistModel->m_media.clear();
+    m_playlist->clear();
 }
 
 void MainWindow::takeSnapshot()
@@ -1615,15 +1653,13 @@ bool MainWindow::loadPlaylist(const QUrl &url)
 
 void MainWindow::loadFile(const QString &fileName)
 {
-    const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
-    m_vuraPlaylistModel->addMedia(fileName);
+    const int previousMediaCount = m_playlist->mediaCount();
+    m_playlist->addMedia(fileName);
 
-    if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-        const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-        if (index.isValid()) {
-            ui->playlistTableView->setCurrentIndex(index);
-            m_playlistManager->playTrack(index.row());
-        }
+    if (m_playlist->mediaCount() > previousMediaCount) {
+        auto index = m_playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
     }
 }
 
@@ -1740,6 +1776,12 @@ bool MainWindow::initUserDirs()
 
 #pragma endregion
 
+
+void MainWindow::jump(const QModelIndex &index)
+{
+    if (index.isValid())
+        m_playlist->setCurrentIndex(index.row());
+}
 
 void MainWindow::updateMarkerMenuItems()
 {

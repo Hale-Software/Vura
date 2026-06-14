@@ -1,5 +1,5 @@
 #define MyAppName "Vura"
-#define MyAppVersion '0.6.1'
+#define MyAppVersion '0.6.3'
 #define MyAppPublisher "Hale Software LLC"
 #define MyAppURL "https://hale-software.github.io/"
 #define MyAppExeName "vura64.exe"
@@ -18,9 +18,9 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=..\build\release\src\data\license\license.txt
+LicenseFile=..\build\release\src\assets\data\license.txt
 OutputDir=..\installer
-OutputBaseFilename=vura-0.6.1-win64
+OutputBaseFilename=vura-0.6.3-win64
 SetupIconFile=vura.ico
 SolidCompression=yes
 WizardStyle=modern
@@ -178,18 +178,18 @@ Name: "fileTypeAssociations\otherFiles\xspf"; Description: ".xspf"; Types: full 
 
 
 [Files]
-Source: "..\share\icons\app-data-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\hotkey-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\markers-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\playlist-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\project-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\vura-black.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
-Source: "..\share\icons\vura-white.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\app-data-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\hotkey-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\markers-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\playlist-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\project-file.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\vura-black.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
+Source: "..\assets\icons\vura-white.ico"; DestDir: "{app}\icons"; Flags: ignoreversion
 Source: "..\build\release\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\avcodec-61.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\avformat-61.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\avutil-59.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\config.h"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\release\src\ui-config.h"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\D3Dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
 //Source: "..\build\release\src\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\vura.rc"; DestDir: "{app}"; Flags: ignoreversion
@@ -206,7 +206,7 @@ Source: "..\build\release\src\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversio
 Source: "..\build\release\src\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\swresample-5.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\release\src\swscale-8.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\release\src\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\release\src\assets\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\build\release\src\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\build\release\src\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\build\release\src\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs

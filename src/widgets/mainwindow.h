@@ -68,9 +68,9 @@
 #include <libvura/settings.h>
 #include <libvura/util/blogger.h>
 #include <libvura/util/messagebox.h>
-#include <libvura/util/playlistmanager.h>
+//#include <libvura/util/playlistmanager.h>
 #include <libvura/media-io/media-functions.h>
-#include <libvura/models/vura-playlistmodel.h>
+//#include <libvura/models/vura-playlistmodel.h>
 
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
@@ -86,6 +86,8 @@
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
 #include "../dialogs/convertmediadialog.h"
+#include "../models/playlistmodel.h"
+#include "../utility/playlist.h"
 
 
 namespace Ui {
@@ -122,7 +124,7 @@ public:
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
     void addFileToPlaylistContextMenu(const QString &file) const;
-    void addFolderToPlaylistContextMenu(const QString &path) const;
+    void addFolderToPlaylistContextMenu(const QString &path);
     bool isPlayerAvailable() const;
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
@@ -237,6 +239,7 @@ private slots:
     void positionChanged(qint64 progress);
     void tracksChanged();
     void seek(int mseconds);
+    void jump(const QModelIndex &index);
     void jumpTo(int mseconds);
     void playlistPositionChanged(int);
     void statusChanged(QMediaPlayer::MediaStatus status);
@@ -275,8 +278,11 @@ protected:
 private:
     Ui::MainWindow *ui;
     QList<VuraVideoMarker> videoMarkers;
-    VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
-    PlaylistManager *m_playlistManager = nullptr;
+    //VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
+    //PlaylistManager *m_playlistManager = nullptr;
+    Playlist *m_playlist = nullptr;
+    PlaylistModel *m_playlistModel = nullptr;
+    QAbstractItemView *m_playlistView = nullptr;
 
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;

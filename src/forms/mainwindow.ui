@@ -69,14 +69,7 @@
            </widget>
           </item>
           <item>
-           <widget class="PlaylistTableView" name="playlistTableView">
-            <property name="contextMenuPolicy">
-             <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
-            </property>
-            <attribute name="verticalHeaderVisible">
-             <bool>false</bool>
-            </attribute>
-           </widget>
+           <widget class="QListView" name="playlistView"/>
           </item>
          </layout>
         </item>
@@ -1415,11 +1408,6 @@
    <extends>QWidget</extends>
    <header location="global">&lt;QtMultimediaWidgets&gt;</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PlaylistTableView</class>
-   <extends>QTableView</extends>
-   <header location="global">components/PlaylistTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources>
