@@ -39,6 +39,11 @@ MenuBar::MenuBar(QMediaPlayer *player, QWidget *parent) : QMenuBar(parent), m_pl
 
 }
 
+QMap<QString, QAction *> MenuBar::getGlobalActions() const
+{
+    return globalActions;
+}
+
 void MenuBar::createMenus()
 {
     // Create Menus
@@ -70,101 +75,188 @@ void MenuBar::createMenus()
 void MenuBar::createMenuActions()
 {
     // Create Menu Actions
-    m_volumeIncreaseAction = new QAction(tr("Increase Volume"), this);
-    m_volumeDecreaseAction = new QAction(tr("Decrease Volume"), this);
-    m_volumeMuteAction = new QAction(tr("Mute"), this);
+
     m_closeAction = new QAction(tr("Close"), this);
+    globalActions.insert("Close", m_closeAction);
     m_closeAllAction = new QAction(tr("Close All"), this);
+    globalActions.insert("Close All", m_closeAllAction);
     m_emergencyCollapseAction = new QAction(tr("Emergency Collapse"), this);
+    globalActions.insert("Emergency Collapse", m_emergencyCollapseAction);
     m_exitAction = new QAction(tr("Exit"), this);
+    globalActions.insert("Exit", m_exitAction);
     m_openFileAction = new QAction(tr("Open File..."), this);
+    globalActions.insert("Open File", m_openFileAction);
     m_openFolderAction = new QAction(tr("Open Folder..."), this);
+    globalActions.insert("Open Folder", m_openFolderAction);
     m_openMultipleFilesAction = new QAction(tr("Open Multiple Files..."), this);
+    globalActions.insert("Open Multiple Files", m_openMultipleFilesAction);
     m_openNetworkStreamAction = new QAction(tr("Open Network Stream..."), this);
+    globalActions.insert("Open Network Stream", m_openNetworkStreamAction);
     m_showPreferencesAction = new QAction(tr("Preferences"), this);
+    globalActions.insert("Preferences", m_showPreferencesAction);
     m_saveAction = new QAction(tr("Save"), this);
+    globalActions.insert("Save", m_saveAction);
     m_saveAsAction = new QAction(tr("Save As..."), this);
+    globalActions.insert("Save As", m_saveAsAction);
     m_savePlaylistAction = new QAction(tr("Save Playlist"), this);
+    globalActions.insert("Save Playlist", m_savePlaylistAction);
     m_saveACopyAction = new QAction(tr("Save A Copy..."), this);
+    globalActions.insert("Save A Copy", m_saveACopyAction);
     m_importProjectAction = new QAction(tr("Project..."), this);
+    globalActions.insert("Import Project", m_importProjectAction);
     m_importCaptionsAction = new QAction(tr("Captions..."), this);
+    globalActions.insert("Import Captions", m_importCaptionsAction);
     m_importMarkersAction = new QAction(tr("Markers..."), this);
+    globalActions.insert("Import Markers", m_importMarkersAction);
     m_exportCaptionsAction = new QAction(tr("Captions..."), this);
+    globalActions.insert("Export Captions", m_exportCaptionsAction);
     m_exportClipsAction = new QAction(tr("Clips..."), this);
+    globalActions.insert("Export Clips", m_exportClipsAction);
     m_exportMarkersAction = new QAction(tr("Markers..."), this);
+    globalActions.insert("Export Markers", m_exportMarkersAction);
     m_exportMediaAction = new QAction(tr("Media..."), this);
+    globalActions.insert("Export Media", m_exportMediaAction);
     m_showAboutAction = new QAction(tr("About"), this);
+    globalActions.insert("About", m_showAboutAction);
     m_showHelpAction = new QAction(tr("Help"), this);
+    globalActions.insert("Help", m_showHelpAction);
     m_showFeedbackAction = new QAction(tr("Provide Feedback"), this);
+    globalActions.insert("Provide Feedback", m_showFeedbackAction);
     m_updateAction = new QAction(tr("Check for Updates..."), this);
+    globalActions.insert("Check for Updates", m_updateAction);
     m_cumshotMarkerAction = new QAction(tr("Add Cumshot Marker"), this);
+    globalActions.insert("Add Cumshot Marker", m_cumshotMarkerAction);
     m_cyanMarkerAction = new QAction(tr("Add Cyan Marker"), this);
+    globalActions.insert("Add Cyan Marker", m_cyanMarkerAction);
     m_dialogMarkerAction = new QAction(tr("Add Dialog Marker"), this);
+    globalActions.insert("Add Dialog Marker", m_dialogMarkerAction);
     m_magentaMarkerAction = new QAction(tr("Add Magenta Marker"), this);
+    globalActions.insert("Add Magenta Marker", m_magentaMarkerAction);
     m_markerAction = new QAction(tr("Add Marker"), this);
+    globalActions.insert("Add Marker", m_markerAction);
     m_orangeMarkerAction = new QAction(tr("Add Orange Marker"), this);
+    globalActions.insert("Add Orange Marker", m_orangeMarkerAction);
     m_sceneMarkerAction = new QAction(tr("Add Scene Transition Marker"), this);
+    globalActions.insert("Add Scene Transition Marker", m_sceneMarkerAction);
     m_stripMarkerAction = new QAction(tr("Add Strip Marker"), this);
+    globalActions.insert("Add Strip Marker", m_stripMarkerAction);
     m_clearInMarkerAction = new QAction(tr("Clear In"), this);
+    globalActions.insert("Clear In", m_clearInMarkerAction);
     m_clearInAndOutMarkerAction = new QAction(tr("Clear In and Out"), this);
+    globalActions.insert("Clear In and Out", m_clearInAndOutMarkerAction);
     m_clearMarkersAction = new QAction(tr("Clear Markers"), this);
+    globalActions.insert("Clear Markers", m_clearMarkersAction);
     m_clearOutMarkerAction = new QAction(tr("Clear Out"), this);
+    globalActions.insert("Clear Out", m_clearOutMarkerAction);
     m_clearSelectedMarkerAction = new QAction(tr("Clear Selected Marker"), this);
+    globalActions.insert("Clear Selected Marker", m_clearSelectedMarkerAction);
     m_editMarkerAction = new QAction(tr("Edit Selected Marker..."), this);
+    globalActions.insert("Edit Selected Marker", m_editMarkerAction);
     m_goToInMarkerAction = new QAction(tr("Go to In"), this);
+    globalActions.insert("Go to In", m_goToInMarkerAction);
     m_goToNextMarkerAction = new QAction(tr("Go to Next Marker"), this);
+    globalActions.insert("Go to Next Marker", m_goToNextMarkerAction);
     m_goToOutMarkerAction = new QAction(tr("Go to Out"), this);
+    globalActions.insert("Go to Out", m_goToOutMarkerAction);
     m_goToPreviousMarkerAction = new QAction(tr("Go to Previous Marker"), this);
+    globalActions.insert("Go to Previous Marker", m_goToPreviousMarkerAction);
     m_inMarkerAction = new QAction(tr("Mark In"), this);
+    globalActions.insert("Mark In", m_inMarkerAction);
     m_outMarkerAction = new QAction(tr("Mark Out"), this);
+    globalActions.insert("Mark Out", m_outMarkerAction);
     m_jumpToTimeAction = new QAction(tr("Jump to Specific Time..."), this);
+    globalActions.insert("Jump to Specific Time", m_jumpToTimeAction);
     m_jumpToEndAction = new QAction(tr("Jump to End"), this);
+    globalActions.insert("Jump to End", m_jumpToEndAction);
     m_nextVideoAction = new QAction(tr("Next Video"), this);
+    globalActions.insert("Next Video", m_nextVideoAction);
     m_nextFrameAction = new QAction(tr("Next Frame"), this);
+    globalActions.insert("Next Frame", m_nextFrameAction);
     m_togglePlayAction = new QAction(tr("Play/Pause"), this);
+    globalActions.insert("Play/Pause", m_togglePlayAction);
     m_previousVideoAction = new QAction(tr("Previous Video"), this);
+    globalActions.insert("Previous Video", m_previousVideoAction);
     m_previousFrameAction = new QAction(tr("Previous Frame"), this);
+    globalActions.insert("Previous Frame", m_previousFrameAction);
     m_restartVideoAction = new QAction(tr("Restart Video"), this);
+    globalActions.insert("Restart Video", m_restartVideoAction);
     m_jumpBackwardSmallAction = new QAction(tr("Jump Back Small"), this);
+    globalActions.insert("Jump Back Small", m_jumpBackwardSmallAction);
     m_jumpBackwardMediumAction = new QAction(tr("Jump Back Medium"), this);
+    globalActions.insert("Jump Back Medium", m_jumpBackwardMediumAction);
     m_jumpBackwardLargeAction = new QAction(tr("Jump Back Large"), this);
+    globalActions.insert("Jump Back Large", m_jumpBackwardLargeAction);
     m_jumpBackwardExtraLargeAction = new QAction(tr("Jump Back Extra Large"), this);
+    globalActions.insert("Jump Back Extra Large", m_jumpBackwardExtraLargeAction);
     m_jumpForwardSmallAction = new QAction(tr("Jump Fwd Small"), this);
+    globalActions.insert("Jump Fwd Small", m_jumpForwardSmallAction);
     m_jumpForwardMediumAction = new QAction(tr("Jump Fwd Medium"), this);
+    globalActions.insert("Jump Fwd Medium", m_jumpForwardMediumAction);
     m_jumpForwardLargeAction = new QAction(tr("Jump Fwd Large"), this);
+    globalActions.insert("Jump Fwd Large", m_jumpForwardLargeAction);
     m_jumpForwardExtraLargeAction = new QAction(tr("Jump Fwd Extra Large"), this);
+    globalActions.insert("Jump Fwd Extra Large", m_jumpForwardExtraLargeAction);
     m_playbackSpeedFasterAction = new QAction(tr("Faster"), this);
+    globalActions.insert("Faster", m_playbackSpeedFasterAction);
     m_playbackSpeedFasterFineAction = new QAction(tr("Faster (fine)"), this);
+    globalActions.insert("Faster (fine)", m_playbackSpeedFasterFineAction);
     m_playbackSpeedNormalAction = new QAction(tr("Normal"), this);
+    globalActions.insert("Normal", m_playbackSpeedNormalAction);
     m_playbackSpeedSlowerFineAction = new QAction(tr("Slower (fine)"), this);
+    globalActions.insert("Slower (fine)", m_playbackSpeedSlowerFineAction);
     m_playbackSpeedSlowerAction = new QAction(tr("Slower"), this);
+    globalActions.insert("Slower", m_playbackSpeedSlowerAction);
     m_createSubclipAction = new QAction(tr("Make Subclip"), this);
+    globalActions.insert("Make Subclip", m_createSubclipAction);
     m_streamStashVideoAction = new QAction(tr("Stream Video from Stash..."), this);
+    globalActions.insert("Stream Video from Stash", m_streamStashVideoAction);
     m_testFunctionAction = new QAction(tr("Test Function"), this);
+    globalActions.insert("Test Function", m_testFunctionAction);
     m_openSubtitleFileAction = new QAction(tr("Open Subtitle File..."), this);
+    globalActions.insert("Open Subtitle File", m_openSubtitleFileAction);
     m_toggleSubtitlesAction = new QAction(tr("Toggle Subtitles"), this);
+    globalActions.insert("Toggle Subtitles", m_toggleSubtitlesAction);
     m_toggleFullscreenAction = new QAction(tr("Fullscreen"), this);
+    globalActions.insert("Fullscreen", m_toggleFullscreenAction);
     m_takeSnapshotAction = new QAction(tr("Take Snapshot\tPrtSc"), this);
+    globalActions.insert("Take Snapshot", m_takeSnapshotAction);
     m_showMediaInformationAction = new QAction(tr("Media Information"), this);
+    globalActions.insert("Media Information", m_showMediaInformationAction);
     //m_showLogFileViewerAction = new QAction(tr("Log Viewer"), this);
     m_showVideoResolutionAction = new QAction(tr("Show Video Resolution in Titlebar"), this);
+    globalActions.insert("Show Video Resolution in Titlebar", m_showVideoResolutionAction);
     m_togglePlaylistAction = new QAction(tr("Toggle Playlist"), this);
+    globalActions.insert("Toggle Playlist", m_togglePlaylistAction);
     m_toggleStatusBarAction = new QAction(tr("Toggle Status Bar"), this);
+    globalActions.insert("Toggle Status Bar", m_toggleStatusBarAction);
     m_toggleVideoControlsAction = new QAction(tr("Toggle Video Controls"), this);
+    globalActions.insert("Toggle Video Controls", m_toggleVideoControlsAction);
     m_toggleCumshotMarkersAction = new QAction(tr("Cumshot Markers"), this);
+    globalActions.insert("Toggle Cumshot Markers", m_toggleCumshotMarkersAction);
     m_toggleCyanMarkersAction = new QAction(tr("Cyan Markers"), this);
+    globalActions.insert("Toggle Cyan Markers", m_toggleCyanMarkersAction);
     m_toggleDialogMarkersAction = new QAction(tr("Dialog Markers"), this);
+    globalActions.insert("Toggle Dialog Markers", m_toggleDialogMarkersAction);
     m_toggleMagentaMarkersAction = new QAction(tr("Magenta Markers"), this);
+    globalActions.insert("Toggle Magenta Markers", m_toggleMagentaMarkersAction);
     m_toggleMarkersAction = new QAction(tr("Markers"), this);
+    globalActions.insert("Toggle Markers", m_toggleMarkersAction);
     m_toggleOrangeMarkersAction = new QAction(tr("Orange Markers"), this);
+    globalActions.insert("Toggle Orange Markers", m_toggleOrangeMarkersAction);
     m_toggleSceneMarkersAction = new QAction(tr("Scene Transition Markers"), this);
+    globalActions.insert("Toggle Scene Transition Markers", m_toggleSceneMarkersAction);
     m_toggleStripMarkersAction = new QAction(tr("Strip Markers"), this);
+    globalActions.insert("Toggle Strip Markers", m_toggleStripMarkersAction);
     m_clearRecentFilesAction = new QAction(tr("Clear"), this);
+    globalActions.insert("Clear Recent Files", m_clearRecentFilesAction);
 
     // File Menu
     m_convertSaveAction = new QAction(tr("Convert/Save..."), this);
+    globalActions.insert("Convert/Save", m_convertSaveAction);
     m_streamAction = new QAction(tr("Stream..."), this);
+    globalActions.insert("Stream", m_streamAction);
     m_renameFileAction = new QAction(tr("Rename Current File..."), this);
+    globalActions.insert("Rename Current File", m_renameFileAction);
 
     // View Menu
 
@@ -173,23 +265,37 @@ void MenuBar::createMenuActions()
     // Markers Menu
 
     // Audio Menu
+    m_volumeIncreaseAction = new QAction(tr("Increase Volume"), this);
+    globalActions.insert("Increase Volume", m_volumeIncreaseAction);
+    m_volumeDecreaseAction = new QAction(tr("Decrease Volume"), this);
+    globalActions.insert("Decrease Volume", m_volumeDecreaseAction);
+    m_volumeMuteAction = new QAction(tr("Mute"), this);
+    globalActions.insert("Mute", m_volumeMuteAction);
 
     // Video Menu
 
     // Subtitle Menu
 
     // Tools Menu
+    m_resetHotkeysAction = new QAction(tr("Reset Hotkeys"), this);
 
     // Help Menu
     m_showLogFilesAction = new QAction(tr("Show Log Files"), this);
+    globalActions.insert("Show Log Files", m_showLogFilesAction);
     m_uploadCurrentLogFileAction = new QAction(tr("Upload Current Log File"), this);
+    globalActions.insert("Upload Current Log File", m_uploadCurrentLogFileAction);
     m_uploadPreviousLogFileAction = new QAction(tr("Upload Previous Log File"), this);
+    globalActions.insert("Upload Previous Log File", m_uploadPreviousLogFileAction);
     m_viewCurrentLogAction = new QAction(tr("View Current Log"), this);
+    globalActions.insert("View Current Log", m_viewCurrentLogAction);
     m_showCrashReportsAction = new QAction(tr("Show Crash Reports"), this);
+    globalActions.insert("Show Crash Reports", m_showCrashReportsAction);
     m_uploadPreviousCrashReportAction = new QAction(tr("Upload Previous Crash Report"), this);
-    m_checkFileIntegrityAction = new QAction(tr("Check File Integrity"), this);
+    globalActions.insert("Upload Previous Crash Report", m_uploadPreviousCrashReportAction);
     m_whatsNewAction = new QAction(tr("What's New"), this);
+    globalActions.insert("What's New", m_whatsNewAction);
     m_releaseNotesAction = new QAction(tr("Release Notes"), this);
+    globalActions.insert("Release Notes", m_releaseNotesAction);
     // m_ = new QAction(tr(""), this);
 
 
@@ -509,6 +615,7 @@ void MenuBar::buildMenus()
     m_toolsMenu->addAction(m_streamStashVideoAction);
     m_toolsMenu->addSeparator();
     m_toolsMenu->addAction(m_testFunctionAction);
+    m_toolsMenu->addAction(m_resetHotkeysAction);
 
     m_subtitleMenu->addAction(m_openSubtitleFileAction);
     m_subtitleMenu->addMenu(m_subtitleTrackMenu);
@@ -538,7 +645,6 @@ void MenuBar::buildMenus()
     m_helpMenu->addMenu(m_logFilesMenu);
     m_helpMenu->addMenu(m_crashReportsMenu);
     m_helpMenu->addSeparator();
-    m_helpMenu->addAction(m_checkFileIntegrityAction);
     m_helpMenu->addAction(m_updateAction);
     m_helpMenu->addSeparator();
     m_helpMenu->addAction(m_whatsNewAction);
@@ -668,6 +774,7 @@ void MenuBar::setActionConnections()
     // Subtitle Menu
 
     // Tools Menu
+    connect(m_resetHotkeysAction, &QAction::triggered, this, &MenuBar::resetHotkeys_Clicked);
 
     // Help Menu
     connect(m_showAboutAction, &QAction::triggered, this, &MenuBar::showAbout_Clicked);
@@ -680,7 +787,6 @@ void MenuBar::setActionConnections()
     connect(m_viewCurrentLogAction, &QAction::triggered, this, &MenuBar::actionViewCurrentLog_Clicked);
     connect(m_showCrashReportsAction, &QAction::triggered, this, &MenuBar::actionShowCrashReports_Clicked);
     connect(m_uploadPreviousCrashReportAction, &QAction::triggered, this, &MenuBar::actionUploadPreviousCrashReport_Clicked);
-    connect(m_checkFileIntegrityAction, &QAction::triggered, this, &MenuBar::actionCheckFileIntegrity_Clicked);
     connect(m_whatsNewAction, &QAction::triggered, this, &MenuBar::actionWhatsNew_Clicked);
     connect(m_releaseNotesAction, &QAction::triggered, this, &MenuBar::actionReleaseNotes_Clicked);
 
@@ -693,165 +799,10 @@ void MenuBar::setShowingVideoResolution(bool showing)
 }
 
 // TODO: Organize code
-void MenuBar::setHotkeys()
+void MenuBar::setHotkeys() const
 {
-    VuraHotkeys m_hotkeys;
-
-    if (m_initialised) {
-        // Remove current hotkeys for actions
-        m_hotkeys.removeMenuItemHotkey(*m_volumeIncreaseAction);
-        m_hotkeys.removeMenuItemHotkey(*m_volumeDecreaseAction);
-        m_hotkeys.removeMenuItemHotkey(*m_volumeMuteAction);
-        m_hotkeys.removeMenuItemHotkey(*m_closeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_closeAllAction);
-        m_hotkeys.removeMenuItemHotkey(*m_emergencyCollapseAction);
-        m_hotkeys.removeMenuItemHotkey(*m_exitAction);
-        m_hotkeys.removeMenuItemHotkey(*m_openFileAction);
-        m_hotkeys.removeMenuItemHotkey(*m_openFolderAction);
-        m_hotkeys.removeMenuItemHotkey(*m_openMultipleFilesAction);
-        m_hotkeys.removeMenuItemHotkey(*m_openNetworkStreamAction);
-        m_hotkeys.removeMenuItemHotkey(*m_showPreferencesAction);
-        m_hotkeys.removeMenuItemHotkey(*m_saveAction);
-        m_hotkeys.removeMenuItemHotkey(*m_saveACopyAction);
-        m_hotkeys.removeMenuItemHotkey(*m_showAboutAction);
-        m_hotkeys.removeMenuItemHotkey(*m_showHelpAction);
-        m_hotkeys.removeMenuItemHotkey(*m_cumshotMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_cyanMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_dialogMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_magentaMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_markerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_orangeMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_sceneMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_stripMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearInMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearInAndOutMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearMarkersAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearOutMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearSelectedMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_editMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_goToInMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_goToNextMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_goToOutMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_goToPreviousMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_inMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_outMarkerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpToTimeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_nextVideoAction);
-        m_hotkeys.removeMenuItemHotkey(*m_nextFrameAction);
-        m_hotkeys.removeMenuItemHotkey(*m_togglePlaylistAction);
-        m_hotkeys.removeMenuItemHotkey(*m_previousVideoAction);
-        m_hotkeys.removeMenuItemHotkey(*m_previousFrameAction);
-        m_hotkeys.removeMenuItemHotkey(*m_restartVideoAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpBackwardSmallAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpBackwardMediumAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpBackwardLargeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpBackwardExtraLargeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpForwardSmallAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpForwardMediumAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpForwardLargeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_jumpForwardExtraLargeAction);
-        m_hotkeys.removeMenuItemHotkey(*m_playbackSpeedFasterAction);
-        m_hotkeys.removeMenuItemHotkey(*m_playbackSpeedFasterFineAction);
-        m_hotkeys.removeMenuItemHotkey(*m_playbackSpeedNormalAction);
-        m_hotkeys.removeMenuItemHotkey(*m_playbackSpeedSlowerFineAction);
-        m_hotkeys.removeMenuItemHotkey(*m_playbackSpeedSlowerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_createSubclipAction);
-        m_hotkeys.removeMenuItemHotkey(*m_streamStashVideoAction);
-        m_hotkeys.removeMenuItemHotkey(*m_testFunctionAction);
-        m_hotkeys.removeMenuItemHotkey(*m_toggleSubtitlesAction);
-        m_hotkeys.removeMenuItemHotkey(*m_toggleFullscreenAction);
-        m_hotkeys.removeMenuItemHotkey(*m_takeSnapshotAction);
-        m_hotkeys.removeMenuItemHotkey(*m_showMediaInformationAction);
-        //m_hotkeys.removeMenuItemHotkey(*m_showLogFileViewerAction);
-        m_hotkeys.removeMenuItemHotkey(*m_viewCurrentLogAction);
-        m_hotkeys.removeMenuItemHotkey(*m_togglePlaylistAction);
-        m_hotkeys.removeMenuItemHotkey(*m_toggleStatusBarAction);
-        m_hotkeys.removeMenuItemHotkey(*m_toggleVideoControlsAction);
-        m_hotkeys.removeMenuItemHotkey(*m_clearRecentFilesAction);
-        m_hotkeys.removeMenuItemHotkey(*m_togglePlayAction);
-        m_hotkeys.removeMenuItemHotkey(*m_saveAsAction);
-        m_hotkeys.removeMenuItemHotkey(*m_savePlaylistAction);
-        m_hotkeys.removeMenuItemHotkey(*m_renameFileAction);
-    }
-
-    // Load user hotkeys and set actions
-    m_hotkeys.setMenuItemHotkey(*m_volumeIncreaseAction);
-    m_hotkeys.setMenuItemHotkey(*m_volumeDecreaseAction);
-    m_hotkeys.setMenuItemHotkey(*m_volumeMuteAction);
-    m_hotkeys.setMenuItemHotkey(*m_closeAction);
-    m_hotkeys.setMenuItemHotkey(*m_closeAllAction);
-    m_hotkeys.setMenuItemHotkey(*m_emergencyCollapseAction);
-    m_hotkeys.setMenuItemHotkey(*m_exitAction);
-    m_hotkeys.setMenuItemHotkey(*m_openFileAction);
-    m_hotkeys.setMenuItemHotkey(*m_openFolderAction);
-    m_hotkeys.setMenuItemHotkey(*m_openMultipleFilesAction);
-    m_hotkeys.setMenuItemHotkey(*m_openNetworkStreamAction);
-    m_hotkeys.setMenuItemHotkey(*m_showPreferencesAction);
-    m_hotkeys.setMenuItemHotkey(*m_saveAction);
-    m_hotkeys.setMenuItemHotkey(*m_saveACopyAction);
-    m_hotkeys.setMenuItemHotkey(*m_showAboutAction);
-    m_hotkeys.setMenuItemHotkey(*m_showHelpAction);
-    m_hotkeys.setMenuItemHotkey(*m_cumshotMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_cyanMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_dialogMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_magentaMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_markerAction);
-    m_hotkeys.setMenuItemHotkey(*m_orangeMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_sceneMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_stripMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearInMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearInAndOutMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearMarkersAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearOutMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearSelectedMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_editMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_goToInMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_goToNextMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_goToOutMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_goToPreviousMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_inMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_outMarkerAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpToTimeAction);
-    m_hotkeys.setMenuItemHotkey(*m_nextVideoAction);
-    m_hotkeys.setMenuItemHotkey(*m_nextFrameAction);
-    m_hotkeys.setMenuItemHotkey(*m_togglePlaylistAction);
-    m_hotkeys.setMenuItemHotkey(*m_previousVideoAction);
-    m_hotkeys.setMenuItemHotkey(*m_previousFrameAction);
-    m_hotkeys.setMenuItemHotkey(*m_restartVideoAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpBackwardSmallAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpBackwardMediumAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpBackwardLargeAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpBackwardExtraLargeAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpForwardSmallAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpForwardMediumAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpForwardLargeAction);
-    m_hotkeys.setMenuItemHotkey(*m_jumpForwardExtraLargeAction);
-    m_hotkeys.setMenuItemHotkey(*m_playbackSpeedFasterAction);
-    m_hotkeys.setMenuItemHotkey(*m_playbackSpeedFasterFineAction);
-    m_hotkeys.setMenuItemHotkey(*m_playbackSpeedNormalAction);
-    m_hotkeys.setMenuItemHotkey(*m_playbackSpeedSlowerFineAction);
-    m_hotkeys.setMenuItemHotkey(*m_playbackSpeedSlowerAction);
-    m_hotkeys.setMenuItemHotkey(*m_createSubclipAction);
-    m_hotkeys.setMenuItemHotkey(*m_streamStashVideoAction);
-    m_hotkeys.setMenuItemHotkey(*m_testFunctionAction);
-    m_hotkeys.setMenuItemHotkey(*m_toggleSubtitlesAction);
-    m_hotkeys.setMenuItemHotkey(*m_toggleFullscreenAction);
-    m_hotkeys.setMenuItemHotkey(*m_takeSnapshotAction);
-    m_hotkeys.setMenuItemHotkey(*m_showMediaInformationAction);
-    //m_hotkeys.setMenuItemHotkey(*m_showLogFileViewerAction);
-    m_hotkeys.setMenuItemHotkey(*m_viewCurrentLogAction);
-    m_hotkeys.setMenuItemHotkey(*m_togglePlaylistAction);
-    m_hotkeys.setMenuItemHotkey(*m_toggleStatusBarAction);
-    m_hotkeys.setMenuItemHotkey(*m_toggleVideoControlsAction);
-    m_hotkeys.setMenuItemHotkey(*m_clearRecentFilesAction);
-    m_hotkeys.setMenuItemHotkey(*m_togglePlayAction);
-    m_hotkeys.setMenuItemHotkey(*m_saveAsAction);
-    m_hotkeys.setMenuItemHotkey(*m_savePlaylistAction);
-    m_hotkeys.setMenuItemHotkey(*m_renameFileAction);
-
-    m_testFunctionAction->setShortcut(QKeySequence("Ctrl+Alt+T"));
-
-    m_initialised = true;
+    const VuraHotkeys m_hotkeys;
+    m_hotkeys.setMenuItemHotkeys(globalActions);
 }
 
 // TODO: Organize code
@@ -1869,9 +1820,17 @@ void MenuBar::streamVideoFromStash_Clicked()
 
 void MenuBar::testFunction_Clicked()
 {
-    emit testFunction();
+    //emit testFunction();
+    HotkeySettingsDialog dialog(globalActions, this);
+    dialog.exec();
 }
 
+void MenuBar::resetHotkeys_Clicked()
+{
+    VuraHotkeys hotkeys;
+    hotkeys.resetHotkeys();
+    hotkeys.setMenuItemHotkeys(globalActions);
+}
 
 
 // Subtitle Menu

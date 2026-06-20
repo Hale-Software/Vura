@@ -22,4 +22,6 @@ target_sources(
         dialogs/FeedbackDialog.h
         dialogs/markerdialog.cpp
         dialogs/markerdialog.h
+        dialogs/HotkeySettingsDialog.cpp
+        dialogs/HotkeySettingsDialog.h
 )

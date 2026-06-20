@@ -6,4 +6,5 @@ target_sources(
         utility/playlist_p.h
         utility/playlistfileparser.cpp
         utility/playlistfileparser.h
+        utility/HotkeyDelegate.h
 )

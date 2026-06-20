@@ -17,25 +17,33 @@ VuraHotkeys::VuraHotkeys(QObject *parent) : QObject(parent)
     }
 }
 
-void VuraHotkeys::setMenuItemHotkey(QAction &action)
+void VuraHotkeys::resetHotkeys()
 {
-    if (!action.text().isEmpty()) {
-        if (action.text() == "Play/Pause") {
-            action.setShortcut(tr("Space"));
-            action.setShortcutContext(Qt::ApplicationShortcut);
+    QSettings settings;
+    settings.beginGroup("Hotkeys");
+    settings.remove("");
+    settings.endGroup();
+    settings.sync();
+    hotkeys.clear();
+    setDefaultHotkeys();
+}
 
-        } else if (hotkeys.contains(action.text())) {
-            if (!hotkeys.value(action.text()).isEmpty()) {
-                action.setShortcut(hotkeys.value(action.text()));
-                action.setShortcutContext(Qt::ApplicationShortcut);
+void VuraHotkeys::setMenuItemHotkeys(const QMap<QString, QAction *> &actions) const
+{
+    for (auto it = actions.constBegin(); it != actions.constEnd(); ++it) {
+        // Column 0: Action Name (Read-only)
+        const QString& currentActionName = it.key();
+        if (currentActionName == "Play/Pause") {
+            it.value()->setShortcut(tr("Space"));
+            it.value()->setShortcutContext(Qt::ApplicationShortcut);
+
+        } else if (hotkeys.contains(currentActionName)) {
+            if (!hotkeys.value(currentActionName).isEmpty()) {
+                it.value()->setShortcut(hotkeys.value(currentActionName));
+                it.value()->setShortcutContext(Qt::ApplicationShortcut);
             }
         }
     }
-}
-
-void VuraHotkeys::removeMenuItemHotkey(QAction &action)
-{
-    action.setShortcut(QKeySequence());
 }
 
 void VuraHotkeys::setDefaultHotkeys()
@@ -46,19 +54,19 @@ void VuraHotkeys::setDefaultHotkeys()
     // File
     hotkeyMap["Emergency Collapse"] = "C";
     hotkeyMap["Exit"] = "Ctrl+Q";
-    hotkeyMap["Open File..."] = "O";
-    hotkeyMap["Open Folder..."] = "Ctrl+F";
-    hotkeyMap["Open Multiple Files..."] = "Alt+O";
-    hotkeyMap["Open Network Stream..."] = "Ctrl+N";
+    hotkeyMap["Open File"] = "O";
+    hotkeyMap["Open Folder"] = "Ctrl+F";
+    hotkeyMap["Open Multiple Files"] = "Alt+O";
+    hotkeyMap["Open Network Stream"] = "Ctrl+N";
     hotkeyMap["Save"] = "Ctrl+S";
-    hotkeyMap["Save As..."] = "Ctrl+Shift+S";
+    hotkeyMap["Save As"] = "Ctrl+Shift+S";
     hotkeyMap["Save Playlist"] = "Alt+S";
-    hotkeyMap["Save A Copy..."] = "Ctrl+Alt+S";
+    hotkeyMap["Save A Copy"] = "Ctrl+Alt+S";
     hotkeyMap["Close"] = "Ctrl+A";
     hotkeyMap["Close All"] = "Ctrl+Shift+A";
     hotkeyMap["Preferences"] = "Ctrl+Shift+P";
-    hotkeyMap["Clear"] = "";
-    hotkeyMap["Rename Current File..."] = "Ctrl+Alt+R";
+    hotkeyMap["Clear Recent Files"] = "";
+    hotkeyMap["Rename Current File"] = "Ctrl+Alt+R";
 
 
     // Playback
@@ -67,7 +75,7 @@ void VuraHotkeys::setDefaultHotkeys()
     hotkeyMap["Previous Video"] = "P";
     hotkeyMap["Previous Frame"] = "[";
     hotkeyMap["Restart Video"] = "R";
-    hotkeyMap["Jump to Specific Time..."] = "Ctrl+T";
+    hotkeyMap["Jump to Specific Time"] = "Ctrl+T";
     hotkeyMap["Jump Back Extra Large"] = "1";
     hotkeyMap["Jump Back Large"] = "Q";
     hotkeyMap["Jump Back Medium"] = "A";
@@ -112,7 +120,7 @@ void VuraHotkeys::setDefaultHotkeys()
     hotkeyMap["Clear Markers"] = "Ctrl+Shift+M";
     hotkeyMap["Clear Out"] = "Ctrl+Shift+.";
     hotkeyMap["Clear Selected Marker"] = "Ctrl+C";
-    hotkeyMap["Edit Selected Marker..."] = "Alt+M";
+    hotkeyMap["Edit Selected Marker"] = "Alt+M";
     hotkeyMap["Go to In"] = "Shift+,";
     hotkeyMap["Go to Next Marker"] = "B";
     hotkeyMap["Go to Out"] = "Shift+.";
@@ -122,7 +130,7 @@ void VuraHotkeys::setDefaultHotkeys()
 
     // Tools
     hotkeyMap["Make Subclip"] = "Ctrl+U";
-    hotkeyMap["Stream Video from Stash..."] = "Ctrl+X";
+    hotkeyMap["Stream Video from Stash"] = "Ctrl+X";
     hotkeyMap["Test Function"] = "";
 
     // Subtitle
@@ -145,4 +153,22 @@ void VuraHotkeys::setDefaultHotkeys()
     settings.sync();
 
     hotkeys = hotkeyMap;
+}
+
+void VuraHotkeys::updateMenuItemHotkeys(const QMap<QString, QAction *> &actions)
+{
+    for (auto it = actions.constBegin(); it != actions.constEnd(); ++it) {
+        hotkeys[it.key()] = it.value()->shortcut().toString();
+    }
+
+    QSettings settings;
+    settings.beginGroup("Hotkeys");
+    QMapIterator<QString, QString> i(hotkeys);
+    while (i.hasNext()) {
+        i.next();
+        settings.setValue(i.key(), i.value());
+    }
+
+    settings.endGroup();
+    settings.sync();
 }

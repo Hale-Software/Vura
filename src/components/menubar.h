@@ -60,6 +60,7 @@
 #include "../dialogs/updatewindow.h"
 #include "../dialogs/whatsnew.h"
 #include "../settings/settingswindow.h"
+#include "../dialogs/HotkeySettingsDialog.h"
 
 
 class MenuBar : public QMenuBar {
@@ -87,6 +88,8 @@ public:
     void buildMenus();
     void setActionConnections();
     void setShowingVideoResolution(bool showing);
+
+    QMap<QString, QAction*> getGlobalActions() const;
 
 public slots:
     void refreshAudioDevices();
@@ -308,6 +311,7 @@ private slots:
     void createSubclip_Clicked();
     void streamVideoFromStash_Clicked();
     void testFunction_Clicked();
+    void resetHotkeys_Clicked();
 
 
     // Help Menu
@@ -327,6 +331,7 @@ private slots:
 
 
 private:
+    QMap<QString, QAction*> globalActions;
     QMediaPlayer *m_player = nullptr;
     QMediaDevices *m_devices;
 
@@ -487,6 +492,7 @@ private:
     QAction *m_createSubclipAction = nullptr;
     QAction *m_streamStashVideoAction = nullptr;
     QAction *m_testFunctionAction = nullptr;
+    QAction *m_resetHotkeysAction = nullptr;
 
     // Help
     QAction *m_showHelpAction = nullptr;
@@ -500,7 +506,6 @@ private:
     QAction *m_showCrashReportsAction = nullptr;
     QAction *m_uploadPreviousCrashReportAction = nullptr;
 
-    QAction *m_checkFileIntegrityAction = nullptr;
     QAction *m_updateAction = nullptr;
     QAction *m_whatsNewAction = nullptr;
     QAction *m_releaseNotesAction = nullptr;
@@ -526,7 +531,7 @@ private:
     int m_maxRecentFiles = 0;
     bool m_showingVideoResolution = false;
 
-    void setHotkeys();
+    void setHotkeys() const;
     void refreshMenuItems();
     QString trackName(const QMediaMetaData &metaData, int index);
 

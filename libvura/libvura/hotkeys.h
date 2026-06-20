@@ -13,8 +13,10 @@ class VuraHotkeys : QObject {
 
 public:
     explicit VuraHotkeys(QObject *parent = nullptr);
-    void setMenuItemHotkey(QAction &action);
-    void removeMenuItemHotkey(QAction &action);
+
+    void setMenuItemHotkeys(const QMap<QString, QAction*> &actions) const;
+    void updateMenuItemHotkeys(const QMap<QString, QAction*> &actions);
+    void resetHotkeys();
 
 private:
     QMap<QString,QString> hotkeys;
