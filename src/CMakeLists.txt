@@ -70,12 +70,10 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${ta
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Header Files" FILES ${target_hpp_sources})
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Qt Files" FILES ${target_qt_sources})
 
-set_target_properties(vura PROPERTIES FOLDER UI OUTPUT_NAME "$<IF:$<PLATFORM_ID:Windows>,vura64,vura>")
+set_target_properties(vura PROPERTIES FOLDER src OUTPUT_NAME "$<IF:$<PLATFORM_ID:Windows>,vura64,vura>")
 
-include(GNUInstallDirs)
 install(TARGETS vura
         BUNDLE DESTINATION .
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
@@ -92,4 +90,38 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/"
         DESTINATION "${CMAKE_INSTALL_BINDIR}/assets"
 )
 
-qt_finalize_executable(vura)
+set(CPACK_PACKAGE_NAME "Vura")
+set(CPACK_PACKAGE_VENDOR "${VURA_COMPANY_NAME}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${VURA_COMMENTS}")
+set(CPACK_PACKAGE_HOMEPAGE_URL "${VURA_WEBSITE}")
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${VURA_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VURA_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VURA_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION "${VURA_VERSION_CANONICAL}")
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/assets/data/license.txt")
+
+if(WIN32)
+    set(CPACK_GENERATOR "NSIS")
+
+    set(CPACK_NSIS_DISPLAY_NAME "Vura")
+    set(CPACK_NSIS_PACKAGE_NAME "Vura")
+    set(CPACK_NSIS_CONTACT "https://github.com/Hale-Software/Vura")
+    set(CPACK_NSIS_URL_INFO_ABOUT "${VURA_WEBSITE}")
+    set(CPACK_NSIS_HELP_LINK "${VURA_WEBSITE}")
+    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+    #set(CPACK_PACKAGE_EXECUTABLES "vura64" "Vura")
+    #set(CPACK_CREATE_DESKTOP_LINKS "${EXE_TARGET_NAME}")
+    list(APPEND CPACK_PACKAGE_EXECUTABLES "vura64" "Vura")
+    list(APPEND CPACK_CREATE_DESKTOP_LINKS "Vura")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
+    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "Vura")
+
+else()
+    set(CPACK_GENERATOR "ZIP")
+endif()
+
+include(CPack)
