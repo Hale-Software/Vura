@@ -112,11 +112,41 @@ if(WIN32)
     set(CPACK_NSIS_HELP_LINK "${VURA_WEBSITE}")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
+    # Enable multi-language selection at installer startup
+    set(CPACK_NSIS_ENABLE_MULTILANGUAGE ON)
+
+    # Add extra language tables into the NSIS script compiler
+    set(CPACK_NSIS_DEFINES "
+        !insertmacro MUI_LANGUAGE \"English\"
+        !insertmacro MUI_LANGUAGE \"Spanish\"
+        !insertmacro MUI_LANGUAGE \"German\"
+        !insertmacro MUI_LANGUAGE \"French\"
+        !insertmacro MUI_LANGUAGE \"Russian\"
+    ")
+
+
     set(CPACK_PACKAGE_EXECUTABLES "vura64" "Vura")
     set(CPACK_CREATE_DESKTOP_LINKS "Vura")
     set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
     set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "Vura")
+
+    # Create Desktop Shortcut
+    set(CPACK_NSIS_CREATE_ICONS_EXTRA "
+        CreateShortCut '$DESKTOP\\\\Vura.lnk' '$INSTDIR\\\\bin\\\\vura64.exe'
+    ")
+
+    # Delete Desktop Shortcut on Uninstall
+    set(CPACK_NSIS_DELETE_ICONS_EXTRA "
+        Delete '$DESKTOP\\\\Vura.lnk'
+    ")
+
+    file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/associations.nsh" NSIS_ASSOC_SCRIPT)
+    string(REPLACE "\\" "\\\\" NSIS_ASSOC_SCRIPT "${NSIS_ASSOC_SCRIPT}")
+
+    set(CPACK_NSIS_DEFINES "
+        !include \\\"${NSIS_ASSOC_SCRIPT}\\\"
+    ")
 
 else()
     set(CPACK_GENERATOR "ZIP")
