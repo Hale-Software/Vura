@@ -79,4 +79,17 @@ install(TARGETS vura
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+if(WIN32)
+    qt_generate_deploy_app_script(
+            TARGET vura
+            OUTPUT_SCRIPT deploy_script
+            NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    install(SCRIPT ${deploy_script})
+endif()
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}/assets"
+)
+
 qt_finalize_executable(vura)

@@ -58,6 +58,7 @@ void VuraHotkeys::setDefaultHotkeys()
     hotkeyMap["Close All"] = "Ctrl+Shift+A";
     hotkeyMap["Preferences"] = "Ctrl+Shift+P";
     hotkeyMap["Clear"] = "";
+    hotkeyMap["Rename Current File..."] = "Ctrl+Alt+R";
 
 
     // Playback

@@ -201,6 +201,7 @@ public slots:
     void markerDeleted(const VuraVideoMarker &videoMarker);
     void getPrevMarker(const VuraVideoMarker &videoMarker);
     void getNextMarker(const VuraVideoMarker &videoMarker);
+    void renameFile(const QString &newFileName);
 
     // Video Slider
     void rangeChanged(int minimum, int maximum);
@@ -348,6 +349,7 @@ private:
     bool checkMarkerProximity();
     bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
     bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
+    QUrl replaceFilename(QUrl url, const QString &newBaseName);
 
 };
 

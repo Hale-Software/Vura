@@ -202,6 +202,7 @@ void MainWindow::initMenuBar()
     connect(m_menuBar, &MenuBar::showVideoResolution, this, &MainWindow::showVideoResolution);
     connect(m_menuBar, &MenuBar::convertSave, this, &MainWindow::convertSave);
     connect(m_menuBar, &MenuBar::stream, this, &MainWindow::streamMedia);
+    connect(m_menuBar, &MenuBar::renameFile, this, &MainWindow::renameFile);
 
     this->setMenuBar(m_menuBar);
 
@@ -1360,6 +1361,51 @@ void MainWindow::continuePlaybackRibbon(const bool con)
     }
 }
 
+void MainWindow::renameFile(const QString &newFileName)
+{
+    QUrl currentUrl = m_playlist->currentMedia();
+    QUrl newUrl = replaceFilename(currentUrl, newFileName);
+    qDebug() << "Renaming file: " << currentUrl.toDisplayString() << " to " << newUrl.toDisplayString();
+    int savedIndex = m_playlist->currentIndex();
+    bool isOnlyFile = false;
+
+    if (m_playlist->mediaCount() <= 1)
+        isOnlyFile = true;
+
+    if (isOnlyFile) {
+        m_player->stop();
+        m_playlist->clear();
+        m_player->setSource(QUrl());
+    } else {
+        if (m_playlist->mediaCount() == m_playlist->currentIndex() + 1) {
+            m_playlist->setCurrentIndex(0);
+            m_playlist->removeMedia(savedIndex);
+
+        } else {
+            m_playlist->setCurrentIndex(m_playlist->currentIndex() + 1);
+            m_playlist->removeMedia(savedIndex);
+        }
+    }
+
+    QFile file(currentUrl.toLocalFile());
+    if (file.rename(newUrl.toLocalFile())) {
+        qDebug() << "File renamed successfully.";
+        /*
+                    if (isOnlyFile) {
+                        m_playlist->addMedia(newUrl);
+                        m_player->play();
+                    } else {
+                        m_playlist->insertMedia(savedIndex, newUrl);
+                        m_playlist->setCurrentIndex(savedIndex);
+                        m_player->play();
+                    }
+        */
+        this->close();
+    } else {
+        qCritical() << "Failed to rename file: " << file.errorString();
+    }
+}
+
 
 #pragma endregion
 
@@ -1930,5 +1976,25 @@ void MainWindow::sliderReleased() {}
 
 void MainWindow::sliderClicked(int mseconds) {}
 
+QUrl MainWindow::replaceFilename(QUrl url, const QString &newBaseName)
+{
+    // 1. Get the local file path (or use url.path() if not a local file)
+    QString filePath = url.toLocalFile();
 
+    // 2. Extract the file extension
+    QFileInfo fileInfo(filePath);
+    QString extension = fileInfo.completeSuffix(); // e.g. "tar.gz" or "png"
+
+    // 3. Construct the new file name (and rebuild full path)
+    QString newFileName = newBaseName;
+    if (!extension.isEmpty()) {
+        newFileName += "." + extension;
+    }
+
+    QString newFullPath = fileInfo.path() + QDir::separator() + newFileName;
+
+    // 4. Update the QUrl
+    url.setPath(newFullPath);
+    return url;
+}
 

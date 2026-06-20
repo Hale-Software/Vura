@@ -59,7 +59,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/common")
 include(versionconfig)
 include(buildnumber)
 include(osconfig)
-include(ccache)
+#include(ccache)
 
 # Enable default inclusion of targets' source and binary directory
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)

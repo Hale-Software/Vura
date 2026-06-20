@@ -119,6 +119,7 @@ signals:
     void saveFile(const QString &filePath);
     void savePlaylist(const QString &filePath, const QString &type);
     void emergencyCollapse();
+    void renameFile(const QString &newFileName);
     void convertSave();
     void stream();
     void exitApplication();
@@ -193,6 +194,8 @@ private slots:
     void saveAs_Clicked();
     void savePlaylist_Clicked();
     void saveACopy_Clicked();
+
+    void renameFile_Clicked();
 
     void convertSave_Clicked();
     void stream_Clicked();
@@ -376,6 +379,8 @@ private:
     QAction *m_saveAsAction = nullptr;
     QAction *m_savePlaylistAction = nullptr;
     QAction *m_saveACopyAction = nullptr;
+
+    QAction *m_renameFileAction = nullptr;
 
     QAction *m_convertSaveAction = nullptr;
     QAction *m_streamAction = nullptr;

@@ -164,6 +164,7 @@ void MenuBar::createMenuActions()
     // File Menu
     m_convertSaveAction = new QAction(tr("Convert/Save..."), this);
     m_streamAction = new QAction(tr("Stream..."), this);
+    m_renameFileAction = new QAction(tr("Rename Current File..."), this);
 
     // View Menu
 
@@ -422,6 +423,8 @@ void MenuBar::buildMenus()
     m_fileMenu->addAction(m_savePlaylistAction);
     m_fileMenu->addAction(m_saveACopyAction);
     m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_renameFileAction);
+    m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_convertSaveAction);
     m_fileMenu->addAction(m_streamAction);
     m_fileMenu->addSeparator();
@@ -645,6 +648,7 @@ void MenuBar::setActionConnections()
     connect(m_toggleOrangeMarkersAction, &QAction::triggered, this, &MenuBar::toggleOrangeMarkers_Clicked);
     connect(m_toggleSceneMarkersAction, &QAction::triggered, this, &MenuBar::toggleSceneTransitionMarkers_Clicked);
     connect(m_toggleStripMarkersAction, &QAction::triggered, this, &MenuBar::toggleStripMarkers_Clicked);
+    connect(m_renameFileAction, &QAction::triggered, this, &MenuBar::renameFile_Clicked);
     //connect(, &QAction::triggered, this, &MenuBar::);
 
     // File Menu
@@ -767,6 +771,7 @@ void MenuBar::setHotkeys()
         m_hotkeys.removeMenuItemHotkey(*m_togglePlayAction);
         m_hotkeys.removeMenuItemHotkey(*m_saveAsAction);
         m_hotkeys.removeMenuItemHotkey(*m_savePlaylistAction);
+        m_hotkeys.removeMenuItemHotkey(*m_renameFileAction);
     }
 
     // Load user hotkeys and set actions
@@ -842,6 +847,7 @@ void MenuBar::setHotkeys()
     m_hotkeys.setMenuItemHotkey(*m_togglePlayAction);
     m_hotkeys.setMenuItemHotkey(*m_saveAsAction);
     m_hotkeys.setMenuItemHotkey(*m_savePlaylistAction);
+    m_hotkeys.setMenuItemHotkey(*m_renameFileAction);
 
     m_testFunctionAction->setShortcut(QKeySequence("Ctrl+Alt+T"));
 
@@ -1345,6 +1351,21 @@ void MenuBar::savePlaylist_Clicked()
 }
 
 void MenuBar::saveACopy_Clicked() {}
+
+void MenuBar::renameFile_Clicked()
+{
+    bool ok;
+    QString text = QInputDialog::getText(this,
+                                         tr("Rename File"),    // Dialog title
+                                         tr("New File Name:"),         // Input label
+                                         QLineEdit::Normal,        // Input mode (e.g., Normal, NoEcho, Password)
+                                         QString(),                // Default text
+                                         &ok);                     // Pointer to a boolean that is true if OK was pressed
+
+    if (ok && !text.isEmpty()) {
+        emit renameFile(text);
+    }
+}
 
 void MenuBar::convertSave_Clicked()
 {
