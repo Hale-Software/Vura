@@ -5,6 +5,7 @@
 !/.github
 !/assets
 !/cmake
+!/deps/winsparkle
 !/docs
 !/libvura
 !/scripts
