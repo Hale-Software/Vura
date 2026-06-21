@@ -5,6 +5,7 @@
 !/.github
 !/assets
 !/cmake
+!/deps
 !/docs
 !/libvura
 !/scripts
@@ -24,10 +25,6 @@
 !CONTRIBUTING.md
 !COPYING
 !README.md
-
-# Exclude dependencies
-!/deps/CMakeLists.txt
-!/deps/winsparkle
 
 # Exclude installer files
 !/installer/installer.iss
