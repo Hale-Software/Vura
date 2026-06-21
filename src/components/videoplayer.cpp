@@ -59,6 +59,15 @@ void VideoPlayer::subtitleTextChanged(const QString &subtitleText)
     //update();
 }
 
+void VideoPlayer::togglePlayback() const
+{
+    if (m_player->isPlaying()) {
+        m_player->pause();
+    } else {
+        m_player->play();
+    }
+}
+
 void VideoPlayer::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -68,4 +77,12 @@ void VideoPlayer::paintEvent(QPaintEvent *event)
 
     //painter.setPen(Qt::red);
     //painter.drawText(m_rect, Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWordWrap, m_subtitleText);
+}
+
+void VideoPlayer::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        togglePlayback();
+    }
+    QWidget::mousePressEvent(event);
 }

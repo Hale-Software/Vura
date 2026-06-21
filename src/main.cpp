@@ -21,7 +21,7 @@
 #include <QDir>
 #include <QDebug>
 
-#include <winsparkle.h>
+//#include <winsparkle.h>
 
 #include "widgets/mainwindow.h"
 #include <libvura/util/singleinstance.h>

@@ -61,17 +61,17 @@ m_statusLabel(new QLabel)
     setToolTips();
     setStyleSheet();
 
-    connect(this, SIGNAL(windowWasShown()), this, SLOT(initWinSparkle()), Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
+    //connect(this, SIGNAL(windowWasShown()), this, SLOT(initWinSparkle()), Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
 
     qDebug() << "Application startup complete.";
 }
 
 MainWindow::~MainWindow()
 {
-    win_sparkle_cleanup();
+    //win_sparkle_cleanup();
     delete ui;
 }
-
+/*
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
@@ -112,7 +112,7 @@ void MainWindow::checkForUpdates()
 {
     win_sparkle_check_update_with_ui();
 }
-
+*/
 void MainWindow::testFunction()
 {
     //VuraHelpers::simulateApplicationCrash();
@@ -1444,7 +1444,7 @@ void MainWindow::renameFile(const QString &newFileName)
         qCritical() << "Failed to rename file: " << file.errorString();
     }
 }
-/*
+
 void MainWindow::checkForUpdates()
 {
     windowsUpdater = new WindowsUpdater(this);
@@ -1452,7 +1452,7 @@ void MainWindow::checkForUpdates()
     connect(windowsUpdater, &WindowsUpdater::updateNotAvailable, this, &MainWindow::updateNotAvailable);
     windowsUpdater->checkForUpdates();
 }
-*/
+
 void MainWindow::updateAvailable(const QString& versionString, const QString& releaseDateString,
                                  const QString &downloadUrl,
                                  const QString& changelog)

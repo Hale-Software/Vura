@@ -36,6 +36,7 @@ MenuBar::MenuBar(QMediaPlayer *player, QWidget *parent) : QMenuBar(parent), m_pl
     setActionConnections();
     updateRecentFiles();
     setHotkeys();
+    refreshAudioDevices();
 
 }
 

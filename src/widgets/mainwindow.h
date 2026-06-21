@@ -62,7 +62,7 @@
 #include <limits>
 #include <iostream>
 
-#include <winsparkle.h>
+//#include <winsparkle.h>
 
 #include <libvura/constants.h>
 #include <libvura/data/video-markers.h>
@@ -112,7 +112,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    virtual void showEvent(QShowEvent *event);
+    //virtual void showEvent(QShowEvent *event);
 
     void setMainWindowVisibility(bool state);
     void processOpenParams(int argc, char *argv[]);
@@ -207,7 +207,7 @@ public slots:
     void getPrevMarker(const VuraVideoMarker &videoMarker);
     void getNextMarker(const VuraVideoMarker &videoMarker);
     void renameFile(const QString &newFileName);
-    //void checkForUpdates();
+    void checkForUpdates();
     void updateAvailable(const QString& versionString, const QString& releaseDateString, const QString &downloadUrl, const QString& changelog);
     void updateNotAvailable();
 
@@ -219,11 +219,11 @@ public slots:
     void sliderReleased();
     void sliderClicked(int mseconds);
 
-    void initWinSparkle();
-    void checkForUpdates();
+    //void initWinSparkle();
+    //void checkForUpdates();
 
 signals:
-    void windowWasShown();
+    //void windowWasShown();
     void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);

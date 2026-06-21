@@ -27,6 +27,7 @@
 #include <QImage>
 #include <QRect>
 #include <QPainter>
+#include <QMouseEvent>
 #include <QDebug>
 
 
@@ -41,9 +42,11 @@ public:
 private slots:
     void handleFrame(const QVideoFrame &frame);
     void subtitleTextChanged(const QString &subtitleText);
+    void togglePlayback() const;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QMediaPlayer *m_player;
