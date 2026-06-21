@@ -75,6 +75,7 @@ set_target_properties(vura PROPERTIES FOLDER src OUTPUT_NAME "$<IF:$<PLATFORM_ID
 install(TARGETS vura
         BUNDLE DESTINATION .
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT Core
 )
 
 if(WIN32)
@@ -102,7 +103,7 @@ set(CPACK_PACKAGE_VERSION "${VURA_VERSION_CANONICAL}")
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/assets/data/license.txt")
 
-if(WIN32)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(CPACK_GENERATOR "NSIS")
 
     set(CPACK_NSIS_DISPLAY_NAME "Vura")
@@ -112,24 +113,86 @@ if(WIN32)
     set(CPACK_NSIS_HELP_LINK "${VURA_WEBSITE}")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
-    # Enable multi-language selection at installer startup
-    set(CPACK_NSIS_ENABLE_MULTILANGUAGE ON)
-
-    # Add extra language tables into the NSIS script compiler
-    set(CPACK_NSIS_DEFINES "
-        !insertmacro MUI_LANGUAGE \"English\"
-        !insertmacro MUI_LANGUAGE \"Spanish\"
-        !insertmacro MUI_LANGUAGE \"German\"
-        !insertmacro MUI_LANGUAGE \"French\"
-        !insertmacro MUI_LANGUAGE \"Russian\"
-    ")
-
-
     set(CPACK_PACKAGE_EXECUTABLES "vura64" "Vura")
     set(CPACK_CREATE_DESKTOP_LINKS "Vura")
-    set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
-    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/assets/icons/vura.ico")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/vura.ico")
+    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/vura.ico")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "Vura")
+
+    install(CODE " " COMPONENT assoc_mp4)
+    install(CODE " " COMPONENT assoc_mkv)
+    install(CODE " " COMPONENT assoc_mp3)
+
+    include(CPack)
+    include(CPackComponent)
+
+    # Force CPack to package the core app AND the association checkboxes
+    set(CPACK_COMPONENTS_ALL Core assoc_mp4 assoc_mkv assoc_mp3)
+
+    # Create an empty physical file in your build directory
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/assoc_dummy.tmp" "")
+
+    # Install this empty file into the components so CPack thinks they are "real"
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/assoc_dummy.tmp" DESTINATION bin COMPONENT assoc_mp4)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/assoc_dummy.tmp" DESTINATION bin COMPONENT assoc_mkv)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/assoc_dummy.tmp" DESTINATION bin COMPONENT assoc_mp3)
+
+    cpack_add_component(Core DISPLAY_NAME "Vura Core Files" REQUIRED)
+
+    cpack_add_component_group(Associations DISPLAY_NAME "File Associations" EXPANDED)
+    cpack_add_component_group(Video DISPLAY_NAME "Video Files" PARENT_GROUP Associations EXPANDED)
+    cpack_add_component_group(Audio DISPLAY_NAME "Audio Files" PARENT_GROUP Associations EXPANDED)
+
+    cpack_add_component(assoc_mp4 DISPLAY_NAME ".mp4 File" GROUP Video)
+    cpack_add_component(assoc_mkv DISPLAY_NAME ".mkv File" GROUP Video)
+    cpack_add_component(assoc_mp3 DISPLAY_NAME ".mp3 File" GROUP Audio)
+
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS [=[
+        !include LogicLib.nsh
+        !include Sections.nsh
+
+        ; --- Video Formats ---
+        ${If} ${SectionIsSelected} ${assoc_mp4}
+            WriteRegStr HKCR ".mp4" "" "Vura.Video"
+        ${EndIf}
+
+        ${If} ${SectionIsSelected} ${assoc_mkv}
+            WriteRegStr HKCR ".mkv" "" "Vura.Video"
+        ${EndIf}
+
+        ; Base Video Registration (Registers if ANY video format is checked)
+        ${If} ${SectionIsSelected} ${assoc_mp4}
+        ${OrIf} ${SectionIsSelected} ${assoc_mkv}
+            WriteRegStr HKCR "Vura.Video" "" "Vura Video File"
+            WriteRegStr HKCR "Vura.Video\DefaultIcon" "" "$INSTDIR\bin\vura64.exe,0"
+            WriteRegStr HKCR "Vura.Video\shell\open\command" "" '"$INSTDIR\bin\vura64.exe" "%1"'
+        ${EndIf}
+
+        ; --- Audio Formats ---
+        ${If} ${SectionIsSelected} ${assoc_mp3}
+            WriteRegStr HKCR ".mp3" "" "Vura.Audio"
+
+            WriteRegStr HKCR "Vura.Audio" "" "Vura Audio File"
+            WriteRegStr HKCR "Vura.Audio\DefaultIcon" "" "$INSTDIR\bin\vura64.exe,0"
+            WriteRegStr HKCR "Vura.Audio\shell\open\command" "" '"$INSTDIR\bin\vura64.exe" "%1"'
+        ${EndIf}
+
+        ; Refresh Windows Explorer icons instantly
+        System::Call 'shell32.dll::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
+
+        ; Delete the dummy file used to trick CMake into showing the UI checkboxes
+        Delete "$INSTDIR\bin\assoc_dummy.tmp"
+    ]=])
+
+    set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS [=[
+        DeleteRegKey HKCR ".mp4"
+        DeleteRegKey HKCR ".mkv"
+        DeleteRegKey HKCR ".mp3"
+        DeleteRegKey HKCR "Vura.Video"
+        DeleteRegKey HKCR "Vura.Audio"
+
+        System::Call 'shell32.dll::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
+    ]=])
 
     # Create Desktop Shortcut
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
@@ -141,15 +204,7 @@ if(WIN32)
         Delete '$DESKTOP\\\\Vura.lnk'
     ")
 
-    file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/associations.nsh" NSIS_ASSOC_SCRIPT)
-    string(REPLACE "\\" "\\\\" NSIS_ASSOC_SCRIPT "${NSIS_ASSOC_SCRIPT}")
-
-    set(CPACK_NSIS_DEFINES "
-        !include \\\"${NSIS_ASSOC_SCRIPT}\\\"
-    ")
-
 else()
     set(CPACK_GENERATOR "ZIP")
+    include(CPack)
 endif()
-
-include(CPack)
