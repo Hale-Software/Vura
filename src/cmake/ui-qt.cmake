@@ -5,9 +5,15 @@ if(OS_LINUX OR OS_FREEBSD OR OS_OPENBSD)
 endif()
 
 target_link_libraries(
-        vura
-        PRIVATE Qt6::Widgets Qt6::MultimediaWidgets Qt6::Network Qt6::Svg
+        vura PRIVATE
+        Qt6::Widgets
+        Qt6::MultimediaWidgets
+        Qt6::Network
+        Qt6::Svg
+#        ${CMAKE_SOURCE_DIR}/deps/WinSparkle-0.9.3/Release/WinSparkle.lib
 )
+
+#target_include_directories(vura PRIVATE ${CMAKE_SOURCE_DIR}/deps/WinSparkle-0.9.3/include)
 
 set_target_properties(
         vura

@@ -62,6 +62,8 @@
 #include <limits>
 #include <iostream>
 
+#include <winsparkle.h>
+
 #include <libvura/constants.h>
 #include <libvura/data/video-markers.h>
 #include <libvura/helpers.h>
@@ -88,6 +90,7 @@
 #include "../dialogs/convertmediadialog.h"
 #include "../models/playlistmodel.h"
 #include "../utility/playlist.h"
+#include "../utility/WindowsUpdater.h"
 
 
 namespace Ui {
@@ -108,6 +111,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    virtual void showEvent(QShowEvent *event);
 
     void setMainWindowVisibility(bool state);
     void processOpenParams(int argc, char *argv[]);
@@ -202,6 +207,9 @@ public slots:
     void getPrevMarker(const VuraVideoMarker &videoMarker);
     void getNextMarker(const VuraVideoMarker &videoMarker);
     void renameFile(const QString &newFileName);
+    //void checkForUpdates();
+    void updateAvailable(const QString& versionString, const QString& releaseDateString, const QString &downloadUrl, const QString& changelog);
+    void updateNotAvailable();
 
     // Video Slider
     void rangeChanged(int minimum, int maximum);
@@ -211,7 +219,11 @@ public slots:
     void sliderReleased();
     void sliderClicked(int mseconds);
 
+    void initWinSparkle();
+    void checkForUpdates();
+
 signals:
+    void windowWasShown();
     void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
@@ -284,6 +296,7 @@ private:
     Playlist *m_playlist = nullptr;
     PlaylistModel *m_playlistModel = nullptr;
     QAbstractItemView *m_playlistView = nullptr;
+    WindowsUpdater *windowsUpdater = nullptr;
 
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;

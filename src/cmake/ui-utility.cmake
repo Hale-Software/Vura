@@ -7,4 +7,6 @@ target_sources(
         utility/playlistfileparser.cpp
         utility/playlistfileparser.h
         utility/HotkeyDelegate.h
+        utility/WindowsUpdater.cpp
+        utility/WindowsUpdater.h
 )

@@ -19,12 +19,36 @@
 #include "ui_updatewindow.h"
 
 
-UpdateDialog::UpdateDialog(QWidget *parent) : QDialog(parent), ui(new Ui::UpdateDialog)
+UpdateDialog::UpdateDialog(const QString& versionString, const QString& releaseDateString, const QString& downloadUrl,
+                                 const QString& changelog, QWidget *parent)
+    : QDialog(parent), ui(new Ui::UpdateDialog), m_versionString(versionString), m_releaseDateString(releaseDateString), m_downloadUrl(downloadUrl), m_changelog(changelog)
 {
     ui->setupUi(this);
+
+    ui->label->setText(QString("Version %1 (%2)").arg(versionString).arg(releaseDateString));
+    ui->text->setText(changelog);
+
+    connect(ui->nowButton, &QPushButton::clicked, this, &UpdateDialog::nowButton_Clicked);
+    connect(ui->remindButton, &QPushButton::clicked, this, &UpdateDialog::remindButton_Clicked);
+    connect(ui->skipButton, &QPushButton::clicked, this, &UpdateDialog::skipButton_Clicked);
 }
 
 UpdateDialog::~UpdateDialog()
 {
     delete ui;
+}
+
+void UpdateDialog::nowButton_Clicked()
+{
+
+}
+
+void UpdateDialog::remindButton_Clicked()
+{
+
+}
+
+void UpdateDialog::skipButton_Clicked()
+{
+
 }

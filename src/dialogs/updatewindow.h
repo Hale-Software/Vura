@@ -18,6 +18,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QPushButton>
 
 
 QT_BEGIN_NAMESPACE
@@ -33,10 +34,20 @@ class UpdateDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit UpdateDialog(QWidget *parent = nullptr);
+    explicit UpdateDialog(const QString& versionString, const QString& releaseDateString, const QString& downloadUrl,
+                                 const QString& changelog, QWidget *parent = nullptr);
     ~UpdateDialog() override;
+
+private slots:
+    void nowButton_Clicked();
+    void remindButton_Clicked();
+    void skipButton_Clicked();
 
 private:
     Ui::UpdateDialog *ui;
+    QString m_versionString;
+    QString m_releaseDateString;
+    QString m_downloadUrl;
+    QString m_changelog;
 
 };

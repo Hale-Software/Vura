@@ -57,7 +57,6 @@
 #include "../dialogs/helpdialog.h"
 #include "../dialogs/LogUploadDialog.h"
 #include "../dialogs/logviewer.h"
-#include "../dialogs/updatewindow.h"
 #include "../dialogs/whatsnew.h"
 #include "../settings/settingswindow.h"
 #include "../dialogs/HotkeySettingsDialog.h"
@@ -71,7 +70,6 @@ class MenuBar : public QMenuBar {
     friend class HelpDialog;
     friend class LogUploadDialog;
     friend class LogViewer;
-    friend class UpdateDialog;
     friend class WhatsNewDialog;
     friend class SettingsWindow;
 
@@ -175,6 +173,9 @@ signals:
     // Tools
     void createSubclip();
     void testFunction();
+
+    // Help
+    void checkForUpdates();
 
 
 private slots:
@@ -340,7 +341,6 @@ private:
     QPointer<HelpDialog> m_helpDialog = nullptr;
     QPointer<LogUploadDialog> m_logUploadDialog = nullptr;
     QPointer<LogViewer> m_logViewer = nullptr;
-    QPointer<UpdateDialog> m_updateDialog = nullptr;
     QPointer<WhatsNewDialog> m_whatsNewDialog = nullptr;
     QPointer<SettingsWindow> m_settingsWindow = nullptr;
 

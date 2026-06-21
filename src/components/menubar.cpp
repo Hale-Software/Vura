@@ -1931,12 +1931,7 @@ void MenuBar::actionCheckFileIntegrity_Clicked() {}
 
 void MenuBar::showUpdates_Clicked()
 {
-    if (m_updateDialog)
-        m_updateDialog->close();
-
-    m_updateDialog = new UpdateDialog(this);
-    m_updateDialog->show();
-    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    emit checkForUpdates();
 }
 
 // TODO: Implement

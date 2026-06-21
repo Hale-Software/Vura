@@ -1,26 +1,51 @@
-IDI_ICON1 ICON DISCARDABLE "cmake/windows/vura.ico"
+/*
+ *  This file is part of WinSparkle (https://winsparkle.org)
+ *
+ *  This example code is public domain.
+ *
+ */
 
+
+// WinSparkle UI will use application icon of the app if present.
+// If absent, WinSparkle's icon is used.
+appicon ICON "cmake/windows/vura.ico"
+
+#include <winver.h>
+
+// Get updates from this appcast feed:
+FeedURL     APPCAST     {"https://storage.hale-tech.net/appcast.xml"}
+
+// And verify signature using EdDSA public key:
+EdDSAPub    EDDSA       {"/apuwL7GO33sguDtWL2c9hqaDdO0E1NlPuvqi7MpRh8="}
+
+// Version information; this, too, is used by WinSparkle
 1 VERSIONINFO
-FILEVERSION ${VURA_VERSION_MAJOR},${VURA_VERSION_MINOR},${VURA_VERSION_PATCH},0
+ FILEVERSION     1,0,0,0
+ PRODUCTVERSION  1,0,0,0
+ FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+ FILEFLAGS       0
+ FILEOS          VOS_NT_WINDOWS32
+ FILETYPE        VFT_APP
+ FILESUBTYPE     VFT2_UNKNOWN
 BEGIN
-  BLOCK "StringFileInfo"
-  BEGIN
-    BLOCK "040904B0"
+    BLOCK "StringFileInfo"
     BEGIN
-      VALUE "CompanyName", "Hale Software"
-      VALUE "FileDescription", "Vura"
-      VALUE "FileVersion", "${VURA_VERSION_CANONICAL}"
-      VALUE "InternalName", "vura"
-      VALUE "OriginalFilename", "vura"
-      VALUE "ProductName", "Vura"
-      VALUE "ProductVersion", "${VURA_VERSION_CANONICAL}"
-      VALUE "Comments", "${VURA_COMMENTS}"
-      VALUE "LegalCopyright", "${VURA_LEGAL_COPYRIGHT}"
+        BLOCK "040904B0" // US English, Unicode
+        BEGIN
+            VALUE "Comments", "${VURA_COMMENTS}\0"
+            VALUE "CompanyName", "Hale Software\0"
+            VALUE "FileDescription", "Vura\0"
+            VALUE "FileVersion", "${VURA_VERSION_CANONICAL}\0"
+            VALUE "InternalName", "vura\0"
+            VALUE "OriginalFilename", "vura64.exe\0"
+            VALUE "LegalCopyright", "${VURA_LEGAL_COPYRIGHT}\0"
+            VALUE "ProductName", "Vura\0"
+            VALUE "ProductVersion", "${VURA_VERSION_CANONICAL}\0"
+        END
     END
-  END
 
-  BLOCK "VarFileInfo"
-  BEGIN
-    VALUE "Translation", 0x0409, 0x04B0
-  END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 0x04B0
+    END
 END

@@ -21,12 +21,11 @@
 #include <QDir>
 #include <QDebug>
 
-//#include <QBreakpadHandler.h>
+#include <winsparkle.h>
 
 #include "widgets/mainwindow.h"
 #include <libvura/util/singleinstance.h>
 #include <libvura/constants.h>
-
 #include <ui-config.h>
 
 
@@ -38,18 +37,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
-
 #ifdef Q_OS_WIN
     // Handle Application Directories
     const QString debugBuildType = "Debug";
     const bool isDebugBuild = VURA_BUILD_TYPE == debugBuildType;
     if (isDebugBuild) {
-        QString rootPath = "debug";
-        QString crashPath = "debug/crashes";
-        QString logPath = "debug/logs";
-        QString updatePath = "debug/updates";
+        const QString rootPath = "debug";
+        const QString crashPath = "debug/crashes";
+        const QString logPath = "debug/logs";
+        const QString updatePath = "debug/updates";
 
-        QDir dir;
+        const QDir dir;
         if (!dir.mkpath(rootPath)) {
             QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application root directory.");
             return 1;
@@ -119,7 +117,7 @@ int main(int argc, char *argv[])
         const QString arg1 = QString::fromLocal8Bit(argv[1]);
         const QString arg2 = QString::fromLocal8Bit(argv[2]);
 
-        QFileInfo info(arg2);
+        const QFileInfo info(arg2);
         if (info.isFile()) {
             mainWindow.addFileToPlaylistContextMenu(arg2);
         } else if (info.isDir()) {
@@ -136,14 +134,12 @@ int main(int argc, char *argv[])
     }
 
     // When a second instance is launched, bring this window to the front …
-    QObject::connect(&instance, &SingleInstance::newInstance,
-                     &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
+    QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
 
     // … and open whatever file or folder it was asked to open.
-    QObject::connect(&instance, &SingleInstance::openPathRequested,
-                     &mainWindow, [&](const QString &path) {
+    QObject::connect(&instance, &SingleInstance::openPathRequested, &mainWindow, [&](const QString &path) {
         mainWindow.setMainWindowVisibility(true);
-        QFileInfo info(path);
+        const QFileInfo info(path);
         if (info.isFile()) {
             mainWindow.openFileContextMenu(path);
         } else if (info.isDir()) {

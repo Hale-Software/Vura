@@ -23,7 +23,22 @@ add_custom_command(TARGET vura POST_BUILD
         COMMENT "Copying authors file to build directory"
 )
 
-target_link_libraries(vura PRIVATE VURA::libvura)
+set(WINSPARKLE_ROOT ${CMAKE_SOURCE_DIR}/deps/winsparkle)
+target_include_directories(vura PRIVATE ${WINSPARKLE_ROOT}/include)
+target_link_directories(vura PRIVATE ${WINSPARKLE_ROOT}/x64/Release)
+
+add_custom_command(TARGET vura POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${WINSPARKLE_ROOT}/x64/Release/WinSparkle.dll"
+        "$<TARGET_FILE_DIR:vura>/WinSparkle.dll"
+        COMMENT "Copying WinSparkle.dll file to build directory"
+)
+
+target_link_libraries(
+    vura PRIVATE
+    VURA::libvura
+    winsparkle
+)
 
 include(cmake/ui-components.cmake)
 include(cmake/ui-dialogs.cmake)

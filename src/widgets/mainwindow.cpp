@@ -61,12 +61,56 @@ m_statusLabel(new QLabel)
     setToolTips();
     setStyleSheet();
 
+    connect(this, SIGNAL(windowWasShown()), this, SLOT(initWinSparkle()), Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
+
     qDebug() << "Application startup complete.";
 }
 
 MainWindow::~MainWindow()
 {
+    win_sparkle_cleanup();
     delete ui;
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+
+    // showEvent() is called right *before* the window is shown, but WinSparkle
+    // requires that the main UI of the application is already shown when
+    // calling win_sparkle_init() (otherwise it could show its updates UI
+    // behind the app instead of at top). By using a helper signal, we delay
+    // calling initWinSparkle() until after the window was shown.
+    //
+    // Alternatively, one could achieve the same effect in arguably a simpler
+    // way, by initializing WinSparkle in main(), right after showing the main
+    // window. See https://github.com/vslavik/winsparkle/issues/41#issuecomment-70367197
+    // for a discussion of this.
+    emit windowWasShown();
+}
+
+void MainWindow::initWinSparkle()
+{
+    // Setup updates feed. This must be done before win_sparkle_init(), but
+    // could be also, often more conveniently, done using a VERSIONINFO Windows
+    // resource. See the "psdk" example and its .rc file for an example of that
+    // (these calls wouldn't be needed then).
+    //win_sparkle_set_appcast_url("https://winsparkle.org/example/appcast.xml");
+    //win_sparkle_set_app_details(L"winsparkle.org", L"WinSparkle Qt Example", L"1.0");
+
+    // Set EdDSA public key used to verify update's signature.
+    // This is na example how to provide it from external source (i.e. from Qt
+    // resource). See the "psdk" example and its .rc file for an example how to
+    // provide the key using Windows resource.
+    //win_sparkle_set_eddsa_public_key("payYa5ap0XtF8HWR4AYBdCIcXWtJZPen7bJqFcqlp7o=");
+
+    // Initialize the updater and possibly show some UI
+    win_sparkle_init();
+}
+
+void MainWindow::checkForUpdates()
+{
+    win_sparkle_check_update_with_ui();
 }
 
 void MainWindow::testFunction()
@@ -203,6 +247,7 @@ void MainWindow::initMenuBar()
     connect(m_menuBar, &MenuBar::convertSave, this, &MainWindow::convertSave);
     connect(m_menuBar, &MenuBar::stream, this, &MainWindow::streamMedia);
     connect(m_menuBar, &MenuBar::renameFile, this, &MainWindow::renameFile);
+    connect(m_menuBar, &MenuBar::checkForUpdates, this, &MainWindow::checkForUpdates);
 
     this->setMenuBar(m_menuBar);
 
@@ -670,12 +715,6 @@ void MainWindow::showHelp()
 
 void MainWindow::showUpdates()
 {
-    if (m_updateDialog)
-        m_updateDialog->close();
-
-    m_updateDialog = new UpdateDialog(this);
-    m_updateDialog->show();
-    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void MainWindow::showFeedback()
@@ -1404,6 +1443,32 @@ void MainWindow::renameFile(const QString &newFileName)
     } else {
         qCritical() << "Failed to rename file: " << file.errorString();
     }
+}
+/*
+void MainWindow::checkForUpdates()
+{
+    windowsUpdater = new WindowsUpdater(this);
+    connect(windowsUpdater, &WindowsUpdater::updateAvailable, this, &MainWindow::updateAvailable);
+    connect(windowsUpdater, &WindowsUpdater::updateNotAvailable, this, &MainWindow::updateNotAvailable);
+    windowsUpdater->checkForUpdates();
+}
+*/
+void MainWindow::updateAvailable(const QString& versionString, const QString& releaseDateString,
+                                 const QString &downloadUrl,
+                                 const QString& changelog)
+{
+    if (m_updateDialog)
+        m_updateDialog->close();
+
+    m_updateDialog = new UpdateDialog(versionString, releaseDateString, downloadUrl, changelog, this);
+    m_updateDialog->show();
+    m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void MainWindow::updateNotAvailable()
+{
+    qDebug() << "No updates available.";
+    QMessageBox::information(this, "Update", "You are already running the latest version.");
 }
 
 
