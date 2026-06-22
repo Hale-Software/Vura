@@ -29,9 +29,12 @@
 #include <QMouseEvent>
 #include <QString>
 #include <QList>
+#include <QLabel>
 #include <QDebug>
 
 #include <libvura/data/video-markers.h>
+
+#include "../utility/ThumbnailWorker.h"
 
 
 class VideoSlider : public QWidget
@@ -60,9 +63,12 @@ public:
     bool getMarkerTypesVisible(const QString& markerType) const;
     void setMarkerTypeVisible(const QString& markerType, bool visible);
 
+    void setSource(const QString &fileName);
+
 signals:
     void valueChanged(int value);
     void sliderPressed(bool pressed);
+    void requestThumbnail(int64_t hoverTimestamp);
 
 public slots:
     void updateVideoSlider();
@@ -85,7 +91,11 @@ private:
     int validLength() const;
     int valueFromPos(int x) const;
 
+    QString m_source = "";
+    ThumbnailWorker *m_thumbWorker = nullptr;
+    QLabel* previewLabel = nullptr;
     QList<VuraVideoMarker> *m_videoMarkers;
+    float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
     int m_minimum;
     int m_maximum;
     int m_value;

@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.28...3.30)
 # Define application assets source and destination directories
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(FFMPEG_DIR "C:\\Users\\halea\\bin\\ffmpeg-8.1.1-full_build-shared")
 
 # Add a custom target to perform the copy operation
 add_custom_target(copy_asset_files
@@ -37,7 +38,18 @@ add_custom_command(TARGET vura POST_BUILD
 target_link_libraries(
     vura PRIVATE
     VURA::libvura
+    ${FFMPEG_DIR}/lib/avformat.lib
+    ${FFMPEG_DIR}/lib/avcodec.lib
+    ${FFMPEG_DIR}/lib/avutil.lib
+    ${FFMPEG_DIR}/lib/swscale.lib
+    ${FFMPEG_DIR}/lib/swresample.lib
 #    winsparkle
+)
+
+target_include_directories(
+    vura PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${FFMPEG_DIR}/include
 )
 
 include(cmake/ui-components.cmake)

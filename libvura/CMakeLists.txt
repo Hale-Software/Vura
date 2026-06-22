@@ -18,6 +18,8 @@ target_sources(
         libvura/mediacontroller.h
         libvura/datafile-handler.h
         libvura/error.h
+        libvura/ErrorTypes.h
+        libvura/ErrorService.h
         libvura/helpers.h
         libvura/hotkeys.h
         libvura/settings.h
@@ -74,16 +76,9 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        #playlist/playlist-model.h
-        #playlist/vura-playlist.h
-        #playlist/vura-playlist-file-parser.h
-        #playlist/vura-playlist-private.h
-
-        PRIVATE
-        #playlist/playlist-model.cpp
-        #playlist/vura-playlist.cpp
-        #playlist/vura-playlist-file-parser.cpp
-        #playlist/vura-playlist-private.cpp
+        libvura/playlist/MediaItem.h
+        libvura/playlist/PlaylistModel.h
+        libvura/playlist/PlaylistDelegate.h
 )
 
 # util Directory

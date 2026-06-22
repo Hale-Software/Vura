@@ -24,4 +24,8 @@ target_sources(
         components/system-tray.cpp
         components/system-tray.h
         components/PlaylistTableView.h
+        components/EmptyStateWidget.cpp
+        components/EmptyStateWidget.h
+        components/videoslider-container.cpp
+        components/videoslider-container.h
 )

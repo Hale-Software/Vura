@@ -1,12 +1,14 @@
 target_sources(
         vura PRIVATE
-        utility/playlist.cpp
-        utility/playlist.h
-        utility/playlist_p.cpp
-        utility/playlist_p.h
-        utility/playlistfileparser.cpp
-        utility/playlistfileparser.h
+        #utility/playlist.cpp
+        #utility/playlist.h
+        #utility/playlist_p.cpp
+        #utility/playlist_p.h
+        #utility/playlistfileparser.cpp
+        #utility/playlistfileparser.h
         utility/HotkeyDelegate.h
         utility/WindowsUpdater.cpp
         utility/WindowsUpdater.h
+        utility/ThumbnailWorker.h
+        utility/ThumbnailWorker.cpp
 )

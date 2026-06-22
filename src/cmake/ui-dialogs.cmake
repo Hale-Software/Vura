@@ -24,4 +24,6 @@ target_sources(
         dialogs/markerdialog.h
         dialogs/HotkeySettingsDialog.cpp
         dialogs/HotkeySettingsDialog.h
+        dialogs/errordialog.cpp
+        dialogs/errordialog.h
 )

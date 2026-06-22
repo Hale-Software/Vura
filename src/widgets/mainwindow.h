@@ -57,6 +57,11 @@
 #include <QHoverEvent>
 #include <QVideoSink>
 #include <QVideoFrame>
+#include <QSplitter>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QStackedWidget>
+#include <QItemSelectionModel>
 
 #include <cmath>
 #include <limits>
@@ -70,9 +75,11 @@
 #include <libvura/settings.h>
 #include <libvura/util/blogger.h>
 #include <libvura/util/messagebox.h>
-//#include <libvura/util/playlistmanager.h>
 #include <libvura/media-io/media-functions.h>
-//#include <libvura/models/vura-playlistmodel.h>
+#include <libvura/ErrorService.h>
+#include <libvura/playlist/PlaylistModel.h>
+#include <libvura/playlist/PlaylistDelegate.h>
+#include <libvura/playlist/MediaItem.h>
 
 #include "../components/ClickableLabel.h"
 #include "../components/ContinuePlaybackRibbon.h"
@@ -88,9 +95,12 @@
 #include "../dialogs/mediainformation.h"
 #include "../dialogs/helpdialog.h"
 #include "../dialogs/convertmediadialog.h"
-#include "../models/playlistmodel.h"
-#include "../utility/playlist.h"
+#include "../dialogs/errordialog.h"
 #include "../utility/WindowsUpdater.h"
+#include "../components/EmptyStateWidget.h"
+#include "../components/videoslider-container.h"
+
+#include <QVideoWidget>
 
 
 namespace Ui {
@@ -107,6 +117,7 @@ class MainWindow : public QMainWindow
     friend class MarkerEditDialog;
     friend class HUpdate;
     friend class ConvertMediaDialog;
+    friend class ErrorDialog;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -124,7 +135,6 @@ public:
     void initVideoControls();
     void initVideoPlayer();
     void initUI();
-    void initAudioDevices();
     void initVideoSlider();
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
@@ -134,11 +144,9 @@ public:
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
-    void updateDurationInfo(qint64 currentInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
     void loadFile(const QString &fileName);
     void setApplicationWindowTitle();
-    void setToolTips();
     static void setStyleSheet();
     bool initApplicationDirs();
     bool initUserDirs();
@@ -166,7 +174,7 @@ public slots:
     void toggleMarkers(const QString &markerType);
     void showLogFileViewer();
     void toggleVideoControls();
-    void togglePlayPause();
+    void togglePlayPause() const;
     void nextVideo();
     void previousVideo();
     void changePlaybackSpeed(double mrate);
@@ -189,7 +197,7 @@ public slots:
     void clearMarkers();
     void clearInMarker();
     void clearOutMarker();
-    void goToInMarker();
+    void goToInMarker() const;
     void goToOutMarker();
     void createSubclip();
     void testFunction();
@@ -210,17 +218,16 @@ public slots:
     void checkForUpdates();
     void updateAvailable(const QString& versionString, const QString& releaseDateString, const QString &downloadUrl, const QString& changelog);
     void updateNotAvailable();
+    void requestFileImport();
+    void filesDropped(const QStringList &filePaths);
 
     // Video Slider
-    void rangeChanged(int minimum, int maximum);
-    void valueChanged(int value);
     void sliderPressed(bool pressed);
-    void sliderMoved(int value);
-    void sliderReleased();
-    void sliderClicked(int mseconds);
 
     //void initWinSparkle();
     //void checkForUpdates();
+
+    void onCurrentPlaylistItemChanged(const QModelIndex &current, const QModelIndex &previous);
 
 signals:
     //void windowWasShown();
@@ -251,15 +258,14 @@ private slots:
     void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
     void tracksChanged();
-    void seek(int mseconds);
+    void seek(int mseconds) const;
     void jump(const QModelIndex &index);
     void jumpTo(int mseconds);
-    void playlistPositionChanged(int);
+    void playlistPositionChanged(int) const;
     void statusChanged(QMediaPlayer::MediaStatus status);
     void bufferingProgress(float progress);
     void displayErrorMessage();
     void sourceChanged(const QUrl &media);
-    void playbackRateChanged(qreal rate);
     void videoFrameChanged(const QVideoFrame &frame);
 
     void showPlaylistTableContextMenu(const QPoint &pos);
@@ -276,11 +282,11 @@ private slots:
     //void playlistContextMenu_RemoveSelectedVideoAction();
 
     void hideCursor();
-    void durationLabel_Clicked();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
 
     void finishedUpdatingPlayerPosition();
+    void updateEmptyState();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -290,12 +296,18 @@ protected:
 
 private:
     Ui::MainWindow *ui;
+
     QList<VuraVideoMarker> videoMarkers;
+    PlaylistModel *playlistModel = nullptr;
+    VideoSlider *m_videoSlider = nullptr;
+    QItemSelectionModel *m_playlistSelectionModel = nullptr;
+    VideoSliderContainer *m_videoSliderContainer = nullptr;
+
     //VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
     //PlaylistManager *m_playlistManager = nullptr;
-    Playlist *m_playlist = nullptr;
-    PlaylistModel *m_playlistModel = nullptr;
-    QAbstractItemView *m_playlistView = nullptr;
+    //Playlist *m_playlist = nullptr;
+    //PlaylistModel *m_playlistModel = nullptr;
+    //QAbstractItemView *m_playlistView = nullptr;
     WindowsUpdater *windowsUpdater = nullptr;
 
     ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
@@ -332,11 +344,11 @@ private:
     QPointer<HelpDialog> m_helpDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
+    QPointer<ErrorDialog> m_errorDialog;
 
     // VARIABLES
     // =======================================================================================================
     QPointer<VideoControlWidget> m_videoControlWidget;
-    VideoSlider *m_videoSlider = nullptr;
     bool m_sourceLoaded = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;

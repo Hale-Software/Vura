@@ -20,7 +20,7 @@
 
 namespace {
 constexpr int m_sliderBarHeight = 5;
-constexpr int m_markerHeight = 20;
+constexpr int m_markerHeight = 10;
 constexpr int m_markerWidth = 2;
 constexpr int m_indicatorSideLength = 14;
 constexpr int m_leftRightMargin = 1;
@@ -53,18 +53,48 @@ VideoSlider::VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent)
     m_dialogMarkerColor(QColor())
 {
     setMouseTracking(true);
-    this->setFixedHeight(30);
+    this->setFixedHeight(20);
 
-    m_sliderBarHeightValue = (height() - m_sliderBarHeight) - m_bottomMargin;
+    previewLabel = new QLabel(this);
+    previewLabel->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
+    previewLabel->setFixedSize(160, 90);
+    previewLabel->hide();
+
 }
 
 void VideoSlider::paintEvent(QPaintEvent *event)
 {
-    m_sliderBarHeightValue = (height() - m_sliderBarHeight) - m_bottomMargin;
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
+    int trackHeight = 6;
+    int handleRadius = 8;
+    int yCenter = height() / 2;
+    int padding = handleRadius;
+    int trackWidth = width() - (padding * 2);
+
+    // 1. Draw the Background Track (Dark Gray)
+    QRectF bgRect(padding, yCenter - (trackHeight / 2.0), trackWidth, trackHeight);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(50, 50, 50));
+    painter.drawRoundedRect(bgRect, trackHeight / 2.0, trackHeight / 2.0);
+
+    // 2. Draw the Progress Fill (Brand Color - e.g., a nice blue)
+    float fillWidth = trackWidth * m_sliderPercent;
+    QRectF fillRect(padding, yCenter - (trackHeight / 2.0), fillWidth, trackHeight);
+    painter.setBrush(QColor(0, 120, 215));
+    painter.drawRoundedRect(fillRect, trackHeight / 2.0, trackHeight / 2.0);
+
+    // 3. Draw the Handle / Playhead (White Circle)
+    float handleX = padding + fillWidth;
+    painter.setBrush(Qt::white);
+    // Optional: Add a subtle border to the handle
+    // painter.setPen(QPen(QColor(200, 200, 200), 1));
+    painter.drawEllipse(QPointF(handleX, yCenter), handleRadius, handleRadius);
+
+
+    /*
     // Draw Slider Bar
     const auto sliderBarRect =
         QRectF(m_leftRightMargin, (height() - m_sliderBarHeight) - m_bottomMargin, width() - m_leftRightMargin * 2, m_sliderBarHeight);
@@ -73,7 +103,7 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     painter.setPen(pen);
     painter.setBrush(m_emptySliderColor);
     painter.drawRoundedRect(sliderBarRect, 1, 1);
-
+*/
     // Draw Markers
     for (const VuraVideoMarker &marker : *m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
@@ -133,13 +163,28 @@ void VideoSlider::paintEvent(QPaintEvent *event)
             }
         }
     }
-
+/*
     // Draw Carrot
     pen.setColor(m_caretColor);
     pen.setWidth(1);
     painter.setPen(pen);
     painter.setBrush(m_caretColor);
     painter.drawRoundedRect(carrotHandleRect(), 2, 2);
+    */
+}
+
+void VideoSlider::setSource(const QString &fileName)
+{
+    m_source = fileName;
+    //m_thumbWorker = new ThumbnailWorker(fileName, this);
+    //connect(this, &VideoSlider::requestThumbnail, m_thumbWorker, &ThumbnailWorker::requestThumbnail);
+    //connect(m_thumbWorker, &ThumbnailWorker::thumbnailReady, this, [=](QImage img, int64_t ts) {
+        // Make sure the user's mouse hasn't moved away while we were decoding
+    //    if (previewLabel->isVisible()) {
+    //        previewLabel->setPixmap(QPixmap::fromImage(img));
+    //    }
+    //});
+    //m_thumbWorker->start();
 }
 
 void VideoSlider::mousePressEvent(QMouseEvent *event) {
@@ -157,7 +202,36 @@ void VideoSlider::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
         const int value = valueFromPos(event->pos().x());
         setValue(value);
+
+    } else {
+        /*
+        if (!m_source.isEmpty()) {
+            // 1. Calculate percentage based on mouse X position
+            double percentage = static_cast<double>(event->pos().x()) / width();
+
+            // Clamp the percentage between 0.0 and 1.0
+            percentage = std::max(0.0, std::min(percentage, 1.0));
+
+            // 2. Map to a specific video timestamp (assuming slider range maps to duration)
+            int64_t hoverTimestamp = percentage * m_maximum;
+
+            // Send request to the background thread.
+            // It instantly overwrites the previous request if it was still processing!
+            //m_thumbWorker->requestThumbnail(hoverTimestamp);
+
+            // 3. Move the floating label to follow the cursor
+            QPoint globalPos = mapToGlobal(event->pos());
+            previewLabel->move(globalPos.x() - (previewLabel->width() / 2),
+                               globalPos.y() - previewLabel->height() - 10);
+            previewLabel->show();
+
+            // 4. Request the frame for the 'hoverTimestamp'
+            m_thumbWorker->requestThumbnail(hoverTimestamp);
+        }
+        */
     }
+
+    QWidget::mouseMoveEvent(event);
 }
 
 void VideoSlider::mouseReleaseEvent(QMouseEvent *event)
@@ -307,6 +381,18 @@ void VideoSlider::setValue(const int value)
     }
     if (m_sliderPressed)
         emit valueChanged(m_value);
+
+    int padding = 8;
+    int trackWidth = width() - (padding * 2);
+
+    const double distanceFromMin = (GetValue() - GetMinimun());
+    const double sliderRange = (GetMaximun() - GetMinimun());
+    const double sliderPercent = (distanceFromMin / sliderRange);
+
+    float percentage = static_cast<float>(sliderPercent);
+
+    // Clamp between 0.0 and 1.0
+    m_sliderPercent = std::clamp(percentage, 0.0f, 1.0f);
 
     update();
 }

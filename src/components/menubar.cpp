@@ -1821,9 +1821,9 @@ void MenuBar::streamVideoFromStash_Clicked()
 
 void MenuBar::testFunction_Clicked()
 {
-    //emit testFunction();
-    HotkeySettingsDialog dialog(globalActions, this);
-    dialog.exec();
+    emit testFunction();
+    //HotkeySettingsDialog dialog(globalActions, this);
+    //dialog.exec();
 }
 
 void MenuBar::resetHotkeys_Clicked()

@@ -21,11 +21,10 @@
 #include <QDir>
 #include <QDebug>
 
-//#include <winsparkle.h>
-
 #include "widgets/mainwindow.h"
 #include <libvura/util/singleinstance.h>
 #include <libvura/constants.h>
+#include <libvura/ErrorService.h>
 #include <ui-config.h>
 
 
@@ -49,103 +48,101 @@ int main(int argc, char *argv[])
 
         const QDir dir;
         if (!dir.mkpath(rootPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application root directory.");
+            ErrorService::instance().postError({
+            "Folder Error",
+            "Failed to create debug root directory. Check permissions.",
+                ErrorSeverity::Critical
+            });
             return 1;
         }
 
         if (!dir.mkpath(crashPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application crash directory.");
+            ErrorService::instance().postError({
+            "Folder Error",
+            "Failed to create debug crash directory. Check permissions.",
+                ErrorSeverity::Critical
+            });
             return 1;
         }
 
         if (!dir.mkpath(logPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application log directory.");
+            ErrorService::instance().postError({
+            "Folder Error",
+            "Failed to create debug log directory. Check permissions.",
+                ErrorSeverity::Critical
+            });
             return 1;
         }
 
         if (!dir.mkpath(updatePath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application update directory.");
+            ErrorService::instance().postError({
+            "Folder Error",
+            "Failed to create debug update directory. Check permissions.",
+                ErrorSeverity::Critical
+            });
             return 1;
         }
 
     }
 
-    // Set Windows Crash Handler
-    bool winCrashHandler = true;
-
-    QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
-    if (isDebugBuild) {
-        defaultCrashFileLocation = "debug/crashes";
-    }
-/*
-    if (!QDir(defaultCrashFileLocation).exists()) {
-        if (!QDir().mkpath(defaultCrashFileLocation)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
-            winCrashHandler = false;
-        }
-    }
-*/
-
-//    if (winCrashHandler) {
-//        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
-
-//    } else {
-//        qCritical() << "Failed to initialize the Windows Crash Handler";
-//    }
-
 #endif
 
+    try {
+        // Prevent many instances of the app from launching.
+        // hasPrevious() also forwards any path argument to the running instance
+        // before returning, so the running window will open it automatically.
+        const QString instanceName = "com.hale-software.vura";
+        SingleInstance instance;
+        if (SingleInstance::hasPrevious(instanceName, argc, argv)) {
+            return EXIT_SUCCESS;
+        }
 
-    // Prevent many instances of the app from launching.
-    // hasPrevious() also forwards any path argument to the running instance
-    // before returning, so the running window will open it automatically.
-    const QString instanceName = "com.hale-software.vura";
-    SingleInstance instance;
-    if (SingleInstance::hasPrevious(instanceName, argc, argv)) {
-        return EXIT_SUCCESS;
+        instance.listen(instanceName);
+
+        // Create and show the main window.
+        MainWindow mainWindow;
+        mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
+        mainWindow.show();
+
+        // Handle path arguments on the initial launch (same logic as before).
+        if (argc > 2) {
+            const QString arg1 = QString::fromLocal8Bit(argv[1]);
+            const QString arg2 = QString::fromLocal8Bit(argv[2]);
+
+            const QFileInfo info(arg2);
+            if (info.isFile()) {
+                mainWindow.addFileToPlaylistContextMenu(arg2);
+            } else if (info.isDir()) {
+                mainWindow.addFolderToPlaylistContextMenu(arg2);
+            }
+
+        } else if (argc > 1) {
+            const QString pathName = QString::fromUtf8(argv[1]);
+            if (pathName.isEmpty()) {
+                QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
+            } else {
+                mainWindow.openFileContextMenu(pathName);
+            }
+        }
+
+        // When a second instance is launched, bring this window to the front …
+        QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
+
+        // … and open whatever file or folder it was asked to open.
+        QObject::connect(&instance, &SingleInstance::openPathRequested, &mainWindow, [&](const QString &path) {
+            mainWindow.setMainWindowVisibility(true);
+            const QFileInfo info(path);
+            if (info.isFile()) {
+                mainWindow.openFileContextMenu(path);
+            } else if (info.isDir()) {
+                mainWindow.openFolderContextMenu(path);
+            }
+        });
+
+        return QApplication::exec();
+
+    } catch (const std::exception &e) {
+        ErrorService::instance().postError({"Fatal Crash", e.what(), ErrorSeverity::Critical});
+        return -1;
     }
-
-    instance.listen(instanceName);
-
-    // Create and show the main window.
-    MainWindow mainWindow;
-    mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-    mainWindow.show();
-
-    // Handle path arguments on the initial launch (same logic as before).
-    if (argc > 2) {
-        const QString arg1 = QString::fromLocal8Bit(argv[1]);
-        const QString arg2 = QString::fromLocal8Bit(argv[2]);
-
-        const QFileInfo info(arg2);
-        if (info.isFile()) {
-            mainWindow.addFileToPlaylistContextMenu(arg2);
-        } else if (info.isDir()) {
-            mainWindow.addFolderToPlaylistContextMenu(arg2);
-        }
-
-    } else if (argc > 1) {
-        const QString pathName = QString::fromUtf8(argv[1]);
-        if (pathName.isEmpty()) {
-            QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
-        } else {
-            mainWindow.openFileContextMenu(pathName);
-        }
-    }
-
-    // When a second instance is launched, bring this window to the front …
-    QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
-
-    // … and open whatever file or folder it was asked to open.
-    QObject::connect(&instance, &SingleInstance::openPathRequested, &mainWindow, [&](const QString &path) {
-        mainWindow.setMainWindowVisibility(true);
-        const QFileInfo info(path);
-        if (info.isFile()) {
-            mainWindow.openFileContextMenu(path);
-        } else if (info.isDir()) {
-            mainWindow.openFolderContextMenu(path);
-        }
-    });
-
-    return QApplication::exec();
 }
