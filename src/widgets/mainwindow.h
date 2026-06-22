@@ -255,7 +255,6 @@ signals:
 
 private slots:
     void loadSettings();
-    void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
     void tracksChanged();
     void seek(int mseconds) const;
@@ -281,7 +280,6 @@ private slots:
     //void playlistContextMenu_ShowFolderVideoAction();
     //void playlistContextMenu_RemoveSelectedVideoAction();
 
-    void hideCursor();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
 
@@ -292,7 +290,6 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
     void changeEvent(QEvent *event) override;
-    bool event(QEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
@@ -315,7 +312,6 @@ private:
     MenuBar *m_menuBar = nullptr;
     SystemTray *m_systemTrayIcon = nullptr;
     QVideoSink *m_videoSink = nullptr;
-    QTimer *timer;
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QLabel *m_statusLabel = nullptr;
@@ -324,7 +320,7 @@ private:
     QPoint m_pos;
     QString m_trackInfo;
     QString m_statusInfo;
-    qint64 m_duration = 0;
+    //qint64 m_duration = 0;
     int videoTrack = 0;
     int audioOutput = 0;
     int audioTrack = 0;

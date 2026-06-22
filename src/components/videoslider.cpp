@@ -71,7 +71,7 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     int trackHeight = 6;
     int handleRadius = 8;
     int yCenter = height() / 2;
-    int padding = handleRadius;
+    int padding = handleRadius + 2;
     int trackWidth = width() - (padding * 2);
 
     // 1. Draw the Background Track (Dark Gray)

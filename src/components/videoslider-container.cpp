@@ -8,6 +8,7 @@ VideoSliderContainer::VideoSliderContainer(VideoSlider &videoSlider, QMediaPlaye
     ui->setupUi(this);
 
     connect(ui->position, &ClickableLabel::clicked, this, &VideoSliderContainer::positionLabel_Clicked);
+    connect(m_mediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &VideoSliderContainer::statusChanged);
     connect(m_mediaPlayer, &QMediaPlayer::playbackRateChanged, this, &VideoSliderContainer::playbackRateChanged);
     connect(m_mediaPlayer, &QMediaPlayer::durationChanged, this, &VideoSliderContainer::durationChanged);
     connect(m_mediaPlayer, &QMediaPlayer::positionChanged, this, &VideoSliderContainer::positionChanged);
@@ -39,13 +40,37 @@ void VideoSliderContainer::positionLabel_Clicked()
         updateTimestamps(m_lastPosition);
 }
 
+void VideoSliderContainer::statusChanged(const QMediaPlayer::MediaStatus status)
+{
+    switch (status) {
+        case QMediaPlayer::NoMedia:
+            clearTimestamps();
+            break;
+
+        case QMediaPlayer::LoadedMedia:
+            updateTimestamps(m_mediaPlayer->position() / 1000);
+            break;
+
+        case QMediaPlayer::InvalidMedia:
+            clearTimestamps();
+            break;
+
+        default:
+            break;
+    }
+}
+
 void VideoSliderContainer::durationChanged(const qint64 duration)
 {
     m_duration = duration / 1000;
+    m_videoSlider->setMaximum(static_cast<int>(duration));
 }
 
 void VideoSliderContainer::positionChanged(const qint64 position)
 {
+    if (!m_videoSlider->GetSliderPressed())
+        m_videoSlider->setValue(static_cast<int>(position));
+
     updateTimestamps(position / 1000);
 }
 
@@ -105,4 +130,12 @@ void VideoSliderContainer::updateTimestamps(const qint64 currentPosition)
     ui->duration->setText(durationString);
     ui->position->setText(positionString);
     ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
+}
+
+void VideoSliderContainer::clearTimestamps()
+{
+    ui->duration->setText("--:--");
+    ui->position->setText("--:--");
+    m_lastPosition = 0;
+    m_duration = 0;
 }

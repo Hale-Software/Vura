@@ -31,7 +31,7 @@
 // Global pointer to Logger for use in messageHandler
 static Blogger* globalRedirector = nullptr;
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), timer(new QTimer(this)), m_systemTrayIcon(new SystemTray(this)),
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_systemTrayIcon(new SystemTray(this)),
 m_statusLabel(new QLabel)
 {
     ui->setupUi(this);
@@ -141,7 +141,6 @@ void MainWindow::initApplication()
 {
     qDebug() << "Initializing Application...";
 
-    this->setMouseTracking(true);
     this->statusBar()->setSizeGripEnabled(true);
 
     // Set the global redirector and install the custom message handler
@@ -155,8 +154,6 @@ void MainWindow::initApplication()
     m_currentUser = name;
 
     initUserDirs();
-
-    connect(timer, &QTimer::timeout, this, &MainWindow::hideCursor);
 
     qDebug() << "Application initialized.";
 }
@@ -193,6 +190,7 @@ void MainWindow::initMenuBar()
 
     m_menuBar = new MenuBar(m_player, this);
     m_menuBar->setShowingVideoResolution(m_showingVideoResolution);
+
     connect(this, &MainWindow::setPlayerStatus, m_menuBar, &MenuBar::setPlayerStatus);
     connect(this, &MainWindow::refreshSettings, m_menuBar, &MenuBar::refreshSettings);
     //connect(this, &MainWindow::setActiveAudioDevice, m_menuBar, &MenuBar::setActiveAudioDevice);
@@ -307,7 +305,6 @@ void MainWindow::initVideoPlayer()
     connect(ui->emptyPlaylist, &EmptyStateWidget::requestFileImport, this, &MainWindow::requestFileImport);
     connect(ui->emptyPlaylist, &EmptyStateWidget::filesDropped, this, &MainWindow::filesDropped);
 
-    connect(m_player, &QMediaPlayer::durationChanged, this, &MainWindow::durationChanged);
     connect(m_player, &QMediaPlayer::positionChanged, this, &MainWindow::positionChanged);
     connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::statusChanged);
     connect(m_player, &QMediaPlayer::bufferProgressChanged, this, &MainWindow::bufferingProgress);
@@ -519,17 +516,8 @@ bool MainWindow::isPlayerAvailable() const
     return m_player->isAvailable();
 }
 
-void MainWindow::durationChanged(qint64 duration)
-{
-    m_duration = duration / 1000;
-    m_videoSlider->setMaximum(static_cast<int>(duration));
-}
-
 void MainWindow::positionChanged(qint64 progress)
 {
-    if (!m_videoSlider->GetSliderPressed())
-        m_videoSlider->setValue(static_cast<int>(progress));
-
     updateMarkerMenuItems();
 }
 
@@ -591,10 +579,10 @@ void MainWindow::statusChanged(const QMediaPlayer::MediaStatus status)
     switch (status) {
         case QMediaPlayer::NoMedia:
             emit setPlayerStatus(false);
+            break;
 
         case QMediaPlayer::LoadedMedia:
             setStatusInfo(QString());
-            //updateDurationInfo(m_player->position() / 1000);
             emit setPlayerStatus(true);
             break;
 
@@ -603,6 +591,8 @@ void MainWindow::statusChanged(const QMediaPlayer::MediaStatus status)
             break;
 
         case QMediaPlayer::BufferingMedia:
+            break;
+
         case QMediaPlayer::BufferedMedia:
             setStatusInfo(tr("Buffering %1%").arg(qRound(m_player->bufferProgress() * 100.)));
             break;
@@ -1114,7 +1104,7 @@ void MainWindow::editSelectedMarker()
         if (m_markerEditDialog)
             m_markerEditDialog->close();
 
-        m_markerEditDialog = new MarkerEditDialog(selectedMarker, m_duration, this);
+        m_markerEditDialog = new MarkerEditDialog(selectedMarker, m_player->duration(), this);
         m_markerEditDialog->show();
         m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
         m_markerEditDialog->setNextButton_Enabled(isNextMarkerAvailable(selectedMarker));
@@ -1454,12 +1444,6 @@ void MainWindow::seek(const int mseconds) const
     m_player->setPosition(mseconds);
 }
 
-void MainWindow::hideCursor()
-{
-    ui->videoWidget->setCursor(QCursor(Qt::BlankCursor));
-    timer->stop();
-}
-
 void MainWindow::jumpTo(const int mseconds)
 {
     const qint64 zeroNum = 0;
@@ -1489,9 +1473,6 @@ void MainWindow::jumpTo(const int mseconds)
 void MainWindow::loadSettings()
 {
     vuraSettings->loadSettings();
-
-    if (timer->isActive())
-        timer->stop();
 
     emit refreshSettings();
     emit setOverrideWindowsHotkeys(vuraSettings->setOverrideWindowsHotkeys());
@@ -1606,40 +1587,6 @@ void MainWindow::changeEvent(QEvent *event) {
         }
     }
     QMainWindow::changeEvent(event);
-}
-
-bool MainWindow::event(QEvent *event)
-{
-    switch (event->type()) {
-        case QEvent::HoverMove:
-            if (vuraSettings->hideCursorWhenPlaying()) {
-                if (ui->videoWidget->rect().contains(QCursor::pos())) {
-                    if (m_player->isPlaying()) {
-                        timer->stop();
-                        ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-                        timer->start(vuraSettings->hideCursorTime());
-
-                    } else {
-                        timer->stop();
-                        ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-                    }
-
-                } else {
-                    timer->stop();
-                    ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-                }
-            } else {
-                timer->stop();
-                ui->videoWidget->setCursor(QCursor(Qt::ArrowCursor));
-            }
-
-        case QEvent::HoverEnter:
-            if (m_player->isPlaying())
-                timer->start(vuraSettings->hideCursorTime());
-
-        default:
-            return QMainWindow::event(event);
-    }
 }
 
 

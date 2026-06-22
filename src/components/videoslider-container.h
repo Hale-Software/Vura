@@ -28,6 +28,8 @@ private slots:
     void updateTimestamps(qint64 currentPosition);
     void durationChanged(qint64 duration);
     void positionChanged(qint64 position);
+    void statusChanged(QMediaPlayer::MediaStatus status);
+    void clearTimestamps();
 
 private:
     Ui::VideoSliderContainer *ui;
