@@ -15,8 +15,6 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-// You may need to build the project (run Qt uic code generator) to get "ui_FeedbackDialog.h" resolved
-
 #include "FeedbackDialog.h"
 #include "ui_FeedbackDialog.h"
 

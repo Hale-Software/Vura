@@ -21,7 +21,8 @@
 #include <QLabel>
 #include <QTextBrowser>
 #include <QFile>
-#include "../components/ClickableLabel.h"
+
+#include "ClickableLabel.h"
 
 QT_BEGIN_NAMESPACE
 

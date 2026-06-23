@@ -15,10 +15,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-// You may need to build the project (run Qt uic code generator) to get "ui_MarkerDialog.h" resolved
-
 #include "markerdialog.h"
-#include "ui_MarkerDialog.h"
+#include "ui_markerdialog.h"
 
 
 MarkerDialog::MarkerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MarkerDialog)

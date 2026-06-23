@@ -52,14 +52,14 @@
 #include <libvura/constants.h>
 #include <libvura/hotkeys.h>
 
-#include "../dialogs/about.h"
-#include "../dialogs/FeedbackDialog.h"
-#include "../dialogs/helpdialog.h"
-#include "../dialogs/LogUploadDialog.h"
-#include "../dialogs/logviewer.h"
-#include "../dialogs/whatsnew.h"
-#include "../settings/settingswindow.h"
-#include "../dialogs/HotkeySettingsDialog.h"
+#include "about.h"
+#include "FeedbackDialog.h"
+#include "helpdialog.h"
+#include "LogUploadDialog.h"
+#include "logviewer.h"
+#include "whatsnew.h"
+#include "settingswindow.h"
+#include "HotkeySettingsDialog.h"
 
 
 class MenuBar : public QMenuBar {

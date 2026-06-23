@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 #include "playlistmodel.h"
-#include "../utility/playlist.h"
+#include "playlist.h"
 
 
 PlaylistModel::PlaylistModel(QObject *parent) : QAbstractItemModel(parent)

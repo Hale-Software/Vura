@@ -15,8 +15,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#ifndef VURA_MARKERDIALOG_H
-#define VURA_MARKERDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -34,12 +33,9 @@ class MarkerDialog : public QDialog {
 
 public:
     explicit MarkerDialog(QWidget *parent = nullptr);
-
     ~MarkerDialog() override;
 
 private:
     Ui::MarkerDialog *ui;
+
 };
-
-
-#endif //VURA_MARKERDIALOG_H

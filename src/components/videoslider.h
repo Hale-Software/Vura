@@ -34,7 +34,7 @@
 
 #include <libvura/data/video-markers.h>
 
-#include "../utility/ThumbnailWorker.h"
+#include "ThumbnailWorker.h"
 
 
 class VideoSlider : public QWidget

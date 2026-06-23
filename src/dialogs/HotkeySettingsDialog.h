@@ -10,7 +10,7 @@
 
 #include <libvura/hotkeys.h>
 
-#include "../utility/HotkeyDelegate.h"
+#include "HotkeyDelegate.h"
 
 class HotkeySettingsDialog : public QDialog {
     Q_OBJECT

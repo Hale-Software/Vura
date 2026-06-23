@@ -21,11 +21,12 @@
 #include <QDir>
 #include <QDebug>
 
-#include "widgets/mainwindow.h"
 #include <libvura/util/singleinstance.h>
 #include <libvura/constants.h>
 #include <libvura/ErrorService.h>
 #include <ui-config.h>
+
+#include "mainwindow.h"
 
 
 int main(int argc, char *argv[])

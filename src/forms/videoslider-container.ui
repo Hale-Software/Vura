@@ -59,7 +59,7 @@
   <customwidget>
    <class>ClickableLabel</class>
    <extends>QLabel</extends>
-   <header location="global">components/clickablelabel.h</header>
+   <header location="global">ClickableLabel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

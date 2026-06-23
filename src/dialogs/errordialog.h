@@ -1,9 +1,4 @@
-//
-// Created by halea on 6/21/2026.
-//
-
-#ifndef VURA_ERRORDIALOG_H
-#define VURA_ERRORDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QLabel>
@@ -38,6 +33,3 @@ private:
     PlayerError m_error;
 
 };
-
-
-#endif //VURA_ERRORDIALOG_H

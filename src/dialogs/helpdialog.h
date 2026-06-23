@@ -15,8 +15,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#ifndef VURA_HELPDIALOG_H
-#define VURA_HELPDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QTextBrowser>
@@ -44,7 +43,5 @@ private slots:
 
 private:
     Ui::HelpDialog *ui;
+
 };
-
-
-#endif //VURA_HELPDIALOG_H

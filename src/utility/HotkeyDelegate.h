@@ -3,6 +3,7 @@
 #include <QStyledItemDelegate>
 #include <QKeySequenceEdit>
 
+
 class HotkeyDelegate : public QStyledItemDelegate {
     Q_OBJECT
 public:

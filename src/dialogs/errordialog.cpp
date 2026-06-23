@@ -1,11 +1,5 @@
-//
-// Created by halea on 6/21/2026.
-//
-
-// You may need to build the project (run Qt uic code generator) to get "ui_ErrorDialog.h" resolved
-
 #include "errordialog.h"
-#include "ui_ErrorDialog.h"
+#include "ui_errordialog.h"
 
 
 ErrorDialog::ErrorDialog(QWidget *parent) : QDialog(parent), ui(new Ui::ErrorDialog)

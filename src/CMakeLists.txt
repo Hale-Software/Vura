@@ -48,7 +48,13 @@ target_link_libraries(
 
 target_include_directories(
     vura PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/components
+    ${CMAKE_CURRENT_SOURCE_DIR}/dialogs
+    ${CMAKE_CURRENT_SOURCE_DIR}/forms
+    ${CMAKE_CURRENT_SOURCE_DIR}/models
+    ${CMAKE_CURRENT_SOURCE_DIR}/settings
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility
+    ${CMAKE_CURRENT_SOURCE_DIR}/widgets
     ${FFMPEG_DIR}/include
 )
 
