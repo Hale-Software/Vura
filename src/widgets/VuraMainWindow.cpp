@@ -75,8 +75,8 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     connect(ui->actionOpen_File, &QAction::triggered, m_playlistController, &PlaylistController::requestFileImport);
     connect(ui->actionPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
     connect(ui->actionView_Current_Log, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
-    connect(ui->actionJump_Backward, &QAction::triggered, this, &VuraMainWindow::actionJumpBackward);
-    connect(ui->actionJump_Forward, &QAction::triggered, this, &VuraMainWindow::actionJumpForward);
+    //connect(ui->actionJump_Backward, &QAction::triggered, this, &VuraMainWindow::actionJumpBackward);
+    //connect(ui->actionJump_Forward, &QAction::triggered, this, &VuraMainWindow::actionJumpForward);
     connect(ui->actionNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
     connect(ui->actionPrevious, &QAction::triggered, m_playlistController, &PlaylistController::previousTrack);
     connect(ui->actionRestart_Video, &QAction::triggered, m_playbackController, &PlaybackController::restart);
