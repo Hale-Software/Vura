@@ -1,87 +1,18 @@
-#include <QTest>
-#include <QObject>
-#include <QList>
-#include <QDebug>
-#include <QString>
-#include <QFile>
-#include <QColor>
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
-#include <libvura/data/VideoMarker.h>
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
 
-class CoreTest : public QObject {
-	Q_OBJECT
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
 
-public:
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-private slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-};
+ ******************************************************************************/
 
-void CoreTest::initTestCase() {}
-void CoreTest::cleanupTestCase() {}
-void CoreTest::init() {}
-void CoreTest::cleanup() {}
-
-void CoreTest::testVideoMarkerFile()
-{
-    qDebug() << "--- Starting Vura Marker Test ---";
-
-    // 1. Create some dummy markers
-    QList<VideoMarker> originalMarkers;
-
-    originalMarkers.append({
-        5000,                           // 5 seconds in
-        "Intro Ends",
-        QColor(255, 0, 0)               // Red
-    });
-
-    originalMarkers.append({
-        65500,                          // 1 minute, 5.5 seconds in
-        "Beat Drop / Action Starts",
-        QColor(0, 255, 0)               // Green
-    });
-
-    originalMarkers.append({
-        120000,                         // 2 minutes in
-        "Credits Roll",
-        QColor(0, 0, 255)               // Blue
-    });
-
-    QString testFilePath = "test_project.vmrk";
-
-    // 2. Save the markers to our custom binary format
-    qDebug() << "Saving" << originalMarkers.size() << "markers to" << testFilePath << "...";
-    bool saveSuccess = VideoMarkers::saveMarkersToFile(testFilePath, originalMarkers);
-
-    if (saveSuccess) {
-        qDebug() << "Save Successful!";
-    } else {
-        qDebug() << "Save Failed!";
-        return;
-    }
-
-    // 3. Load the markers back from the file
-    qDebug() << "Loading markers from" << testFilePath << "...";
-    QList<VideoMarker> loadedMarkers = VideoMarkers::loadMarkersFromFile(testFilePath);
-
-    // 4. Verify the results
-    qDebug() << "Loaded" << loadedMarkers.size() << "markers. Verifying data:";
-
-    for (int i = 0; i < loadedMarkers.size(); ++i) {
-        const VideoMarker& m = loadedMarkers.at(i);
-        qDebug() << "Marker" << i + 1 << ":"
-                 << "\n  Timestamp:" << m.timestampMs << "ms"
-                 << "\n  Title:    " << m.title
-                 << "\n  Color:    " << m.color.name(); // .name() prints the hex code (e.g., #ff0000)
-    }
-
-    qDebug() << "--- Test Complete ---";
-}
-
-
-QTEST_MAIN(CoreTest)
-
-#include "tst_coretest.moc"

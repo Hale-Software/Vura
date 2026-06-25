@@ -46,10 +46,12 @@ struct VideoMarker
     }
 };
 
-class VideoMarkers
+
+class VideoMarkerHandler
 {
 public:
     static bool saveMarkersToFile(const QString &fileName, const QList<VideoMarker> &markers);
-    static QList<VideoMarker> readMarkersFromFile(const QString &fileName);
+    static QList<VideoMarker> loadAllMarkersFromFile(const QString &fileName);
+    static QList<VideoMarker> loadMarkersFromFile(const QString &fileName, const QString &videoFileName);
 
 };
