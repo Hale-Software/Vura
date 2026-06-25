@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,44 +13,40 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
 
 #include <QObject>
-#include <QTextBrowser>
 #include <QFile>
 #include <QDir>
-#include <QTextStream>
+#include <QString>
 #include <QMessageLogContext>
-#include <QSettings>
-#include <QStandardPaths>
-#include <QDebug>
-#include <QDateTime>
-#include <QCoreApplication>
-#include <QMessageBox>
 
 
 class Blogger : public QObject
 {
     Q_OBJECT
+
 public:
-    static Blogger* instance(); // Singleton instance
+    static Blogger* instance();
     void clearLogFile();
-    QString getLogFileName();
+    QString getLogFileName() const;
     static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-    signals:
-        void message(QString message);
+signals:
+    void message(const QString& message);
 
 private:
     Blogger(QObject* parent = nullptr);
     ~Blogger();
+
+    void initLogFile();
+    void rotateLogs(const QDir& logDir, int maxLogs);
+    QString formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+
     QString m_logFileName;
     QFile m_logFile;
-
-    void InitLogFile();
-    bool deleteOldestLogFile(QDir logDir, QStringList logFiles);
-    QString m_message(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 };

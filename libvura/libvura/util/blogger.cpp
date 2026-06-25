@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,199 +13,120 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "blogger.h"
-
 #include <libvura/config.h>
 
+#include <QSettings>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QFileInfo>
+#include <QDebug>
+#include <iostream>
 
-Blogger::Blogger(QObject* parent) : QObject(parent) {
+
+Blogger::Blogger(QObject* parent) : QObject(parent)
+{
     QSettings settings;
     if (settings.value("logToFile", true).toBool()) {
-        InitLogFile();
+        initLogFile();
     }
 }
 
-Blogger::~Blogger() {
-    m_logFile.close();
-}
-
-void Blogger::InitLogFile()
+Blogger::~Blogger()
 {
-    QSettings settings;
-
-    // Get max log count set by user.
-    int maxLogs = settings.value("maxLogFiles", 10).toInt();
-
-    // Set the log directory.
-    QString logDirString = "logs";
-    QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (VURA_BUILD_TYPE == "Debug") {
-        appDataDirString = "debug";
-    }
-
-    QDir appDataDir(appDataDirString);
-    if (appDataDir.exists()) {
-        QDir appLogDir(appDataDirString + "/logs");
-        if (appLogDir.exists()) {
-            logDirString = appDataDirString + "/logs";
-        } else {
-            if (appLogDir.mkdir(".")) {
-                logDirString = appDataDirString + "/logs";
-            }
-        }
-    } else {
-        if (appDataDir.mkdir(".")) {
-            QDir appLogDir(appDataDirString + "/logs");
-            if (appLogDir.exists()) {
-                logDirString = appDataDirString + "/logs";
-            } else {
-                if (appLogDir.mkdir(".")) {
-                    logDirString = appDataDirString + "/logs";
-                }
-            }
-        }
-    }
-    QDir logDir(logDirString);
-
-    // Scan file directory and create filename list.
-    QStringList logFiles = logDir.entryList(QDir::Files);
-
-    // If log files found is over max log count delete oldest files until limit reached.
-    while (logFiles.count() >= maxLogs) {
-        deleteOldestLogFile(logDir, logFiles);
-        logFiles = logDir.entryList(QDir::Files);
-    }
-
-    // Create new log file.
-    QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
-    QString logfileName = logDir.filePath(fileName+".log");
-    m_logFileName = logfileName;
-    m_logFile.setFileName(logfileName);
-    if (!m_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-        QMessageBox::critical(nullptr, "Vura Error", "Failed to open log file. Error: " + m_logFile.errorString());
-    }
+    if (m_logFile.isOpen())
+        m_logFile.close();
 }
 
-bool Blogger::deleteOldestLogFile(QDir logDir, QStringList logFiles)
+Blogger* Blogger::instance()
 {
-    // Oldest filename found.
-    QString oldestFilename;
-    for (const QString& logFile : logFiles) {
-        // Convert to QDateTime for filename comparison.
-        QString fileDateTime = logFile.chopped(4);
-        QDateTime fileDate = QDateTime::fromString(fileDateTime, "yyyy-MM-dd HH-mm-ss");
-        if (fileDate.isValid()) {
-            // Set oldest filename to current filename if none have been set yet.
-            if (oldestFilename.isEmpty()) {
-                oldestFilename = logFile;
-            } else {
-                // Convert to QDateTime for oldest filename comparison.
-                QString oldestFileDateTime = oldestFilename.chopped(4);
-                QDateTime oldestFileDate = QDateTime::fromString(oldestFileDateTime, "yyyy-MM-dd HH-mm-ss");
-                if (oldestFileDate.isValid()) {
-                    // If current filename is older than current oldest replace.
-                    if (oldestFileDate > fileDate) {
-                        oldestFilename = logFile;
-                    }
-                }
-            }
-        }
-    }
-
-    // If there is a valid oldest filename found.
-    if (!oldestFilename.isEmpty()) {
-        // Create full filepath for file to delete.
-        QString fileToDelete = logDir.filePath(oldestFilename);
-
-        // If file is successfully deleted return true.
-        if (QFile::remove(fileToDelete)) {
-            return true;
-        }
-    }
-
-    // If all else fails return false.
-    return false;
-}
-
-Blogger* Blogger::instance() {
     static Blogger instance;
     return &instance;
 }
 
-QString Blogger::getLogFileName()
+QString Blogger::getLogFileName() const
 {
     return m_logFileName;
 }
 
+void Blogger::initLogFile()
+{
+    QSettings settings;
+    int maxLogs = settings.value("maxLogFiles", 10).toInt();
+
+    QString baseDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug" :
+                        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir logDir(baseDir + "/logs");
+
+    if (!logDir.exists() && !logDir.mkpath(".")) {
+        qCritical() << "Failed to create log directory at " << logDir.absolutePath();
+        return;
+    }
+
+    rotateLogs(logDir, maxLogs);
+
+    QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss") + ".log";
+    m_logFileName = logDir.filePath(fileName);
+    m_logFile.setFileName(m_logFileName);
+
+    if (!m_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        qCritical() << "Failed to open log file at " << m_logFile.fileName() << ". Error: " << m_logFile.errorString();
+    }
+}
+
+void Blogger::rotateLogs(const QDir &logDir, int maxLogs)
+{
+    QFileInfoList logFiles = logDir.entryInfoList(QDir::Files, QDir::Time);
+
+    while (logFiles.count() >= maxLogs) {
+        QFile::remove(logFiles.last().absoluteFilePath());
+        logFiles.removeLast();
+    }
+}
+
 void Blogger::clearLogFile()
 {
-    m_logFile.close();
-    QFile f(m_logFileName);
-    if (f.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        f.close();
+    if (m_logFile.isOpen()) {
+        m_logFile.close();
     }
-    m_logFile.setFileName(m_logFileName);
-    if (!m_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-        QMessageBox::critical(nullptr, "Vura Error", "Failed to open log file. Error: " + m_logFile.errorString());
+
+    if (!m_logFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qCritical() << "Failed to clear log file at " << m_logFile.fileName() << ". Error: " << m_logFile.errorString();
     }
 }
 
-QString Blogger::m_message(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    Q_UNUSED(context);
-
-    QByteArray localMsg = msg.toLocal8Bit();
-    QString output;
-    QTextStream stream(&output);
-
-    stream << QDateTime::currentDateTime().toString("[HH:mm:ss.zzz] ");
-    stream << "[" << context.file << "] ";
-    stream << "[" << context.line << "] ";
-    stream << "[" << context.function << "] ";
-
-    // Add message type prefix
+QString Blogger::formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    QString typeStr;
     switch (type) {
-        case QtDebugMsg:
-            stream << "[DEBUG] - ";
-            break;
-        case QtInfoMsg:
-            stream << "[INFO] - ";
-            break;
-        case QtWarningMsg:
-            stream << "[WARN] - ";
-            break;
-        case QtCriticalMsg:
-            stream << "[CRITICAL] - ";
-            break;
-        case QtFatalMsg:
-            stream << "[FATAL] - ";
-            break;
+        case QtDebugMsg:    typeStr = "[DEBUG]"; break;
+        case QtInfoMsg:     typeStr = "[INFO]"; break;
+        case QtWarningMsg:  typeStr = "[WARN]"; break;
+        case QtCriticalMsg: typeStr = "[CRITICAL]"; break;
+        case QtFatalMsg:    typeStr = "[FATAL]"; break;
     }
-    stream << msg;  // Add the actual message content
 
-    return output;
+    return QString("[%1] [%2] [%3] [%4] %5 - %6")
+        .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
+        .arg(context.file ? context.file : "unknown")
+        .arg(context.line)
+        .arg(context.function ? context.function : "unknown")
+        .arg(typeStr, msg);
 }
+
 
 void Blogger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
-    QSettings settings;
+    Blogger* logger = Blogger::instance();
+    QString output = logger->formatMessage(type, context, msg);
 
-    QString output = Blogger::instance()->m_message(type, context, msg);
-
-    // If log to file setting is on, write log to file.
-    if (settings.value("logToFile", true).toBool()) {
-        if (Blogger::instance()->m_logFile.isOpen()) {
-            QString formattedOutput = output + "\n";
-             Blogger::instance()->m_logFile.write(formattedOutput.toUtf8());
-             Blogger::instance()->m_logFile.flush(); // Ensure immediate writing
-        }
+    if (logger->m_logFile.isOpen()) {
+        logger->m_logFile.write((output + "\n").toUtf8());
+        logger->m_logFile.flush();
     }
 
-    // Emit new log message
-    emit Blogger::instance()->message(output);
+    emit logger->message(output);
 
-    // Also output to the standard console for development visibility
-    fprintf(stderr, "%s", output.toLocal8Bit().constData());
+    std::cerr << output.toStdString() << std::endl;
 }
