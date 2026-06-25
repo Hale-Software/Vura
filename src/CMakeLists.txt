@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-#add_subdirectory("${CMAKE_SOURCE_DIR}/libvura" libvura)
-
 # Define application assets source and destination directories
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -24,17 +22,6 @@ add_custom_command(TARGET vura POST_BUILD
         COMMENT "Copying authors file to build directory"
 )
 
-#set(WINSPARKLE_ROOT ${CMAKE_SOURCE_DIR}/deps/winsparkle)
-#target_include_directories(vura PRIVATE ${WINSPARKLE_ROOT}/include)
-#target_link_directories(vura PRIVATE ${WINSPARKLE_ROOT}/x64/Release)
-
-#add_custom_command(TARGET vura POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        "${WINSPARKLE_ROOT}/x64/Release/WinSparkle.dll"
-#        "$<TARGET_FILE_DIR:vura>/WinSparkle.dll"
-#        COMMENT "Copying WinSparkle.dll file to build directory"
-#)
-
 target_link_libraries(
     vura PRIVATE
     VURA::libvura
@@ -43,7 +30,6 @@ target_link_libraries(
     ${FFMPEG_DIR}/lib/avutil.lib
     ${FFMPEG_DIR}/lib/swscale.lib
     ${FFMPEG_DIR}/lib/swresample.lib
-#    winsparkle
 )
 
 target_include_directories(
@@ -53,6 +39,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/forms
     ${CMAKE_CURRENT_SOURCE_DIR}/models
     ${CMAKE_CURRENT_SOURCE_DIR}/settings
+    ${CMAKE_CURRENT_SOURCE_DIR}/updater
     ${CMAKE_CURRENT_SOURCE_DIR}/utility
     ${CMAKE_CURRENT_SOURCE_DIR}/widgets
     ${FFMPEG_DIR}/include
@@ -60,9 +47,10 @@ target_include_directories(
 
 include(cmake/ui-components.cmake)
 include(cmake/ui-dialogs.cmake)
-include(cmake/ui-models.cmake)
+#include(cmake/ui-models.cmake)
 include(cmake/ui-qt.cmake)
 include(cmake/ui-settings.cmake)
+include(cmake/ui-updater.cmake)
 include(cmake/ui-utility.cmake)
 include(cmake/ui-widgets.cmake)
 

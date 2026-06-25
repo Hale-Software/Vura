@@ -52,13 +52,13 @@
 #include <libvura/constants.h>
 #include <libvura/hotkeys.h>
 
-#include "about.h"
+#include "AboutDialog.h"
 #include "FeedbackDialog.h"
-#include "helpdialog.h"
+#include "HelpDialog.h"
 #include "LogUploadDialog.h"
-#include "logviewer.h"
-#include "whatsnew.h"
-#include "settingswindow.h"
+#include "LogViewerDialog.h"
+#include "WhatsNewDialog.h"
+#include "SettingsDialog.h"
 #include "HotkeySettingsDialog.h"
 
 
@@ -340,9 +340,9 @@ private:
     QPointer<FeedbackDialog> m_feedbackDialog = nullptr;
     QPointer<HelpDialog> m_helpDialog = nullptr;
     QPointer<LogUploadDialog> m_logUploadDialog = nullptr;
-    QPointer<LogViewer> m_logViewer = nullptr;
+    QPointer<LogViewerDialog> m_logViewer = nullptr;
     QPointer<WhatsNewDialog> m_whatsNewDialog = nullptr;
-    QPointer<SettingsWindow> m_settingsWindow = nullptr;
+    QPointer<SettingsDialog> m_settingsWindow = nullptr;
 
     QMenu *m_fileMenu = nullptr;
     QMenu *m_viewMenu = nullptr;

@@ -32,9 +32,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QLabel>
-#include <QMediaDevices>
 #include <QMediaFormat>
-#include <QMediaMetaData>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QAudioBufferOutput>
@@ -67,38 +65,35 @@
 #include <limits>
 #include <iostream>
 
-//#include <winsparkle.h>
-
 #include <libvura/constants.h>
-#include <libvura/data/video-markers.h>
 #include <libvura/helpers.h>
 #include <libvura/settings.h>
+#include <libvura/ErrorService.h>
+#include <libvura/data/video-markers.h>
 #include <libvura/util/blogger.h>
 #include <libvura/util/messagebox.h>
 #include <libvura/media-io/media-functions.h>
-#include <libvura/ErrorService.h>
 #include <libvura/playlist/PlaylistModel.h>
 #include <libvura/playlist/PlaylistDelegate.h>
 #include <libvura/playlist/MediaItem.h>
 
 #include "ClickableLabel.h"
-#include "ContinuePlaybackRibbon.h"
 #include "menubar.h"
-#include "videoslider.h"
-#include "videocontrolwidget.h"
-#include "system-tray.h"
-#include "settingswindow.h"
-#include "about.h"
-#include "logviewer.h"
+#include "VideoSlider.h"
+#include "VideoControlWidget.h"
+#include "SystemTrayWidget.h"
+#include "SettingsDialog.h"
+#include "AboutDialog.h"
+#include "LogViewerDialog.h"
 #include "MarkerEditDialog.h"
-#include "updatewindow.h"
-#include "mediainformation.h"
-#include "helpdialog.h"
-#include "convertmediadialog.h"
-#include "errordialog.h"
+#include "UpdateDialog.h"
+#include "MediaInformationDialog.h"
+#include "HelpDialog.h"
+#include "ConvertMediaDialog.h"
+#include "ErrorDialog.h"
 #include "WindowsUpdater.h"
-#include "EmptyStateWidget.h"
-#include "videoslider-container.h"
+#include "PlaylistEmptyStateWidget.h"
+#include "VideoSliderWidget.h"
 
 #include <QVideoWidget>
 
@@ -111,22 +106,22 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    friend class HSettingsWindow;
-    friend class HAboutDialog;
-    friend class LogViewer;
+    friend class SettingsDialog;
+    friend class AboutDialog;
+    friend class LogViewerDialog;
     friend class MarkerEditDialog;
-    friend class HUpdate;
+    friend class UpdateDialog;
     friend class ConvertMediaDialog;
     friend class ErrorDialog;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
-    //virtual void showEvent(QShowEvent *event);
+    void openFolder(const QString &path);
+    void openFile(const QString &path);
 
     void setMainWindowVisibility(bool state);
-    void processOpenParams(int argc, char *argv[]);
 
     void initApplication();
     void initSystemTrayIcon();
@@ -307,10 +302,9 @@ private:
     //QAbstractItemView *m_playlistView = nullptr;
     WindowsUpdater *windowsUpdater = nullptr;
 
-    ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
     VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
-    SystemTray *m_systemTrayIcon = nullptr;
+    SystemTrayWidget *m_systemTrayWidget = nullptr;
     QVideoSink *m_videoSink = nullptr;
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
@@ -332,11 +326,11 @@ private:
 
     // DIALOGS
     // =======================================================================================================
-    QPointer<LogViewer> m_logViewer;
-    QPointer<SettingsWindow> m_settingsWindow;
+    QPointer<LogViewerDialog> m_logViewerDialog;
+    QPointer<SettingsDialog> m_settingsDialog;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
-    QPointer<MediaInformation> m_mediaInformation;
+    QPointer<MediaInformationDialog> m_mediaInformationDialog;
     QPointer<HelpDialog> m_helpDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;

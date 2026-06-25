@@ -43,9 +43,11 @@ target_sources(
         libvura
         PUBLIC
         libvura/data/video-markers.h
+        libvura/data/VideoMarker.h
 
         PRIVATE
         libvura/data/video-markers.cpp
+        libvura/data/VideoMarker.cpp
 )
 
 # media-io Directory

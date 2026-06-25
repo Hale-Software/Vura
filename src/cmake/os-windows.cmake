@@ -4,9 +4,9 @@ target_sources(
         vura
         PRIVATE
         cmake/windows/vura.manifest
-        dialogs/updatewindow.cpp
-        dialogs/updatewindow.h
-        forms/updatewindow.ui
+        #dialogs/updatewindow.cpp
+        #dialogs/updatewindow.h
+        #forms/updatewindow.ui
         vura.rc
 )
 

@@ -21,14 +21,29 @@
 #include <QDir>
 #include <QDebug>
 
-#include <libvura/util/singleinstance.h>
 #include <libvura/constants.h>
 #include <libvura/ErrorService.h>
+#include <libvura/util/singleinstance.h>
 #include <ui-config.h>
 
-#include "mainwindow.h"
+//#include "mainwindow.h"
+#include "VuraMainWindow.h"
 
 
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
+    QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
+    QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
+
+    VuraMainWindow mainWindow;
+    mainWindow.show();
+    return app.exec();
+}
+
+
+/*
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -147,3 +162,4 @@ int main(int argc, char *argv[])
         return -1;
     }
 }
+*/

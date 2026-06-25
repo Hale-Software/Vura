@@ -59,7 +59,7 @@ public:
     void setShuffle(bool enable) {
         m_isShuffle = enable;
         if (m_isShuffle) {
-            std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
+            //std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
         } else {
             std::iota(m_playOrder.begin(), m_playOrder.end(), 0); // Reset to 0, 1, 2...
         }
@@ -73,7 +73,7 @@ public:
 
         // If shuffle is active, re-shuffle the fresh list
         if (m_isShuffle) {
-            std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
+            //std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
         }
     }
 

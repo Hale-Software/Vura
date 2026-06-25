@@ -1348,10 +1348,10 @@ void MenuBar::showPreferences_Clicked()
     if (m_settingsWindow)
         m_settingsWindow->close();
 
-    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow = new SettingsDialog(this);
     m_settingsWindow->show();
     m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
-    connect(m_settingsWindow, &SettingsWindow::updateSettings, this, &MenuBar::settingsUpdatedSlot);
+    connect(m_settingsWindow, &SettingsDialog::updateSettings, this, &MenuBar::settingsUpdatedSlot);
 }
 
 void MenuBar::emergencyCollapse_Clicked()
@@ -1430,7 +1430,7 @@ void MenuBar::showLogFileViewer_Clicked()
     if (m_logViewer)
         m_logViewer->close();
 
-    m_logViewer = new LogViewer(this);
+    m_logViewer = new LogViewerDialog(this);
     m_logViewer->show();
     m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
 }
@@ -1898,7 +1898,7 @@ void MenuBar::actionViewCurrentLog_Clicked()
     if (m_logViewer)
         m_logViewer->close();
 
-    m_logViewer = new LogViewer(this);
+    m_logViewer = new LogViewerDialog(this);
     m_logViewer->show();
     m_logViewer->setAttribute(Qt::WA_DeleteOnClose, true);
 }

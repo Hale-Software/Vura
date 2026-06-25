@@ -24,4 +24,5 @@ set_target_properties(CoreTest PROPERTIES
 
 target_link_libraries(CoreTest
     PRIVATE Qt6::Test
+    VURA::libvura
 )

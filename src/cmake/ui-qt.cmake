@@ -10,10 +10,7 @@ target_link_libraries(
         Qt6::MultimediaWidgets
         Qt6::Network
         Qt6::Svg
-#        ${CMAKE_SOURCE_DIR}/deps/WinSparkle-0.9.3/Release/WinSparkle.lib
 )
-
-#target_include_directories(vura PRIVATE ${CMAKE_SOURCE_DIR}/deps/WinSparkle-0.9.3/include)
 
 set_target_properties(
         vura
@@ -30,24 +27,27 @@ target_sources(
         vura
         PRIVATE
         forms/vura.qrc
-        forms/mainwindow.ui
-        forms/settingswindow.ui
-        forms/videocontrolwidget.ui
-        forms/logviewer.ui
-        forms/MarkerEditDialog.ui
-        forms/missingfiles.ui
-        forms/permissions.ui
-        forms/updatewindow.ui
-        forms/whatsnew.ui
-        forms/mediainformation.ui
-        forms/ContinuePlaybackRibbon.ui
-        forms/helpdialog.ui
-        forms/LogUploadDialog.ui
+        forms/AboutDialog.ui
+        forms/ConvertMediaDialog.ui
+        forms/ErrorDialog.ui
         forms/FeedbackDialog.ui
-        forms/markerdialog.ui
-        forms/convertmediadialog.ui
-        forms/errordialog.ui
-        forms/videoslider-container.ui
+        forms/HelpDialog.ui
+        forms/HotkeyEditWidget.ui
+        forms/LogUploadDialog.ui
+        forms/LogViewerDialog.ui
+        forms/mainwindow.ui
+        forms/MarkerDialog.ui
+        forms/MarkerEditDialog.ui
+        forms/MediaInformationDialog.ui
+        forms/MissingFilesDialog.ui
+        forms/PermissionsDialog.ui
+        forms/SettingsDialog.ui
+        forms/TitleBar.ui
+        forms/UpdateDialog.ui
+        forms/VideoControlWidget.ui
+        forms/VideoSliderWidget.ui
+        forms/VuraMainWindow.ui
+        forms/WhatsNewDialog.ui
 )
 
 qt_add_ios_ffmpeg_libraries(vura)

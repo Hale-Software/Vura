@@ -46,7 +46,7 @@
       </widget>
       <widget class="QStackedWidget" name="playlistWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page">
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -86,7 +86,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="EmptyStateWidget" name="emptyPlaylist" native="true"/>
+          <widget class="PlaylistEmptyStateWidget" name="emptyPlaylist" native="true"/>
          </item>
         </layout>
        </widget>
@@ -1316,9 +1316,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>EmptyStateWidget</class>
+   <class>PlaylistEmptyStateWidget</class>
    <extends>QWidget</extends>
-   <header location="global">components/EmptyStateWidget.h</header>
+   <header location="global">PlaylistEmptyStateWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

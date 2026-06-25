@@ -31,8 +31,7 @@
 // Global pointer to Logger for use in messageHandler
 static Blogger* globalRedirector = nullptr;
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_systemTrayIcon(new SystemTray(this)),
-m_statusLabel(new QLabel)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_systemTrayIcon(new SystemTray(this)), m_statusLabel(new QLabel)
 {
     ui->setupUi(this);
 
@@ -59,72 +58,17 @@ m_statusLabel(new QLabel)
 
     setStyleSheet();
 
-    //connect(this, SIGNAL(windowWasShown()), this, SLOT(initWinSparkle()), Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
-
     qDebug() << "Application startup complete.";
     m_errorDialog = new ErrorDialog(this);
 }
 
 MainWindow::~MainWindow()
 {
-    //win_sparkle_cleanup();
     delete ui;
 }
-/*
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QMainWindow::showEvent(event);
 
-    // showEvent() is called right *before* the window is shown, but WinSparkle
-    // requires that the main UI of the application is already shown when
-    // calling win_sparkle_init() (otherwise it could show its updates UI
-    // behind the app instead of at top). By using a helper signal, we delay
-    // calling initWinSparkle() until after the window was shown.
-    //
-    // Alternatively, one could achieve the same effect in arguably a simpler
-    // way, by initializing WinSparkle in main(), right after showing the main
-    // window. See https://github.com/vslavik/winsparkle/issues/41#issuecomment-70367197
-    // for a discussion of this.
-    emit windowWasShown();
-}
-
-void MainWindow::initWinSparkle()
-{
-    // Setup updates feed. This must be done before win_sparkle_init(), but
-    // could be also, often more conveniently, done using a VERSIONINFO Windows
-    // resource. See the "psdk" example and its .rc file for an example of that
-    // (these calls wouldn't be needed then).
-    //win_sparkle_set_appcast_url("https://winsparkle.org/example/appcast.xml");
-    //win_sparkle_set_app_details(L"winsparkle.org", L"WinSparkle Qt Example", L"1.0");
-
-    // Set EdDSA public key used to verify update's signature.
-    // This is na example how to provide it from external source (i.e. from Qt
-    // resource). See the "psdk" example and its .rc file for an example how to
-    // provide the key using Windows resource.
-    //win_sparkle_set_eddsa_public_key("payYa5ap0XtF8HWR4AYBdCIcXWtJZPen7bJqFcqlp7o=");
-
-    // Initialize the updater and possibly show some UI
-    win_sparkle_init();
-}
-
-void MainWindow::checkForUpdates()
-{
-    win_sparkle_check_update_with_ui();
-}
-*/
 void MainWindow::testFunction()
 {
-    //VuraHelpers::simulateApplicationCrash();
-    //VMessageBox::critical(this, "Vura", "Test of critical message box.");
-    //const int previousMediaCount = m_vuraPlaylistModel->m_media.count();
-    //m_vuraPlaylistModel->addMedia(QUrl("file:///C:/Users/halea/Videos/Veronica-R-My-Dirty-Maid.mp4"));
-    //if (m_vuraPlaylistModel->m_media.count() > previousMediaCount) {
-    //    const auto index = m_vuraPlaylistModel->index(previousMediaCount, 0);
-    //    if (index.isValid()) {
-    //        ui->playlistTableView->setCurrentIndex(index);
-    //        m_playlistManager->playTrack(index.row());
-    //    }
-    //}
     ErrorService::instance().postError({
             "Test Error",
             "The file could not be opened. Check permissions.",
@@ -132,6 +76,38 @@ void MainWindow::testFunction()
         ErrorAction::None
         });
 }
+
+void MainWindow::openFolder(const QString &path)
+{
+    QList<QUrl> fileList;
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        it.next();
+        fileList.append(QUrl::fromLocalFile(it.filePath()));
+    }
+
+    const int previousMediaCount = playlistModel->rowCount();
+    for (auto &url : fileList) {
+        if (!MediaFunctions::isPlaylist(url)) {
+            playlistModel->addItem({url.toString(), url.toString(), 0, 0, false});
+        }
+    }
+
+    if (playlistModel->rowCount() > previousMediaCount) {
+        auto index = playlistModel->index(previousMediaCount, 0);
+        ui->playlistView->setCurrentIndex(index);
+        jump(index);
+    }
+}
+
+void MainWindow::openFile(const QString &file) {}
+
+
+
+
+
+
 
 
 #pragma region STARTUP FUNCTIONS
@@ -160,28 +136,28 @@ void MainWindow::initApplication()
 
 void MainWindow::initSystemTrayIcon()
 {
-    qDebug() << "Initializing system tray icon...";
+    qDebug() << "Initializing System Tray Widget...";
 
     if (vuraSettings->systemTray()) {
-        m_systemTrayIcon->show();
+        m_systemTrayWidget->show();
     } else {
-        m_systemTrayIcon->hide();
+        m_systemTrayWidget->hide();
     }
 
-    connect(m_systemTrayIcon, &SystemTray::clicked, this, &MainWindow::systemTray_Clicked);
-    connect(m_systemTrayIcon, &SystemTray::hiding, this, &MainWindow::systemTray_Hide);
-    connect(m_systemTrayIcon, &SystemTray::stop, m_player, &QMediaPlayer::stop);
-    connect(m_systemTrayIcon, &SystemTray::changePlaybackSpeed, this, &MainWindow::changePlaybackSpeed);
-    connect(m_systemTrayIcon, &SystemTray::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
-    connect(m_systemTrayIcon, &SystemTray::changeVolume, this, &MainWindow::changeVolume);
-    connect(m_systemTrayIcon, &SystemTray::toggleMute, this, &MainWindow::toggleMute);
-    connect(m_systemTrayIcon, &SystemTray::openFiles, this, &MainWindow::openFiles);
-    connect(m_systemTrayIcon, &SystemTray::togglePlayPause, this, &MainWindow::togglePlayPause);
-    connect(m_systemTrayIcon, &SystemTray::nextVideo, this, &MainWindow::nextVideo);
-    connect(m_systemTrayIcon, &SystemTray::previousVideo, this, &MainWindow::previousVideo);
-    connect(m_systemTrayIcon, &SystemTray::exit, this, &MainWindow::exitApplication);
+    connect(m_systemTrayWidget, &SystemTrayWidget::clicked, this, &MainWindow::systemTray_Clicked);
+    connect(m_systemTrayWidget, &SystemTrayWidget::hiding, this, &MainWindow::systemTray_Hide);
+    connect(m_systemTrayWidget, &SystemTrayWidget::stop, m_player, &QMediaPlayer::stop);
+    connect(m_systemTrayWidget, &SystemTrayWidget::changePlaybackSpeed, this, &MainWindow::changePlaybackSpeed);
+    connect(m_systemTrayWidget, &SystemTrayWidget::setPlaybackSpeedNormal, this, &MainWindow::setPlaybackSpeedNormal);
+    connect(m_systemTrayWidget, &SystemTrayWidget::changeVolume, this, &MainWindow::changeVolume);
+    connect(m_systemTrayWidget, &SystemTrayWidget::toggleMute, this, &MainWindow::toggleMute);
+    connect(m_systemTrayWidget, &SystemTrayWidget::openFiles, this, &MainWindow::openFiles);
+    connect(m_systemTrayWidget, &SystemTrayWidget::togglePlayPause, this, &MainWindow::togglePlayPause);
+    connect(m_systemTrayWidget, &SystemTrayWidget::nextVideo, this, &MainWindow::nextVideo);
+    connect(m_systemTrayWidget, &SystemTrayWidget::previousVideo, this, &MainWindow::previousVideo);
+    connect(m_systemTrayWidget, &SystemTrayWidget::exit, this, &MainWindow::exitApplication);
 
-    qDebug() << "System tray icon initialized.";
+    qDebug() << "System Tray Widget initialized.";
 }
 
 void MainWindow::initMenuBar()
@@ -385,31 +361,6 @@ void MainWindow::initUI()
 
 #pragma region CONTEXT MENUS
 
-
-void MainWindow::openFolderContextMenu(const QString &path)
-{
-    QList<QUrl> fileList;
-
-    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
-    while (it.hasNext()) {
-        it.next();
-        fileList.append(QUrl::fromLocalFile(it.filePath()));
-    }
-
-    const int previousMediaCount = playlistModel->rowCount();
-    for (auto &url : fileList) {
-        if (!MediaFunctions::isPlaylist(url)) {
-            playlistModel->addItem({url.toString(), url.toString(), 0, 0, false});
-        }
-    }
-
-    if (playlistModel->rowCount() > previousMediaCount) {
-        auto index = playlistModel->index(previousMediaCount, 0);
-        ui->playlistView->setCurrentIndex(index);
-        jump(index);
-    }
-
-}
 
 void MainWindow::openFileContextMenu(const QString &file)
 {
@@ -1485,42 +1436,6 @@ void MainWindow::setMainWindowVisibility(const bool state)
         this->showNormal();
         this->raise();
         this->activateWindow();
-    }
-}
-
-void MainWindow::processOpenParams(int argc, char *argv[])
-{
-    if (argc > 2) {
-        const QString pathParam = QString::fromUtf8(argv[2]);
-
-        QFileInfo pathParamInfo(pathParam);
-        if (pathParamInfo.isFile()) {
-
-            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                addFileToPlaylistContextMenu(pathParam);
-
-            } else {
-                addFileToPlaylistContextMenu(pathParam);
-            }
-
-        } else if (pathParamInfo.isDir()) {
-            if (QString::fromLocal8Bit(argv[1]) == "playlist") {
-                addFolderToPlaylistContextMenu(pathParam);
-
-            } else {
-                addFolderToPlaylistContextMenu(pathParam);
-            }
-        }
-
-    } else if (argc > 1) {
-        QString pathName = QString::fromUtf8(argv[1]);
-        if (pathName.isEmpty()) {
-            VMessageBox::critical(this, "Vura Error", "File requested is empty.");
-            this->close();
-
-        } else {
-            openFileContextMenu(pathName);
-        }
     }
 }
 
