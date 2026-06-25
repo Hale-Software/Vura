@@ -20,29 +20,39 @@
 
 #include <QDialog>
 #include <QPushButton>
-#include <QTextBrowser>
-#include <QComboBox>
+#include <QPlainTextEdit>
+#include <QLineEdit>
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include <QDateTime>
 #include <QSettings>
-#include <QStandardPaths>
+#include <QCloseEvent>
+#include <QScrollBar>
 #include <QString>
+#include <QList>
 
 #include <libvura/util/blogger.h>
-#include <libvura/util/messagebox.h>
 
 
 QT_BEGIN_NAMESPACE
 
 namespace Ui {
-    class LogViewerDialog;
+class LogViewerDialog;
 }
 
 QT_END_NAMESPACE
 
+
+struct LogEntry {
+    QString timestamp;
+    int level;
+    QString component;
+    QString message;
+    QString fullText;
+};
 
 class LogViewerDialog : public QDialog {
     Q_OBJECT
@@ -51,27 +61,31 @@ public:
     explicit LogViewerDialog(QWidget *parent = nullptr);
     ~LogViewerDialog() override;
 
-    void openFile(const QString &fileName);
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 public slots:
-    void message(QString message);
+    void appendLogMessage(LogMessage message);
 
 private slots:
-    //void AddLine(int type, const QString &text);
-    void openButton_Clicked();
+    void onSearchTextChanged(const QString &text);
+    void onFilterToggled();
+    void onAlwaysOnTopToggled(bool checked);
+    void onAutoScrollToggled(bool checked);
+    void onStyleMessagesToggled(bool checked);
     void clearButton_Clicked();
-    void closeButton_Clicked();
-    void verbosityIndexChanged(int index);
-    void simplify_Clicked();
+    void exportButton_Clicked();
 
 private:
     Ui::LogViewerDialog *ui;
-    int m_verbosity = 0;
-    bool m_simplify = true;
-    QString m_currentLogFile;
-    QString m_openedLogFile;
 
-    void refreshMessages();
-    void messageFormatter(QString message);
+    QList<LogEntry> m_logBuffer;
+    bool m_autoScroll = true;
+    bool m_styleMessages = true;
+
+    void refreshLogView();
+    void appendToView(const LogEntry &entry) const;
+    void readSettings();
+    void writeSettings() const;
 
 };

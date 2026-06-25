@@ -14,6 +14,7 @@ target_sources(
         libvura/constants.h
         libvura/filemanager.h
         libvura/libvura.h
+        libvura/logger.h
         libvura/markermanager.h
         libvura/mediacontroller.h
         libvura/datafile-handler.h
@@ -28,6 +29,7 @@ target_sources(
         libvura/constants.cpp
         libvura/filemanager.cpp
         libvura/libvura.cpp
+        libvura/logger.cpp
         libvura/markermanager.cpp
         libvura/mediacontroller.cpp
         libvura/datafile-handler.cpp
@@ -64,13 +66,9 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        libvura/models/log-viewer-model.h
-        libvura/models/logmessages.h
         libvura/models/vura-playlistmodel.h
 
         PRIVATE
-        libvura/models/log-viewer-model.cpp
-        libvura/models/logmessages.cpp
         libvura/models/vura-playlistmodel.cpp
 )
 

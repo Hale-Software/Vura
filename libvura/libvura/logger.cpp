@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,19 +13,11 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
-#include "logmessages.h"
+#include "logger.h"
 
-
-LogMessages::LogMessages() {}
-
-QStringList LogMessages::getAllMessages()
-{
-    return m_messages;
-}
-
-void LogMessages::append(QString message) {
-    m_messages.append(message);
-    emit newMessage(message);
-}
+Q_LOGGING_CATEGORY(Core, "app.core")
+Q_LOGGING_CATEGORY(Playback, "app.playback")
+Q_LOGGING_CATEGORY(Playlist, "app.playlist")

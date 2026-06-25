@@ -45,6 +45,8 @@ target_include_directories(
     ${FFMPEG_DIR}/include
 )
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 include(cmake/ui-components.cmake)
 include(cmake/ui-dialogs.cmake)
 #include(cmake/ui-models.cmake)

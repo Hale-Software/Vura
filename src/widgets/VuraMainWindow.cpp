@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "VuraMainWindow.h"
 
 #include "PlaylistEmptyStateWidget.h"
@@ -73,12 +91,13 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     m_playlistController->hidePlaylist();
 
 
-    qDebug() << "Application Initialized!";
+    qCDebug(Core) << "Application Initialized!";
+    qCInfo(Core) << "Vura Version: " << VURA_VERSION_STRING;
 }
 
 void VuraMainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    qDebug() << "Drop event received in VuraMainWindow";
+    qCDebug(Core) << "Drop event received in VuraMainWindow";
     if (event->mimeData()->hasUrls()) {
         event->acceptProposedAction();
 
@@ -100,7 +119,7 @@ void VuraMainWindow::dropEvent(QDropEvent *event)
             QString filePath = url.toLocalFile();
 
             if (!filePath.isEmpty()) {
-                qDebug() << "Dropped File Path:" << filePath;
+                qCDebug(Core) << "Dropped File Path:" << filePath;
 
                 // Optional: Check if item is a file or folder
                 QFileInfo fileInfo(filePath);
@@ -125,17 +144,23 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     m_videoMarkers = VideoMarkers::read("debug/global.json", source.toString());
 
     m_videoSlider->setSource(source.toLocalFile());
-    qDebug() << "Source changed to: " << source.toLocalFile();
+    qCDebug(Core) << "Source changed to: " << source.toLocalFile();
 }
 
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
 {
-    qCritical() << "QMediaPlayer Error: " << errorMessage;
+    qCCritical(Core) << "QMediaPlayer Error: " << errorMessage;
     QMessageBox::critical(this, "Media Player Error", errorMessage);
     this->close();
 }
 
-void VuraMainWindow::actionTestFunction() {}
+void VuraMainWindow::actionTestFunction()
+{
+    qCDebug(Core) << "Test function called.";
+    qCInfo(Core) << "Test function called.";
+    qCWarning(Core) << "Test function called.";
+    qCCritical(Core) << "Test function called.";
+}
 
 void VuraMainWindow::actionVolumeUp()
 {

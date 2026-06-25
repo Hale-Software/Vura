@@ -29,7 +29,7 @@
 
 Blogger::Blogger(QObject* parent) : QObject(parent)
 {
-    QSettings settings;
+    const QSettings settings;
     if (settings.value("logToFile", true).toBool()) {
         initLogFile();
     }
@@ -54,12 +54,12 @@ QString Blogger::getLogFileName() const
 
 void Blogger::initLogFile()
 {
-    QSettings settings;
-    int maxLogs = settings.value("maxLogFiles", 10).toInt();
+    const QSettings settings;
+    const int maxLogs = settings.value("maxLogFiles", 10).toInt();
 
-    QString baseDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug" :
+    const QString baseDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug" :
                         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir logDir(baseDir + "/logs");
+    const QDir logDir(baseDir + "/logs");
 
     if (!logDir.exists() && !logDir.mkpath(".")) {
         qCritical() << "Failed to create log directory at " << logDir.absolutePath();
@@ -68,7 +68,7 @@ void Blogger::initLogFile()
 
     rotateLogs(logDir, maxLogs);
 
-    QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss") + ".log";
+    const QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss") + ".log";
     m_logFileName = logDir.filePath(fileName);
     m_logFile.setFileName(m_logFileName);
 
@@ -77,7 +77,7 @@ void Blogger::initLogFile()
     }
 }
 
-void Blogger::rotateLogs(const QDir &logDir, int maxLogs)
+void Blogger::rotateLogs(const QDir &logDir, const int maxLogs)
 {
     QFileInfoList logFiles = logDir.entryInfoList(QDir::Files, QDir::Time);
 
@@ -98,7 +98,8 @@ void Blogger::clearLogFile()
     }
 }
 
-QString Blogger::formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+QString Blogger::formatMessage(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
     QString typeStr;
     switch (type) {
         case QtDebugMsg:    typeStr = "[DEBUG]"; break;
@@ -116,17 +117,39 @@ QString Blogger::formatMessage(QtMsgType type, const QMessageLogContext& context
         .arg(typeStr, msg);
 }
 
+QList<LogMessage> Blogger::getLogMessages() const
+{
+    return m_logMessages;
+}
 
-void Blogger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+
+void Blogger::messageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
     Blogger* logger = Blogger::instance();
-    QString output = logger->formatMessage(type, context, msg);
+    const QString output = logger->formatMessage(type, context, msg);
 
     if (logger->m_logFile.isOpen()) {
         logger->m_logFile.write((output + "\n").toUtf8());
         logger->m_logFile.flush();
     }
 
-    emit logger->message(output);
+    int typeInt;
+    switch (type) {
+        case QtDebugMsg:    typeInt = 0; break;
+        case QtInfoMsg:     typeInt = 1; break;
+        case QtWarningMsg:  typeInt = 2; break;
+        case QtCriticalMsg: typeInt = 3; break;
+        case QtFatalMsg:    typeInt = 4; break;
+        default:            typeInt = 0; break;
+    }
+
+    LogMessage newMessage;
+    newMessage.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
+    newMessage.type = typeInt;
+    newMessage.component = context.file ? QString(context.file) : "Core";
+    newMessage.message = msg;
+    logger->m_logMessages.append(newMessage);
+    emit logger->newLogEntry(newMessage);
 
     std::cerr << output.toStdString() << std::endl;
 }

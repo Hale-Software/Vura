@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,29 +13,13 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
 
-#include <QObject>
-#include <QString>
-#include <QStringList>
+#include <QLoggingCategory>
 
-class LogMessages : public QObject
-{
-    Q_OBJECT
-public:
-    LogMessages();
-
-    QStringList getAllMessages();
-
-public slots:
-    void append(QString message);
-
-signals:
-    void newMessage(QString newMessage);
-
-private:
-    QStringList m_messages;
-
-};
+Q_DECLARE_LOGGING_CATEGORY(Core)
+Q_DECLARE_LOGGING_CATEGORY(Playback)
+Q_DECLARE_LOGGING_CATEGORY(Playlist)

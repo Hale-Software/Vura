@@ -22,8 +22,16 @@
 #include <QFile>
 #include <QDir>
 #include <QString>
+#include <QList>
 #include <QMessageLogContext>
 
+struct LogMessage
+{
+    QString timestamp;
+    int type;
+    QString component;
+    QString message;
+};
 
 class Blogger : public QObject
 {
@@ -33,20 +41,22 @@ public:
     static Blogger* instance();
     void clearLogFile();
     QString getLogFileName() const;
+    QList<LogMessage> getLogMessages() const;
     static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 signals:
-    void message(const QString& message);
+    void newLogEntry(LogMessage);
 
 private:
-    Blogger(QObject* parent = nullptr);
-    ~Blogger();
+    explicit Blogger(QObject* parent = nullptr);
+    ~Blogger() override;
 
     void initLogFile();
-    void rotateLogs(const QDir& logDir, int maxLogs);
-    QString formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+    static void rotateLogs(const QDir& logDir, int maxLogs);
+    static QString formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
     QString m_logFileName;
     QFile m_logFile;
+    QList<LogMessage> m_logMessages;
 
 };

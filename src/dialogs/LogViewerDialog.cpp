@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,15 +13,14 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #include "LogViewerDialog.h"
 #include "ui_LogViewerDialog.h"
 
-#include <ui-config.h>
 
-
-QString getVerbosityString(int verbosity)
+QString getVerbosityString(const int verbosity)
 {
     switch (verbosity) {
         case 0:
@@ -41,26 +40,52 @@ QString getVerbosityString(int verbosity)
     }
 }
 
+QString getLogColor(const int level) {
+    if (level == 0)                 return "#888888"; // Gray
+    if (level == 1)                 return "#FFFFFF"; // White
+    if (level == 2)                 return "#FFFF00"; // Yellow
+    if (level == 3)                 return "#FF0000"; // Red
+    if (level == 4)                 return "#FF00FF"; // Magenta
+    return "#FFFFFF"; // Default
+}
 
 LogViewerDialog::LogViewerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::LogViewerDialog)
 {
     ui->setupUi(this);
 
-    QSettings settings;
-    m_verbosity = settings.value("logViewerVerbosity", 1).toInt();
-    ui->verbosityComboBox->setCurrentIndex(m_verbosity);
+    readSettings();
 
-    connect(ui->openButton, &QPushButton::clicked, this, &LogViewerDialog::openButton_Clicked);
-    connect(ui->clearButton, &QPushButton::clicked, this, &LogViewerDialog::clearButton_Clicked);
-    connect(ui->closeButton, &QPushButton::clicked, this, &LogViewerDialog::closeButton_Clicked);
-    connect(ui->verbosityComboBox, &QComboBox::currentIndexChanged, this, &LogViewerDialog::verbosityIndexChanged);
-    connect(ui->simplify, &QCheckBox::checkStateChanged, this, &LogViewerDialog::simplify_Clicked);
+    QFont monoFont("Consolas");
+    monoFont.setStyleHint(QFont::Monospace);
+    monoFont.setPointSize(10);
+    ui->logTextArea->setFont(monoFont);
 
-    Blogger *blog = Blogger::instance();
-    connect(blog, &Blogger::message, this, &LogViewerDialog::message);
-    m_currentLogFile = blog->getLogFileName();
-    m_openedLogFile = m_currentLogFile;
-    refreshMessages();
+    connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &LogViewerDialog::onSearchTextChanged);
+    connect(ui->chkInfo, &QCheckBox::toggled, this, &LogViewerDialog::onFilterToggled);
+    connect(ui->chkWarn, &QCheckBox::toggled, this, &LogViewerDialog::onFilterToggled);
+    connect(ui->chkError, &QCheckBox::toggled, this, &LogViewerDialog::onFilterToggled);
+    connect(ui->chkDebug, &QCheckBox::toggled, this, &LogViewerDialog::onFilterToggled);
+    connect(ui->chkAutoScroll, &QCheckBox::toggled, this, &LogViewerDialog::onAutoScrollToggled);
+    connect(ui->chkAlwaysOnTop, &QCheckBox::toggled, this, &LogViewerDialog::onAlwaysOnTopToggled);
+    connect(ui->chkStyleMessages, &QCheckBox::toggled, this, &LogViewerDialog::onStyleMessagesToggled);
+    connect(ui->btnClear, &QPushButton::clicked, this, &LogViewerDialog::clearButton_Clicked);
+    connect(ui->btnExport, &QPushButton::clicked, this, &LogViewerDialog::exportButton_Clicked);
+
+    const Blogger *blogger = Blogger::instance();
+    connect(blogger, &Blogger::newLogEntry, this, &LogViewerDialog::appendLogMessage);
+
+    QList<LogMessage> previousMessages = blogger->getLogMessages();
+    for (const auto &[timestamp, type, component, message] : previousMessages) {
+        LogEntry entry;
+        entry.timestamp = timestamp;
+        entry.level = type;
+        entry.component = component;
+        entry.message = message;
+        entry.fullText = QString("[%1] %2  \t%3")
+                            .arg(entry.timestamp, getVerbosityString(type), message);
+        m_logBuffer.append(entry);
+    }
+    refreshLogView();
 }
 
 LogViewerDialog::~LogViewerDialog()
@@ -68,162 +93,159 @@ LogViewerDialog::~LogViewerDialog()
     delete ui;
 }
 
-void LogViewerDialog::openFile(const QString &fileName)
+void LogViewerDialog::closeEvent(QCloseEvent *event)
 {
-    if (!fileName.isEmpty()) {
-        m_openedLogFile = fileName;
-        refreshMessages();
+    writeSettings();
+    event->accept();
+}
+
+void LogViewerDialog::appendLogMessage(LogMessage message)
+{
+    LogEntry entry;
+    entry.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
+    entry.level = message.type;
+    entry.component = message.component;
+    entry.message = message.message;
+
+    QString levelStr = getVerbosityString(message.type);
+    entry.fullText = QString("[%1] %2  \t%3")
+                        .arg(entry.timestamp, levelStr, message.message);
+
+    m_logBuffer.append(entry);
+
+    if (ui->searchLineEdit->text().isEmpty() && true) {
+        appendToView(entry);
     }
 }
 
-void LogViewerDialog::messageFormatter(QString message)
+void LogViewerDialog::appendToView(const LogEntry &entry) const
 {
-    if (m_simplify) {
-        int timestampIn_pos = message.indexOf("[");
-        int fileIn_pos = message.indexOf("[", timestampIn_pos + 1);
-        int lineIn_pos = message.indexOf("[", fileIn_pos + 1);
-        int functionIn_pos = message.indexOf("[", lineIn_pos + 1);
-        int fileOut_pos = message.indexOf("]", fileIn_pos);
-        int lineOut_pos = message.indexOf("]", lineIn_pos);
-        int functionOut_pos = message.indexOf("]", functionIn_pos);
+    if (m_styleMessages) {
+        const QString color = getLogColor(entry.level);
 
-        message.remove(functionIn_pos - 1, functionOut_pos - functionIn_pos + 2);
-        message.remove(lineIn_pos - 1, lineOut_pos - lineIn_pos + 2);
-        message.remove(fileIn_pos - 1, fileOut_pos - fileIn_pos + 2);
-    }
+        const QString styledMessage = QString("<font color=\"%1\">%2</font>")
+                                .arg(color)
+                                .arg(entry.fullText.toHtmlEscaped());
 
-    // Message Verbosity Handler
-    if (m_verbosity == 0) {
-        ui->textArea->append(message);
-    } else if (m_verbosity == 1) {
-        if (!message.contains(getVerbosityString(0))) {
-            ui->textArea->append(message);
-        }
-    } else if (m_verbosity == 2) {
-        if (!message.contains(getVerbosityString(0)) && !message.contains(getVerbosityString(1))) {
-            ui->textArea->append(message);
-        }
-    } else if (m_verbosity == 3) {
-        if (!message.contains(getVerbosityString(0)) && !message.contains(getVerbosityString(1))
-            && !message.contains(getVerbosityString(2))) {
-            ui->textArea->append(message);
-            }
-    } else if (m_verbosity == 4) {
-        if (!message.contains(getVerbosityString(0)) && !message.contains(getVerbosityString(1))
-            && !message.contains(getVerbosityString(2)) && !message.contains(getVerbosityString(3))) {
-            ui->textArea->append(message);
-            }
-    } else if (m_verbosity == 5) {
-        if (!message.contains(getVerbosityString(0)) && !message.contains(getVerbosityString(1))
-            && !message.contains(getVerbosityString(2)) && !message.contains(getVerbosityString(3))
-            && !message.contains(getVerbosityString(4))) {
-            ui->textArea->append(message);
-            }
+        ui->logTextArea->appendHtml(styledMessage);
     } else {
-        ui->textArea->append(message);
+        ui->logTextArea->appendPlainText(entry.fullText);
+    }
+
+    if (m_autoScroll) {
+        QScrollBar *bar = ui->logTextArea->verticalScrollBar();
+        bar->setValue(bar->maximum());
     }
 }
 
-void LogViewerDialog::refreshMessages()
+void LogViewerDialog::onSearchTextChanged(const QString &text)
 {
-    ui->textArea->clear();
-    QFile logFile(m_openedLogFile, this);
-    if (!logFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        ErrorBox(this, "Error opening log file");
+    refreshLogView();
+}
+
+void LogViewerDialog::onFilterToggled()
+{
+    refreshLogView();
+}
+
+void LogViewerDialog::refreshLogView()
+{
+    ui->logTextArea->clear();
+    const QString query = ui->searchLineEdit->text().toLower();
+
+    const bool showDebug = ui->chkDebug->isChecked();
+    const bool showInfo = ui->chkInfo->isChecked();
+    const bool showWarn = ui->chkWarn->isChecked();
+    const bool showError = ui->chkError->isChecked();
+
+    for (const LogEntry &entry : m_logBuffer) {
+        if (entry.level == 0 && !showDebug) continue;
+        if (entry.level == 1 && !showInfo) continue;
+        if (entry.level == 2 && !showWarn) continue;
+        if (entry.level == 3 && !showError) continue;
+
+        if (!query.isEmpty() && !entry.fullText.toLower().contains(query)) {
+            continue;
+        }
+
+        appendToView(entry);
+    }
+}
+
+void LogViewerDialog::onAlwaysOnTopToggled(const bool checked)
+{
+    const Qt::WindowFlags flags = this->windowFlags();
+    if (checked) {
+        this->setWindowFlags(flags | Qt::WindowStaysOnTopHint);
     } else {
-        QTextStream t(&logFile);
-        while (!t.atEnd()) {
-            QString line = t.readLine();
-            messageFormatter(line);
-        }
+        this->setWindowFlags(flags & ~Qt::WindowStaysOnTopHint);
     }
+    this->show();
+    this->activateWindow();
 }
 
-void LogViewerDialog::message(QString message)
+void LogViewerDialog::onAutoScrollToggled(const bool checked)
 {
-    if (m_openedLogFile == m_currentLogFile)
-        messageFormatter(message);
+    m_autoScroll = checked;
 }
 
-void LogViewerDialog::openButton_Clicked()
+void LogViewerDialog::onStyleMessagesToggled(const bool checked)
 {
-    // Get the log directory.
-    QString logDirString = "logs";
-    QString appDataDirString = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (VURA_BUILD_TYPE == "Debug") {
-        appDataDirString = "debug";
-    }
-    QDir appDataDir(appDataDirString);
-    if (appDataDir.exists()) {
-        QDir appLogDir(appDataDirString + "/logs");
-        if (appLogDir.exists()) {
-            logDirString = appDataDirString + "/logs";
-        } else {
-            if (appLogDir.mkdir(".")) {
-                logDirString = appDataDirString + "/logs";
-            }
-        }
-    } else {
-        if (appDataDir.mkdir(".")) {
-            QDir appLogDir(appDataDirString + "/logs");
-            if (appLogDir.exists()) {
-                logDirString = appDataDirString + "/logs";
-            } else {
-                if (appLogDir.mkdir(".")) {
-                    logDirString = appDataDirString + "/logs";
-                }
-            }
-        }
-    }
-
-    QString fileName = QFileDialog::getOpenFileName(
-        this,
-        tr("Open Log File"),
-        logDirString,
-        tr("Log Files (*.log);;All Files (*.*)"));
-
-    if (!fileName.isEmpty()) {
-        m_openedLogFile = fileName;
-        refreshMessages();
-    }
+    m_styleMessages = checked;
+    refreshLogView();
 }
 
 void LogViewerDialog::clearButton_Clicked()
 {
-    QMessageBox::StandardButton confirmationBox;
-    confirmationBox = QMessageBox::question(this, "Clear Logs", "Are you sure you want to clear the logs?\n This action cannot be undone.",
-                                  QMessageBox::Yes | QMessageBox::No);
+    m_logBuffer.clear();
+    ui->logTextArea->clear();
 
-    if (confirmationBox == QMessageBox::Yes) {
-        if (m_openedLogFile == m_currentLogFile) {
-            Blogger *blog = Blogger::instance();
-            blog->clearLogFile();
-        } else {
-            QFile f(m_openedLogFile);
-            if (f.open(QFile::WriteOnly | QFile::Truncate)) {
-                f.close();
-            } else {
-                ErrorBox(this, "Failed to clear log file.");
-            }
+    Blogger::instance()->clearLogFile();
+}
+
+void LogViewerDialog::exportButton_Clicked()
+{
+    const QString fileName = QFileDialog::getSaveFileName(
+        this, tr("Export Logs"), "", tr("Log Files (*.log);;All Files (*.*)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&file);
+            out << ui->logTextArea->toPlainText();
+            file.close();
+            QMessageBox::information(this, "Success", "Logs exported successfully.");
         }
     }
 }
 
-void LogViewerDialog::closeButton_Clicked()
-{
-    this->close();
-}
-
-void LogViewerDialog::verbosityIndexChanged(int index)
+void LogViewerDialog::readSettings()
 {
     QSettings settings;
-    settings.setValue("logViewerVerbosity", index);
-    m_verbosity = index;
-    refreshMessages();
+    settings.beginGroup("LogViewerDialog");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    m_styleMessages = settings.value("styleMessages", true).toBool();
+    m_autoScroll = settings.value("autoScroll", true).toBool();
+    ui->chkAlwaysOnTop->setChecked(settings.value("alwaysOnTop", true).toBool());
+    ui->chkDebug->setChecked(settings.value("showDebug", false).toBool());
+    ui->chkInfo->setChecked(settings.value("showInfo", true).toBool());
+    ui->chkWarn->setChecked(settings.value("showWarn", true).toBool());
+    ui->chkError->setChecked(settings.value("showError", true).toBool());
+    settings.endGroup();
 }
 
-void LogViewerDialog::simplify_Clicked()
+void LogViewerDialog::writeSettings() const
 {
-    m_simplify = ui->simplify->isChecked();
-    refreshMessages();
+    QSettings settings;
+    settings.beginGroup("LogViewerDialog");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("styleMessages", m_styleMessages);
+    settings.setValue("autoScroll", m_autoScroll);
+    settings.setValue("alwaysOnTop", ui->chkAlwaysOnTop->isChecked());
+    settings.setValue("showDebug", ui->chkDebug->isChecked());
+    settings.setValue("showInfo", ui->chkInfo->isChecked());
+    settings.setValue("showWarn", ui->chkWarn->isChecked());
+    settings.setValue("showError", ui->chkError->isChecked());
+    settings.endGroup();
+    settings.sync();
 }

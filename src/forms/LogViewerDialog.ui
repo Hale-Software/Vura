@@ -6,72 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
-    <height>458</height>
+    <width>800</width>
+    <height>500</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>400</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Log Viewer</string>
+   <string>Vura Log Viewer</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>8</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>9</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>9</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>9</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>9</number>
    </property>
    <item>
-    <widget class="QTextBrowser" name="textArea"/>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QComboBox" name="verbosityComboBox">
-       <property name="minimumSize">
-        <size>
-         <width>125</width>
-         <height>0</height>
-        </size>
+      <widget class="QLineEdit" name="searchLineEdit">
+       <property name="placeholderText">
+        <string>Search Logs...</string>
        </property>
-       <item>
-        <property name="text">
-         <string>DEBUG</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>INFO</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>WARNING</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ERROR</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>CRITICAL</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>FATAL</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item>
@@ -79,21 +49,92 @@
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Policy::Fixed</enum>
-       </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>16</width>
+         <width>40</width>
          <height>20</height>
         </size>
        </property>
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="simplify">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Simplify</string>
+        <string>Filters:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkDebug">
+       <property name="text">
+        <string>Debug</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkInfo">
+       <property name="text">
+        <string>Info</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkWarn">
+       <property name="text">
+        <string>Warn</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkError">
+       <property name="text">
+        <string>Error</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="logTextArea"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="chkAutoScroll">
+       <property name="text">
+        <string>Auto-Scroll</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkAlwaysOnTop">
+       <property name="text">
+        <string>Always on Top</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkStyleMessages">
+       <property name="text">
+        <string>Style Messages</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -114,26 +155,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="openButton">
+      <widget class="QPushButton" name="btnClear">
        <property name="text">
-        <string>Open File</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
+        <string>Clear Log</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="clearButton">
+      <widget class="QPushButton" name="btnExport">
        <property name="text">
-        <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="closeButton">
-       <property name="text">
-        <string>Close</string>
+        <string>Export .log</string>
        </property>
       </widget>
      </item>
