@@ -67,24 +67,24 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     //connect(m_playbackController, &PlaybackController::durationChanged, this, &VuraMainWindow::);
 
 
-    connect(ui->actionToggle_Mute, &QAction::triggered, m_playbackController, &PlaybackController::toggleMute);
-    connect(ui->actionVolume_Down, &QAction::triggered, this, &VuraMainWindow::actionVolumeDown);
-    connect(ui->actionVolume_Up, &QAction::triggered, this, &VuraMainWindow::actionVolumeUp);
-    connect(ui->actionEmergency_Close, &QAction::triggered, this, &VuraMainWindow::actionEmergencyClose);
-    connect(ui->actionExit, &QAction::triggered, this, &VuraMainWindow::actionExit);
-    connect(ui->actionOpen_File, &QAction::triggered, m_playlistController, &PlaylistController::requestFileImport);
-    connect(ui->actionPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
-    connect(ui->actionView_Current_Log, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
+    connect(ui->actionAudioToggleMute, &QAction::triggered, m_playbackController, &PlaybackController::toggleMute);
+    connect(ui->actionAudioVolumeDown, &QAction::triggered, this, &VuraMainWindow::actionVolumeDown);
+    connect(ui->actionAudioVolumeUp, &QAction::triggered, this, &VuraMainWindow::actionVolumeUp);
+    connect(ui->actionFileEmergencyClose, &QAction::triggered, this, &VuraMainWindow::actionEmergencyClose);
+    connect(ui->actionFileExit, &QAction::triggered, this, &VuraMainWindow::actionExit);
+    connect(ui->actionFileOpenFile, &QAction::triggered, m_playlistController, &PlaylistController::requestFileImport);
+    connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
+    connect(ui->actionHelpViewCurrentLog, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
     //connect(ui->actionJump_Backward, &QAction::triggered, this, &VuraMainWindow::actionJumpBackward);
     //connect(ui->actionJump_Forward, &QAction::triggered, this, &VuraMainWindow::actionJumpForward);
-    connect(ui->actionNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
-    connect(ui->actionPrevious, &QAction::triggered, m_playlistController, &PlaylistController::previousTrack);
-    connect(ui->actionRestart_Video, &QAction::triggered, m_playbackController, &PlaybackController::restart);
-    connect(ui->actionToggle_Play_Pause, &QAction::triggered, m_playbackController, &PlaybackController::togglePlayPause);
-    connect(ui->actionTest_Function, &QAction::triggered, this, &VuraMainWindow::actionTestFunction);
-    connect(ui->actionFullscreen, &QAction::triggered, this, &VuraMainWindow::actionToggleFullscreen);
-    connect(ui->actionToggle_Playlist, &QAction::triggered, this, &VuraMainWindow::actionTogglePlaylist);
-    connect(ui->actionToggle_Video_Controls, &QAction::triggered, this, &VuraMainWindow::actionToggleVideoControls);
+    connect(ui->actionPlaybackNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
+    connect(ui->actionPlaybackPrevious, &QAction::triggered, m_playlistController, &PlaylistController::previousTrack);
+    connect(ui->actionPlaybackRestartVideo, &QAction::triggered, m_playbackController, &PlaybackController::restart);
+    connect(ui->actionPlaybackTogglePlay, &QAction::triggered, m_playbackController, &PlaybackController::togglePlayPause);
+    connect(ui->actionToolsTestFunction, &QAction::triggered, this, &VuraMainWindow::actionTestFunction);
+    connect(ui->actionVideoFullscreen, &QAction::triggered, this, &VuraMainWindow::actionToggleFullscreen);
+    connect(ui->actionViewTogglePlaylist, &QAction::triggered, this, &VuraMainWindow::actionTogglePlaylist);
+    connect(ui->actionViewToggleVideoControls, &QAction::triggered, this, &VuraMainWindow::actionToggleVideoControls);
 
     //connect(ui->action, &QAction::triggered, this, &VuraMainWindow::);
 
