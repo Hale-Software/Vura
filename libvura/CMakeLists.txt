@@ -24,6 +24,8 @@ target_sources(
         libvura/helpers.h
         libvura/hotkeys.h
         libvura/settings.h
+        libvura/settings-manager.h
+        libvura/theme-manager.h
 
         PRIVATE
         libvura/constants.cpp
@@ -38,6 +40,8 @@ target_sources(
         libvura/helpers.cpp
         libvura/hotkeys.cpp
         libvura/settings.cpp
+        libvura/settings-manager.cpp
+        libvura/theme-manager.cpp
 )
 
 # data Directory

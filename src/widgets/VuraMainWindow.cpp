@@ -221,12 +221,12 @@ void VuraMainWindow::actionToggleFullscreen()
 
 void VuraMainWindow::actionShowSettings()
 {
-    if (m_settingsDialog)
-        m_settingsDialog->close();
+    if (m_settingsWindow)
+        m_settingsWindow->close();
 
-    m_settingsDialog = new SettingsDialog(this);
-    m_settingsDialog->show();
-    m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow->show();
+    m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void VuraMainWindow::actionExit()

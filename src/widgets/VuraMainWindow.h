@@ -47,7 +47,7 @@
 #include "HelpDialog.h"
 #include "AboutDialog.h"
 #include "UpdateDialog.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "FeedbackDialog.h"
 #include "LogViewerDialog.h"
 #include "MarkerEditDialog.h"
@@ -74,7 +74,7 @@ class VuraMainWindow : public QMainWindow
     friend class HelpDialog;
     friend class AboutDialog;
     friend class UpdateDialog;
-    friend class SettingsDialog;
+    friend class SettingsWindow;
     friend class FeedbackDialog;
     friend class LogViewerDialog;
     friend class MarkerEditDialog;
@@ -174,7 +174,7 @@ private:
     QPointer<HelpDialog> m_helpDialog;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
-    QPointer<SettingsDialog> m_settingsDialog;
+    QPointer<SettingsWindow> m_settingsWindow;
     QPointer<FeedbackDialog> m_feedbackDialog;
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;

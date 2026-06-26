@@ -42,6 +42,7 @@ target_sources(
         forms/MissingFilesDialog.ui
         forms/PermissionsDialog.ui
         forms/SettingsDialog.ui
+        forms/SettingsWindow.ui
         forms/TitleBar.ui
         forms/UpdateDialog.ui
         forms/VideoControlWidget.ui

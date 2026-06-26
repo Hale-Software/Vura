@@ -16,6 +16,18 @@
   -->
 
 <RCC>
+    <qresource prefix="">
+        <file>styles/dark.qss</file>
+        <file>styles/light.qss</file>
+        <file>images/advanced-settings.svg</file>
+        <file>images/association-settings.svg</file>
+        <file>images/playlist-settings.svg</file>
+        <file>images/hotkey-settings.svg</file>
+        <file>images/interface-settings.svg</file>
+        <file>images/playback-settings.svg</file>
+        <file>images/player-settings.svg</file>
+        <file>images/general-settings.svg</file>
+    </qresource>
     <qresource prefix="/img">
         <file>images/vura-black.png</file>
         <file>images/vura-white.png</file>
@@ -29,22 +41,14 @@
         <file>images/next.svg</file>
         <file>images/pause.svg</file>
         <file>images/play.svg</file>
-        <file>images/playlist.svg</file>
         <file>images/shuffle.svg</file>
         <file>images/stop.svg</file>
         <file>images/volume-low.svg</file>
         <file>images/volume-medium.svg</file>
         <file>images/volume-high.svg</file>
-        <file>images/advanced-settings.svg</file>
         <file>images/appearance-settings.svg</file>
         <file>images/audio-settings.svg</file>
-        <file>images/general-settings.svg</file>
-        <file>images/hotkeys-settings.svg</file>
         <file>images/video-settings.svg</file>
         <file>images/undo.svg</file>
-    </qresource>
-    <qresource prefix="">
-        <file>styles/dark.qss</file>
-        <file>styles/light.qss</file>
     </qresource>
 </RCC>

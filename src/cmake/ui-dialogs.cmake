@@ -26,6 +26,8 @@ target_sources(
         dialogs/MissingFilesDialog.h
         dialogs/PermissionsDialog.cpp
         dialogs/PermissionsDialog.h
+        dialogs/SettingsWindow.cpp
+        dialogs/SettingsWindow.h
         dialogs/WhatsNewDialog.cpp
         dialogs/WhatsNewDialog.h
 )
