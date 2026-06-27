@@ -1,4 +1,5 @@
-find_package(Qt6 REQUIRED Widgets MultimediaWidgets Network Svg)
+find_package(Qt6 REQUIRED Widgets MultimediaWidgets Network Svg OpenGLWidgets)
+find_package(OpenGL REQUIRED)
 
 if(OS_LINUX OR OS_FREEBSD OR OS_OPENBSD)
     find_package(Qt6 REQUIRED Gui DBus)
@@ -10,6 +11,8 @@ target_link_libraries(
         Qt6::MultimediaWidgets
         Qt6::Network
         Qt6::Svg
+        Qt6::OpenGLWidgets
+        OpenGL::GL
 )
 
 set_target_properties(

@@ -48,6 +48,7 @@ set(VURA_COMMENTS "Free and open source video player and editor designed for cus
 set(VURA_LEGAL_COPYRIGHT "(C) Hale Software")
 set(VURA_CMAKE_VERSION 3.0.0)
 
+
 # Configure default version strings
 set(_vura_default_version "0" "0" "1")
 set(_vura_release_candidate 0)

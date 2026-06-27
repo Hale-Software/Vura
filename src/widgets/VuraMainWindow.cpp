@@ -37,6 +37,16 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     qInstallMessageHandler(Blogger::messageHandler);
     globalRedirector = Blogger::instance();
 
+    this->setStyleSheet(
+        "QMainWindow { background-color: #1e1e1e; }"
+        "QMenuBar { background-color: #252526; color: #ffffff; padding: 5px; font-family: 'Segoe UI'; }"
+        "QMenuBar::item:selected { background-color: #3e3e40; }"
+        "QMenu { background-color: #252526; color: #ffffff; border: 1px solid #3e3e40; padding: 5px; }"
+        "QMenu::item:selected { background-color: #007acc; }"
+    );
+
+    ui->statusBar->hide();
+
     ui->splitter->setStretchFactor(0, 1);
 
     m_playbackController = new PlaybackController(this);
@@ -89,6 +99,55 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     //connect(ui->action, &QAction::triggered, this, &VuraMainWindow::);
 
     m_playlistController->hidePlaylist();
+
+
+    auto* updater = new UpdateChecker(this);
+
+    connect(updater, &UpdateChecker::noUpdateAvailable, this, []() {
+        qDebug() << "Vura is up to date";
+    });
+
+    // Show a non-blocking notification when an update is found.
+    // The download of updater.exe is already running in the background
+    // at this point — we just let the user know what's happening.
+    connect(updater, &UpdateChecker::updateAvailable,
+            this,    [this](const QString& version) {
+        // Use a non-modal notification so the user can keep using the app
+        // while updater.exe downloads in the background.
+                ui->statusBar->show();
+        ui->statusBar->showMessage(
+            QString("Update %1 found — downloading updater...").arg(version),
+            0 // 0 = show until cleared
+        );
+    });
+
+    // Updater is downloaded and is about to launch — inform the user
+    // that the app will close.
+    connect(updater, &UpdateChecker::updateReadyToInstall, this, [this]() {
+        QMessageBox::information(
+            this,
+            "Update Ready",
+            "A new version of Vura is ready to install.\n\n"
+            "Vura will close now and the updater will run automatically.\n"
+            "Vura will relaunch when the update is complete."
+        );
+        // UpdateChecker calls QCoreApplication::quit() after this signal,
+        // so we don't need to do anything else here.
+    });
+
+    // Show errors in the status bar — don't bother the user with a dialog
+    // for a background update check failure
+    connect(updater, &UpdateChecker::error, this, [this](const QString& msg) {
+        ui->statusBar->showMessage(QString("Update check: %1").arg(msg), 8000);
+        qWarning() << "UpdateChecker:" << msg;
+    });
+
+    // Check on startup — slightly delayed so the main window appears first
+    //QTimer::singleShot(3000, updater, &UpdateChecker::check);
+
+    connect(ui->actionHelpCheckForUpdates, &QAction::triggered, updater, &UpdateChecker::check);
+
+
 
 
     qCDebug(Core) << "Application Initialized!";

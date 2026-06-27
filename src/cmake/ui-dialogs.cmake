@@ -28,6 +28,8 @@ target_sources(
         dialogs/PermissionsDialog.h
         dialogs/SettingsWindow.cpp
         dialogs/SettingsWindow.h
+        dialogs/UpdateChecker.cpp
+        dialogs/UpdateChecker.h
         dialogs/WhatsNewDialog.cpp
         dialogs/WhatsNewDialog.h
 )

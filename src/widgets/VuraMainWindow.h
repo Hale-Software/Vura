@@ -32,6 +32,7 @@
 #include <QAction>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QTimer>
 #include <QDebug>
 
 #include <libvura/constants.h>
@@ -53,6 +54,7 @@
 #include "MarkerEditDialog.h"
 #include "ConvertMediaDialog.h"
 #include "MediaInformationDialog.h"
+#include "UpdateChecker.h"
 
 #include "SystemTrayWidget.h"
 #include "VideoSliderWidget.h"

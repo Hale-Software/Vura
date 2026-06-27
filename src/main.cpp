@@ -32,7 +32,9 @@
 
 int main(int argc, char *argv[])
 {
+    //qputenv("QT_QUICK_BACKEND", "software");
     QApplication app(argc, argv);
+    //QApplication::setStyle("Fusion");
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);

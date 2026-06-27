@@ -4,6 +4,8 @@ target_sources(
         vura
         PRIVATE
         cmake/windows/vura.manifest
+        dialogs/UpdateChecker.cpp
+        dialogs/UpdateChecker.h
         #dialogs/updatewindow.cpp
         #dialogs/updatewindow.h
         #forms/updatewindow.ui
