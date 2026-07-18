@@ -59,9 +59,9 @@ int main(int argc, char *argv[])
 
             const QFileInfo info(arg2);
             if (info.isFile()) {
-                mainWindow.addFileToPlaylistContextMenu(arg2);
+                mainWindow.openFile(arg2);
             } else if (info.isDir()) {
-                mainWindow.addFolderToPlaylistContextMenu(arg2);
+                mainWindow.openFolder(arg2);
             }
 
         } else if (argc > 1) {
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
             if (pathName.isEmpty()) {
                 QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
             } else {
-                mainWindow.openFileContextMenu(pathName);
+                mainWindow.openFile(pathName);
             }
         }
 
@@ -81,9 +81,9 @@ int main(int argc, char *argv[])
             mainWindow.setMainWindowVisibility(true);
             const QFileInfo info(path);
             if (info.isFile()) {
-                mainWindow.openFileContextMenu(path);
+                mainWindow.openFile(path);
             } else if (info.isDir()) {
-                mainWindow.openFolderContextMenu(path);
+                mainWindow.openFolder(path);
             }
         });
 

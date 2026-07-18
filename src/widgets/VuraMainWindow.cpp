@@ -32,111 +32,157 @@
 
 static Blogger* globalRedirector = nullptr;
 
-VuraMainWindow::VuraMainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::VuraMainWindow)
+VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::VuraMainWindow)
 {
-    QSettings settings;
+    const QSettings settings;
 
     setAcceptDrops(true);
 
     ui->setupUi(this);
+
     qInstallMessageHandler(Blogger::messageHandler);
     globalRedirector = Blogger::instance();
 
-    ui->statusBar->hide();
+    m_playbackController = new PlaybackController(this);
+    m_playlistController = new PlaylistController(
+            ui->playlistView,
+            ui->emptyPlaylistView,
+            ui->playlistWidget,
+            this
+        );
 
-    m_player = new QMediaPlayer(this);
-    m_audioOutput = new QAudioOutput(this);
-    m_player->setAudioOutput(m_audioOutput);
-    m_player->setVideoOutput(ui->videoWidget);
-    m_videoSink = m_player->videoSink();
+    m_playbackController->getPlayer()->setVideoOutput(ui->videoWidget);
+    connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
 
-    connect(m_player, &QMediaPlayer::durationChanged, this, &VuraMainWindow::durationChanged);
-    connect(m_player, &QMediaPlayer::positionChanged, this, &VuraMainWindow::positionChanged);
-    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &VuraMainWindow::statusChanged);
-    connect(m_player, &QMediaPlayer::bufferProgressChanged, this, &VuraMainWindow::bufferingProgress);
-    connect(m_player, &QMediaPlayer::errorChanged, this, &VuraMainWindow::displayErrorMessage);
-    connect(m_player, &QMediaPlayer::sourceChanged, this, &VuraMainWindow::sourceChanged);
-    connect(m_player, &QMediaPlayer::tracksChanged, this, &VuraMainWindow::tracksChanged);
-    connect(m_player, &QMediaPlayer::playbackRateChanged, this, &VuraMainWindow::playbackRateChanged);
-    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &VuraMainWindow::videoFrameChanged);
-
-    m_playlistModel = new PlaylistModel(this);
-    m_playlist = m_playlistModel->playlist();
-    ui->playlistView->setModel(m_playlistModel);
-    ui->playlistView->setCurrentIndex(m_playlistModel->index(m_playlist->currentIndex(), 0));
     if (settings.value("showPlaylistOnStart", false).toBool()) {
-        ui->playlistWidget->show();
+        m_playlistController->showPlaylist();
     } else {
-        ui->playlistWidget->hide();
+        m_playlistController->hidePlaylist();
     }
 
-    connect(m_playlist, &Playlist::currentIndexChanged, this, &VuraMainWindow::playlistPositionChanged);
-    connect(ui->playlistView, &QListView::activated, this, &VuraMainWindow::jump);
     //connect(ui->playlistView, &QListView::customContextMenuRequested, this, &VuraMainWindow::showPlaylistContextMenu);
 
-    //m_playlistController = new PlaylistController(
-    //        ui->playlistView,
-    //        ui->emptyPlaylistView,
-    //        ui->playlistWidget,
-    //        this
-    //    );
 
+    // Playback Actions
+    connect(ui->actionPlaybackNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
+    this->addAction(ui->actionPlaybackNext);
+    ui->actionPlaybackNext->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackPrevious, &QAction::triggered, m_playlistController, &PlaylistController::previousTrack);
+    this->addAction(ui->actionPlaybackPrevious);
+    ui->actionPlaybackPrevious->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackTogglePlay, &QAction::triggered, m_playbackController, &PlaybackController::togglePlayPause);
+    this->addAction(ui->actionPlaybackTogglePlay);
+    ui->actionPlaybackTogglePlay->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackRestartVideo, &QAction::triggered, m_playbackController, &PlaybackController::restart);
+    this->addAction(ui->actionPlaybackRestartVideo);
+    ui->actionPlaybackRestartVideo->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewTogglePlaylist, &QAction::triggered, m_playlistController, &PlaylistController::togglePlaylist);
+
+    // Audio Actions
+    connect(ui->actionAudioToggleMute, &QAction::triggered, m_playbackController, &PlaybackController::toggleMute);
+    this->addAction(ui->actionAudioToggleMute);
+    ui->actionAudioToggleMute->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionAudioVolumeDown, &QAction::triggered, m_playbackController, &PlaybackController::volumeDown);
+    this->addAction(ui->actionAudioVolumeDown);
+    ui->actionAudioVolumeDown->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionAudioVolumeUp, &QAction::triggered, m_playbackController, &PlaybackController::volumeUp);
+    this->addAction(ui->actionAudioVolumeUp);
+    ui->actionAudioVolumeUp->setShortcutContext(Qt::WindowShortcut);
+
+    // Video Slider
     m_videoSlider = new VideoSlider(&m_videoMarkers, this);
-    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *m_player, this);
+    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *(m_playbackController->getPlayer()), this);
 
     ui->verticalLayout->addWidget(m_videoSliderWidget);
     ui->verticalLayout->setStretch(0, 1);
 
     connect(this, &VuraMainWindow::updateVideoSlider, m_videoSlider, &VideoSlider::updateVideoSlider);
-    connect(m_videoSlider, &VideoSlider::valueChanged, this, &VuraMainWindow::seek);
-    connect(m_videoSlider, &VideoSlider::sliderPressed, this, &VuraMainWindow::seek);
-    //connect(m_playbackController, &PlaybackController::positionChanged, m_videoSlider, &VideoSlider::setValue);
-    //connect(m_playbackController, &PlaybackController::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
-    //connect(m_playbackController, &PlaybackController::sourceChanged, this, &VuraMainWindow::sourceChanged);
-    //connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
-    //connect(ui->emptyPlaylistView, &PlaylistEmptyStateWidget::requestFileImport, m_playlistController, &PlaylistController::requestFileImport);
-    //connect(m_playbackController, &PlaybackController::positionChanged, this, &VuraMainWindow::);
-    //connect(m_playbackController, &PlaybackController::durationChanged, this, &VuraMainWindow::);
+    connect(m_playbackController, &PlaybackController::positionChanged, m_videoSlider, &VideoSlider::setValue);
+    connect(m_playbackController, &PlaybackController::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
+    connect(m_playbackController, &PlaybackController::sourceChanged, this, &VuraMainWindow::sourceChanged);
+    connect(m_videoSlider, &VideoSlider::valueChanged, m_playbackController, &PlaybackController::setPosition);
+    connect(m_videoSlider, &VideoSlider::sliderPressed, m_playbackController, &PlaybackController::setPaused);
 
-
-    //connect(ui->actionAudioToggleMute, &QAction::triggered, m_playbackController, &PlaybackController::toggleMute);
-    connect(ui->actionAudioVolumeDown, &QAction::triggered, this, &VuraMainWindow::actionVolumeDown);
-    connect(ui->actionAudioVolumeUp, &QAction::triggered, this, &VuraMainWindow::actionVolumeUp);
     connect(ui->actionFileEmergencyClose, &QAction::triggered, this, &VuraMainWindow::actionEmergencyClose);
+    this->addAction(ui->actionFileEmergencyClose);
+    ui->actionFileEmergencyClose->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionFileExit, &QAction::triggered, this, &VuraMainWindow::actionExit);
-    //connect(ui->actionFileOpenFile, &QAction::triggered, m_playlistController, &PlaylistController::requestFileImport);
+    this->addAction(ui->actionFileExit);
+    ui->actionFileExit->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionFileOpenFile, &QAction::triggered, this, &VuraMainWindow::actionOpenFile);
+    this->addAction(ui->actionFileOpenFile);
+    ui->actionFileOpenFile->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionFileOpenFolder, &QAction::triggered, this, &VuraMainWindow::actionOpenFolder);
+    this->addAction(ui->actionFileOpenFolder);
+    ui->actionFileOpenFolder->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionFileOpenMultipleFiles, &QAction::triggered, this, &VuraMainWindow::actionOpenMultipleFiles);
+    this->addAction(ui->actionFileOpenMultipleFiles);
+    ui->actionFileOpenMultipleFiles->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
     connect(ui->actionHelpViewCurrentLog, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
-    //connect(ui->actionPlaybackNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
-    //connect(ui->actionPlaybackPrevious, &QAction::triggered, m_playlistController, &PlaylistController::previousTrack);
-    connect(ui->actionPlaybackNext, &QAction::triggered, this, &VuraMainWindow::actionNext);
-    connect(ui->actionPlaybackPrevious, &QAction::triggered, this, &VuraMainWindow::actionPrevious);
-    connect(ui->actionPlaybackRestartVideo, &QAction::triggered, this, &VuraMainWindow::actionRestart);
-    connect(ui->actionPlaybackTogglePlay, &QAction::triggered, this, &VuraMainWindow::actionTogglePlay);
+
     connect(ui->actionToolsTestFunction, &QAction::triggered, this, &VuraMainWindow::actionTestFunction);
+    this->addAction(ui->actionToolsTestFunction);
+    ui->actionToolsTestFunction->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionVideoFullscreen, &QAction::triggered, this, &VuraMainWindow::actionToggleFullscreen);
-    connect(ui->actionViewTogglePlaylist, &QAction::triggered, this, &VuraMainWindow::actionTogglePlaylist);
+    this->addAction(ui->actionVideoFullscreen);
+    ui->actionVideoFullscreen->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionViewToggleVideoControls, &QAction::triggered, this, &VuraMainWindow::actionToggleVideoControls);
-    connect(ui->actionPlaybackJumpForwardExtraLarge, &QAction::triggered, this, &VuraMainWindow::actionJumpForwardExtraLarge);
-    connect(ui->actionPlaybackJumpBackwardExtraLarge, &QAction::triggered, this, &VuraMainWindow::actionJumpBackwardExtraLarge);
-    connect(ui->actionPlaybackJumpForwardLarge, &QAction::triggered, this, &VuraMainWindow::actionJumpForwardLarge);
-    connect(ui->actionPlaybackJumpBackwardLarge, &QAction::triggered, this, &VuraMainWindow::actionJumpBackwardLarge);
-    connect(ui->actionPlaybackJumpForwardMedium, &QAction::triggered, this, &VuraMainWindow::actionJumpForwardMedium);
-    connect(ui->actionPlaybackJumpBackwardMedium, &QAction::triggered, this, &VuraMainWindow::actionJumpBackwardMedium);
-    connect(ui->actionPlaybackJumpForwardSmall, &QAction::triggered, this, &VuraMainWindow::actionJumpForwardSmall);
-    connect(ui->actionPlaybackJumpBackwardSmall, &QAction::triggered, this, &VuraMainWindow::actionJumpBackwardSmall);
-    connect(ui->actionPlaybackJumpForwardExtraSmall, &QAction::triggered, this, &VuraMainWindow::actionJumpForwardExtraSmall);
-    connect(ui->actionPlaybackJumpBackwardExtraSmall, &QAction::triggered, this, &VuraMainWindow::actionJumpBackwardExtraSmall);
 
-    //connect(ui->action, &QAction::triggered, this, &VuraMainWindow::);
+    connect(ui->actionPlaybackJumpForwardExtraLarge, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardExtraLarge);
+    this->addAction(ui->actionPlaybackJumpForwardExtraLarge);
+    ui->actionPlaybackJumpForwardExtraLarge->setShortcutContext(Qt::WindowShortcut);
 
-    //m_playlistController->hidePlaylist();
+    connect(ui->actionPlaybackJumpBackwardExtraLarge, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardExtraLarge);
+    this->addAction(ui->actionPlaybackJumpBackwardExtraLarge);
+    ui->actionPlaybackJumpBackwardExtraLarge->setShortcutContext(Qt::WindowShortcut);
 
+    connect(ui->actionPlaybackJumpForwardLarge, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardLarge);
+    this->addAction(ui->actionPlaybackJumpForwardLarge);
+    ui->actionPlaybackJumpForwardLarge->setShortcutContext(Qt::WindowShortcut);
 
+    connect(ui->actionPlaybackJumpBackwardLarge, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardLarge);
+    this->addAction(ui->actionPlaybackJumpBackwardLarge);
+    ui->actionPlaybackJumpBackwardLarge->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpForwardMedium, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardMedium);
+    this->addAction(ui->actionPlaybackJumpForwardMedium);
+    ui->actionPlaybackJumpForwardMedium->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpBackwardMedium, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardMedium);
+    this->addAction(ui->actionPlaybackJumpBackwardMedium);
+    ui->actionPlaybackJumpBackwardMedium->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpForwardSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardSmall);
+    this->addAction(ui->actionPlaybackJumpForwardSmall);
+    ui->actionPlaybackJumpForwardSmall->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpBackwardSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardSmall);
+    this->addAction(ui->actionPlaybackJumpBackwardSmall);
+    ui->actionPlaybackJumpBackwardSmall->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpForwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardExtraSmall);
+    this->addAction(ui->actionPlaybackJumpForwardExtraSmall);
+    ui->actionPlaybackJumpForwardExtraSmall->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackJumpBackwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardExtraSmall);
+    this->addAction(ui->actionPlaybackJumpBackwardExtraSmall);
+    ui->actionPlaybackJumpBackwardExtraSmall->setShortcutContext(Qt::WindowShortcut);
+
+    /*
     auto* updater = new UpdateChecker(this);
 
     connect(updater, &UpdateChecker::noUpdateAvailable, this, []() {
@@ -182,15 +228,12 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     //QTimer::singleShot(3000, updater, &UpdateChecker::check);
 
     connect(ui->actionHelpCheckForUpdates, &QAction::triggered, updater, &UpdateChecker::check);
-
-
-
-
+*/
     qCDebug(Core) << "Application Initialized!";
     qCInfo(Core) << "Vura Version: " << VURA_VERSION_STRING;
 }
 
-void VuraMainWindow::setMainWindowVisibility(bool state)
+void VuraMainWindow::setMainWindowVisibility(const bool state)
 {
     if (state) {
         this->show();
@@ -200,73 +243,27 @@ void VuraMainWindow::setMainWindowVisibility(bool state)
     }
 }
 
-void VuraMainWindow::openFolderContextMenu(const QString &path) {}
-
-void VuraMainWindow::openFileContextMenu(const QString &file)
+void VuraMainWindow::openFile(const QString &file) const
 {
-    //const int previousMediaCount = m_playlistController->getModel()->rowCount();
-    const int previousMediaCount = m_playlist->mediaCount();
+    QStringList fileList;
     if (!file.isEmpty()) {
-        QUrl url = QUrl::fromLocalFile(file);
-        if (!MediaFunctions::isPlaylist(url)) {
-            m_playlist->addMedia(url);
-            if (m_playlist->mediaCount() > previousMediaCount) {
-                const auto index = m_playlistModel->index(previousMediaCount, 0);
-                ui->playlistView->setCurrentIndex(index);
-                jump(index);
-            }
-            //m_playlistController->getModel()->addItem({url.toString(), url.toString(), 0, 0, false});
-            //if (m_playlistController->getModel()->rowCount() > previousMediaCount) {
-            //    auto index = m_playlistController->getModel()->index(previousMediaCount, 0);
-            //    ui->playlistView->setCurrentIndex(index);
-            //    jump(index);
-            //}
-        } else {
-            //m_playlist->loadPlaylist(file);
-            //if (m_playlist->mediaCount() > previousMediaCount) {
-            //    const auto index = m_playlistModel->index(previousMediaCount, 0);
-            //    ui->playlistView->setCurrentIndex(index);
-            //    jump(index);
-            //}
-        }
+        fileList << file;
+        m_playlistController->filesDropped(fileList);
     }
 }
 
-void VuraMainWindow::addFileToPlaylistContextMenu(const QString &file) const
+void VuraMainWindow::openFolder(const QString &path) const
 {
-    if (!file.isEmpty())
-        m_playlist->addMedia(QUrl::fromLocalFile(file));
-    //if (!file.isEmpty())
-    //    m_playlistController->getModel()->addItem({file, file, 0, 0, false});
-}
-
-void VuraMainWindow::addFolderToPlaylistContextMenu(const QString &path)
-{
-    qDebug() << "Add Folder to Playlist path: " << path;
-
-    const int previousMediaCount = m_playlist->mediaCount();
+    QStringList fileList;
 
     if (!path.isEmpty()) {
-        QList<QUrl> filesList;
         QDirIterator folderIterator(path, QDir::Files | QDir::NoDotAndDotDot);
         while (folderIterator.hasNext()) {
             folderIterator.next();
-            filesList.append(QUrl::fromLocalFile(folderIterator.filePath()));
+            fileList << folderIterator.filePath();
         }
 
-        for (auto &fileUrl : filesList) {
-            if (!MediaFunctions::isPlaylist(fileUrl)) {
-                m_playlist->addMedia(fileUrl);
-            } else {
-                QMessageBox::information(this, "Vura", "Playlist file in folder is being skipped.");
-            }
-        }
-
-        if (m_playlist->mediaCount() > previousMediaCount) {
-            auto index = m_playlistModel->index(previousMediaCount, 0);
-            ui->playlistView->setCurrentIndex(index);
-            jump(index);
-        }
+        m_playlistController->filesDropped(fileList);
     }
 }
 
@@ -289,13 +286,11 @@ bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qin
     }
 #endif
 
-    // For other events, or if not handled, call the base implementation
     return QWidget::nativeEvent(eventType, message, result);
 }
 
 void VuraMainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    qCDebug(Core) << "Drop event received in VuraMainWindow";
     if (event->mimeData()->hasUrls()) {
         event->acceptProposedAction();
 
@@ -307,30 +302,24 @@ void VuraMainWindow::dragEnterEvent(QDragEnterEvent *event)
 void VuraMainWindow::dropEvent(QDropEvent *event)
 {
     const QMimeData *mimeData = event->mimeData();
-
     if (mimeData->hasUrls()) {
-        QList<QUrl> urlList = mimeData->urls();
-
-        // Iterate through all dropped files/folders
-        for (const QUrl &url : urlList) {
-            // Convert file protocol (file://) to local OS path string
-            QString filePath = url.toLocalFile();
-
-            if (!filePath.isEmpty()) {
-                qCDebug(Core) << "Dropped File Path:" << filePath;
-
-                // Optional: Check if item is a file or folder
-                QFileInfo fileInfo(filePath);
-                if (fileInfo.isDir()) {
-                    //m_playbackController->loadMedia(filePath);
-                    // Handle folder entry
-                } else {
-                    // Handle file entry
-                    m_player->setSource(filePath);
-                }
-            }
+        QStringList droppedFiles;
+        for (const QUrl &url : mimeData->urls()) {
+            droppedFiles << url.toLocalFile();
         }
+
+        m_playlistController->filesDropped(droppedFiles);
         event->acceptProposedAction();
+    }
+}
+
+void VuraMainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (this->isFullScreen() && event->key() == Qt::Key_Escape) {
+        actionToggleFullscreen();
+        event->accept();
+    } else {
+        QMainWindow::keyPressEvent(event);
     }
 }
 
@@ -343,19 +332,15 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
 
     m_videoSlider->setSource(source.toLocalFile());
     qCDebug(Core) << "Source changed to: " << source.toLocalFile();
+
+    setApplicationWindowTitle();
 }
 
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
 {
     qCCritical(Core) << "QMediaPlayer Error: " << errorMessage;
     QMessageBox::critical(this, "Media Player Error", errorMessage);
-    this->close();
-}
-
-void VuraMainWindow::playlistPositionChanged(int index)
-{
-    ui->playlistView->setCurrentIndex(m_playlistModel->index(index, 0));
-    m_player->setSource(m_playlist->currentMedia());
+    //this->close();
 }
 
 void VuraMainWindow::actionTestFunction()
@@ -369,29 +354,18 @@ void VuraMainWindow::actionTestFunction()
 void VuraMainWindow::actionOpenFile()
 {
     QSettings settings;
-    const int previousMediaCount = m_playlist->mediaCount();
-    QString fileName = QFileDialog::getOpenFileName(
+    QStringList fileList;
+
+    const QString fileName = QFileDialog::getOpenFileName(
         this,
         tr("Open File"),
         settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
         "All Files (*)");
 
     if (!fileName.isEmpty()) {
-        QUrl url = QUrl::fromLocalFile(fileName);
-        if (!MediaFunctions::isPlaylist(url)) {
-            m_playlist->addMedia(url);
-            if (previousMediaCount > 0) {
-                if (m_playlist->mediaCount() > previousMediaCount) {
-                    const auto index = m_playlistModel->index(previousMediaCount, 0);
-                    ui->playlistView->setCurrentIndex(index);
-                    jump(index);
-                }
-            } else {
-                m_playlist->next();
-            }
-        } else {
+        fileList << fileName;
+        m_playlistController->filesDropped(fileList);
 
-        }
         settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
     }
 }
@@ -399,7 +373,8 @@ void VuraMainWindow::actionOpenFile()
 void VuraMainWindow::actionOpenFolder()
 {
     QSettings settings;
-    const int previousMediaCount = m_playlist->mediaCount();
+    QStringList fileList;
+
     const QString dir = QFileDialog::getExistingDirectory(
             this,
             tr("Open Folder"),
@@ -408,39 +383,26 @@ void VuraMainWindow::actionOpenFolder()
         );
 
     if (!dir.isEmpty()) {
-        QStringList filePaths;
         const QDir directory(dir);
         QStringList filters;
         filters << "*.mp4" << "*.mkv" << "*.avi" << "*.mp3" << "*.wav" << "*.flac";
 
         QFileInfoList fileInfoList = directory.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
         for (const QFileInfo& fileInfo : fileInfoList) {
-            filePaths << fileInfo.absoluteFilePath();
+            fileList << fileInfo.absoluteFilePath();
         }
 
-        for (auto &filePath : filePaths) {
-            QUrl url = QUrl::fromLocalFile(filePath);
-            if (!MediaFunctions::isPlaylist(url)) {
-                m_playlist->addMedia(url);
-            } else {
+        m_playlistController->filesDropped(fileList);
 
-            }
-        }
-
-        if (m_playlist->mediaCount() > previousMediaCount) {
-            const auto index = m_playlistModel->index(previousMediaCount, 0);
-            ui->playlistView->setCurrentIndex(index);
-            jump(index);
-
-            settings.setValue("lastFileDirectory", QFileInfo(dir).path());
-        }
+        settings.setValue("lastFileDirectory", QFileInfo(dir).path());
     }
 }
 
 void VuraMainWindow::actionOpenMultipleFiles()
 {
     QSettings settings;
-    const int previousMediaCount = m_playlist->mediaCount();
+    QStringList fileList;
+
     const QStringList files = QFileDialog::getOpenFileNames(
             this,
             tr("Open Media Files"),
@@ -449,72 +411,18 @@ void VuraMainWindow::actionOpenMultipleFiles()
         );
 
     for (const QString& fileName : files) {
-        QUrl url = QUrl::fromLocalFile(fileName);
-        if (!MediaFunctions::isPlaylist(url)) {
-            m_playlist->addMedia(url);
-        } else {
-
-        }
+        fileList << fileName;
     }
 
-    if (m_playlist->mediaCount() > previousMediaCount) {
-        const auto index = m_playlistModel->index(previousMediaCount, 0);
-        ui->playlistView->setCurrentIndex(index);
-        jump(index);
+    m_playlistController->filesDropped(fileList);
 
-        QString lastFile = files.last();
-        settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
-    }
-}
-
-void VuraMainWindow::actionVolumeUp()
-{
-    float oldVolume = m_audioOutput->volume();
-    if (oldVolume >= 1.0) return;
-    m_audioOutput->setVolume(oldVolume + 0.1);
-}
-
-void VuraMainWindow::actionVolumeDown()
-{
-    float oldVolume = m_audioOutput->volume();
-    if (oldVolume <= 0.1) return;
-    m_audioOutput->setVolume(oldVolume - 0.1);
-}
-
-void VuraMainWindow::actionNext()
-{
-    m_playlist->next();
-}
-
-void VuraMainWindow::actionPrevious()
-{
-    if (m_player->position() <= 5000) {
-        m_playlist->previous();
-    } else {
-        m_player->setPosition(0);
-    }
-}
-
-void VuraMainWindow::actionJumpForward()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 30000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackward()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 30000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
+    const QString& lastFile = files.last();
+    settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
 }
 
 void VuraMainWindow::actionEmergencyClose()
 {
-    m_player->pause();
+    m_playbackController->getPlayer()->pause();
     this->setWindowState(Qt::WindowMinimized);
 }
 
@@ -530,11 +438,18 @@ void VuraMainWindow::actionShowLogViewer()
 
 void VuraMainWindow::actionToggleFullscreen()
 {
-    if (ui->videoWidget->isFullScreen()) {
-        ui->videoWidget->setFullScreen(false);
-        ui->videoWidget->showNormal();
+    if (this->isFullScreen()) {
+        this->showNormal();
+
+        ui->menubar->show();
+        if (m_wasPlaylistShowing) m_playlistController->showPlaylist();
+
     } else {
-        ui->videoWidget->setFullScreen(true);
+        m_wasPlaylistShowing = m_playlistController->isPlaylistVisible();
+        this->showFullScreen();
+
+        ui->menubar->hide();
+        m_playlistController->hidePlaylist();
     }
 }
 
@@ -561,36 +476,27 @@ void VuraMainWindow::actionExit()
     }
 }
 
-void VuraMainWindow::actionTogglePlaylist() const
-{
-    //m_playlistController->togglePlaylist();
-    if (ui->playlistWidget->isVisible()) {
-        ui->playlistWidget->hide();
-    } else {
-        ui->playlistWidget->show();
-    }
-}
-
 void VuraMainWindow::actionToggleVideoControls()
 {
     if (m_showingVideoControls) {
         ui->verticalLayout->removeWidget(m_videoControlWidget);
         delete m_videoControlWidget;
         m_showingVideoControls = false;
-
     } else {
         m_videoControlWidget = new VideoControlWidget(this);
-        m_videoControlWidget->setMuted(m_audioOutput->isMuted());
-        m_videoControlWidget->setVolume(m_audioOutput->volume());
+
+        // Use getters from PlaybackController to set initial states
+        m_videoControlWidget->setMuted(m_playbackController->getAudioOutput()->isMuted());
+        m_videoControlWidget->setVolume(m_playbackController->getAudioOutput()->volume());
+
         ui->verticalLayout->addWidget(m_videoControlWidget);
-        connect(m_player, &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
-        connect(m_videoControlWidget, &VideoControlWidget::play, m_player, &QMediaPlayer::play);
-        connect(m_videoControlWidget, &VideoControlWidget::pause, m_player, &QMediaPlayer::pause);
-        connect(m_videoControlWidget, &VideoControlWidget::stop, m_player, &QMediaPlayer::stop);
-        //connect(m_videoControlWidget, &VideoControlWidget::changeVolume, m_playbackController, &PlaybackController::changeVolume);
-        //connect(m_videoControlWidget, &VideoControlWidget::changeMuting, m_playbackController, &PlaybackController::setMute);
-        //connect(m_playbackController->getAudioOutput(), &QAudioOutput::volumeChanged, m_videoControlWidget, &VideoControlWidget::setVolume);
-        //connect(m_playbackController->getAudioOutput(), &QAudioOutput::mutedChanged, m_videoControlWidget, &VideoControlWidget::setMuted);
+
+        // Connect UI controls directly to PlaybackController
+        connect(m_playbackController->getPlayer(), &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
+        connect(m_videoControlWidget, &VideoControlWidget::play, m_playbackController, &PlaybackController::play);
+        connect(m_videoControlWidget, &VideoControlWidget::pause, m_playbackController, &PlaybackController::pause);
+        connect(m_videoControlWidget, &VideoControlWidget::stop, m_playbackController, &PlaybackController::stop);
+
         m_showingVideoControls = true;
     }
 }
@@ -605,8 +511,8 @@ void VuraMainWindow::setApplicationWindowTitle()
 {
     QString windowTitle;
 
-    if (!m_player->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_player->source().toLocalFile()), VURA_VERSION_STRING);
+    if (!m_playbackController->getPlayer()->source().isEmpty()) {
+        windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_playbackController->getPlayer()->source().toLocalFile()), VURA_VERSION_STRING);
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
     }
@@ -633,122 +539,3 @@ QString VuraMainWindow::trackName(const QMediaMetaData &metaData, int index)
     }
     return name;
 }
-
-void VuraMainWindow::jump(const QModelIndex &index) const
-{
-    if (index.isValid())
-        ui->playlistView->setCurrentIndex(index);
-}
-
-void VuraMainWindow::actionJumpForwardExtraLarge()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 90000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackwardExtraLarge()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 90000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpForwardLarge()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 60000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackwardLarge()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 60000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpForwardMedium()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 30000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackwardMedium()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 30000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpForwardSmall()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 15000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackwardSmall()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 15000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpForwardExtraSmall()
-{
-    const qint64 currentPosition = m_player->position();
-    const qint64 duration = m_player->duration();
-    qint64 jumpTo = currentPosition + 5000;
-    if (jumpTo > duration) jumpTo = duration;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionJumpBackwardExtraSmall()
-{
-    const qint64 currentPosition = m_player->position();
-    qint64 jumpTo = currentPosition - 5000;
-    if (jumpTo < 0) jumpTo = 0;
-    m_player->setPosition(jumpTo);
-}
-
-void VuraMainWindow::actionTogglePlay()
-{
-    
-}
-
-void VuraMainWindow::actionRestart()
-{
-    
-}
-
-void VuraMainWindow::durationChanged(qint64 duration) {}
-
-void VuraMainWindow::positionChanged(qint64 progress) {}
-
-void VuraMainWindow::tracksChanged() {}
-
-void VuraMainWindow::statusChanged(QMediaPlayer::MediaStatus status) {}
-
-void VuraMainWindow::bufferingProgress(float progress) {}
-
-void VuraMainWindow::displayErrorMessage() {}
-
-void VuraMainWindow::playbackRateChanged(qreal rate) {}
-
-void VuraMainWindow::videoFrameChanged(const QVideoFrame &frame) {}
-
-void VuraMainWindow::seek(int mseconds) {}

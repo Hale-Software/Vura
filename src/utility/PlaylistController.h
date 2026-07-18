@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #pragma once
 
 #include <QObject>
@@ -28,16 +46,17 @@ public:
     ~PlaylistController() override;
 
     PlaylistModel* getModel() const { return m_model; }
+    bool isPlaylistVisible() const { return m_container->isVisible(); }
 
 public slots:
     void showContextMenu(const QPoint& pos);
-    void requestFileImport() const;
-    void addFolder() const;
-    void filesDropped(const QStringList &filePaths) const;
-    void clearPlaylist() const;
-    void hidePlaylist() const;
-    void showPlaylist() const;
-    void togglePlaylist() const;
+    void requestFileImport();
+    void addFolder();
+    void filesDropped(const QStringList &filePaths);
+    void clearPlaylist();
+    void hidePlaylist();
+    void showPlaylist();
+    void togglePlaylist();
     void nextTrack();
     void previousTrack();
 
@@ -51,7 +70,7 @@ private slots:
     void itemClicked(const QModelIndex &index);
 
 private:
-    void processFilePaths(const QStringList &paths) const;
+    void processFilePaths(const QStringList &paths);
 
     PlaylistModel* m_model;
     QListView* m_view;

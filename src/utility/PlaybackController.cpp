@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "PlaybackController.h"
 
 
@@ -10,7 +28,7 @@ PlaybackController::PlaybackController(QObject* parent, const int volume, const 
 {
     m_player->setAudioOutput(m_audioOutput);
 
-    float linearVolume = QAudio::convertVolume(m_volume / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
+    const float linearVolume = QAudio::convertVolume(m_volume / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     m_audioOutput->setVolume(linearVolume);
 
     m_player->setPlaybackRate(m_playbackRate);
@@ -55,11 +73,12 @@ void PlaybackController::playTrack(const QUrl &mediaUrl)
 
     m_player->stop();
     m_player->setSource(mediaUrl);
+    emit sourceChanged(mediaUrl);
     if (wasPlaying)
         m_player->play();
 }
 
-void PlaybackController::loadMedia(const QUrl& url)
+void PlaybackController::loadMedia(const QUrl& url) const
 {
     if (url.isEmpty())
         return;
@@ -72,7 +91,7 @@ void PlaybackController::loadMedia(const QUrl& url)
         m_player->play();
 }
 
-void PlaybackController::loadMedia(const QString& fileName)
+void PlaybackController::loadMedia(const QString& fileName) const
 {
     const bool wasPlaying = m_player->playbackState() == QMediaPlayer::PlayingState;
     m_player->setSource(QUrl::fromLocalFile(fileName));
@@ -80,7 +99,7 @@ void PlaybackController::loadMedia(const QString& fileName)
         m_player->play();
 }
 
-void PlaybackController::loadRemoteMedia(const QString &url)
+void PlaybackController::loadRemoteMedia(const QString &url) const
 {
     const bool wasPlaying = m_player->playbackState() == QMediaPlayer::PlayingState;
     m_player->setSource(QUrl(url));
@@ -88,7 +107,7 @@ void PlaybackController::loadRemoteMedia(const QString &url)
         m_player->play();
 }
 
-void PlaybackController::loadRemoteMedia(const QUrl &url)
+void PlaybackController::loadRemoteMedia(const QUrl &url) const
 {
     const bool wasPlaying = m_player->playbackState() == QMediaPlayer::PlayingState;
     m_player->setSource(url);
@@ -140,6 +159,11 @@ void PlaybackController::restart() const
     m_player->play();
 }
 
+void PlaybackController::setPosition(const qint64 position) const
+{
+    m_player->setPosition(position);
+}
+
 void PlaybackController::setPlaybackRate(const double rate) const
 {
     if (rate > 0.0) {
@@ -149,7 +173,7 @@ void PlaybackController::setPlaybackRate(const double rate) const
     }
 }
 
-void PlaybackController::changeVolume(const int newVolume)
+void PlaybackController::changeVolume(const int newVolume) const
 {
     // Qt6 QAudioOutput volume is a linear float from 0.0 to 1.0
     // Assuming UI sends a value from 0 to 100
@@ -157,12 +181,26 @@ void PlaybackController::changeVolume(const int newVolume)
     m_audioOutput->setVolume(linearVolume);
 }
 
+void PlaybackController::volumeUp() const
+{
+    const float currentVolume = m_audioOutput->volume();
+    if (currentVolume >= 1.0) return;
+    m_audioOutput->setVolume(currentVolume + 0.1);
+}
+
+void PlaybackController::volumeDown() const
+{
+    const float currentVolume = m_audioOutput->volume();
+    if (currentVolume <= 0.1) return;
+    m_audioOutput->setVolume(currentVolume - 0.1);
+}
+
 void PlaybackController::toggleMute() const
 {
     m_audioOutput->setMuted(!m_audioOutput->isMuted());
 }
 
-void PlaybackController::setMute(bool mute) const
+void PlaybackController::setMute(const bool mute) const
 {
     m_audioOutput->setMuted(mute);
 }
@@ -170,4 +208,89 @@ void PlaybackController::setMute(bool mute) const
 void PlaybackController::seek(const qint64 position) const
 {
     m_player->setPosition(position);
+}
+
+void PlaybackController::jumpForwardExtraLarge() const
+{
+    const qint64 currentPosition = m_player->position();
+    const qint64 duration = m_player->duration();
+    qint64 jumpTo = currentPosition + 90000;
+    if (jumpTo > duration) jumpTo = duration;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpBackwardExtraLarge() const
+{
+    const qint64 currentPosition = m_player->position();
+    qint64 jumpTo = currentPosition - 90000;
+    if (jumpTo < 0) jumpTo = 0;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpForwardLarge() const
+{
+    const qint64 currentPosition = m_player->position();
+    const qint64 duration = m_player->duration();
+    qint64 jumpTo = currentPosition + 60000;
+    if (jumpTo > duration) jumpTo = duration;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpBackwardLarge() const
+{
+    const qint64 currentPosition = m_player->position();
+    qint64 jumpTo = currentPosition - 60000;
+    if (jumpTo < 0) jumpTo = 0;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpForwardMedium() const
+{
+    const qint64 currentPosition = m_player->position();
+    const qint64 duration = m_player->duration();
+    qint64 jumpTo = currentPosition + 30000;
+    if (jumpTo > duration) jumpTo = duration;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpBackwardMedium() const
+{
+    const qint64 currentPosition = m_player->position();
+    qint64 jumpTo = currentPosition - 30000;
+    if (jumpTo < 0) jumpTo = 0;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpForwardSmall() const
+{
+    const qint64 currentPosition = m_player->position();
+    const qint64 duration = m_player->duration();
+    qint64 jumpTo = currentPosition + 15000;
+    if (jumpTo > duration) jumpTo = duration;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpBackwardSmall() const
+{
+    const qint64 currentPosition = m_player->position();
+    qint64 jumpTo = currentPosition - 15000;
+    if (jumpTo < 0) jumpTo = 0;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpForwardExtraSmall() const
+{
+    const qint64 currentPosition = m_player->position();
+    const qint64 duration = m_player->duration();
+    qint64 jumpTo = currentPosition + 5000;
+    if (jumpTo > duration) jumpTo = duration;
+    m_player->setPosition(jumpTo);
+}
+
+void PlaybackController::jumpBackwardExtraSmall() const
+{
+    const qint64 currentPosition = m_player->position();
+    qint64 jumpTo = currentPosition - 5000;
+    if (jumpTo < 0) jumpTo = 0;
+    m_player->setPosition(jumpTo);
 }

@@ -1,7 +1,25 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "PlaylistController.h"
 #include "PlaylistEmptyStateWidget.h"
-#include <libvura/playlist/PlaylistModel.h>
-#include <libvura/playlist/PlaylistDelegate.h>
+#include <libvura/playlist/playlist-model.h>
+#include <libvura/playlist/playlist-delegate.h>
 
 
 PlaylistController::PlaylistController(QListView* view, PlaylistEmptyStateWidget* emptyPlaylistWidget, QStackedWidget* container, QObject* parent) :
@@ -45,20 +63,50 @@ void PlaylistController::handleItemDoubleClicked(const QModelIndex &index)
 
 void PlaylistController::nextTrack()
 {
-    int nextIndex = m_model->getNextIndex();
+    if (m_model->rowCount() == 0) return;
+
+    int currentIndex = m_view->currentIndex().row();
+
+    if (currentIndex < 0) {
+        currentIndex = 0;
+    }
+
+    int nextIndex = currentIndex + 1;
+
+    if (nextIndex >= m_model->rowCount()) {
+        nextIndex = 0;
+    }
+
     QString filePath = m_model->currentURL(nextIndex);
 
-    if (!filePath.isEmpty())
+    if (!filePath.isEmpty()) {
+        m_view->setCurrentIndex(m_model->index(nextIndex, 0));
         emit playTrackRequested(QUrl::fromLocalFile(filePath));
+    }
 }
 
 void PlaylistController::previousTrack()
 {
-    int previousIndex = m_model->getPreviousIndex();
+    if (m_model->rowCount() == 0) return;
+
+    int currentIndex = m_view->currentIndex().row();
+
+    if (currentIndex < 0) {
+        currentIndex = 0;
+    }
+
+    int previousIndex = currentIndex - 1;
+
+    if (previousIndex < 0) {
+        previousIndex = m_model->rowCount() - 1;
+    }
+
     QString filePath = m_model->currentURL(previousIndex);
 
-    if (!filePath.isEmpty())
+    if (!filePath.isEmpty()) {
+        m_view->setCurrentIndex(m_model->index(previousIndex, 0));
         emit playTrackRequested(QUrl::fromLocalFile(filePath));
+    }
 }
 
 void PlaylistController::showContextMenu(const QPoint &pos)
@@ -90,7 +138,7 @@ void PlaylistController::updateEmptyState()
     emit playlistUpdated(trackCount);
 }
 
-void PlaylistController::requestFileImport() const
+void PlaylistController::requestFileImport()
 {
     const QStringList files = QFileDialog::getOpenFileNames(
             m_view,
@@ -103,7 +151,7 @@ void PlaylistController::requestFileImport() const
         processFilePaths(files);
 }
 
-void PlaylistController::addFolder() const
+void PlaylistController::addFolder()
 {
     const QString dir = QFileDialog::getExistingDirectory(
             m_view,
@@ -127,34 +175,43 @@ void PlaylistController::addFolder() const
     }
 }
 
-void PlaylistController::filesDropped(const QStringList &filePaths) const
+void PlaylistController::filesDropped(const QStringList &filePaths)
 {
     processFilePaths(filePaths);
 }
 
-void PlaylistController::processFilePaths(const QStringList &paths) const
+void PlaylistController::processFilePaths(const QStringList &paths)
 {
+    const int previousCount = m_model->rowCount();
+
     for (const QString& path : paths) {
-        m_model->addItem({path, path, 0, 0, false});
+        QFileInfo fileInfo(path);
+        m_model->addItem({fileInfo.baseName(), path, 0, 0});
+    }
+
+    // If the playlist was empty before adding these files, auto-play the first one
+    if (previousCount == 0 && m_model->rowCount() > 0) {
+        m_view->setCurrentIndex(m_model->index(0, 0));
+        emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(0)));
     }
 }
 
-void PlaylistController::clearPlaylist() const
+void PlaylistController::clearPlaylist()
 {
     m_model->clear();
 }
 
-void PlaylistController::hidePlaylist() const
+void PlaylistController::hidePlaylist()
 {
     m_container->hide();
 }
 
-void PlaylistController::showPlaylist() const
+void PlaylistController::showPlaylist()
 {
     m_container->show();
 }
 
-void PlaylistController::togglePlaylist() const
+void PlaylistController::togglePlaylist()
 {
     if (m_container->isVisible()) {
         hidePlaylist();

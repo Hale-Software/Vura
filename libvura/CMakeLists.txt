@@ -70,29 +70,19 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        libvura/models/playlistmodel.h
-        #libvura/models/vura-playlistmodel.h
-
-        PRIVATE
-        libvura/models/playlistmodel.cpp
-        #libvura/models/vura-playlistmodel.cpp
+        libvura/models/playlist-item.h
 )
 
 # playlist Directory
 target_sources(
         libvura
         PUBLIC
-        #libvura/playlist/MediaItem.h
-        libvura/playlist/playlist.h
-        #libvura/playlist/PlaylistModel.h
-        #libvura/playlist/PlaylistDelegate.h
+        libvura/playlist/playlist-model.h
+        libvura/playlist/playlist-delegate.h
 
         PRIVATE
-        libvura/playlist/playlist.cpp
-        libvura/playlist/playlist_p.cpp
-        libvura/playlist/playlist_p.h
-        libvura/playlist/playlist-file-parser.cpp
-        libvura/playlist/playlist-file-parser.h
+        libvura/playlist/playlist-model.cpp
+        libvura/playlist/playlist-delegate.cpp
 )
 
 # util Directory
@@ -101,13 +91,11 @@ target_sources(
         PUBLIC
         libvura/util/blogger.h
         libvura/util/messagebox.h
-        #libvura/util/playlistmanager.h
         libvura/util/singleinstance.h
 
         PRIVATE
         libvura/util/blogger.cpp
         libvura/util/messagebox.cpp
-        #libvura/util/playlistmanager.cpp
         libvura/util/singleinstance.cpp
 )
 
