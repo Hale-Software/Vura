@@ -32,6 +32,11 @@ PlaylistController::PlaylistController(QListView* view, PlaylistEmptyStateWidget
     m_view->setModel(m_model);
     m_view->setItemDelegate(new PlaylistDelegate());
 
+    m_view->setDragEnabled(true);
+    m_view->setAcceptDrops(true);
+    m_view->setDropIndicatorShown(true);
+    m_view->setDragDropMode(QAbstractItemView::InternalMove);
+
     //connect(m_view, &QListView::clicked, this, &PlaylistController::itemClicked);
     connect(m_view, &QListView::doubleClicked, this, &PlaylistController::handleItemDoubleClicked);
     connect(m_view, &QListView::customContextMenuRequested, this, &PlaylistController::showContextMenu);

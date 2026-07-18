@@ -19,8 +19,11 @@
 #pragma once
 
 #include <QObject>
+#include <QWidget>
+#include <QStackedWidget>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QVideoWidget>
 #include <QVideoSink>
 #include <QString>
 #include <QUrl>
@@ -31,7 +34,11 @@ class PlaybackController : public QObject {
     Q_OBJECT
 
 public:
-    explicit PlaybackController(QObject* parent = nullptr, int volume = 100, double playbackRate = 1.0);
+    explicit PlaybackController(QStackedWidget* container,
+                                QVideoWidget* videoWidget,
+                                int volume = 100,
+                                double playbackRate = 1.0,
+                                QObject* parent = nullptr);
     ~PlaybackController() override;
 
     QMediaPlayer* getPlayer() const { return m_player; }
@@ -49,10 +56,10 @@ public slots:
     void togglePlayPause() const;
     void setPaused(bool paused) const;
     void stop() const;
-    void restart() const;
-    void setPosition(qint64 position) const;
+    void restart();
+    void setPosition(qint64 position);
 
-    void setPlaybackRate(double rate) const;
+    void setPlaybackRate(double rate);
 
     void changeVolume(int newVolume) const;
     void volumeUp() const;
@@ -60,18 +67,18 @@ public slots:
     void toggleMute() const;
     void setMute(bool mute) const;
 
-    void seek(qint64 position) const;
+    void seek(qint64 position);
 
-    void jumpForwardExtraLarge() const;
-    void jumpBackwardExtraLarge() const;
-    void jumpForwardLarge() const;
-    void jumpBackwardLarge() const;
-    void jumpForwardMedium() const;
-    void jumpBackwardMedium() const;
-    void jumpForwardSmall() const;
-    void jumpBackwardSmall() const;
-    void jumpForwardExtraSmall() const;
-    void jumpBackwardExtraSmall() const;
+    void jumpForwardExtraLarge();
+    void jumpBackwardExtraLarge();
+    void jumpForwardLarge();
+    void jumpBackwardLarge();
+    void jumpForwardMedium();
+    void jumpBackwardMedium();
+    void jumpForwardSmall();
+    void jumpBackwardSmall();
+    void jumpForwardExtraSmall();
+    void jumpBackwardExtraSmall();
 
 signals:
     void positionChanged(qint64 position);
@@ -83,12 +90,18 @@ signals:
     void sourceChanged(const QUrl& media);
     void tracksChanged();
     void errorOccurred(const QString& errorMessage);
+    void jumpCompleted();
+
+private slots:
+    void mediaStatusChanged(QMediaPlayer::MediaStatus status);
 
 private:
     void setupConnections();
 
     QMediaPlayer* m_player;
     QAudioOutput* m_audioOutput;
+    QStackedWidget* m_container;
+    QVideoWidget* m_videoWidget;
 
     int m_volume;
     double m_playbackRate;

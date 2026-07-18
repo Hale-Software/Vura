@@ -27,6 +27,7 @@
         <file>images/playback-settings.svg</file>
         <file>images/player-settings.svg</file>
         <file>images/general-settings.svg</file>
+        <file>images/file-drop.png</file>
     </qresource>
     <qresource prefix="/img">
         <file>images/vura-black.png</file>

@@ -21,6 +21,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QMediaPlayer>
+#include <QPropertyAnimation>
 
 #include "ClickableLabel.h"
 #include "VideoSlider.h"
@@ -41,7 +42,10 @@ public:
     explicit VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
     ~VideoSliderWidget() override;
 
+    void setVisible(bool visible) override;
+
 private slots:
+    void onAnimationFinished();
     void positionLabel_Clicked();
     void playbackRateChanged(qreal playbackRate) const;
     void updateTimestamps(qint64 currentPosition);
@@ -54,6 +58,10 @@ private:
     Ui::VideoSliderWidget *ui;
     VideoSlider *m_videoSlider;
     QMediaPlayer *m_mediaPlayer;
+
+    QPropertyAnimation *animation;
+    int targetHeight = 0;
+    bool isTransitioning = false; // Prevents infinite loops
 
     bool m_positionLabelShowRemainingTime = false;
     double m_playbackSpeed = 1.0;

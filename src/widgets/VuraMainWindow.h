@@ -38,11 +38,15 @@
 #include <QAbstractItemView>
 #include <QMediaPlayer>
 #include <QAudioOutput>
-#include <QVideoSink>
 #include <QKeyEvent>
 #include <QMediaDevices>
 #include <QAudioDevice>
 #include <QActionGroup>
+#include <QMouseEvent>
+#include <QVideoWidget>
+#include <QEvent>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
 #include <QDebug>
 
 #include <libvura/constants.h>
@@ -98,6 +102,7 @@ public:
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
     void openFolder(const QString &path) const;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -122,10 +127,34 @@ private slots:
     void actionToggleVideoControls();
     void populateAudioDevicesMenu();
 
+    void actionMarkersAddCumshotMarker();
+    void actionMarkersAddCyanMarker();
+    void actionMarkersAddDialogMarker();
+    void actionMarkersAddMagentaMarker();
+    void actionMarkersAddMarker();
+    void actionMarkersAddOrangeMarker();
+    void actionMarkersAddSceneMarker();
+    void actionMarkersAddStripMarker();
+    void actionMarkersClearIn();
+    void actionMarkersClearInOut();
+    void actionMarkersClearMarkers();
+    void actionMarkersClearOut();
+    void actionMarkersClearSelectedMarker();
+    void actionMarkersEditSelectedMarker();
+    void actionMarkersGoToIn();
+    void actionMarkersGoToNextMarker();
+    void actionMarkersGoToOut();
+    void actionMarkersGoToPreviousMarker();
+    void actionMarkersMarkIn();
+    void actionMarkersMarkOut();
+
 
 public slots:
+    void stateChanged(QMediaPlayer::PlaybackState state);
     void sourceChanged(const QUrl &source);
     void errorOccurred(const QString &errorMessage);
+    void hideVideoSlider();
+    void resetVideoSliderVisibility();
 
 private:
     Ui::VuraMainWindow *ui;
@@ -133,6 +162,13 @@ private:
     void setTrackInfo(const QString &trackInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
     void setApplicationWindowTitle();
+
+    void updateMarkerMenuItems();
+    VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
+    double getSliderPercent() const;
+    bool checkMarkerProximity();
+    bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
+    bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
 
     QList<VuraVideoMarker> m_videoMarkers;
     VideoSlider *m_videoSlider = nullptr;
@@ -151,11 +187,15 @@ private:
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
 
+    QTimer *m_videoSliderHideTimer;
     QMediaDevices m_mediaDevices;
     QString m_trackInfo;
     QString m_statusInfo;
     qint64 m_lastPosition = 0;
     bool m_showingVideoControls = false;
     bool m_wasPlaylistShowing = false;
+    int m_inMarker = 0;
+    int m_outMarker = 0;
+    QMediaPlayer::PlaybackState m_currentPlaybackState = QMediaPlayer::StoppedState;
 
 };

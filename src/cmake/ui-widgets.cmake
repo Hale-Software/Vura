@@ -6,6 +6,8 @@ target_sources(
         widgets/VideoControlWidget.h
         widgets/VideoSliderWidget.cpp
         widgets/VideoSliderWidget.h
+        #widgets/VideoWidget.cpp
+        #widgets/VideoWidget.h
         widgets/VuraMainWindow.cpp
         widgets/VuraMainWindow.h
 )

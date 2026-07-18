@@ -16,38 +16,17 @@
 
  ******************************************************************************/
 
-#include "PlaylistEmptyStateWidget.h"
+#include "VideoWidget.h"
+#include <QDebug>
 
 
-PlaylistEmptyStateWidget::PlaylistEmptyStateWidget(QWidget *parent) : QWidget(parent)
+VideoWidget::VideoWidget(QWidget *parent) : QVideoWidget(parent)
 {
-    setAcceptDrops(true);
+    this->setMouseTracking(true);
 }
 
-void PlaylistEmptyStateWidget::addVideoFile_Clicked()
+void VideoWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    emit requestFileImport();
-}
-
-void PlaylistEmptyStateWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-    // Only accept the drop if it contains URLs (files)
-    if (event->mimeData()->hasUrls()) {
-        event->acceptProposedAction();
-    }
-}
-
-void PlaylistEmptyStateWidget::dropEvent(QDropEvent *event)
-{
-    QList<QUrl> urls = event->mimeData()->urls();
-    if (urls.isEmpty()) return;
-
-    QStringList filePaths;
-    for (const QUrl &url : urls) {
-        // Convert file URL to local path
-        filePaths.append(url.toLocalFile());
-    }
-
-    // Notify the parent (or controller) that files were dropped
-    emit filesDropped(filePaths);
+    emit mouseMoved();
+    QVideoWidget::mouseMoveEvent(event);
 }

@@ -30,7 +30,7 @@ QVariant PlaylistModel::data(const QModelIndex &index, const int role) const
     const auto &item = m_items[index.row()];
 
     if (role == Qt::DisplayRole) return item.title;
-    if (role == Qt::UserRole) return item.progress; // Used by delegate
+    if (role == Qt::UserRole) return item.progress;
     return QVariant();
 }
 
@@ -48,14 +48,9 @@ void PlaylistModel::removeItem(const int row)
     if (row < 0 || row >= m_items.size()) return;
 
     beginRemoveRows(QModelIndex(), row, row);
-
-    // 1. Remove the row from data
     m_items.removeAt(row);
-
-    // 2. Remove the row from playOrder
     m_playOrder.removeOne(row);
 
-    // 3. IMPORTANT: Decrement all indices in playOrder that were greater than 'row'
     for (int &idx : m_playOrder) {
         if (idx > row) idx--;
     }
@@ -69,7 +64,7 @@ void PlaylistModel::setShuffle(const bool enable)
     if (m_isShuffle) {
         std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
     } else {
-        std::iota(m_playOrder.begin(), m_playOrder.end(), 0); // Reset to 0, 1, 2...
+        std::iota(m_playOrder.begin(), m_playOrder.end(), 0);
     }
 }
 
@@ -80,7 +75,6 @@ void PlaylistModel::resetPlayOrder()
         m_playOrder.append(i);
     }
 
-    // If shuffle is active, re-shuffle the fresh list
     if (m_isShuffle) {
         std::shuffle(m_playOrder.begin(), m_playOrder.end(), std::random_device());
     }
@@ -90,7 +84,7 @@ int PlaylistModel::getNextIndex() const
 {
     const int next = m_currentIndex + 1;
     if (next >= m_playOrder.size()) {
-        return m_isLoop ? 0 : -1; // Return -1 if end of playlist
+        return m_isLoop ? 0 : -1;
     }
     return m_playOrder[next];
 }
@@ -106,30 +100,21 @@ int PlaylistModel::getPreviousIndex() const
 
 void PlaylistModel::clear()
 {
-    // 1. Notify the view that all rows are about to be removed
     if (m_items.isEmpty()) return;
 
     beginRemoveRows(QModelIndex(), 0, m_items.size() - 1);
-
-    // 2. Clear the actual data
     m_items.clear();
-
-    // 3. Clear and reset your playback state
     m_playOrder.clear();
     m_currentIndex = -1;
-
-    // 4. Notify the view that the removal is complete
     endRemoveRows();
 
-    // 5. Signal the engine to stop playback
     emit requestStopPlayback();
 }
 
 PlaylistItem PlaylistModel::getItemAt(const int row) const
 {
-    // Basic bounds checking is essential
     if (row < 0 || row >= m_items.size()) {
-        return PlaylistItem(); // Return an empty/default object
+        return PlaylistItem();
     }
     return m_items.at(row);
 }
@@ -137,8 +122,44 @@ PlaylistItem PlaylistModel::getItemAt(const int row) const
 QString PlaylistModel::currentURL(const int row) const
 {
     if (row < 0 || row >= m_items.size()) {
-        return ""; // Return an empty/default object
+        return "";
     }
     PlaylistItem item = m_items.at(row);
     return item.filePath;
+}
+
+Qt::ItemFlags PlaylistModel::flags(const QModelIndex &index) const
+{
+    const Qt::ItemFlags defaultFlags = QAbstractListModel::flags(index);
+
+    if (index.isValid()) {
+        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    } else {
+        return Qt::ItemIsDropEnabled | defaultFlags;
+    }
+}
+
+Qt::DropActions PlaylistModel::supportedDropActions() const
+{
+    return Qt::MoveAction;
+}
+
+bool PlaylistModel::moveRows(const QModelIndex &sourceParent, const int sourceRow, const int count, const QModelIndex &destinationParent, const int destinationChild)
+{
+    if (sourceRow == destinationChild || sourceRow == destinationChild - 1 || count != 1) {
+        return false;
+    }
+
+    beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destinationParent, destinationChild);
+
+    const auto itemToMove = m_items.takeAt(sourceRow);
+    int insertIndex = destinationChild;
+    if (sourceRow < destinationChild) {
+        insertIndex--;
+    }
+
+    m_items.insert(insertIndex, itemToMove);
+    endMoveRows();
+
+    return true;
 }

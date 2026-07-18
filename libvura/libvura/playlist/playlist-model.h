@@ -51,6 +51,10 @@ public:
     PlaylistItem getItemAt(int row) const;
     QString currentURL(int row) const;
 
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    Qt::DropActions supportedDropActions() const override;
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+
 signals:
     void requestStopPlayback();
 

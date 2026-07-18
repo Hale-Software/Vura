@@ -19,14 +19,17 @@
 #include "PlaybackController.h"
 
 
-PlaybackController::PlaybackController(QObject* parent, const int volume, const double playbackRate)
+PlaybackController::PlaybackController(QStackedWidget* container, QVideoWidget* videoWidget, const int volume, const double playbackRate, QObject* parent)
     : QObject(parent),
     m_player(new QMediaPlayer(this)),
     m_audioOutput(new QAudioOutput(this)),
+    m_container(container),
+    m_videoWidget(videoWidget),
     m_volume(volume),
     m_playbackRate(playbackRate)
 {
     m_player->setAudioOutput(m_audioOutput);
+    m_player->setVideoOutput(m_videoWidget);
 
     const float linearVolume = QAudio::convertVolume(m_volume / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     m_audioOutput->setVolume(linearVolume);
@@ -51,6 +54,7 @@ void PlaybackController::setupConnections()
     connect(m_player, &QMediaPlayer::playingChanged, this, &PlaybackController::playingChanged);
     connect(m_player, &QMediaPlayer::sourceChanged, this, &PlaybackController::sourceChanged);
     connect(m_player, &QMediaPlayer::tracksChanged, this, &PlaybackController::tracksChanged);
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &PlaybackController::mediaStatusChanged);
 
     // Handle errors cleanly
     connect(m_player, &QMediaPlayer::errorOccurred, this, [this](const QMediaPlayer::Error error, const QString &errorString) {
@@ -153,24 +157,27 @@ void PlaybackController::stop() const
     m_player->stop();
 }
 
-void PlaybackController::restart() const
+void PlaybackController::restart()
 {
     m_player->setPosition(0);
     m_player->play();
+    emit jumpCompleted();
 }
 
-void PlaybackController::setPosition(const qint64 position) const
+void PlaybackController::setPosition(const qint64 position)
 {
     m_player->setPosition(position);
+    emit jumpCompleted();
 }
 
-void PlaybackController::setPlaybackRate(const double rate) const
+void PlaybackController::setPlaybackRate(const double rate)
 {
     if (rate > 0.0) {
         m_player->setPlaybackRate(rate);
     } else {
         m_player->setPlaybackRate(0.0);
     }
+    emit jumpCompleted();
 }
 
 void PlaybackController::changeVolume(const int newVolume) const
@@ -205,92 +212,112 @@ void PlaybackController::setMute(const bool mute) const
     m_audioOutput->setMuted(mute);
 }
 
-void PlaybackController::seek(const qint64 position) const
+void PlaybackController::seek(const qint64 position)
 {
     m_player->setPosition(position);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpForwardExtraLarge() const
+void PlaybackController::jumpForwardExtraLarge()
 {
     const qint64 currentPosition = m_player->position();
     const qint64 duration = m_player->duration();
     qint64 jumpTo = currentPosition + 90000;
     if (jumpTo > duration) jumpTo = duration;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpBackwardExtraLarge() const
+void PlaybackController::jumpBackwardExtraLarge()
 {
     const qint64 currentPosition = m_player->position();
     qint64 jumpTo = currentPosition - 90000;
     if (jumpTo < 0) jumpTo = 0;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpForwardLarge() const
+void PlaybackController::jumpForwardLarge()
 {
     const qint64 currentPosition = m_player->position();
     const qint64 duration = m_player->duration();
     qint64 jumpTo = currentPosition + 60000;
     if (jumpTo > duration) jumpTo = duration;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpBackwardLarge() const
+void PlaybackController::jumpBackwardLarge()
 {
     const qint64 currentPosition = m_player->position();
     qint64 jumpTo = currentPosition - 60000;
     if (jumpTo < 0) jumpTo = 0;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpForwardMedium() const
+void PlaybackController::jumpForwardMedium()
 {
     const qint64 currentPosition = m_player->position();
     const qint64 duration = m_player->duration();
     qint64 jumpTo = currentPosition + 30000;
     if (jumpTo > duration) jumpTo = duration;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpBackwardMedium() const
+void PlaybackController::jumpBackwardMedium()
 {
     const qint64 currentPosition = m_player->position();
     qint64 jumpTo = currentPosition - 30000;
     if (jumpTo < 0) jumpTo = 0;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpForwardSmall() const
+void PlaybackController::jumpForwardSmall()
 {
     const qint64 currentPosition = m_player->position();
     const qint64 duration = m_player->duration();
     qint64 jumpTo = currentPosition + 15000;
     if (jumpTo > duration) jumpTo = duration;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpBackwardSmall() const
+void PlaybackController::jumpBackwardSmall()
 {
     const qint64 currentPosition = m_player->position();
     qint64 jumpTo = currentPosition - 15000;
     if (jumpTo < 0) jumpTo = 0;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpForwardExtraSmall() const
+void PlaybackController::jumpForwardExtraSmall()
 {
     const qint64 currentPosition = m_player->position();
     const qint64 duration = m_player->duration();
     qint64 jumpTo = currentPosition + 5000;
     if (jumpTo > duration) jumpTo = duration;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
 }
 
-void PlaybackController::jumpBackwardExtraSmall() const
+void PlaybackController::jumpBackwardExtraSmall()
 {
     const qint64 currentPosition = m_player->position();
     qint64 jumpTo = currentPosition - 5000;
     if (jumpTo < 0) jumpTo = 0;
     m_player->setPosition(jumpTo);
+    emit jumpCompleted();
+}
+
+void PlaybackController::mediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+    if (status == QMediaPlayer::NoMedia) {
+        m_container->setCurrentIndex(0);
+    } else {
+        m_container->setCurrentIndex(1);
+    }
 }

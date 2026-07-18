@@ -16,38 +16,42 @@
 
  ******************************************************************************/
 
-#include "PlaylistEmptyStateWidget.h"
+#pragma once
+
+#include <QObject>
+#include <QMediaPlayer>
+#include <QPointer>
+#include <QDebug>
+
+#include <libvura/data/video-markers.h>
+
+#include "MarkerEditDialog.h"
+#include "VideoSliderWidget.h"
+#include "VideoSlider.h"
 
 
-PlaylistEmptyStateWidget::PlaylistEmptyStateWidget(QWidget *parent) : QWidget(parent)
+class MarkerController : public QObject
 {
-    setAcceptDrops(true);
-}
+    Q_OBJECT
 
-void PlaylistEmptyStateWidget::addVideoFile_Clicked()
-{
-    emit requestFileImport();
-}
+    friend class MarkerEditDialog;
 
-void PlaylistEmptyStateWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-    // Only accept the drop if it contains URLs (files)
-    if (event->mimeData()->hasUrls()) {
-        event->acceptProposedAction();
-    }
-}
+public:
+    explicit MarkerController(QObject* parent = nullptr);
+    ~MarkerController() override;
 
-void PlaylistEmptyStateWidget::dropEvent(QDropEvent *event)
-{
-    QList<QUrl> urls = event->mimeData()->urls();
-    if (urls.isEmpty()) return;
+signals:
+    //void markerEdited(const VuraVideoMarker &videoMarker);
 
-    QStringList filePaths;
-    for (const QUrl &url : urls) {
-        // Convert file URL to local path
-        filePaths.append(url.toLocalFile());
-    }
+public slots:
+    void loadVideoMarkers(const QList<VuraVideoMarker> &videoMarkers);
+    void addMarker();
 
-    // Notify the parent (or controller) that files were dropped
-    emit filesDropped(filePaths);
-}
+private:
+    QList<VuraVideoMarker> m_videoMarkers;
+    VideoSlider *m_videoSlider = nullptr;
+    VideoSliderWidget *m_videoSliderWidget = nullptr;
+
+    QPointer<MarkerEditDialog> m_markerEditDialog;
+
+};

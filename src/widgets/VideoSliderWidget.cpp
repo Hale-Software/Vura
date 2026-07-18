@@ -1,11 +1,36 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "VideoSliderWidget.h"
 #include "ui_VideoSliderWidget.h"
+
+#include <QEasingCurve>
 
 
 VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &mediaPlayer, QWidget *parent)
     : QWidget(parent), ui(new Ui::VideoSliderWidget), m_videoSlider(&videoSlider), m_mediaPlayer(&mediaPlayer)
 {
     ui->setupUi(this);
+
+    animation = new QPropertyAnimation(this, "maximumHeight", this);
+    animation->setDuration(300);
+    animation->setEasingCurve(QEasingCurve::InOutQuad);
+    connect(animation, &QPropertyAnimation::finished, this, &VideoSliderWidget::onAnimationFinished);
 
     connect(ui->position, &ClickableLabel::clicked, this, &VideoSliderWidget::positionLabel_Clicked);
     connect(m_mediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &VideoSliderWidget::statusChanged);
@@ -25,6 +50,54 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &med
 VideoSliderWidget::~VideoSliderWidget()
 {
     delete ui;
+}
+
+void VideoSliderWidget::setVisible(bool visible)
+{
+    if (isTransitioning) {
+        QWidget::setVisible(visible);
+        return;
+    }
+
+    if (visible) {
+        // 1. Calculate target size before showing
+        if (targetHeight <= 0) {
+            targetHeight = sizeHint().height();
+        }
+
+        // 2. Make it visible to Qt layout systems first
+        isTransitioning = true;
+        QWidget::setVisible(true);
+        isTransitioning = false;
+
+        // 3. Animate up to target height
+        animation->stop();
+        animation->setStartValue(height());
+        animation->setEndValue(targetHeight);
+        animation->start();
+    } else {
+        // Record current natural height before collapsing
+        targetHeight = sizeHint().height();
+
+        // Animate down to 0
+        animation->stop();
+        animation->setStartValue(height());
+        animation->setEndValue(0);
+        animation->start();
+    }
+}
+
+void VideoSliderWidget::onAnimationFinished()
+{
+    // Completely hide from layout engine ONLY when closing animation hits 0
+    if (maximumHeight() == 0) {
+        isTransitioning = true;
+        QWidget::setVisible(false);
+        isTransitioning = false;
+
+        // CRITICAL: Reset constraint so ->show() can expand it later
+        setMaximumHeight(16777215);
+    }
 }
 
 void VideoSliderWidget::positionLabel_Clicked()

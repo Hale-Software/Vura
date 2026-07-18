@@ -34,16 +34,35 @@ static Blogger* globalRedirector = nullptr;
 
 VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::VuraMainWindow)
 {
+    ui->setupUi(this);
+
+    ui->mediaAreaWidget->setCurrentIndex(0);
+    ui->playlistWidget->setCurrentIndex(1);
+
     const QSettings settings;
 
     setAcceptDrops(true);
 
-    ui->setupUi(this);
+    ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
 
     qInstallMessageHandler(Blogger::messageHandler);
     globalRedirector = Blogger::instance();
 
-    m_playbackController = new PlaybackController(this);
+    ui->videoWidget->setMouseTracking(true);
+    if (!ui->videoWidget->children().isEmpty()) {
+        QWidget *videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
+        if (videoChild) {
+            videoChild->setMouseTracking(true);
+            videoChild->installEventFilter(this); // 'this' must be your MainWindow or Parent widget
+        }
+    }
+
+    m_playbackController = new PlaybackController(
+        ui->mediaAreaWidget,
+        ui->videoWidget,
+        100,
+        1,
+        this);
     m_playlistController = new PlaylistController(
             ui->playlistView,
             ui->emptyPlaylistView,
@@ -51,7 +70,7 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
             this
         );
 
-    m_playbackController->getPlayer()->setVideoOutput(ui->videoWidget);
+    //m_playbackController->getPlayer()->setVideoOutput(ui->videoWidget);
     connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
 
     if (settings.value("showPlaylistOnStart", false).toBool()) {
@@ -106,8 +125,16 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(m_playbackController, &PlaybackController::positionChanged, m_videoSlider, &VideoSlider::setValue);
     connect(m_playbackController, &PlaybackController::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
     connect(m_playbackController, &PlaybackController::sourceChanged, this, &VuraMainWindow::sourceChanged);
+    connect(m_playbackController, &PlaybackController::stateChanged, this, &VuraMainWindow::stateChanged);
+    connect(m_playbackController, &PlaybackController::jumpCompleted, this, &VuraMainWindow::resetVideoSliderVisibility);
     connect(m_videoSlider, &VideoSlider::valueChanged, m_playbackController, &PlaybackController::setPosition);
     connect(m_videoSlider, &VideoSlider::sliderPressed, m_playbackController, &PlaybackController::setPaused);
+
+    m_videoSliderHideTimer = new QTimer(this);
+    m_videoSliderHideTimer->setInterval(3000);
+    m_videoSliderHideTimer->setSingleShot(true);
+
+    connect(m_videoSliderHideTimer, &QTimer::timeout, this, &VuraMainWindow::hideVideoSlider);
 
     connect(ui->actionFileEmergencyClose, &QAction::triggered, this, &VuraMainWindow::actionEmergencyClose);
     this->addAction(ui->actionFileEmergencyClose);
@@ -132,7 +159,7 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(ui->actionFileSavePlaylist, &QAction::triggered, m_playlistController, &PlaylistController::savePlaylistAs);
     this->addAction(ui->actionFileSavePlaylist);
     ui->actionFileSavePlaylist->setShortcutContext(Qt::WindowShortcut);
-    
+
     connect(ui->actionFileOpenPlaylist, &QAction::triggered, m_playlistController, &PlaylistController::loadPlaylistFile);
     this->addAction(ui->actionFileOpenPlaylist);
     ui->actionFileOpenPlaylist->setShortcutContext(Qt::WindowShortcut);
@@ -189,6 +216,88 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(ui->actionPlaybackJumpBackwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardExtraSmall);
     this->addAction(ui->actionPlaybackJumpBackwardExtraSmall);
     ui->actionPlaybackJumpBackwardExtraSmall->setShortcutContext(Qt::WindowShortcut);
+
+    // Marker Actions
+    connect(ui->actionMarkersAddCumshotMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddCumshotMarker);
+    this->addAction(ui->actionMarkersAddCumshotMarker);
+    ui->actionMarkersAddCumshotMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddCyanMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddCyanMarker);
+    this->addAction(ui->actionMarkersAddCyanMarker);
+    ui->actionMarkersAddCyanMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddDialogMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddDialogMarker);
+    this->addAction(ui->actionMarkersAddDialogMarker);
+    ui->actionMarkersAddDialogMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddMagentaMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddMagentaMarker);
+    this->addAction(ui->actionMarkersAddMagentaMarker);
+    ui->actionMarkersAddMagentaMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddMarker);
+    this->addAction(ui->actionMarkersAddMarker);
+    ui->actionMarkersAddMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddOrangeMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddOrangeMarker);
+    this->addAction(ui->actionMarkersAddOrangeMarker);
+    ui->actionMarkersAddOrangeMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddSceneMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddSceneMarker);
+    this->addAction(ui->actionMarkersAddSceneMarker);
+    ui->actionMarkersAddSceneMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersAddStripMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddStripMarker);
+    this->addAction(ui->actionMarkersAddStripMarker);
+    ui->actionMarkersAddStripMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersClearIn, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearIn);
+    this->addAction(ui->actionMarkersClearIn);
+    ui->actionMarkersClearIn->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersClearInOut, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearInOut);
+    this->addAction(ui->actionMarkersClearInOut);
+    ui->actionMarkersClearInOut->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersClearMarkers, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearMarkers);
+    this->addAction(ui->actionMarkersClearMarkers);
+    ui->actionMarkersClearMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersClearOut, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearOut);
+    this->addAction(ui->actionMarkersClearOut);
+    ui->actionMarkersClearOut->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersClearSelectedMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearSelectedMarker);
+    this->addAction(ui->actionMarkersClearSelectedMarker);
+    ui->actionMarkersClearSelectedMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersEditSelectedMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersEditSelectedMarker);
+    this->addAction(ui->actionMarkersEditSelectedMarker);
+    ui->actionMarkersEditSelectedMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersGoToIn, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToIn);
+    this->addAction(ui->actionMarkersGoToIn);
+    ui->actionMarkersGoToIn->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersGoToNextMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToNextMarker);
+    this->addAction(ui->actionMarkersGoToNextMarker);
+    ui->actionMarkersGoToNextMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersGoToOut, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToOut);
+    this->addAction(ui->actionMarkersGoToOut);
+    ui->actionMarkersGoToOut->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersGoToPreviousMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToPreviousMarker);
+    this->addAction(ui->actionMarkersGoToPreviousMarker);
+    ui->actionMarkersGoToPreviousMarker->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersMarkIn, &QAction::triggered, this, &VuraMainWindow::actionMarkersMarkIn);
+    this->addAction(ui->actionMarkersMarkIn);
+    ui->actionMarkersMarkIn->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionMarkersMarkOut, &QAction::triggered, this, &VuraMainWindow::actionMarkersMarkOut);
+    this->addAction(ui->actionMarkersMarkOut);
+    ui->actionMarkersMarkOut->setShortcutContext(Qt::WindowShortcut);
+
 
     connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
     populateAudioDevicesMenu();
@@ -280,6 +389,7 @@ void VuraMainWindow::openFolder(const QString &path) const
 
 void VuraMainWindow::closeEvent(QCloseEvent *event)
 {
+    VideoMarkers::write("debug/global.json", m_playbackController->getPlayer()->source().toLocalFile(), m_videoMarkers);
     event->accept();
 }
 
@@ -334,6 +444,43 @@ void VuraMainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
+bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (event->type() == QEvent::MouseMove) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+        // In Qt6, use position() instead of x()/y()
+        QPointF localPos = mouseEvent->position();
+
+        this->unsetCursor();
+        m_videoSliderWidget->show();
+        if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+            m_videoSliderHideTimer->start();
+        }
+
+    } else if (event->type() == QEvent::MouseButtonDblClick) {
+        if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+            m_playbackController->pause();
+        } else if (m_currentPlaybackState == QMediaPlayer::PausedState) {
+            m_playbackController->play();
+        }
+    }
+
+    // Standard event processing
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void VuraMainWindow::stateChanged(QMediaPlayer::PlaybackState state)
+{
+    m_currentPlaybackState = state;
+    if (state == QMediaPlayer::PlayingState && !m_videoSliderHideTimer->isActive()) {
+        m_videoSliderHideTimer->start();
+    } else {
+        m_videoSliderHideTimer->stop();
+        m_videoSliderWidget->show();
+        this->unsetCursor();
+    }
+}
+
 void VuraMainWindow::sourceChanged(const QUrl &source)
 {
     QSettings settings;
@@ -352,6 +499,24 @@ void VuraMainWindow::errorOccurred(const QString &errorMessage)
     qCCritical(Core) << "QMediaPlayer Error: " << errorMessage;
     QMessageBox::critical(this, "Media Player Error", errorMessage);
     //this->close();
+}
+
+void VuraMainWindow::hideVideoSlider()
+{
+    if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+        m_videoSliderWidget->hide();
+        this->setCursor(Qt::BlankCursor);
+    }
+}
+
+void VuraMainWindow::resetVideoSliderVisibility()
+{
+    m_videoSliderHideTimer->stop();
+    m_videoSliderWidget->show();
+    this->unsetCursor();
+    
+    if (m_currentPlaybackState == QMediaPlayer::PlayingState && !m_videoSliderHideTimer->isActive())
+        m_videoSliderHideTimer->start();
 }
 
 void VuraMainWindow::actionTestFunction()
@@ -469,6 +634,57 @@ void VuraMainWindow::populateAudioDevicesMenu()
     }
 }
 
+void VuraMainWindow::actionMarkersAddCumshotMarker()
+{
+    const double sliderPercent = getSliderPercent();
+
+    VuraVideoMarker marker;
+    marker.id = VideoMarkers::generateMarkerID("debug/global.json");
+    marker.fileName = m_playbackController->getPlayer()->source().toLocalFile();
+    marker.markerType = "cumshot";
+    marker.timestamp = sliderPercent;
+
+    m_videoMarkers.append(marker);
+}
+
+void VuraMainWindow::actionMarkersAddCyanMarker() {}
+
+void VuraMainWindow::actionMarkersAddDialogMarker() {}
+
+void VuraMainWindow::actionMarkersAddMagentaMarker() {}
+
+void VuraMainWindow::actionMarkersAddMarker() {}
+
+void VuraMainWindow::actionMarkersAddOrangeMarker() {}
+
+void VuraMainWindow::actionMarkersAddSceneMarker() {}
+
+void VuraMainWindow::actionMarkersAddStripMarker() {}
+
+void VuraMainWindow::actionMarkersClearIn() {}
+
+void VuraMainWindow::actionMarkersClearInOut() {}
+
+void VuraMainWindow::actionMarkersClearMarkers() {}
+
+void VuraMainWindow::actionMarkersClearOut() {}
+
+void VuraMainWindow::actionMarkersClearSelectedMarker() {}
+
+void VuraMainWindow::actionMarkersEditSelectedMarker() {}
+
+void VuraMainWindow::actionMarkersGoToIn() {}
+
+void VuraMainWindow::actionMarkersGoToNextMarker() {}
+
+void VuraMainWindow::actionMarkersGoToOut() {}
+
+void VuraMainWindow::actionMarkersGoToPreviousMarker() {}
+
+void VuraMainWindow::actionMarkersMarkIn() {}
+
+void VuraMainWindow::actionMarkersMarkOut() {}
+
 void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 {
     m_trackInfo = trackInfo;
@@ -506,4 +722,92 @@ QString VuraMainWindow::trackName(const QMediaMetaData &metaData, int index)
             name = QStringLiteral("%1 - [%2]").arg(title).arg(QLocale::languageToString(lang));
     }
     return name;
+}
+
+void VuraMainWindow::updateMarkerMenuItems()
+{
+    ui->actionMarkersEditSelectedMarker->setEnabled(checkMarkerProximity());
+}
+
+VuraVideoMarker VuraMainWindow::findNearestVisibleMarker(double sliderPercent, double markerRange) const
+{
+    VuraVideoMarker best;
+    best.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
+        if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
+        const double dist = std::abs(marker.timestamp - sliderPercent);
+        if (dist > markerRange) continue;
+        if (std::isnan(best.timestamp) || dist < std::abs(best.timestamp - sliderPercent))
+            best = marker;
+    }
+    return best;
+}
+
+double VuraMainWindow::getSliderPercent() const
+{
+    const double distanceFromMin = m_videoSlider->GetValue() - m_videoSlider->GetMinimun();
+    const double sliderRange = m_videoSlider->GetMaximun() - m_videoSlider->GetMinimun();
+    return distanceFromMin / sliderRange;
+}
+
+bool VuraMainWindow::checkMarkerProximity()
+{
+    const double sliderPercent = getSliderPercent();
+    constexpr double markerRange = 0.005;
+
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
+        if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
+        const double dist = std::abs(marker.timestamp - sliderPercent);
+        if (dist <= markerRange) return true;
+    }
+    return false;
+}
+
+bool VuraMainWindow::isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker)
+{
+    VuraVideoMarker previousMarker;
+    previousMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
+        if (marker.timestamp < videoMarker.timestamp) {
+            if (std::isnan(previousMarker.timestamp)) {
+                previousMarker = marker;
+
+            } else {
+                if (marker.timestamp > previousMarker.timestamp) {
+                    previousMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(previousMarker.timestamp)) {
+        return false;
+    }
+    return true;
+}
+
+bool VuraMainWindow::isNextMarkerAvailable(const VuraVideoMarker &videoMarker)
+{
+    VuraVideoMarker nextMarker;
+    nextMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
+        if (marker.timestamp > videoMarker.timestamp) {
+            if (std::isnan(nextMarker.timestamp)) {
+                nextMarker = marker;
+
+            } else {
+                if (marker.timestamp < nextMarker.timestamp) {
+                    nextMarker = marker;
+                }
+            }
+        }
+    }
+
+    if (std::isnan(nextMarker.timestamp)) {
+        return false;
+    }
+    return true;
 }
