@@ -27,11 +27,16 @@
 #include <QFileInfo>
 #include <QMenu>
 #include <QAction>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
 #include <QDebug>
+
 
 class PlaylistModel;
 class PlaylistEmptyStateWidget;
-
 
 
 class PlaylistController : public QObject {
@@ -51,14 +56,17 @@ public:
 public slots:
     void showContextMenu(const QPoint& pos);
     void requestFileImport();
-    void addFolder();
-    void filesDropped(const QStringList &filePaths);
+    void requestMultipleFileImport();
+    void requestFolderImport();
+    void filesDropped(const QStringList &filePaths, bool autoPlay = false);
     void clearPlaylist();
     void hidePlaylist();
     void showPlaylist();
     void togglePlaylist();
     void nextTrack();
     void previousTrack();
+    void savePlaylistAs();
+    void loadPlaylistFile();
 
 signals:
     void playTrackRequested(const QUrl &mediaUrl);
@@ -70,7 +78,7 @@ private slots:
     void itemClicked(const QModelIndex &index);
 
 private:
-    void processFilePaths(const QStringList &paths);
+    void processFilePaths(const QStringList &paths, bool autoPlay);
 
     PlaylistModel* m_model;
     QListView* m_view;
@@ -81,5 +89,8 @@ private:
     QAction* m_addFileAction;
     QAction* m_addFolderAction;
     QAction* m_clearPlaylistAction;
+
+    bool saveToFile(const QString &filePath) const;
+    bool loadFromFile(const QString &filePath);
 
 };

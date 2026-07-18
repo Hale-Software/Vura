@@ -117,17 +117,25 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     this->addAction(ui->actionFileExit);
     ui->actionFileExit->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionFileOpenFile, &QAction::triggered, this, &VuraMainWindow::actionOpenFile);
+    connect(ui->actionFileOpenFile, &QAction::triggered, m_playlistController, &PlaylistController::requestFileImport);
     this->addAction(ui->actionFileOpenFile);
     ui->actionFileOpenFile->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionFileOpenFolder, &QAction::triggered, this, &VuraMainWindow::actionOpenFolder);
+    connect(ui->actionFileOpenFolder, &QAction::triggered, m_playlistController, &PlaylistController::requestFolderImport);
     this->addAction(ui->actionFileOpenFolder);
     ui->actionFileOpenFolder->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionFileOpenMultipleFiles, &QAction::triggered, this, &VuraMainWindow::actionOpenMultipleFiles);
+    connect(ui->actionFileOpenMultipleFiles, &QAction::triggered, m_playlistController, &PlaylistController::requestMultipleFileImport);
     this->addAction(ui->actionFileOpenMultipleFiles);
     ui->actionFileOpenMultipleFiles->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionFileSavePlaylist, &QAction::triggered, m_playlistController, &PlaylistController::savePlaylistAs);
+    this->addAction(ui->actionFileSavePlaylist);
+    ui->actionFileSavePlaylist->setShortcutContext(Qt::WindowShortcut);
+    
+    connect(ui->actionFileOpenPlaylist, &QAction::triggered, m_playlistController, &PlaylistController::loadPlaylistFile);
+    this->addAction(ui->actionFileOpenPlaylist);
+    ui->actionFileOpenPlaylist->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
     connect(ui->actionHelpViewCurrentLog, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
@@ -181,6 +189,9 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(ui->actionPlaybackJumpBackwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardExtraSmall);
     this->addAction(ui->actionPlaybackJumpBackwardExtraSmall);
     ui->actionPlaybackJumpBackwardExtraSmall->setShortcutContext(Qt::WindowShortcut);
+
+    connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
+    populateAudioDevicesMenu();
 
     /*
     auto* updater = new UpdateChecker(this);
@@ -248,7 +259,7 @@ void VuraMainWindow::openFile(const QString &file) const
     QStringList fileList;
     if (!file.isEmpty()) {
         fileList << file;
-        m_playlistController->filesDropped(fileList);
+        m_playlistController->filesDropped(fileList, true);
     }
 }
 
@@ -263,7 +274,7 @@ void VuraMainWindow::openFolder(const QString &path) const
             fileList << folderIterator.filePath();
         }
 
-        m_playlistController->filesDropped(fileList);
+        m_playlistController->filesDropped(fileList, true);
     }
 }
 
@@ -351,75 +362,6 @@ void VuraMainWindow::actionTestFunction()
     qCCritical(Core) << "Test function called.";
 }
 
-void VuraMainWindow::actionOpenFile()
-{
-    QSettings settings;
-    QStringList fileList;
-
-    const QString fileName = QFileDialog::getOpenFileName(
-        this,
-        tr("Open File"),
-        settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
-        "All Files (*)");
-
-    if (!fileName.isEmpty()) {
-        fileList << fileName;
-        m_playlistController->filesDropped(fileList);
-
-        settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
-    }
-}
-
-void VuraMainWindow::actionOpenFolder()
-{
-    QSettings settings;
-    QStringList fileList;
-
-    const QString dir = QFileDialog::getExistingDirectory(
-            this,
-            tr("Open Folder"),
-            settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
-            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
-        );
-
-    if (!dir.isEmpty()) {
-        const QDir directory(dir);
-        QStringList filters;
-        filters << "*.mp4" << "*.mkv" << "*.avi" << "*.mp3" << "*.wav" << "*.flac";
-
-        QFileInfoList fileInfoList = directory.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
-        for (const QFileInfo& fileInfo : fileInfoList) {
-            fileList << fileInfo.absoluteFilePath();
-        }
-
-        m_playlistController->filesDropped(fileList);
-
-        settings.setValue("lastFileDirectory", QFileInfo(dir).path());
-    }
-}
-
-void VuraMainWindow::actionOpenMultipleFiles()
-{
-    QSettings settings;
-    QStringList fileList;
-
-    const QStringList files = QFileDialog::getOpenFileNames(
-            this,
-            tr("Open Media Files"),
-            settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
-            "All Files (*)"
-        );
-
-    for (const QString& fileName : files) {
-        fileList << fileName;
-    }
-
-    m_playlistController->filesDropped(fileList);
-
-    const QString& lastFile = files.last();
-    settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
-}
-
 void VuraMainWindow::actionEmergencyClose()
 {
     m_playbackController->getPlayer()->pause();
@@ -498,6 +440,32 @@ void VuraMainWindow::actionToggleVideoControls()
         connect(m_videoControlWidget, &VideoControlWidget::stop, m_playbackController, &PlaybackController::stop);
 
         m_showingVideoControls = true;
+    }
+}
+
+void VuraMainWindow::populateAudioDevicesMenu()
+{
+    ui->menuAudioDevice->clear();
+
+    QActionGroup* deviceGroup = new QActionGroup(this);
+    deviceGroup->setExclusive(true);
+
+    QAudioDevice currentDevice = m_playbackController->getAudioOutput()->device();
+
+    for (const QAudioDevice &device : QMediaDevices::audioOutputs()) {
+        QAction *action = new QAction(device.description(), this);
+        action->setCheckable(true);
+
+        if (device.id() == currentDevice.id()) {
+            action->setChecked(true);
+        }
+
+        deviceGroup->addAction(action);
+        ui->menuAudioDevice->addAction(action);
+
+        connect(action, &QAction::triggered, this, [this, device]() {
+            m_playbackController->getAudioOutput()->setDevice(device);
+        });
     }
 }
 

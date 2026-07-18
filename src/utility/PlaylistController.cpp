@@ -118,7 +118,19 @@ void PlaylistController::showContextMenu(const QPoint &pos)
     connect(m_addFileAction, &QAction::triggered, this, &PlaylistController::requestFileImport);
 
     m_addFolderAction = new QAction(tr("Add Folder"), m_contextMenu);
-    connect(m_addFolderAction, &QAction::triggered, this, &PlaylistController::addFolder);
+    connect(m_addFolderAction, &QAction::triggered, this, &PlaylistController::requestFolderImport);
+
+    // Add Load Playlist Action
+    QAction* loadPlaylistAction = new QAction(tr("Load Playlist..."), m_contextMenu);
+    connect(loadPlaylistAction, &QAction::triggered, this, &PlaylistController::loadPlaylistFile);
+    m_contextMenu->addAction(loadPlaylistAction);
+
+    // Add Save Playlist Action
+    QAction* savePlaylistAction = new QAction(tr("Save Playlist As..."), m_contextMenu);
+    connect(savePlaylistAction, &QAction::triggered, this, &PlaylistController::savePlaylistAs);
+    m_contextMenu->addAction(savePlaylistAction);
+
+    m_contextMenu->addSeparator();
 
     m_clearPlaylistAction = new QAction(tr("Clear Playlist"), m_contextMenu);
     connect(m_clearPlaylistAction, &QAction::triggered, this, &PlaylistController::clearPlaylist);
@@ -140,59 +152,96 @@ void PlaylistController::updateEmptyState()
 
 void PlaylistController::requestFileImport()
 {
+    QSettings settings;
+    QStringList fileList;
+
+    const QString fileName = QFileDialog::getOpenFileName(
+        m_view,
+        tr("Open File"),
+        settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
+        "All Files (*)");
+
+    if (!fileName.isEmpty()) {
+        fileList << fileName;
+        settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
+        processFilePaths(fileList, true);
+    }
+}
+
+void PlaylistController::requestMultipleFileImport()
+{
+    QSettings settings;
+    QStringList fileList;
+
     const QStringList files = QFileDialog::getOpenFileNames(
             m_view,
             tr("Open Media Files"),
-            QDir::homePath(),
-            tr("Media Files (*.mp4 *.mkv *.avi *.mp3 *.wav *.flac);;All Files (*.*)")
+            settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
+            "All Files (*)"
         );
 
-    if (!files.isEmpty())
-        processFilePaths(files);
+    for (const QString& fileName : files) {
+        fileList << fileName;
+    }
+
+    const QString& lastFile = files.last();
+    settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
+
+    processFilePaths(fileList, true);
 }
 
-void PlaylistController::addFolder()
+void PlaylistController::requestFolderImport()
 {
+    QSettings settings;
+    QStringList fileList;
+
     const QString dir = QFileDialog::getExistingDirectory(
             m_view,
-            tr("Open Directory"),
-            QDir::homePath(),
+            tr("Open Folder"),
+            settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
         );
 
     if (!dir.isEmpty()) {
-        QStringList filePaths;
         const QDir directory(dir);
         QStringList filters;
         filters << "*.mp4" << "*.mkv" << "*.avi" << "*.mp3" << "*.wav" << "*.flac";
 
         QFileInfoList fileInfoList = directory.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
         for (const QFileInfo& fileInfo : fileInfoList) {
-            filePaths << fileInfo.absoluteFilePath();
+            fileList << fileInfo.absoluteFilePath();
         }
+        settings.setValue("lastFileDirectory", QFileInfo(dir).path());
 
-        processFilePaths(filePaths);
+        processFilePaths(fileList, true);
     }
 }
 
-void PlaylistController::filesDropped(const QStringList &filePaths)
+void PlaylistController::filesDropped(const QStringList &filePaths, const bool autoPlay)
 {
-    processFilePaths(filePaths);
+    processFilePaths(filePaths, autoPlay);
 }
 
-void PlaylistController::processFilePaths(const QStringList &paths)
+void PlaylistController::processFilePaths(const QStringList &paths, bool autoPlay)
 {
     const int previousCount = m_model->rowCount();
+
+    if (paths.isEmpty()) return;
 
     for (const QString& path : paths) {
         QFileInfo fileInfo(path);
         m_model->addItem({fileInfo.baseName(), path, 0, 0});
     }
 
-    // If the playlist was empty before adding these files, auto-play the first one
+    // Always auto-play if the playlist was completely empty
     if (previousCount == 0 && m_model->rowCount() > 0) {
         m_view->setCurrentIndex(m_model->index(0, 0));
         emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(0)));
+    }
+    // Otherwise, only interrupt playback and jump if autoPlay is explicitly true
+    else if (autoPlay && m_model->rowCount() > previousCount) {
+        m_view->setCurrentIndex(m_model->index(previousCount, 0));
+        emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(previousCount)));
     }
 }
 
@@ -218,4 +267,93 @@ void PlaylistController::togglePlaylist()
     } else {
         showPlaylist();
     }
+}
+
+void PlaylistController::savePlaylistAs()
+{
+    if (m_model->rowCount() == 0) {
+        QMessageBox::information(m_view, tr("Save Playlist"), tr("The playlist is empty."));
+        return;
+    }
+
+    const QString filePath = QFileDialog::getSaveFileName(
+        m_view,
+        tr("Save Playlist"),
+        QDir::homePath(),
+        tr("Playlist Files (*.m3u);;All Files (*.*)")
+    );
+
+    if (!filePath.isEmpty()) {
+        if (!saveToFile(filePath)) {
+            QMessageBox::critical(m_view, tr("Error"), tr("Could not save playlist file."));
+        }
+    }
+}
+
+void PlaylistController::loadPlaylistFile()
+{
+    const QString filePath = QFileDialog::getOpenFileName(
+        m_view,
+        tr("Open Playlist"),
+        QDir::homePath(),
+        tr("Playlist Files (*.m3u *.m3u8);;All Files (*.*)")
+    );
+
+    if (!filePath.isEmpty()) {
+        if (!loadFromFile(filePath)) {
+            QMessageBox::critical(m_view, tr("Error"), tr("Could not read playlist file."));
+        }
+    }
+}
+
+bool PlaylistController::saveToFile(const QString &filePath) const
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << "#EXTM3U\n"; // Standard M3U header
+
+    // Iterate through the model and write each file path
+    for (int i = 0; i < m_model->rowCount(); ++i) {
+        QString mediaPath = m_model->currentURL(i);
+        if (!mediaPath.isEmpty()) {
+            out << mediaPath << "\n";
+        }
+    }
+
+    file.close();
+    return true;
+}
+
+bool PlaylistController::loadFromFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream in(&file);
+    QStringList pathsToAdd;
+
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+
+        // Skip empty lines and M3U comments/metadata (lines starting with #)
+        if (!line.isEmpty() && !line.startsWith("#")) {
+            pathsToAdd << line;
+        }
+    }
+
+    file.close();
+
+    // Use our existing method to add the files without interrupting current playback
+    if (!pathsToAdd.isEmpty()) {
+        processFilePaths(pathsToAdd, false);
+        return true;
+    }
+
+    return false;
 }

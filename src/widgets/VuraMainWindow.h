@@ -40,6 +40,9 @@
 #include <QAudioOutput>
 #include <QVideoSink>
 #include <QKeyEvent>
+#include <QMediaDevices>
+#include <QAudioDevice>
+#include <QActionGroup>
 #include <QDebug>
 
 #include <libvura/constants.h>
@@ -109,9 +112,6 @@ signals:
 
 private slots:
     static void actionTestFunction();
-    void actionOpenFile();
-    void actionOpenFolder();
-    void actionOpenMultipleFiles();
     void actionEmergencyClose();
     void actionShowLogViewer();
     void actionToggleFullscreen();
@@ -120,6 +120,7 @@ private slots:
     //void actionShowAbout();
     void actionExit();
     void actionToggleVideoControls();
+    void populateAudioDevicesMenu();
 
 
 public slots:
@@ -150,6 +151,7 @@ private:
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
 
+    QMediaDevices m_mediaDevices;
     QString m_trackInfo;
     QString m_statusInfo;
     qint64 m_lastPosition = 0;
