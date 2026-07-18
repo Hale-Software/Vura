@@ -20,4 +20,4 @@
 
 Q_LOGGING_CATEGORY(Core, "app.core")
 Q_LOGGING_CATEGORY(Playback, "app.playback")
-Q_LOGGING_CATEGORY(Playlist, "app.playlist")
+//Q_LOGGING_CATEGORY(Playlist, "app.playlist")

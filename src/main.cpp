@@ -21,89 +21,19 @@
 #include <QDir>
 #include <QDebug>
 
-#include <libvura/constants.h>
 #include <libvura/ErrorService.h>
 #include <libvura/util/singleinstance.h>
 #include <ui-config.h>
 
-//#include "mainwindow.h"
 #include "VuraMainWindow.h"
 
 
 int main(int argc, char *argv[])
 {
-    //qputenv("QT_QUICK_BACKEND", "software");
     QApplication app(argc, argv);
-    //QApplication::setStyle("Fusion");
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
-
-    VuraMainWindow mainWindow;
-    mainWindow.show();
-    return app.exec();
-}
-
-
-/*
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    // Set application information
-    QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
-    QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
-    QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
-
-#ifdef Q_OS_WIN
-    // Handle Application Directories
-    const QString debugBuildType = "Debug";
-    const bool isDebugBuild = VURA_BUILD_TYPE == debugBuildType;
-    if (isDebugBuild) {
-        const QString rootPath = "debug";
-        const QString crashPath = "debug/crashes";
-        const QString logPath = "debug/logs";
-        const QString updatePath = "debug/updates";
-
-        const QDir dir;
-        if (!dir.mkpath(rootPath)) {
-            ErrorService::instance().postError({
-            "Folder Error",
-            "Failed to create debug root directory. Check permissions.",
-                ErrorSeverity::Critical
-            });
-            return 1;
-        }
-
-        if (!dir.mkpath(crashPath)) {
-            ErrorService::instance().postError({
-            "Folder Error",
-            "Failed to create debug crash directory. Check permissions.",
-                ErrorSeverity::Critical
-            });
-            return 1;
-        }
-
-        if (!dir.mkpath(logPath)) {
-            ErrorService::instance().postError({
-            "Folder Error",
-            "Failed to create debug log directory. Check permissions.",
-                ErrorSeverity::Critical
-            });
-            return 1;
-        }
-
-        if (!dir.mkpath(updatePath)) {
-            ErrorService::instance().postError({
-            "Folder Error",
-            "Failed to create debug update directory. Check permissions.",
-                ErrorSeverity::Critical
-            });
-            return 1;
-        }
-
-    }
-
-#endif
 
     try {
         // Prevent many instances of the app from launching.
@@ -118,7 +48,7 @@ int main(int argc, char *argv[])
         instance.listen(instanceName);
 
         // Create and show the main window.
-        MainWindow mainWindow;
+        VuraMainWindow mainWindow;
         mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         mainWindow.show();
 
@@ -164,4 +94,3 @@ int main(int argc, char *argv[])
         return -1;
     }
 }
-*/

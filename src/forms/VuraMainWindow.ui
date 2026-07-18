@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
+    <width>955</width>
     <height>550</height>
    </rect>
   </property>
@@ -43,6 +43,12 @@
        <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <widget class="QVideoWidget" name="videoWidget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="acceptDrops">
         <bool>true</bool>
        </property>
@@ -122,7 +128,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>950</width>
+     <width>955</width>
      <height>33</height>
     </rect>
    </property>
@@ -277,6 +283,9 @@
      </property>
     </widget>
     <widget class="QMenu" name="menuAudioTrack">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Audio Track</string>
      </property>
@@ -293,6 +302,9 @@
      <string>Video</string>
     </property>
     <widget class="QMenu" name="menuVideoTrack">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Video Track</string>
      </property>
@@ -349,6 +361,9 @@
      <string>Subtitles</string>
     </property>
     <widget class="QMenu" name="menuSubtitleTrack">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Subtitle Track</string>
      </property>
@@ -464,6 +479,9 @@
    <property name="text">
     <string>Preferences</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
   </action>
   <action name="actionFileExit">
    <property name="text">
@@ -508,7 +526,7 @@
     <string>Volume Up</string>
    </property>
    <property name="shortcut">
-    <string>+</string>
+    <string>Up</string>
    </property>
   </action>
   <action name="actionAudioVolumeDown">
@@ -516,7 +534,7 @@
     <string>Volume Down</string>
    </property>
    <property name="shortcut">
-    <string>-</string>
+    <string>Down</string>
    </property>
   </action>
   <action name="actionAudioToggleMute">
@@ -628,15 +646,24 @@
    <property name="text">
     <string>Open Multiple Files...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionFileOpenFolder">
    <property name="text">
     <string>Open Folder...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
   </action>
   <action name="actionFileOpenNetworkStream">
    <property name="text">
     <string>Open Network Stream...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="actionFileOpenRecentClear">
@@ -648,20 +675,32 @@
    <property name="text">
     <string>Close</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+A</string>
+   </property>
   </action>
   <action name="actionFileCloseAll">
    <property name="text">
     <string>Close All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+A</string>
    </property>
   </action>
   <action name="actionFileSave">
    <property name="text">
     <string>Save</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionFileSaveAs">
    <property name="text">
     <string>Save As...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionFileSavePlaylist">
@@ -672,6 +711,9 @@
   <action name="actionFileSaveACopy">
    <property name="text">
     <string>Save A Copy...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+S</string>
    </property>
   </action>
   <action name="actionFileRenameCurrentFile">
@@ -790,40 +832,64 @@
    <property name="text">
     <string>Faster</string>
    </property>
+   <property name="shortcut">
+    <string>+</string>
+   </property>
   </action>
   <action name="actionPlaybackSpeedFasterFine">
    <property name="text">
     <string>Faster (fine)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
    </property>
   </action>
   <action name="actionPlaybackSpeedNormal">
    <property name="text">
     <string>Normal</string>
    </property>
+   <property name="shortcut">
+    <string>=</string>
+   </property>
   </action>
   <action name="actionPlaybackSpeedSlowerFine">
    <property name="text">
     <string>Slower (fine)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionPlaybackSpeedSlower">
    <property name="text">
     <string>Slower</string>
    </property>
+   <property name="shortcut">
+    <string>-</string>
+   </property>
   </action>
   <action name="actionPlaybackNextFrame">
    <property name="text">
     <string>Next Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>]</string>
    </property>
   </action>
   <action name="actionPlaybackPreviousFrame">
    <property name="text">
     <string>Previous Frame</string>
    </property>
+   <property name="shortcut">
+    <string>[</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpToSpecificTime">
    <property name="text">
     <string>Jump to Specific Time...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="actionPlaybackJumpToEnd">
@@ -835,50 +901,80 @@
    <property name="text">
     <string>Extra Large</string>
    </property>
+   <property name="shortcut">
+    <string>2</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpForwardLarge">
    <property name="text">
     <string>Large</string>
+   </property>
+   <property name="shortcut">
+    <string>W</string>
    </property>
   </action>
   <action name="actionPlaybackJumpForwardMedium">
    <property name="text">
     <string>Medium</string>
    </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpForwardSmall">
    <property name="text">
     <string>Small</string>
+   </property>
+   <property name="shortcut">
+    <string>X</string>
    </property>
   </action>
   <action name="actionPlaybackJumpForwardExtraSmall">
    <property name="text">
     <string>Extra Small</string>
    </property>
+   <property name="shortcut">
+    <string>.</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpBackwardExtraLarge">
    <property name="text">
     <string>Extra Large</string>
+   </property>
+   <property name="shortcut">
+    <string>1</string>
    </property>
   </action>
   <action name="actionPlaybackJumpBackwardLarge">
    <property name="text">
     <string>Large</string>
    </property>
+   <property name="shortcut">
+    <string>Q</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpBackwardMedium">
    <property name="text">
     <string>Medium</string>
+   </property>
+   <property name="shortcut">
+    <string>A</string>
    </property>
   </action>
   <action name="actionPlaybackJumpBackwardSmall">
    <property name="text">
     <string>Small</string>
    </property>
+   <property name="shortcut">
+    <string>Z</string>
+   </property>
   </action>
   <action name="actionPlaybackJumpBackwardExtraSmall">
    <property name="text">
     <string>Extra Small</string>
+   </property>
+   <property name="shortcut">
+    <string>,</string>
    </property>
   </action>
   <action name="actionMarkersMarkIn">

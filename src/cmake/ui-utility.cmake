@@ -3,6 +3,6 @@ target_sources(
         utility/HotkeyDelegate.h
         utility/PlaybackController.cpp
         utility/PlaybackController.h
-        utility/PlaylistController.cpp
-        utility/PlaylistController.h
+        #utility/PlaylistController.cpp
+        #utility/PlaylistController.h
 )

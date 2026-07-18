@@ -47,6 +47,15 @@ target_include_directories(
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# libvura's Q_OBJECT classes are already moc'd inside liblibvura.a. When a vura
+# source #includes one of those headers, this target's AUTOMOC would re-generate
+# the same moc code, producing duplicate symbols that clash with the library's
+# at link time ("multiple definition of PlaylistModel::staticMetaObject", ...).
+# Skip AUTOMOC for all libvura headers here so they are moc'd only in libvura.
+file(GLOB_RECURSE _libvura_headers CONFIGURE_DEPENDS
+        "${CMAKE_SOURCE_DIR}/libvura/libvura/*.h")
+set_source_files_properties(${_libvura_headers} PROPERTIES SKIP_AUTOMOC ON)
+
 include(cmake/ui-components.cmake)
 include(cmake/ui-dialogs.cmake)
 #include(cmake/ui-models.cmake)

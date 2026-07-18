@@ -33,6 +33,12 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QTimer>
+#include <QDirIterator>
+#include <QCloseEvent>
+#include <QAbstractItemView>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QVideoSink>
 #include <QDebug>
 
 #include <libvura/constants.h>
@@ -41,9 +47,11 @@
 #include <libvura/ErrorService.h>
 #include <libvura/util/blogger.h>
 #include <libvura/data/video-markers.h>
-#include <libvura/playlist/MediaItem.h>
-#include <libvura/playlist/PlaylistModel.h>
-#include <libvura/playlist/PlaylistDelegate.h>
+#include <libvura/models/playlistmodel.h>
+#include <libvura/playlist/playlist.h>
+//#include <libvura/playlist/MediaItem.h>
+//#include <libvura/playlist/PlaylistModel.h>
+//#include <libvura/playlist/PlaylistDelegate.h>
 
 #include "HelpDialog.h"
 #include "AboutDialog.h"
@@ -60,8 +68,8 @@
 #include "VideoSliderWidget.h"
 #include "VideoControlWidget.h"
 
-#include "PlaybackController.h"
-#include "PlaylistController.h"
+//#include "PlaybackController.h"
+//#include "PlaylistController.h"
 
 
 namespace Ui {
@@ -86,19 +94,15 @@ class VuraMainWindow : public QMainWindow
 public:
     explicit VuraMainWindow(QWidget *parent = nullptr);
 
-    //void setWindowVisibility(bool state);
-    //void loadStylesheet();
-
-    //void openFolder(const QString &path);
-    //void openFile(const QUrl &path);
-    //void openFile(const QString &path);
-
-    //void loadPlaylist(const QUrl &url);
-    //void loadPlaylist(const QString &path);
-    //void savePlaylist(const QString &path);
-    //void savePlaylist(const QUrl &url);
+    void setMainWindowVisibility(bool state);
+    void openFolderContextMenu(const QString &path);
+    void openFileContextMenu(const QString &file);
+    void addFileToPlaylistContextMenu(const QString &file) const;
+    void addFolderToPlaylistContextMenu(const QString &path);
 
 protected:
+    void closeEvent(QCloseEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 
@@ -107,7 +111,12 @@ signals:
     void quitProgram();
 
 private slots:
-    void actionTestFunction();
+    void playlistPositionChanged(int index);
+
+    static void actionTestFunction();
+    void actionOpenFile();
+    void actionOpenFolder();
+    void actionOpenMultipleFiles();
     void actionEmergencyClose();
     void actionShowLogViewer();
     void actionToggleFullscreen();
@@ -121,29 +130,37 @@ private slots:
     void actionJumpBackward();
     void actionVolumeUp();
     void actionVolumeDown();
+    void actionNext();
+    void actionPrevious();
+    void actionJumpForwardExtraLarge();
+    void actionJumpBackwardExtraLarge();
+    void actionJumpForwardLarge();
+    void actionJumpBackwardLarge();
+    void actionJumpForwardMedium();
+    void actionJumpBackwardMedium();
+    void actionJumpForwardSmall();
+    void actionJumpBackwardSmall();
+    void actionJumpForwardExtraSmall();
+    void actionJumpBackwardExtraSmall();
+    void actionTogglePlay();
+    void actionRestart();
 
 
 public slots:
     void sourceChanged(const QUrl &source);
     void errorOccurred(const QString &errorMessage);
 
-    //void showMediaInformationDialog();
-    //void showMarkerEditDialog();
-    //void showConvertMediaDialog();
-    //void showLogViewerDialog();
-    //void showSettingsDialog();
-    //void showFeedbackDialog();
-    //void showAboutDialog();
-    //void showHelpDialog();
-    //void showUpdateDialog();
-
-    //void checkForUpdates();
-    //void updateMarkerActionsEnabled();
-
-    //void exitApplication();
-    //void togglePlaylistVisibility();
-    //void toggleVideoControlsVisibility();
-
+private slots:
+    void jump(const QModelIndex &index) const;
+    void durationChanged(qint64 duration);
+    void positionChanged(qint64 progress);
+    void tracksChanged();
+    void statusChanged(QMediaPlayer::MediaStatus status);
+    void bufferingProgress(float progress);
+    void displayErrorMessage();
+    void playbackRateChanged(qreal rate);
+    void videoFrameChanged(const QVideoFrame &frame);
+    void seek(int mseconds);
 
 private:
     Ui::VuraMainWindow *ui;
@@ -152,26 +169,21 @@ private:
     static QString trackName(const QMediaMetaData &metaData, int index);
     void setApplicationWindowTitle();
 
-    //void initPlayback();
-    //void initPlaylist();
-
-    //void initializeApplication();
-    //void initializeSystemTray();
-    //void initializeMenuBar();
-    //void initializeVideoSliderWidget();
-    //void initializeVideoControlWidget();
-
-    //double getSliderPercent();
-    //VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange);
+    QVideoSink *m_videoSink = nullptr;
+    QMediaPlayer *m_player = nullptr;
+    QAudioOutput *m_audioOutput = nullptr;
 
     QList<VuraVideoMarker> m_videoMarkers;
     VideoSlider *m_videoSlider = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
 
-    PlaylistController *m_playlistController;
-    PlaybackController *m_playbackController;
-    SystemTrayWidget *m_systemTray;
+    Playlist *m_playlist = nullptr;
+    PlaylistModel *m_playlistModel = nullptr;
+
+    //PlaylistController *m_playlistController;
+    //PlaybackController *m_playbackController;
+    SystemTrayWidget *m_systemTray = nullptr;
 
     QPointer<HelpDialog> m_helpDialog;
     QPointer<AboutDialog> m_aboutDialog;
