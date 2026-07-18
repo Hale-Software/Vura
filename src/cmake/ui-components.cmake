@@ -5,12 +5,9 @@ target_sources(
         components/ClickableLabel.h
         components/ComboBoxIgnoreWheel.h
         components/DoubleSpinBoxIgnoreWheel.h
-        components/menubar.cpp
-        components/menubar.h
         components/MonitoredTextEdit.h
         components/PlaylistEmptyStateWidget.cpp
         components/PlaylistEmptyStateWidget.h
-        components/PlaylistTableView.h
         components/SliderIgnoreScroll.cpp
         components/SliderIgnoreScroll.h
         components/SpinBoxIgnoreWheel.h
