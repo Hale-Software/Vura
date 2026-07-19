@@ -261,7 +261,7 @@ void PlaybackController::restart()
         m_openGLWidget->seek(0);
         m_openGLWidget->play();
     }
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::setPosition(const qint64 position)
@@ -271,7 +271,7 @@ void PlaybackController::setPosition(const qint64 position)
     } else {
         m_openGLWidget->seek(position);
     }
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::setPlaybackRate(const double rate)
@@ -285,7 +285,7 @@ void PlaybackController::setPlaybackRate(const double rate)
     } else {
 
     }
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::changeVolume(const int newVolume) const
@@ -327,7 +327,7 @@ void PlaybackController::seek(const qint64 position)
     } else {
         m_openGLWidget->seek(position);
     }
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::jumpForward(const qint64 mseconds)
@@ -347,7 +347,7 @@ void PlaybackController::jumpForward(const qint64 mseconds)
         m_openGLWidget->seek(jumpTo);
     }
 
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::jumpBackward(qint64 mseconds)
@@ -365,7 +365,7 @@ void PlaybackController::jumpBackward(qint64 mseconds)
         m_openGLWidget->seek(jumpTo);
     }
 
-    emit jumpCompleted();
+    //emit jumpCompleted();
 }
 
 void PlaybackController::jumpForwardExtraLarge()
