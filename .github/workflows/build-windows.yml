@@ -27,7 +27,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.11.*'
+        version: '6.8.1'
         target: 'desktop'
         arch: 'win64_mingw'
         dir: '${{ github.workspace }}/Qt'
@@ -35,7 +35,11 @@ jobs:
     - name: Configure CMake
       shell: pwsh
       run: |
-          cmake -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ github.workspace }}/Qt" -DCMAKE_BUILD_TYPE=Release
+          # Set up environment paths for MinGW and Qt
+          $qtPath = "${{ github.workspace }}/Qt/6.8.1/mingw_64"
+          $env:PATH = "$qtPath/bin;$env:PATH"
+          
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="$qtPath" -DCMAKE_BUILD_TYPE=Release
 
     - name: Build Project
       shell: pwsh
