@@ -47,8 +47,6 @@ PlaylistController::PlaylistController(QListView* view, PlaylistEmptyStateWidget
     updateEmptyState();
 }
 
-PlaylistController::~PlaylistController() {}
-
 void PlaylistController::itemClicked(const QModelIndex &index)
 {
     //if (index.isValid())
@@ -121,24 +119,40 @@ void PlaylistController::showContextMenu(const QPoint &pos)
 
     m_addFileAction = new QAction(tr("Add File"), m_contextMenu);
     connect(m_addFileAction, &QAction::triggered, this, &PlaylistController::requestFileImport);
+    m_contextMenu->addAction(m_addFileAction);
 
     m_addFolderAction = new QAction(tr("Add Folder"), m_contextMenu);
     connect(m_addFolderAction, &QAction::triggered, this, &PlaylistController::requestFolderImport);
+    m_contextMenu->addAction(m_addFolderAction);
 
-    // Add Load Playlist Action
-    QAction* loadPlaylistAction = new QAction(tr("Load Playlist..."), m_contextMenu);
-    connect(loadPlaylistAction, &QAction::triggered, this, &PlaylistController::loadPlaylistFile);
-    m_contextMenu->addAction(loadPlaylistAction);
+    m_contextMenu->addSeparator();
 
-    // Add Save Playlist Action
-    QAction* savePlaylistAction = new QAction(tr("Save Playlist As..."), m_contextMenu);
-    connect(savePlaylistAction, &QAction::triggered, this, &PlaylistController::savePlaylistAs);
-    m_contextMenu->addAction(savePlaylistAction);
+    m_loadPlaylistAction = new QAction(tr("Load Playlist..."), m_contextMenu);
+    connect(m_loadPlaylistAction, &QAction::triggered, this, &PlaylistController::loadPlaylistFile);
+    m_contextMenu->addAction(m_loadPlaylistAction);
+
+    m_savePlaylistAction = new QAction(tr("Save Playlist As..."), m_contextMenu);
+    connect(m_savePlaylistAction, &QAction::triggered, this, &PlaylistController::savePlaylistAs);
+    m_contextMenu->addAction(m_savePlaylistAction);
 
     m_contextMenu->addSeparator();
 
     m_clearPlaylistAction = new QAction(tr("Clear Playlist"), m_contextMenu);
     connect(m_clearPlaylistAction, &QAction::triggered, this, &PlaylistController::clearPlaylist);
+    m_contextMenu->addAction(m_clearPlaylistAction);
+
+    m_contextMenu->addSeparator();
+
+    m_videoInformationAction = new QAction(tr("Video Information"), m_contextMenu);
+    m_contextMenu->addAction(m_videoInformationAction);
+
+    m_showFolderAction = new QAction(tr("Show Folder"), m_contextMenu);
+    m_contextMenu->addAction(m_showFolderAction);
+
+    m_contextMenu->addSeparator();
+
+    m_removeSelectedAction = new QAction(tr("Remove Selected"), m_contextMenu);
+    m_contextMenu->addAction(m_removeSelectedAction);
 
     m_contextMenu->exec(m_view->mapToGlobal(pos));
 }
@@ -185,14 +199,16 @@ void PlaylistController::requestMultipleFileImport()
             "All Files (*)"
         );
 
-    for (const QString& fileName : files) {
-        fileList << fileName;
+    if (!files.isEmpty()) {
+        for (const QString& fileName : files) {
+            fileList << fileName;
+        }
+
+        const QString& lastFile = files.last();
+        settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
+
+        processFilePaths(fileList, true);
     }
-
-    const QString& lastFile = files.last();
-    settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
-
-    processFilePaths(fileList, true);
 }
 
 void PlaylistController::requestFolderImport()
@@ -218,7 +234,8 @@ void PlaylistController::requestFolderImport()
         }
         settings.setValue("lastFileDirectory", QFileInfo(dir).path());
 
-        processFilePaths(fileList, true);
+        if (!fileList.isEmpty())
+            processFilePaths(fileList, true);
     }
 }
 

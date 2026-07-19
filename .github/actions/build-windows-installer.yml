@@ -1,0 +1,35 @@
+name: Build NSIS Installer
+
+on:
+  release:
+    types: [published]
+  #push:
+  #  branches: [ main ]
+  #  tags: [ 'v*' ]
+  #workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Clean Version Tag
+      id: get_version
+      shell: bash
+      run: |
+        # Extracts '1.2.3' from 'refs/tags/v1.2.3' or 'v1.2.3'
+        VERSION=${GITHUB_REF_NAME#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Compile Installer with Version
+      run: |
+        makensis /DVERSION="${{ steps.get_version.outputs.version }}" ./installer.nsi
+
+    - name: Upload Installer to Release Assets
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./vura-${{ steps.get_version.outputs.version }}-windows.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

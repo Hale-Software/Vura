@@ -64,7 +64,7 @@
 #include "HelpDialog.h"
 #include "AboutDialog.h"
 #include "UpdateDialog.h"
-#include "SettingsWindow.h"
+#include "../settings/SettingsWindow.h"
 #include "FeedbackDialog.h"
 #include "LogViewerDialog.h"
 #include "MarkerEditDialog.h"
@@ -172,6 +172,8 @@ public slots:
 
 private:
     Ui::VuraMainWindow *ui;
+
+    bool autohideSlider = false;
 
     void initializeVideoWidget();
     void initializeVuraMediaEngine();

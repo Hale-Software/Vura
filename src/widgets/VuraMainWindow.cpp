@@ -530,7 +530,7 @@ void VuraMainWindow::errorOccurred(const QString &errorMessage)
 
 void VuraMainWindow::hideVideoSlider()
 {
-    if (m_currentPlaybackState == PlaybackState::Playing) {
+    if (m_currentPlaybackState == PlaybackState::Playing && autohideSlider) {
         m_videoSliderWidget->hide();
         this->setCursor(Qt::BlankCursor);
     }

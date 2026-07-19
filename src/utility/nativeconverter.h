@@ -16,18 +16,26 @@
 
  ******************************************************************************/
 
-#include "SettingsWindow.h"
-#include "ui_SettingsWindow.h"
+#pragma once
+#include <QObject>
+#include <QString>
 
-
-SettingsWindow::SettingsWindow(QWidget *parent) : QDialog(parent), ui(new Ui::SettingsWindow)
-{
-    ui->setupUi(this);
-    ui->navigationList->setStyleSheet("QListWidget { background: transparent; }");
-    ui->navigationList->viewport()->setAutoFillBackground(false);
+// Include FFmpeg IDs directly inside your header interface
+extern "C" {
+#include <libavcodec/avcodec.h>
 }
 
-SettingsWindow::~SettingsWindow()
-{
-    delete ui;
-}
+class NativeConverter : public QObject {
+    Q_OBJECT
+public:
+    explicit NativeConverter(QObject *parent = nullptr);
+
+    // Pass custom output options explicitly selected by your user interface
+    bool convert(const QString &inputPath,
+                 const QString &outputPath,
+                 AVCodecID chosenVideoCodecId);
+
+    signals:
+        void progressUpdated(int percentage);
+    void statusMessage(const QString &message);
+};

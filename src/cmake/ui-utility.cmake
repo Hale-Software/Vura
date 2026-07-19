@@ -11,4 +11,6 @@ target_sources(
         utility/PlaylistController.h
         utility/SingleInstanceController.cpp
         utility/SingleInstanceController.h
+        utility/nativeconverter.cpp
+        utility/nativeconverter.h
 )

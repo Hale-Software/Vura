@@ -48,8 +48,6 @@ public:
                                 QStackedWidget* container,
                                 QObject* parent = nullptr);
 
-    ~PlaylistController() override;
-
     PlaylistModel* getModel() const { return m_model; }
     bool isPlaylistVisible() const { return m_container->isVisible(); }
 
@@ -89,6 +87,11 @@ private:
     QAction* m_addFileAction;
     QAction* m_addFolderAction;
     QAction* m_clearPlaylistAction;
+    QAction* m_loadPlaylistAction;
+    QAction* m_savePlaylistAction;
+    QAction* m_videoInformationAction;
+    QAction* m_showFolderAction;
+    QAction* m_removeSelectedAction;
 
     bool saveToFile(const QString &filePath) const;
     bool loadFromFile(const QString &filePath);

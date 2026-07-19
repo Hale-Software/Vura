@@ -42,6 +42,33 @@ public:
     explicit SettingsWindow(QWidget *parent = nullptr);
     ~SettingsWindow() override;
 
+private slots:
+    void pageSelection_Changed();
+    void resetButton_Clicked();
+    void applyButton_Clicked();
+    void cancelButton_Clicked();
+
+    // General Settings
+    void language_Changed(int index);
+    void theme_Changed(int index);
+    void showPlaylistOnStart_Checked(int state);
+    void useHardwareAcceleration_Checked(int state);
+    void defaultVideoContrast_ValueChanged(int value);
+    void defaultAspectRatio_Changed(int index);
+    void checkForUpdates_Clicked();
+    void enableAutomaticUpdates_Checked(int state);
+    void updateChannel_Changed(int index);
+
+    // Interface Settings
+    void autohideSliderWhenPlaying_Checked(int state);
+    void autohideSliderTime_ValueChanged(double value);
+    void unhideSliderOnHotkey_Checked(int state);
+
+    // Player Settings
+    void allowOnlyOneInstance_Checked(int state);
+    void showMediaChangeNotification_Changed(int index);
+    void continuePlayback_Changed(int index);
+
 private:
     Ui::SettingsWindow *ui;
 
