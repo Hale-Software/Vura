@@ -95,6 +95,17 @@ jobs:
     # --- PACKAGE & DEPLOY STRATEGIES PER OS ---
 
     # 1. WINDOWS PACKAGING (MinGW + windeployqt) - create a ZIP around the installer
+    - name: Debug: list vcpkg and build outputs (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        echo "vcpkg installed tree:"
+        ls -la vcpkg-dir/installed || true
+        echo "--- vcpkg x64-mingw bin ---"
+        ls -la vcpkg-dir/installed/x64-mingw/bin || true
+        echo "--- build tree (looking for vura.exe) ---"
+        find build -type f -iname "vura.exe" -print || true
+      shell: pwsh
+
     - name: Package Windows Installer via NSIS
       if: matrix.os == 'windows-latest'
       run: |
