@@ -1,105 +1,129 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED Core Widgets Network MultimediaWidgets)
+set(FFMPEG_DIR "C:\\Users\\halea\\bin\\ffmpeg-8.1.1-full_build-shared")
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
 
-configure_file(vura-config.h.in vura-config.h)
+configure_file(libvura/config.h.in libvura/config.h)
 
 # Root Directory
 target_sources(
         libvura
         PUBLIC
-        constants.h
-        filemanager.h
-        libvura.h
-        markermanager.h
-        mediacontroller.h
-        vura-datafile-handler.h
-        vura-error.h
-        vura-helpers.h
-        vura-hotkeys.h
-        vura-settings.h
+        libvura/constants.h
+        libvura/filemanager.h
+        libvura/libvura.h
+        libvura/logger.h
+        libvura/markermanager.h
+        libvura/mediacontroller.h
+        libvura/datafile-handler.h
+        libvura/error.h
+        libvura/ErrorTypes.h
+        libvura/ErrorService.h
+        libvura/helpers.h
+        libvura/hotkeys.h
+        libvura/settings.h
+        libvura/settings-manager.h
+        libvura/theme-manager.h
 
         PRIVATE
-        constants.cpp
-        filemanager.cpp
-        libvura.cpp
-        markermanager.cpp
-        mediacontroller.cpp
-        vura-datafile-handler.cpp
-        vura-defs.h
-        vura-error.cpp
-        vura-helpers.cpp
-        vura-hotkeys.cpp
-        vura-settings.cpp
+        libvura/constants.cpp
+        libvura/filemanager.cpp
+        libvura/libvura.cpp
+        libvura/logger.cpp
+        libvura/markermanager.cpp
+        libvura/mediacontroller.cpp
+        libvura/datafile-handler.cpp
+        libvura/defs.h
+        libvura/error.cpp
+        libvura/helpers.cpp
+        libvura/hotkeys.cpp
+        libvura/settings.cpp
+        libvura/settings-manager.cpp
+        libvura/theme-manager.cpp
 )
 
 # data Directory
 target_sources(
         libvura
         PUBLIC
-        data/video-markers.h
+        libvura/data/version-info.h
+        libvura/data/video-markers.h
+        libvura/data/VideoMarker.h
 
         PRIVATE
-        data/video-markers.cpp
+        libvura/data/video-markers.cpp
+        libvura/data/VideoMarker.cpp
+)
+
+# media-engine Directory
+target_sources(
+        libvura
+        PUBLIC
+        libvura/media-engine/audio-decoder.h
+        libvura/media-engine/audio-output.h
+        libvura/media-engine/decoder-thread.h
+        libvura/media-engine/demuxer-thread.h
+        libvura/media-engine/fragment.glsl
+        libvura/media-engine/frame-queue.h
+        libvura/media-engine/packet-queue.h
+        libvura/media-engine/vertex.glsl
+        libvura/media-engine/video-widget.h
+
+        PRIVATE
+        libvura/media-engine/audio-decoder.cpp
+        libvura/media-engine/audio-output.cpp
+        libvura/media-engine/decoder-thread.cpp
+        libvura/media-engine/demuxer-thread.cpp
+        libvura/media-engine/frame-queue.cpp
+        libvura/media-engine/packet-queue.cpp
+        libvura/media-engine/video-widget.cpp
 )
 
 # media-io Directory
 target_sources(
         libvura
         PUBLIC
-        media-io/media-functions.h
+        libvura/media-io/media-functions.h
 
         PRIVATE
-        media-io/media-functions.cpp
+        libvura/media-io/media-functions.cpp
 )
 
 # models Directory
 target_sources(
         libvura
         PUBLIC
-        models/log-viewer-model.h
-        models/logmessages.h
-        models/vura-playlistmodel.h
-
-        PRIVATE
-        models/log-viewer-model.cpp
-        models/logmessages.cpp
-        models/vura-playlistmodel.cpp
+        libvura/models/playlist-item.h
 )
 
 # playlist Directory
 target_sources(
         libvura
         PUBLIC
-        #playlist/playlist-model.h
-        #playlist/vura-playlist.h
-        #playlist/vura-playlist-file-parser.h
-        #playlist/vura-playlist-private.h
+        libvura/playlist/playlist-model.h
+        libvura/playlist/playlist-delegate.h
 
         PRIVATE
-        #playlist/playlist-model.cpp
-        #playlist/vura-playlist.cpp
-        #playlist/vura-playlist-file-parser.cpp
-        #playlist/vura-playlist-private.cpp
+        libvura/playlist/playlist-model.cpp
+        libvura/playlist/playlist-delegate.cpp
 )
 
 # util Directory
 target_sources(
         libvura
         PUBLIC
-        util/blogger.h
-        util/messagebox.h
-        util/playlistmanager.h
-        util/singleinstance.h
+        libvura/util/blogger.h
+        libvura/util/messagebox.h
+        libvura/util/singleinstance.h
 
         PRIVATE
-        util/blogger.cpp
-        util/messagebox.cpp
-        util/playlistmanager.cpp
-        util/singleinstance.cpp
+        libvura/util/blogger.cpp
+        libvura/util/messagebox.cpp
+        libvura/util/singleinstance.cpp
 )
 
 # util/windows Directory
@@ -112,5 +136,18 @@ target_sources(
 #        util/windows/windowskeyboardhandler.cpp
 #)
 
-target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network Qt6::MultimediaWidgets)
-target_include_directories(libvura INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+        libvura PRIVATE
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::MultimediaWidgets
+        Qt6::OpenGLWidgets
+        ${FFMPEG_DIR}/lib/avformat.lib
+        ${FFMPEG_DIR}/lib/avcodec.lib
+        ${FFMPEG_DIR}/lib/avfilter.lib
+        ${FFMPEG_DIR}/lib/avutil.lib
+        ${FFMPEG_DIR}/lib/swscale.lib
+        ${FFMPEG_DIR}/lib/swresample.lib
+)
+
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${FFMPEG_DIR}/include)

@@ -32,9 +32,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QLabel>
-#include <QMediaDevices>
 #include <QMediaFormat>
-#include <QMediaMetaData>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QAudioBufferOutput>
@@ -57,38 +55,47 @@
 #include <QHoverEvent>
 #include <QVideoSink>
 #include <QVideoFrame>
+#include <QSplitter>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QStackedWidget>
+#include <QItemSelectionModel>
 
 #include <cmath>
 #include <limits>
 #include <iostream>
 
-#include <xxHash/xxhash.h>
+#include <libvura/constants.h>
+#include <libvura/helpers.h>
+#include <libvura/settings.h>
+#include <libvura/ErrorService.h>
+#include <libvura/data/video-markers.h>
+#include <libvura/util/blogger.h>
+#include <libvura/util/messagebox.h>
+#include <libvura/media-io/media-functions.h>
+#include <libvura/playlist/PlaylistModel.h>
+#include <libvura/playlist/PlaylistDelegate.h>
+#include <libvura/playlist/MediaItem.h>
 
-#include <constants.h>
-#include <data/video-markers.h>
-#include <vura-helpers.h>
-#include <vura-settings.h>
-#include <util/blogger.h>
-#include <util/messagebox.h>
-#include <util/playlistmanager.h>
-#include <media-io/media-functions.h>
-#include <models/vura-playlistmodel.h>
+#include "ClickableLabel.h"
+#include "menubar.h"
+#include "VideoSlider.h"
+#include "VideoControlWidget.h"
+#include "SystemTrayWidget.h"
+#include "SettingsDialog.h"
+#include "AboutDialog.h"
+#include "LogViewerDialog.h"
+#include "MarkerEditDialog.h"
+#include "UpdateDialog.h"
+#include "MediaInformationDialog.h"
+#include "HelpDialog.h"
+#include "ConvertMediaDialog.h"
+#include "ErrorDialog.h"
+#include "WindowsUpdater.h"
+#include "PlaylistEmptyStateWidget.h"
+#include "VideoSliderWidget.h"
 
-#include "VuraDockWidget.h"
-#include "../components/ClickableLabel.h"
-#include "../components/ContinuePlaybackRibbon.h"
-#include "../components/menubar.h"
-#include "../components/videoslider.h"
-#include "../components/videocontrolwidget.h"
-#include "../components/system-tray.h"
-#include "../settings/settingswindow.h"
-#include "../dialogs/about.h"
-#include "../dialogs/logviewer.h"
-#include "../dialogs/MarkerEditDialog.h"
-#include "../dialogs/updatewindow.h"
-#include "../dialogs/mediainformation.h"
-#include "../dialogs/helpdialog.h"
-#include "../dialogs/convertmediadialog.h"
+#include <QVideoWidget>
 
 
 namespace Ui {
@@ -99,19 +106,22 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    friend class HSettingsWindow;
-    friend class HAboutDialog;
-    friend class LogViewer;
+    friend class SettingsDialog;
+    friend class AboutDialog;
+    friend class LogViewerDialog;
     friend class MarkerEditDialog;
-    friend class HUpdate;
+    friend class UpdateDialog;
     friend class ConvertMediaDialog;
+    friend class ErrorDialog;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
+
+    void openFolder(const QString &path);
+    void openFile(const QString &path);
 
     void setMainWindowVisibility(bool state);
-    void processOpenParams(int argc, char *argv[]);
 
     void initApplication();
     void initSystemTrayIcon();
@@ -120,25 +130,21 @@ public:
     void initVideoControls();
     void initVideoPlayer();
     void initUI();
-    void initAudioDevices();
     void initVideoSlider();
     void openFolderContextMenu(const QString &path);
     void openFileContextMenu(const QString &file);
     void addFileToPlaylistContextMenu(const QString &file) const;
-    void addFolderToPlaylistContextMenu(const QString &path) const;
+    void addFolderToPlaylistContextMenu(const QString &path);
     bool isPlayerAvailable() const;
     bool loadPlaylist(const QUrl &url);
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
-    void updateDurationInfo(qint64 currentInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
     void loadFile(const QString &fileName);
     void setApplicationWindowTitle();
-    void setToolTips();
     static void setStyleSheet();
     bool initApplicationDirs();
     bool initUserDirs();
-    static qint64 fileHash(const QString& filePath);
     void updateMarkerMenuItems();
     VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
     double getSliderPercent() const;
@@ -163,7 +169,7 @@ public slots:
     void toggleMarkers(const QString &markerType);
     void showLogFileViewer();
     void toggleVideoControls();
-    void togglePlayPause();
+    void togglePlayPause() const;
     void nextVideo();
     void previousVideo();
     void changePlaybackSpeed(double mrate);
@@ -186,7 +192,7 @@ public slots:
     void clearMarkers();
     void clearInMarker();
     void clearOutMarker();
-    void goToInMarker();
+    void goToInMarker() const;
     void goToOutMarker();
     void createSubclip();
     void testFunction();
@@ -203,16 +209,23 @@ public slots:
     void markerDeleted(const VuraVideoMarker &videoMarker);
     void getPrevMarker(const VuraVideoMarker &videoMarker);
     void getNextMarker(const VuraVideoMarker &videoMarker);
+    void renameFile(const QString &newFileName);
+    void checkForUpdates();
+    void updateAvailable(const QString& versionString, const QString& releaseDateString, const QString &downloadUrl, const QString& changelog);
+    void updateNotAvailable();
+    void requestFileImport();
+    void filesDropped(const QStringList &filePaths);
 
     // Video Slider
-    void rangeChanged(int minimum, int maximum);
-    void valueChanged(int value);
     void sliderPressed(bool pressed);
-    void sliderMoved(int value);
-    void sliderReleased();
-    void sliderClicked(int mseconds);
+
+    //void initWinSparkle();
+    //void checkForUpdates();
+
+    void onCurrentPlaylistItemChanged(const QModelIndex &current, const QModelIndex &previous);
 
 signals:
+    //void windowWasShown();
     void setActiveAudioDevice(const QAudioDevice &device);
     void setActiveAudioTrack(int track);
     void setActiveVideoTrack(int track);
@@ -237,17 +250,16 @@ signals:
 
 private slots:
     void loadSettings();
-    void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
     void tracksChanged();
-    void seek(int mseconds);
+    void seek(int mseconds) const;
+    void jump(const QModelIndex &index);
     void jumpTo(int mseconds);
-    void playlistPositionChanged(int);
+    void playlistPositionChanged(int) const;
     void statusChanged(QMediaPlayer::MediaStatus status);
     void bufferingProgress(float progress);
     void displayErrorMessage();
     void sourceChanged(const QUrl &media);
-    void playbackRateChanged(qreal rate);
     void videoFrameChanged(const QVideoFrame &frame);
 
     void showPlaylistTableContextMenu(const QPoint &pos);
@@ -263,31 +275,37 @@ private slots:
     //void playlistContextMenu_ShowFolderVideoAction();
     //void playlistContextMenu_RemoveSelectedVideoAction();
 
-    void hideCursor();
-    void durationLabel_Clicked();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
 
     void finishedUpdatingPlayerPosition();
+    void updateEmptyState();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
     void changeEvent(QEvent *event) override;
-    bool event(QEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
-    QList<VuraVideoMarker> videoMarkers;
-    VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
-    PlaylistManager *m_playlistManager = nullptr;
 
-    ContinuePlaybackRibbon *m_continuePlaybackRibbon = nullptr;
+    QList<VuraVideoMarker> videoMarkers;
+    PlaylistModel *playlistModel = nullptr;
+    VideoSlider *m_videoSlider = nullptr;
+    QItemSelectionModel *m_playlistSelectionModel = nullptr;
+    VideoSliderContainer *m_videoSliderContainer = nullptr;
+
+    //VuraPlaylistModel *m_vuraPlaylistModel = nullptr;
+    //PlaylistManager *m_playlistManager = nullptr;
+    //Playlist *m_playlist = nullptr;
+    //PlaylistModel *m_playlistModel = nullptr;
+    //QAbstractItemView *m_playlistView = nullptr;
+    WindowsUpdater *windowsUpdater = nullptr;
+
     VuraSettings *vuraSettings;
     MenuBar *m_menuBar = nullptr;
-    SystemTray *m_systemTrayIcon = nullptr;
+    SystemTrayWidget *m_systemTrayWidget = nullptr;
     QVideoSink *m_videoSink = nullptr;
-    QTimer *timer;
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QLabel *m_statusLabel = nullptr;
@@ -296,7 +314,7 @@ private:
     QPoint m_pos;
     QString m_trackInfo;
     QString m_statusInfo;
-    qint64 m_duration = 0;
+    //qint64 m_duration = 0;
     int videoTrack = 0;
     int audioOutput = 0;
     int audioTrack = 0;
@@ -308,19 +326,19 @@ private:
 
     // DIALOGS
     // =======================================================================================================
-    QPointer<LogViewer> m_logViewer;
-    QPointer<SettingsWindow> m_settingsWindow;
+    QPointer<LogViewerDialog> m_logViewerDialog;
+    QPointer<SettingsDialog> m_settingsDialog;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
-    QPointer<MediaInformation> m_mediaInformation;
+    QPointer<MediaInformationDialog> m_mediaInformationDialog;
     QPointer<HelpDialog> m_helpDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
+    QPointer<ErrorDialog> m_errorDialog;
 
     // VARIABLES
     // =======================================================================================================
     QPointer<VideoControlWidget> m_videoControlWidget;
-    VideoSlider *m_videoSlider = nullptr;
     bool m_sourceLoaded = false;
     bool m_showingPlaylist = false;
     bool m_showingStatusBar = true;
@@ -330,7 +348,6 @@ private:
     double m_volume = 50;
     double m_playbackSpeed = 1.0;
     QString m_currentFile;
-    QString m_currentFileHash;
     QString m_markerValue;
     int m_markerIndex = 0;
     int m_inMarker = 0;
@@ -347,6 +364,7 @@ private:
     bool checkMarkerProximity();
     bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
     bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
+    QUrl replaceFilename(QUrl url, const QString &newBaseName);
 
 };
 

@@ -1,27 +1,16 @@
 target_sources(
         vura PRIVATE
-        components/ComboBoxIgnoreWheel.h
-        components/ContinuePlaybackRibbon.cpp
-        components/ContinuePlaybackRibbon.h
-        components/SpinBoxIgnoreWheel.h
-        components/DoubleSpinBoxIgnoreWheel.h
         components/AbsoluteSlider.cpp
         components/AbsoluteSlider.h
+        components/ClickableLabel.h
+        components/ComboBoxIgnoreWheel.h
+        components/DoubleSpinBoxIgnoreWheel.h
+        components/MonitoredTextEdit.h
+        components/PlaylistEmptyStateWidget.cpp
+        components/PlaylistEmptyStateWidget.h
         components/SliderIgnoreScroll.cpp
         components/SliderIgnoreScroll.h
-        components/clickablelabel.h
-        components/videocontrolwidget.cpp
-        components/videocontrolwidget.h
-        components/videoslider.cpp
-        components/videoslider.h
-        components/menubar.cpp
-        components/menubar.h
-        components/MonitoredTextEdit.h
-        components/videoplayer.cpp
-        components/videoplayer.h
-        components/RangeSlider.cpp
-        components/RangeSlider.h
-        components/system-tray.cpp
-        components/system-tray.h
-        components/PlaylistTableView.h
+        components/SpinBoxIgnoreWheel.h
+        components/VideoSlider.cpp
+        components/VideoSlider.h
 )

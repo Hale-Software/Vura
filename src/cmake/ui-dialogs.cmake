@@ -1,25 +1,37 @@
 target_sources(
         vura PRIVATE
-        dialogs/about.cpp
-        dialogs/about.h
-        dialogs/convertmediadialog.cpp
-        dialogs/convertmediadialog.h
-        dialogs/logviewer.cpp
-        dialogs/logviewer.h
-        dialogs/MarkerEditDialog.cpp
-        dialogs/MarkerEditDialog.h
-        dialogs/missingfiles.cpp
-        dialogs/missingfiles.h
-        dialogs/permissions.cpp
-        dialogs/permissions.h
-        dialogs/mediainformation.cpp
-        dialogs/mediainformation.h
-        dialogs/helpdialog.cpp
-        dialogs/helpdialog.h
-        dialogs/LogUploadDialog.cpp
-        dialogs/LogUploadDialog.h
+        dialogs/AboutDialog.cpp
+        dialogs/AboutDialog.h
+        dialogs/ConvertMediaDialog.cpp
+        dialogs/ConvertMediaDialog.h
+        dialogs/ErrorDialog.cpp
+        dialogs/ErrorDialog.h
         dialogs/FeedbackDialog.cpp
         dialogs/FeedbackDialog.h
-        dialogs/markerdialog.cpp
-        dialogs/markerdialog.h
+        dialogs/HelpDialog.cpp
+        dialogs/HelpDialog.h
+        dialogs/HotkeySettingsDialog.cpp
+        dialogs/HotkeySettingsDialog.h
+        dialogs/LogUploadDialog.cpp
+        dialogs/LogUploadDialog.h
+        dialogs/LogViewerDialog.cpp
+        dialogs/LogViewerDialog.h
+        dialogs/MarkerDialog.cpp
+        dialogs/MarkerDialog.h
+        dialogs/MarkerEditDialog.cpp
+        dialogs/MarkerEditDialog.h
+        dialogs/MediaInformationDialog.cpp
+        dialogs/MediaInformationDialog.h
+        dialogs/MissingFilesDialog.cpp
+        dialogs/MissingFilesDialog.h
+        dialogs/PermissionsDialog.cpp
+        dialogs/PermissionsDialog.h
+        dialogs/SettingsWindow.cpp
+        dialogs/SettingsWindow.h
+        dialogs/UpdateChecker.cpp
+        dialogs/UpdateChecker.h
+        dialogs/UpdateDialog.cpp
+        dialogs/UpdateDialog.h
+        dialogs/WhatsNewDialog.cpp
+        dialogs/WhatsNewDialog.h
 )

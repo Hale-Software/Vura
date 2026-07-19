@@ -1,12 +1,12 @@
-find_package(Qt6 REQUIRED Widgets MultimediaWidgets Network Svg)
-
-if(OS_LINUX OR OS_FREEBSD OR OS_OPENBSD)
-    find_package(Qt6 REQUIRED Gui DBus)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg)
 
 target_link_libraries(
-        vura
-        PRIVATE Qt6::Widgets Qt6::MultimediaWidgets Qt6::Network Qt6::Svg
+        vura PRIVATE
+        Qt6::Widgets
+        Qt6::MultimediaWidgets
+        Qt6::Network
+        Qt6::OpenGLWidgets
+        Qt6::Svg
 )
 
 set_target_properties(
@@ -24,24 +24,37 @@ target_sources(
         vura
         PRIVATE
         forms/vura.qrc
-        forms/mainwindow.ui
-        forms/settingswindow.ui
-        forms/videocontrolwidget.ui
-        forms/logviewer.ui
-        forms/MarkerEditDialog.ui
-        forms/missingfiles.ui
-        forms/permissions.ui
-        forms/updatewindow.ui
-        forms/whatsnew.ui
-        forms/mediainformation.ui
-        forms/testwindow.ui
-        forms/ContinuePlaybackRibbon.ui
-        forms/helpdialog.ui
-        forms/LogUploadDialog.ui
+        forms/AboutDialog.ui
+        forms/ConvertMediaDialog.ui
+        forms/ErrorDialog.ui
         forms/FeedbackDialog.ui
-        forms/markerdialog.ui
-        forms/convertmediadialog.ui
-        forms/VuraDockWidget.ui
+        forms/HelpDialog.ui
+        forms/HotkeyEditWidget.ui
+        forms/LogUploadDialog.ui
+        forms/LogViewerDialog.ui
+        forms/mainwindow.ui
+        forms/MarkerDialog.ui
+        forms/MarkerEditDialog.ui
+        forms/MediaInformationDialog.ui
+        forms/MissingFilesDialog.ui
+        forms/PermissionsDialog.ui
+        forms/SettingsDialog.ui
+        forms/SettingsWindow.ui
+        forms/TitleBar.ui
+        forms/UpdateDialog.ui
+        forms/VideoControlWidget.ui
+        forms/VideoSliderWidget.ui
+        forms/VuraMainWindow.ui
+        forms/WhatsNewDialog.ui
 )
 
-qt_add_ios_ffmpeg_libraries(vura)
+# OS-Specific system libraries linking
+if(WIN32)
+    target_link_libraries(vura PRIVATE Opengl32)
+elseif(APPLE)
+    # Target macOS native OpenGL Framework wrapper
+    find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+    target_link_libraries(vura PRIVATE ${OPENGL_LIBRARY})
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(vura PRIVATE GL)
+endif()

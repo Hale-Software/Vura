@@ -15,8 +15,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#ifndef VURA_LOGUPLOADDIALOG_H
-#define VURA_LOGUPLOADDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -34,12 +33,9 @@ class LogUploadDialog : public QDialog {
 
 public:
     explicit LogUploadDialog(QWidget *parent = nullptr);
-
     ~LogUploadDialog() override;
 
 private:
     Ui::LogUploadDialog *ui;
+
 };
-
-
-#endif //VURA_LOGUPLOADDIALOG_H

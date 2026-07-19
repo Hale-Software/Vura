@@ -48,6 +48,7 @@ set(VURA_COMMENTS "Free and open source video player and editor designed for cus
 set(VURA_LEGAL_COPYRIGHT "(C) Hale Software")
 set(VURA_CMAKE_VERSION 3.0.0)
 
+
 # Configure default version strings
 set(_vura_default_version "0" "0" "1")
 set(_vura_release_candidate 0)
@@ -59,7 +60,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/common")
 include(versionconfig)
 include(buildnumber)
 include(osconfig)
-include(ccache)
+#include(ccache)
 
 # Enable default inclusion of targets' source and binary directory
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)

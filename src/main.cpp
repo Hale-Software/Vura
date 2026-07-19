@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,137 +17,116 @@
  ******************************************************************************/
 
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QFileInfo>
+#include <QSurfaceFormat>
 #include <QMessageBox>
 #include <QDir>
 #include <QDebug>
 
-//#include <QBreakpadHandler.h>
+#include <libvura/ErrorService.h>
+//#include <libvura/util/singleinstance.h>
 
-#include "widgets/mainwindow.h"
-#include <util/singleinstance.h>
-#include <constants.h>
+#include <ui-config.h>
 
-#include <config.h>
+#include "SingleInstanceController.h"
+#include "VuraMainWindow.h"
 
 
 int main(int argc, char *argv[])
 {
+    // --- Initialize your player main window UI context layer --
+    QApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
+    );
+
     QApplication app(argc, argv);
-    // Set application information
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
+    QSurfaceFormat format;
+    format.setVersion(3, 3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(format);
 
-#ifdef Q_OS_WIN
-    // Handle Application Directories
-    if (VURA_BUILD_TYPE == "Debug") {
-        QString rootPath = "debug";
-        QString crashPath = "debug/crashes";
-        QString logPath = "debug/logs";
-        QString updatePath = "debug/updates";
 
-        QDir dir;
-        if (!dir.mkpath(rootPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application root directory.");
-            return 1;
+    try {
+
+        // --- Single Instance Handling ---
+        // Use a completely unique app key identifier for the local socket name
+        QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
+        SingleInstanceController instanceController(uniqueKey);
+
+        // If another instance exists, it receives the arguments via IPC and we exit instantly
+        if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
+            return 0;
         }
 
-        if (!dir.mkpath(crashPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application crash directory.");
-            return 1;
+        // --- Create and show the main window ---
+        VuraMainWindow mainWindow;
+        mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
+        mainWindow.show();
+
+        // Setup IPC slot connection to open files smoothly when incoming signals fire
+        QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
+            QFileInfo checkFile(filePath);
+            if (checkFile.exists() && checkFile.isFile()) {
+                // Bring the primary window to the foreground instantly
+                mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                mainWindow.raise();
+                mainWindow.activateWindow();
+
+                // Load and play the file inside your pipeline
+                // Example: w.loadVideo(filePath);
+                mainWindow.openFile(filePath);
+            }
+        });
+
+        // --- Command Line Argument Parsing Configuration ---
+        QCommandLineParser parser;
+        parser.setApplicationDescription(VURA_COMMENTS);
+        parser.addHelpOption();
+        parser.addVersionOption();
+
+        // Add positional argument for capturing target media files
+        parser.addPositionalArgument("file", "The media file path to open on initialization.");
+
+        QCommandLineOption launchInFullscreenOption(QStringList() << "fullscreen", "Launch the media file directly in fullscreen mode.");
+        parser.addOption(launchInFullscreenOption);
+
+        QCommandLineOption quitterAfterFinishOption(QStringList() << "quit", "Quit the application after playback or conversion finishes.");
+        parser.addOption(quitterAfterFinishOption);
+
+        QCommandLineOption openGLOption(QStringList() << "opengl", "Enable OpenGL rendering for video playback.");
+        parser.addOption(openGLOption);
+
+        parser.process(app);
+        const QStringList positionalArguments = parser.positionalArguments();
+
+        if (!positionalArguments.isEmpty()) {
+            QString targetFilePath = positionalArguments.first();
+
+            // Confirm the file actually exists on local user storage bounds
+            QFileInfo checkFile(targetFilePath);
+            if (checkFile.exists() && checkFile.isFile()) {
+                // Pass the absolute file path into your FFmpeg decoder worker pipeline thread
+                // Example: emit w.startVideoPlayback(targetFilePath);
+                if (checkFile.isFile()) {
+                    mainWindow.openFile(targetFilePath);
+
+                } else if (checkFile.isDir()) {
+                    mainWindow.openFolder(targetFilePath);
+                }
+            }
         }
 
-        if (!dir.mkpath(logPath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application log directory.");
-            return 1;
-        }
 
-        if (!dir.mkpath(updatePath)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure application update directory.");
-            return 1;
-        }
+        return QApplication::exec();
 
+    } catch (const std::exception &e) {
+        ErrorService::instance().postError({"Fatal Crash", e.what(), ErrorSeverity::Critical});
+        return -1;
     }
-
-    // Set Windows Crash Handler
-    bool winCrashHandler = true;
-
-    QString defaultCrashFileLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
-    if (VURA_BUILD_TYPE == "Debug") {
-        defaultCrashFileLocation = "debug/crashes";
-    }
-/*
-    if (!QDir(defaultCrashFileLocation).exists()) {
-        if (!QDir().mkpath(defaultCrashFileLocation)) {
-            QMessageBox::critical(nullptr, "Vura Error", "Failed to configure Windows crash handler directory.");
-            winCrashHandler = false;
-        }
-    }
-*/
-
-//    if (winCrashHandler) {
-//        QBreakpadInstance.setDumpPath(defaultCrashFileLocation);
-
-//    } else {
-//        qCritical() << "Failed to initialize the Windows Crash Handler";
-//    }
-
-#endif
-
-
-    // Prevent many instances of the app from launching.
-    // hasPrevious() also forwards any path argument to the running instance
-    // before returning, so the running window will open it automatically.
-    const QString instanceName = "com.hale-software.vura";
-    SingleInstance instance;
-    if (SingleInstance::hasPrevious(instanceName, argc, argv)) {
-        return EXIT_SUCCESS;
-    }
-
-    instance.listen(instanceName);
-
-    // Create and show the main window.
-    MainWindow mainWindow;
-    mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-    mainWindow.show();
-
-    // Handle path arguments on the initial launch (same logic as before).
-    if (argc > 2) {
-        const QString arg1 = QString::fromLocal8Bit(argv[1]);
-        const QString arg2 = QString::fromLocal8Bit(argv[2]);
-
-        QFileInfo info(arg2);
-        if (info.isFile()) {
-            mainWindow.addFileToPlaylistContextMenu(arg2);
-        } else if (info.isDir()) {
-            mainWindow.addFolderToPlaylistContextMenu(arg2);
-        }
-
-    } else if (argc > 1) {
-        const QString pathName = QString::fromUtf8(argv[1]);
-        if (pathName.isEmpty()) {
-            QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
-        } else {
-            mainWindow.openFileContextMenu(pathName);
-        }
-    }
-
-    // When a second instance is launched, bring this window to the front …
-    QObject::connect(&instance, &SingleInstance::newInstance,
-                     &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
-
-    // … and open whatever file or folder it was asked to open.
-    QObject::connect(&instance, &SingleInstance::openPathRequested,
-                     &mainWindow, [&](const QString &path) {
-        mainWindow.setMainWindowVisibility(true);
-        QFileInfo info(path);
-        if (info.isFile()) {
-            mainWindow.openFileContextMenu(path);
-        } else if (info.isDir()) {
-            mainWindow.openFolderContextMenu(path);
-        }
-    });
-
-    return QApplication::exec();
 }

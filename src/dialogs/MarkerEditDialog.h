@@ -30,7 +30,7 @@
 #include <QCloseEvent>
 #include <QDebug>
 
-#include <data/video-markers.h>
+#include <libvura/data/video-markers.h>
 
 
 QT_BEGIN_NAMESPACE

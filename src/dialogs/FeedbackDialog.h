@@ -28,7 +28,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-#include "../components/MonitoredTextEdit.h"
+#include "MonitoredTextEdit.h"
 
 
 QT_BEGIN_NAMESPACE
