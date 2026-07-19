@@ -1,4 +1,4 @@
-name: Build NSIS Installer
+name: Build For Windows
 
 on:
   release:
@@ -11,8 +11,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-    - name: Checkout Code
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Clean Version Tag
@@ -22,6 +23,28 @@ jobs:
         # Extracts '1.2.3' from 'refs/tags/v1.2.3' or 'v1.2.3'
         VERSION=${GITHUB_REF_NAME#v}
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.11.1'
+        target: 'desktop'
+        arch: 'win64_mingw'
+        dir: '${{ github.workspace }}/Qt'
+
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+          # Set up environment paths for MinGW and Qt
+          $qtPath = "${{ github.workspace }}/Qt/6.11.1/mingw_64"
+          $env:PATH = "$qtPath/bin;$env:PATH"
+          
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=$qtPath -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build Project
+      shell: pwsh
+      run: |
+          cmake --build build --config Release
 
     - name: Compile Installer with Version
       run: |
