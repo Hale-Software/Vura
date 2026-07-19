@@ -29,26 +29,26 @@
 #include <QUrl>
 #include <QDebug>
 
+#include "VuraMediaEngine.h"
+
 
 class PlaybackController : public QObject {
     Q_OBJECT
 
 public:
-    explicit PlaybackController(QStackedWidget* container,
-                                QVideoWidget* videoWidget,
-                                int volume = 100,
-                                double playbackRate = 1.0,
-                                QObject* parent = nullptr);
+    explicit PlaybackController(QStackedWidget* container, QObject* parent = nullptr, int volume = 100, double playbackRate = 1.0);
     ~PlaybackController() override;
 
-    QMediaPlayer* getPlayer() const { return m_player; }
+    void setVideoWidget(QVideoWidget* videoWidget);
+    void setOpenGLWidget(VuraMediaEngine* openGLWidget);
+
+    QMediaPlayer* getVideoWidget() const { return m_player; }
     QAudioOutput* getAudioOutput() const { return m_audioOutput; }
 
 public slots:
-    void showPlaylistContextMenu(const QPoint& pos);
     void playTrack(const QUrl& mediaUrl);
-    void loadMedia(const QUrl& url) const;
-    void loadMedia(const QString& fileName) const;
+    void loadMedia(const QUrl& url);
+    void loadMedia(const QString& fileName);
     void loadRemoteMedia(const QString& url) const;
     void loadRemoteMedia(const QUrl& url) const;
     void play() const;
@@ -68,6 +68,8 @@ public slots:
     void setMute(bool mute) const;
 
     void seek(qint64 position);
+    void jumpForward(qint64 mseconds);
+    void jumpBackward(qint64 mseconds);
 
     void jumpForwardExtraLarge();
     void jumpBackwardExtraLarge();
@@ -83,7 +85,7 @@ public slots:
 signals:
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
-    void stateChanged(QMediaPlayer::PlaybackState state);
+    void stateChanged(PlaybackState state);
     void bufferProgressChanged(float filled);
     void playbackRateChanged(qreal rate);
     void playingChanged(bool playing);
@@ -94,16 +96,19 @@ signals:
 
 private slots:
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void videoWidgetStateChanged(QMediaPlayer::PlaybackState state);
 
 private:
-    void setupConnections();
-
-    QMediaPlayer* m_player;
-    QAudioOutput* m_audioOutput;
+    QMediaPlayer* m_player = nullptr;
+    QAudioOutput* m_audioOutput = nullptr;
     QStackedWidget* m_container;
-    QVideoWidget* m_videoWidget;
+    QVideoWidget* m_videoWidget = nullptr;
+
+    VuraMediaEngine* m_openGLWidget = nullptr;
 
     int m_volume;
     double m_playbackRate;
+
+    bool m_usingVideoWidget = true;
 
 };

@@ -41,6 +41,9 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
 
     const QSettings settings;
 
+    ui->actionRendererVideoWidget->setChecked(settings.value("VideoRenderer/VideoWidget", true).toBool());
+    ui->actionRendererOpenGL->setChecked(settings.value("VideoRenderer/OpenGLWidget", false).toBool());
+
     setAcceptDrops(true);
 
     ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
@@ -48,21 +51,7 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     qInstallMessageHandler(Blogger::messageHandler);
     globalRedirector = Blogger::instance();
 
-    ui->videoWidget->setMouseTracking(true);
-    if (!ui->videoWidget->children().isEmpty()) {
-        QWidget *videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
-        if (videoChild) {
-            videoChild->setMouseTracking(true);
-            videoChild->installEventFilter(this); // 'this' must be your MainWindow or Parent widget
-        }
-    }
-
-    m_playbackController = new PlaybackController(
-        ui->mediaAreaWidget,
-        ui->videoWidget,
-        100,
-        1,
-        this);
+    m_playbackController = new PlaybackController(ui->mediaAreaWidget, this);
     m_playlistController = new PlaylistController(
             ui->playlistView,
             ui->emptyPlaylistView,
@@ -70,17 +59,26 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
             this
         );
 
-    //m_playbackController->getPlayer()->setVideoOutput(ui->videoWidget);
+    if (settings.value("VideoRenderer/VideoWidget", true).toBool()) {
+        initializeVideoWidget();
+        m_playbackController->setVideoWidget(ui->videoWidget);
+    } else {
+        //initializeVuraMediaEngine();
+        //m_playbackController->setOpenGLWidget(ui->openGLWidget);
+        m_videoWidget = new VideoWidget(nullptr, this);
+        ui->verticalLayout_7->addWidget(m_videoWidget);
+        //m_playbackController->setOpenGLWidget(m_videoWidget);
+    }
+
+
+
     connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
 
-    if (settings.value("showPlaylistOnStart", false).toBool()) {
+    if (settings.value("StartUp/ShowPlaylist", true).toBool()) {
         m_playlistController->showPlaylist();
     } else {
         m_playlistController->hidePlaylist();
     }
-
-    //connect(ui->playlistView, &QListView::customContextMenuRequested, this, &VuraMainWindow::showPlaylistContextMenu);
-
 
     // Playback Actions
     connect(ui->actionPlaybackNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
@@ -116,7 +114,7 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
 
     // Video Slider
     m_videoSlider = new VideoSlider(&m_videoMarkers, this);
-    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *(m_playbackController->getPlayer()), this);
+    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *m_playbackController, this);
 
     ui->verticalLayout->addWidget(m_videoSliderWidget);
     ui->verticalLayout->setStretch(0, 1);
@@ -298,6 +296,9 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     this->addAction(ui->actionMarkersMarkOut);
     ui->actionMarkersMarkOut->setShortcutContext(Qt::WindowShortcut);
 
+    connect(ui->actionRendererVideoWidget, &QAction::toggled, this, &VuraMainWindow::actionRendererVideoWidget_toggled);
+    connect(ui->actionRendererOpenGL, &QAction::toggled, this, &VuraMainWindow::actionRendererOpenGLWidget_toggled);
+
 
     connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
     populateAudioDevicesMenu();
@@ -387,9 +388,35 @@ void VuraMainWindow::openFolder(const QString &path) const
     }
 }
 
+void VuraMainWindow::initializeVideoWidget()
+{
+    ui->videoWidget->setMouseTracking(true);
+    if (!ui->videoWidget->children().isEmpty()) {
+        QWidget *videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
+        if (videoChild) {
+            videoChild->setMouseTracking(true);
+            videoChild->installEventFilter(this); // 'this' must be your MainWindow or Parent widget
+        }
+    }
+}
+
+void VuraMainWindow::initializeVuraMediaEngine()
+{
+    /*
+    ui->openGLWidget->setMouseTracking(true);
+    if (!ui->openGLWidget->children().isEmpty()) {
+        QWidget *videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
+        if (videoChild) {
+            videoChild->setMouseTracking(true);
+            videoChild->installEventFilter(this); // 'this' must be your MainWindow or Parent widget
+        }
+    }
+    */
+}
+
 void VuraMainWindow::closeEvent(QCloseEvent *event)
 {
-    VideoMarkers::write("debug/global.json", m_playbackController->getPlayer()->source().toLocalFile(), m_videoMarkers);
+    VideoMarkers::write("debug/global.json", m_playbackController->getVideoWidget()->source().toLocalFile(), m_videoMarkers);
     event->accept();
 }
 
@@ -453,14 +480,14 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
 
         this->unsetCursor();
         m_videoSliderWidget->show();
-        if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+        if (m_currentPlaybackState == PlaybackState::Playing) {
             m_videoSliderHideTimer->start();
         }
 
     } else if (event->type() == QEvent::MouseButtonDblClick) {
-        if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+        if (m_currentPlaybackState == PlaybackState::Playing) {
             m_playbackController->pause();
-        } else if (m_currentPlaybackState == QMediaPlayer::PausedState) {
+        } else if (m_currentPlaybackState == PlaybackState::Paused) {
             m_playbackController->play();
         }
     }
@@ -469,10 +496,10 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
     return QMainWindow::eventFilter(obj, event);
 }
 
-void VuraMainWindow::stateChanged(QMediaPlayer::PlaybackState state)
+void VuraMainWindow::stateChanged(PlaybackState state)
 {
     m_currentPlaybackState = state;
-    if (state == QMediaPlayer::PlayingState && !m_videoSliderHideTimer->isActive()) {
+    if (state == PlaybackState::Playing && !m_videoSliderHideTimer->isActive()) {
         m_videoSliderHideTimer->start();
     } else {
         m_videoSliderHideTimer->stop();
@@ -503,7 +530,7 @@ void VuraMainWindow::errorOccurred(const QString &errorMessage)
 
 void VuraMainWindow::hideVideoSlider()
 {
-    if (m_currentPlaybackState == QMediaPlayer::PlayingState) {
+    if (m_currentPlaybackState == PlaybackState::Playing) {
         m_videoSliderWidget->hide();
         this->setCursor(Qt::BlankCursor);
     }
@@ -514,9 +541,75 @@ void VuraMainWindow::resetVideoSliderVisibility()
     m_videoSliderHideTimer->stop();
     m_videoSliderWidget->show();
     this->unsetCursor();
-    
-    if (m_currentPlaybackState == QMediaPlayer::PlayingState && !m_videoSliderHideTimer->isActive())
+
+    if (m_currentPlaybackState == PlaybackState::Playing && !m_videoSliderHideTimer->isActive())
         m_videoSliderHideTimer->start();
+}
+
+void VuraMainWindow::updateCheckReplyFinished(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Network Error:" << reply->errorString();
+        return;
+    }
+
+    QByteArray response = reply->readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
+    QJsonObject jsonObj = jsonDoc.object();
+
+    bool isRemoteBeta = jsonObj["is_beta"].toBool();
+    QString remoteVersion = jsonObj["version"].toString();
+    QString releaseDate = jsonObj["release_date"].toString();
+
+    if (remoteVersion != VURA_VERSION_STRING) {
+        // Parsing logic inside your update checker function:
+        QJsonObject platforms = jsonObj["platforms"].toObject();
+
+#if defined(Q_OS_WIN)
+        QJsonObject currentPlatform = platforms["windows"].toObject();
+#elif defined(Q_OS_MAC)
+        QJsonObject currentPlatform = platforms["mac"].toObject();
+#else
+        QJsonObject currentPlatform = platforms["linux"].toObject();
+#endif
+
+        QString downloadUrl = currentPlatform["url"].toString();
+        QString expectedHash = currentPlatform["sha256"].toString();
+        QString changelogUrl = jsonObj["changelog_url"].toString();
+
+
+        QSettings settings;
+        QString lastCheckedVersion = settings.value("lastCheckedVersion", "").toString();
+        if (remoteVersion != lastCheckedVersion) {
+            if (m_updateDialog)
+                m_updateDialog->close();
+
+            m_updateDialog = new UpdateDialog(remoteVersion, releaseDate, downloadUrl, changelogUrl, expectedHash, this);
+            connect(m_updateDialog, &UpdateDialog::updateNow, this, &VuraMainWindow::onUpdateConfirmed);
+            m_updateDialog->show();
+            m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        }
+    }
+
+    reply->deleteLater();
+}
+
+void VuraMainWindow::actionHelpCheckForUpdates()
+{
+    QSettings settings;
+    bool acceptBetas = settings.value("updates/accept_betas", false).toBool();
+
+    QString manifestFile = acceptBetas ? "beta.json" : "stable.json";
+
+    m_updateNetworkManager = new QNetworkAccessManager(this);
+    connect(m_updateNetworkManager, &QNetworkAccessManager::finished, this, &VuraMainWindow::updateCheckReplyFinished);
+
+    // Update URL
+    QUrl url(QString("https://storage.hale-tech.net").arg(manifestFile));
+    QNetworkRequest request(url);
+
+    qDebug() << "Checking for updates using URL: " << url << "...";
+    m_updateNetworkManager->get(request);
 }
 
 void VuraMainWindow::actionTestFunction()
@@ -529,7 +622,7 @@ void VuraMainWindow::actionTestFunction()
 
 void VuraMainWindow::actionEmergencyClose()
 {
-    m_playbackController->getPlayer()->pause();
+    m_playbackController->getVideoWidget()->pause();
     this->setWindowState(Qt::WindowMinimized);
 }
 
@@ -599,7 +692,7 @@ void VuraMainWindow::actionToggleVideoControls()
         ui->verticalLayout->addWidget(m_videoControlWidget);
 
         // Connect UI controls directly to PlaybackController
-        connect(m_playbackController->getPlayer(), &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
+        connect(m_playbackController->getVideoWidget(), &QMediaPlayer::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
         connect(m_videoControlWidget, &VideoControlWidget::play, m_playbackController, &PlaybackController::play);
         connect(m_videoControlWidget, &VideoControlWidget::pause, m_playbackController, &PlaybackController::pause);
         connect(m_videoControlWidget, &VideoControlWidget::stop, m_playbackController, &PlaybackController::stop);
@@ -640,7 +733,7 @@ void VuraMainWindow::actionMarkersAddCumshotMarker()
 
     VuraVideoMarker marker;
     marker.id = VideoMarkers::generateMarkerID("debug/global.json");
-    marker.fileName = m_playbackController->getPlayer()->source().toLocalFile();
+    marker.fileName = m_playbackController->getVideoWidget()->source().toLocalFile();
     marker.markerType = "cumshot";
     marker.timestamp = sliderPercent;
 
@@ -685,6 +778,30 @@ void VuraMainWindow::actionMarkersMarkIn() {}
 
 void VuraMainWindow::actionMarkersMarkOut() {}
 
+void VuraMainWindow::actionRendererVideoWidget_toggled(const bool checked)
+{
+    return;
+    QSettings settings;
+    if (checked) {
+        settings.setValue("VideoRenderer/VideoWidget", true);
+        settings.setValue("VideoRenderer/OpenGLWidget", false);
+        settings.sync();
+        ui->actionRendererOpenGL->setChecked(false);
+    }
+}
+
+void VuraMainWindow::actionRendererOpenGLWidget_toggled(const bool checked)
+{
+    return;
+    QSettings settings;
+    if (checked) {
+        settings.setValue("VideoRenderer/VideoWidget", false);
+        settings.setValue("VideoRenderer/OpenGLWidget", true);
+        settings.sync();
+        ui->actionRendererVideoWidget->setChecked(false);
+    }
+}
+
 void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 {
     m_trackInfo = trackInfo;
@@ -695,8 +812,8 @@ void VuraMainWindow::setApplicationWindowTitle()
 {
     QString windowTitle;
 
-    if (!m_playbackController->getPlayer()->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_playbackController->getPlayer()->source().toLocalFile()), VURA_VERSION_STRING);
+    if (!m_playbackController->getVideoWidget()->source().isEmpty()) {
+        windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()), VURA_VERSION_STRING);
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
     }
@@ -810,4 +927,33 @@ bool VuraMainWindow::isNextMarkerAvailable(const VuraVideoMarker &videoMarker)
         return false;
     }
     return true;
+}
+
+void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash)
+{
+    // Create UI update visual nodes
+    QProgressDialog *progressDialog = new QProgressDialog("Downloading Update...", "Cancel", 0, 100, this);
+    progressDialog->setWindowModality(Qt::WindowModal);
+
+    AppUpdater *updater = new AppUpdater(this);
+
+    connect(updater, &AppUpdater::downloadProgress, this, [progressDialog](qint64 received, qint64 total) {
+        if (total > 0) {
+            int percentage = static_cast<int>((received * 100) / total);
+            progressDialog->setValue(percentage);
+        }
+    });
+
+    connect(progressDialog, &QProgressDialog::canceled, updater, []() {
+        // Handle download abortion if necessary
+    });
+
+    connect(updater, &AppUpdater::downloadFinished, this, [progressDialog](bool success, const QString &message) {
+        progressDialog->close();
+        if (!success) {
+            QMessageBox::critical(nullptr, "Update Error", message);
+        }
+    });
+
+    updater->startDownload(targetDownloadUrl, expectedHash);
 }

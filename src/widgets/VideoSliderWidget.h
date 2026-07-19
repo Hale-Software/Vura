@@ -20,9 +20,9 @@
 
 #include <QWidget>
 #include <QLabel>
-#include <QMediaPlayer>
 #include <QPropertyAnimation>
 
+#include "PlaybackController.h"
 #include "ClickableLabel.h"
 #include "VideoSlider.h"
 
@@ -39,7 +39,7 @@ class VideoSliderWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
+    explicit VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent = nullptr);
     ~VideoSliderWidget() override;
 
     void setVisible(bool visible) override;
@@ -57,7 +57,7 @@ private slots:
 private:
     Ui::VideoSliderWidget *ui;
     VideoSlider *m_videoSlider;
-    QMediaPlayer *m_mediaPlayer;
+    PlaybackController *m_playbackController;
 
     QPropertyAnimation *animation;
     int targetHeight = 0;

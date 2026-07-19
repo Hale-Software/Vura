@@ -22,8 +22,8 @@
 #include <QEasingCurve>
 
 
-VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &mediaPlayer, QWidget *parent)
-    : QWidget(parent), ui(new Ui::VideoSliderWidget), m_videoSlider(&videoSlider), m_mediaPlayer(&mediaPlayer)
+VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent)
+    : QWidget(parent), ui(new Ui::VideoSliderWidget), m_videoSlider(&videoSlider), m_playbackController(&playbackController)
 {
     ui->setupUi(this);
 
@@ -33,10 +33,10 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QMediaPlayer &med
     connect(animation, &QPropertyAnimation::finished, this, &VideoSliderWidget::onAnimationFinished);
 
     connect(ui->position, &ClickableLabel::clicked, this, &VideoSliderWidget::positionLabel_Clicked);
-    connect(m_mediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &VideoSliderWidget::statusChanged);
-    connect(m_mediaPlayer, &QMediaPlayer::playbackRateChanged, this, &VideoSliderWidget::playbackRateChanged);
-    connect(m_mediaPlayer, &QMediaPlayer::durationChanged, this, &VideoSliderWidget::durationChanged);
-    connect(m_mediaPlayer, &QMediaPlayer::positionChanged, this, &VideoSliderWidget::positionChanged);
+    //connect(m_playbackController, &PlaybackController::mediaStatusChanged, this, &VideoSliderWidget::statusChanged);
+    connect(m_playbackController, &PlaybackController::playbackRateChanged, this, &VideoSliderWidget::playbackRateChanged);
+    connect(m_playbackController, &PlaybackController::durationChanged, this, &VideoSliderWidget::durationChanged);
+    connect(m_playbackController, &PlaybackController::positionChanged, this, &VideoSliderWidget::positionChanged);
 
     ui->position->setToolTip(tr("Elapsed time"));
     ui->duration->setToolTip(tr("Total/Remaining time\n -Click to toggle between total and remaining time"));
@@ -52,7 +52,7 @@ VideoSliderWidget::~VideoSliderWidget()
     delete ui;
 }
 
-void VideoSliderWidget::setVisible(bool visible)
+void VideoSliderWidget::setVisible(const bool visible)
 {
     if (isTransitioning) {
         QWidget::setVisible(visible);
@@ -121,7 +121,7 @@ void VideoSliderWidget::statusChanged(const QMediaPlayer::MediaStatus status)
             break;
 
         case QMediaPlayer::LoadedMedia:
-            updateTimestamps(m_mediaPlayer->position() / 1000);
+            //updateTimestamps(m_mediaPlayer->position() / 1000);
             break;
 
         case QMediaPlayer::InvalidMedia:
@@ -162,9 +162,9 @@ void VideoSliderWidget::updateTimestamps(const qint64 currentPosition)
         const int position = static_cast<int>(currentPosition);
         const int duration = static_cast<int>(m_duration);
 
-        QString format = "mm:ss";
-        if (m_duration > 3600)
-            format = "hh:mm:ss";
+        QString format = "hh:mm:ss";
+        //if (m_duration > 3600)
+        //    format = "hh:mm:ss";
 
         if (m_positionLabelShowRemainingTime) {
             const int remainingInfo = duration - position;

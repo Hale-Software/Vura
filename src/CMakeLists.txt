@@ -26,6 +26,7 @@ target_link_libraries(
     vura PRIVATE
     VURA::libvura
     ${FFMPEG_DIR}/lib/avformat.lib
+    ${FFMPEG_DIR}/lib/avfilter.lib
     ${FFMPEG_DIR}/lib/avcodec.lib
     ${FFMPEG_DIR}/lib/avutil.lib
     ${FFMPEG_DIR}/lib/swscale.lib
@@ -81,14 +82,16 @@ elseif (OS_LINUX)
     include(cmake/os-linux.cmake)
 endif ()
 
-set_target_properties(vura PROPERTIES
-        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        MACOSX_BUNDLE TRUE
-        WIN32_EXECUTABLE TRUE
-)
+install(TARGETS vura RUNTIME DESTINATION bin)
+
+#set_target_properties(vura PROPERTIES
+#        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+#        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+#        MACOSX_BUNDLE TRUE
+#        WIN32_EXECUTABLE TRUE
+#)
 
 #include(helpers)
 #vura_installer()
-include(cpack_windows)
-vura_deploy(vura)
+#include(cpack_windows)
+#vura_deploy(vura)

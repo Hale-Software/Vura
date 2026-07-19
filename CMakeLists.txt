@@ -27,7 +27,7 @@ option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
 #add_subdirectory(deps)
 add_subdirectory(libvura)
 add_subdirectory(src)
-add_subdirectory(updater)
+#add_subdirectory(updater)
 
 if (ENABLE_TESTS)
     add_subdirectory(tests)

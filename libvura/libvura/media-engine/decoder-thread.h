@@ -16,17 +16,37 @@
 
  ******************************************************************************/
 
-#include "VideoWidget.h"
-#include <QDebug>
+#pragma once
 
+#include <QThread>
+#include "packet-queue.h"
+#include "frame-queue.h"
 
-VideoWidget::VideoWidget(QWidget *parent) : QVideoWidget(parent)
-{
-    this->setMouseTracking(true);
+#include <atomic>
+
+extern "C" {
+#include <libavcodec/avcodec.h>
 }
 
-void VideoWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    emit mouseMoved();
-    QVideoWidget::mouseMoveEvent(event);
-}
+class DecoderThread : public QThread {
+    Q_OBJECT
+
+public:
+    DecoderThread(PacketQueue* packetQueue, FrameQueue* frameQueue, AVCodecParameters* codecParams, QObject *parent = nullptr);
+    ~DecoderThread() override;
+
+    bool initDecoder();
+    void stop();
+
+protected:
+    void run() override;
+
+private:
+    PacketQueue* packetQueue;
+    FrameQueue* frameQueue;
+    AVCodecParameters* codecParams;
+
+    AVCodecContext* codecContext;
+    bool abortRequested;
+
+};

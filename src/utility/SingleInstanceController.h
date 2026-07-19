@@ -18,22 +18,29 @@
 
 #pragma once
 
-#include <QWidget>
-#include <QVideoWidget>
-#include <QMouseEvent>
-#include <QDebug>
+#include <QObject>
+#include <QLocalServer>
 
 
-class VideoWidget : public QVideoWidget {
+class SingleInstanceController : public QObject
+{
     Q_OBJECT
 
 public:
-    explicit VideoWidget(QWidget *parent = nullptr);
+    explicit SingleInstanceController(const QString &uniqueKey, QObject *parent = nullptr);
 
-protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
+    // Checks if another instance is running. If yes, sends arguments and returns true.
+    bool checkForExistingInstance(const QStringList &args);
 
 signals:
-    void mouseMoved();
+    // Emitted by the primary instance when a secondary instance sends a new file path
+    void fileReceived(const QString &filePath);
+
+private slots:
+    void handleNewConnection();
+
+private:
+    QString m_serverName;
+    QLocalServer *m_localServer = nullptr;
 
 };

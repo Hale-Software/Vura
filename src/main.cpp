@@ -17,75 +17,111 @@
  ******************************************************************************/
 
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QFileInfo>
+#include <QSurfaceFormat>
 #include <QMessageBox>
 #include <QDir>
 #include <QDebug>
 
 #include <libvura/ErrorService.h>
-#include <libvura/util/singleinstance.h>
+//#include <libvura/util/singleinstance.h>
+
 #include <ui-config.h>
 
+#include "SingleInstanceController.h"
 #include "VuraMainWindow.h"
 
 
 int main(int argc, char *argv[])
 {
+    // --- Initialize your player main window UI context layer --
+    QApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
+    );
+
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
+    QSurfaceFormat format;
+    format.setVersion(3, 3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(format);
+
+
     try {
-        // Prevent many instances of the app from launching.
-        // hasPrevious() also forwards any path argument to the running instance
-        // before returning, so the running window will open it automatically.
-        const QString instanceName = "com.hale-software.vura";
-        SingleInstance instance;
-        if (SingleInstance::hasPrevious(instanceName, argc, argv)) {
-            return EXIT_SUCCESS;
+
+        // --- Single Instance Handling ---
+        // Use a completely unique app key identifier for the local socket name
+        QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
+        SingleInstanceController instanceController(uniqueKey);
+
+        // If another instance exists, it receives the arguments via IPC and we exit instantly
+        if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
+            return 0;
         }
 
-        instance.listen(instanceName);
-
-        // Create and show the main window.
+        // --- Create and show the main window ---
         VuraMainWindow mainWindow;
         mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         mainWindow.show();
 
-        // Handle path arguments on the initial launch (same logic as before).
-        if (argc > 2) {
-            const QString arg1 = QString::fromLocal8Bit(argv[1]);
-            const QString arg2 = QString::fromLocal8Bit(argv[2]);
+        // Setup IPC slot connection to open files smoothly when incoming signals fire
+        QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
+            QFileInfo checkFile(filePath);
+            if (checkFile.exists() && checkFile.isFile()) {
+                // Bring the primary window to the foreground instantly
+                mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                mainWindow.raise();
+                mainWindow.activateWindow();
 
-            const QFileInfo info(arg2);
-            if (info.isFile()) {
-                mainWindow.openFile(arg2);
-            } else if (info.isDir()) {
-                mainWindow.openFolder(arg2);
+                // Load and play the file inside your pipeline
+                // Example: w.loadVideo(filePath);
+                mainWindow.openFile(filePath);
             }
+        });
 
-        } else if (argc > 1) {
-            const QString pathName = QString::fromUtf8(argv[1]);
-            if (pathName.isEmpty()) {
-                QMessageBox::critical(nullptr, "Vura Error", "File requested is empty.");
-            } else {
-                mainWindow.openFile(pathName);
+        // --- Command Line Argument Parsing Configuration ---
+        QCommandLineParser parser;
+        parser.setApplicationDescription(VURA_COMMENTS);
+        parser.addHelpOption();
+        parser.addVersionOption();
+
+        // Add positional argument for capturing target media files
+        parser.addPositionalArgument("file", "The media file path to open on initialization.");
+
+        QCommandLineOption launchInFullscreenOption(QStringList() << "fullscreen", "Launch the media file directly in fullscreen mode.");
+        parser.addOption(launchInFullscreenOption);
+
+        QCommandLineOption quitterAfterFinishOption(QStringList() << "quit", "Quit the application after playback or conversion finishes.");
+        parser.addOption(quitterAfterFinishOption);
+
+        QCommandLineOption openGLOption(QStringList() << "opengl", "Enable OpenGL rendering for video playback.");
+        parser.addOption(openGLOption);
+
+        parser.process(app);
+        const QStringList positionalArguments = parser.positionalArguments();
+
+        if (!positionalArguments.isEmpty()) {
+            QString targetFilePath = positionalArguments.first();
+
+            // Confirm the file actually exists on local user storage bounds
+            QFileInfo checkFile(targetFilePath);
+            if (checkFile.exists() && checkFile.isFile()) {
+                // Pass the absolute file path into your FFmpeg decoder worker pipeline thread
+                // Example: emit w.startVideoPlayback(targetFilePath);
+                if (checkFile.isFile()) {
+                    mainWindow.openFile(targetFilePath);
+
+                } else if (checkFile.isDir()) {
+                    mainWindow.openFolder(targetFilePath);
+                }
             }
         }
 
-        // When a second instance is launched, bring this window to the front …
-        QObject::connect(&instance, &SingleInstance::newInstance, &mainWindow, [&]() { mainWindow.setMainWindowVisibility(true); });
-
-        // … and open whatever file or folder it was asked to open.
-        QObject::connect(&instance, &SingleInstance::openPathRequested, &mainWindow, [&](const QString &path) {
-            mainWindow.setMainWindowVisibility(true);
-            const QFileInfo info(path);
-            if (info.isFile()) {
-                mainWindow.openFile(path);
-            } else if (info.isDir()) {
-                mainWindow.openFolder(path);
-            }
-        });
 
         return QApplication::exec();
 

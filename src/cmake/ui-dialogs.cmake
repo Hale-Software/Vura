@@ -30,6 +30,8 @@ target_sources(
         dialogs/SettingsWindow.h
         dialogs/UpdateChecker.cpp
         dialogs/UpdateChecker.h
+        dialogs/UpdateDialog.cpp
+        dialogs/UpdateDialog.h
         dialogs/WhatsNewDialog.cpp
         dialogs/WhatsNewDialog.h
 )

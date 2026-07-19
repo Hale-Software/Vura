@@ -45,8 +45,11 @@
 #include <QMouseEvent>
 #include <QVideoWidget>
 #include <QEvent>
-#include <QPropertyAnimation>
-#include <QGraphicsOpacityEffect>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QProgressDialog>
 #include <QDebug>
 
 #include <libvura/constants.h>
@@ -68,6 +71,7 @@
 #include "ConvertMediaDialog.h"
 #include "MediaInformationDialog.h"
 #include "UpdateChecker.h"
+#include "AppUpdater.h"
 
 #include "SystemTrayWidget.h"
 #include "VideoSliderWidget.h"
@@ -75,6 +79,8 @@
 
 #include "PlaybackController.h"
 #include "PlaylistController.h"
+
+#include <libvura/media-engine/video-widget.h>
 
 
 namespace Ui {
@@ -116,6 +122,8 @@ signals:
     void quitProgram();
 
 private slots:
+    void updateCheckReplyFinished(QNetworkReply *reply);
+
     static void actionTestFunction();
     void actionEmergencyClose();
     void actionShowLogViewer();
@@ -148,16 +156,25 @@ private slots:
     void actionMarkersMarkIn();
     void actionMarkersMarkOut();
 
+    void actionRendererVideoWidget_toggled(bool checked);
+    void actionRendererOpenGLWidget_toggled(bool checked);
+
+    void actionHelpCheckForUpdates();
+
 
 public slots:
-    void stateChanged(QMediaPlayer::PlaybackState state);
+    void stateChanged(PlaybackState state);
     void sourceChanged(const QUrl &source);
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
     void resetVideoSliderVisibility();
+    void onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash);
 
 private:
     Ui::VuraMainWindow *ui;
+
+    void initializeVideoWidget();
+    void initializeVuraMediaEngine();
 
     void setTrackInfo(const QString &trackInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
@@ -169,6 +186,8 @@ private:
     bool checkMarkerProximity();
     bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
     bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
+
+    QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
     QList<VuraVideoMarker> m_videoMarkers;
     VideoSlider *m_videoSlider = nullptr;
@@ -196,6 +215,8 @@ private:
     bool m_wasPlaylistShowing = false;
     int m_inMarker = 0;
     int m_outMarker = 0;
-    QMediaPlayer::PlaybackState m_currentPlaybackState = QMediaPlayer::StoppedState;
+    PlaybackState m_currentPlaybackState = PlaybackState::Stopped;
+
+    VideoWidget *m_videoWidget = nullptr;
 
 };

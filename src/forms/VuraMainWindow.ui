@@ -50,7 +50,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="noVideoPage">
         <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -123,9 +123,6 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item>
-          <widget class="QWidget" name="openGLWidget" native="true"/>
-         </item>
         </layout>
        </widget>
       </widget>
@@ -488,9 +485,18 @@
      <addaction name="actionVideoCrop5_5"/>
      <addaction name="actionVideoCrop1_2"/>
     </widget>
+    <widget class="QMenu" name="menuRenderer">
+     <property name="title">
+      <string>Renderer</string>
+     </property>
+     <addaction name="actionRendererVideoWidget"/>
+     <addaction name="actionRendererOpenGL"/>
+    </widget>
     <addaction name="menuVideoTrack"/>
     <addaction name="separator"/>
     <addaction name="actionVideoFullscreen"/>
+    <addaction name="separator"/>
+    <addaction name="menuRenderer"/>
     <addaction name="separator"/>
     <addaction name="menuVideoZoom"/>
     <addaction name="menuVideoAspectRatio"/>
@@ -1466,6 +1472,22 @@
   <action name="actionFileOpenPlaylist">
    <property name="text">
     <string>Open Playlist...</string>
+   </property>
+  </action>
+  <action name="actionRendererVideoWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Video Widget</string>
+   </property>
+  </action>
+  <action name="actionRendererOpenGL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>OpenGL</string>
    </property>
   </action>
  </widget>

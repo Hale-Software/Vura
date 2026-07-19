@@ -1,18 +1,12 @@
-find_package(Qt6 REQUIRED Widgets MultimediaWidgets Network Svg OpenGLWidgets)
-find_package(OpenGL REQUIRED)
-
-if(OS_LINUX OR OS_FREEBSD OR OS_OPENBSD)
-    find_package(Qt6 REQUIRED Gui DBus)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg)
 
 target_link_libraries(
         vura PRIVATE
         Qt6::Widgets
         Qt6::MultimediaWidgets
         Qt6::Network
-        Qt6::Svg
         Qt6::OpenGLWidgets
-        OpenGL::GL
+        Qt6::Svg
 )
 
 set_target_properties(
@@ -54,4 +48,13 @@ target_sources(
         forms/WhatsNewDialog.ui
 )
 
-qt_add_ios_ffmpeg_libraries(vura)
+# OS-Specific system libraries linking
+if(WIN32)
+    target_link_libraries(vura PRIVATE Opengl32)
+elseif(APPLE)
+    # Target macOS native OpenGL Framework wrapper
+    find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+    target_link_libraries(vura PRIVATE ${OPENGL_LIBRARY})
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(vura PRIVATE GL)
+endif()

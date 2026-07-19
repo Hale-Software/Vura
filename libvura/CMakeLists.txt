@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED Core Widgets Network MultimediaWidgets)
+set(FFMPEG_DIR "C:\\Users\\halea\\bin\\ffmpeg-8.1.1-full_build-shared")
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
@@ -48,12 +50,37 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        libvura/data/version-info.h
         libvura/data/video-markers.h
         libvura/data/VideoMarker.h
 
         PRIVATE
         libvura/data/video-markers.cpp
         libvura/data/VideoMarker.cpp
+)
+
+# media-engine Directory
+target_sources(
+        libvura
+        PUBLIC
+        libvura/media-engine/audio-decoder.h
+        libvura/media-engine/audio-output.h
+        libvura/media-engine/decoder-thread.h
+        libvura/media-engine/demuxer-thread.h
+        libvura/media-engine/fragment.glsl
+        libvura/media-engine/frame-queue.h
+        libvura/media-engine/packet-queue.h
+        libvura/media-engine/vertex.glsl
+        libvura/media-engine/video-widget.h
+
+        PRIVATE
+        libvura/media-engine/audio-decoder.cpp
+        libvura/media-engine/audio-output.cpp
+        libvura/media-engine/decoder-thread.cpp
+        libvura/media-engine/demuxer-thread.cpp
+        libvura/media-engine/frame-queue.cpp
+        libvura/media-engine/packet-queue.cpp
+        libvura/media-engine/video-widget.cpp
 )
 
 # media-io Directory
@@ -109,5 +136,18 @@ target_sources(
 #        util/windows/windowskeyboardhandler.cpp
 #)
 
-target_link_libraries(libvura PRIVATE Qt6::Core Qt6::Widgets Qt6::Network Qt6::MultimediaWidgets)
-target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+        libvura PRIVATE
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::MultimediaWidgets
+        Qt6::OpenGLWidgets
+        ${FFMPEG_DIR}/lib/avformat.lib
+        ${FFMPEG_DIR}/lib/avcodec.lib
+        ${FFMPEG_DIR}/lib/avfilter.lib
+        ${FFMPEG_DIR}/lib/avutil.lib
+        ${FFMPEG_DIR}/lib/swscale.lib
+        ${FFMPEG_DIR}/lib/swresample.lib
+)
+
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${FFMPEG_DIR}/include)

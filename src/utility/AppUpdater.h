@@ -18,48 +18,40 @@
 
 #pragma once
 
-#include <QDialog>
-#include <QPushButton>
-#include <QSettings>
-#include <QTextBrowser>
+#include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QFile>
+#include <QProcess>
 #include <QDebug>
 
-
-QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class UpdateDialog;
-}
-
-QT_END_NAMESPACE
-
-
-class UpdateDialog : public QDialog {
+class AppUpdater : public QObject
+{
     Q_OBJECT
 
 public:
-    explicit UpdateDialog(const QString& versionString, const QString& releaseDateString, const QString& downloadUrl,
-                                 const QString& changelogUrl, const QString &expectedHash, QWidget *parent = nullptr);
-    ~UpdateDialog() override;
+    explicit AppUpdater(QObject *parent = nullptr);
+    ~AppUpdater() override;
 
-    void fetchChangelog(const QString& changelogUrl);
+    void startDownload(const QString &downloadUrl, const QString &expectedHash);
 
 signals:
-    void updateNow(const QString &targetDownloadUrl, const QString &expectedHash);
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadFinished(bool success, const QString &message);
 
 private slots:
-    void nowButton_Clicked();
-    void remindButton_Clicked();
-    void skipButton_Clicked();
+    void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void onReadyRead();
+    void onFinished();
 
 private:
-    Ui::UpdateDialog *ui;
-    QString m_versionString;
-    QString m_releaseDateString;
-    QString m_downloadUrl;
-    QString m_changelogUrl;
+    void executeInstaller() const;
+    bool verifyFileIntegrity();
+
+    QNetworkAccessManager m_networkManager;
+    QNetworkReply *m_currentReply = nullptr;
+    QFile m_tempFile;
+    QString m_downloadedFilePath;
     QString m_expectedHash;
 
 };
