@@ -47,6 +47,15 @@ jobs:
       with:
         platform: x64
 
+    - name: Ensure MSYS2 and Mingw packages (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-winpthreads
+
     - name: Install System Dependencies (Linux Only)
       if: matrix.os == 'ubuntu-latest'
       run: |
