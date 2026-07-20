@@ -25,6 +25,7 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Install Qt
+      id: qt
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.8.1'
@@ -36,8 +37,8 @@ jobs:
     - name: Configure CMake
       shell: pwsh
       run: |
-          # Set up environment paths for MinGW and Qt
-          $qtPath = "${{ github.workspace }}/Qt/6.8.1/mingw_64"
+          # Use the Qt path provided by the install-qt-action
+          $qtPath = "${{ steps.qt.outputs.qt-install-dir }}"
           $env:PATH = "$qtPath/bin;$env:PATH"
           
           cmake -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="$qtPath" -DCMAKE_BUILD_TYPE=Release
@@ -49,7 +50,7 @@ jobs:
 
     - name: Compile Installer with Version
       run: |
-        makensis /DVERSION="${{ steps.get_version.outputs.version }}" ./installer.nsi
+        makensis /DVERSION="${{ steps.get_version.outputs.version }}" ./installer/installer.nsi
 
     - name: Upload Installer to Release Assets
       uses: softprops/action-gh-release@v2
