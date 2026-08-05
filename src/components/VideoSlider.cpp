@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -28,9 +28,9 @@ constexpr int m_bottomMargin = 8;
 }
 
 
-VideoSlider::VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent)
+VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *parent)
     : QWidget(parent),
-    m_videoMarkers(videoMarkers),
+    m_videoMarkerController(videoMarkerController),
     m_minimum(0),
     m_maximum(0),
     m_value(0),
@@ -54,102 +54,82 @@ VideoSlider::VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent)
 {
     setMouseTracking(true);
     this->setFixedHeight(20);
-
 }
 
 void VideoSlider::paintEvent(QPaintEvent *event)
 {
-
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    int trackHeight = 6;
-    int handleRadius = 8;
-    int yCenter = height() / 2;
-    int padding = handleRadius + 2;
-    int trackWidth = width() - (padding * 2);
+    constexpr int trackHeight = 6;
+    constexpr int handleRadius = 8;
+    const int yCenter = height() / 2;
+    constexpr int padding = handleRadius + 2;
+    const int trackWidth = width() - (padding * 2);
 
-    // 1. Draw the Background Track (Dark Gray)
-    QRectF bgRect(padding, yCenter - (trackHeight / 2.0), trackWidth, trackHeight);
+    // Draw the Background Track
+    const QRectF bgRect(padding, yCenter - (trackHeight / 2.0), trackWidth, trackHeight);
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(50, 50, 50));
     painter.drawRoundedRect(bgRect, trackHeight / 2.0, trackHeight / 2.0);
 
-    // 2. Draw the Progress Fill (Brand Color - e.g., a nice blue)
-    float fillWidth = trackWidth * m_sliderPercent;
-    QRectF fillRect(padding, yCenter - (trackHeight / 2.0), fillWidth, trackHeight);
+    // Draw the Progress Fill
+    const float fillWidth = trackWidth * m_sliderPercent;
+    const QRectF fillRect(padding, yCenter - (trackHeight / 2.0), fillWidth, trackHeight);
     painter.setBrush(QColor(0, 120, 215));
     painter.drawRoundedRect(fillRect, trackHeight / 2.0, trackHeight / 2.0);
 
-    // 3. Draw the Handle / Playhead (White Circle)
-    float handleX = padding + fillWidth;
+    // Draw the Handle / Playhead
+    const float handleX = padding + fillWidth;
     painter.setBrush(Qt::white);
-    // Optional: Add a subtle border to the handle
+    // Add a subtle border to the handle
     // painter.setPen(QPen(QColor(200, 200, 200), 1));
     painter.drawEllipse(QPointF(handleX, yCenter), handleRadius, handleRadius);
 
-
-    /*
-    // Draw Slider Bar
-    const auto sliderBarRect =
-        QRectF(m_leftRightMargin, (height() - m_sliderBarHeight) - m_bottomMargin, width() - m_leftRightMargin * 2, m_sliderBarHeight);
-
-    QPen pen(1);
-    painter.setPen(pen);
-    painter.setBrush(m_emptySliderColor);
-    painter.drawRoundedRect(sliderBarRect, 1, 1);
-*/
     // Draw Markers
-    for (const VuraVideoMarker &marker : *m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::green, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::blue, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::white, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "strip" && m_showingStripMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::red, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::yellow, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::cyan, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::magenta, m_markerWidth));
                 const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
                 painter.drawLine(x, 0, x, m_markerHeight);
             }
-
         } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
                 painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
@@ -158,28 +138,6 @@ void VideoSlider::paintEvent(QPaintEvent *event)
             }
         }
     }
-/*
-    // Draw Carrot
-    pen.setColor(m_caretColor);
-    pen.setWidth(1);
-    painter.setPen(pen);
-    painter.setBrush(m_caretColor);
-    painter.drawRoundedRect(carrotHandleRect(), 2, 2);
-    */
-}
-
-void VideoSlider::setSource(const QString &fileName)
-{
-    m_source = fileName;
-    //m_thumbWorker = new ThumbnailWorker(fileName, this);
-    //connect(this, &VideoSlider::requestThumbnail, m_thumbWorker, &ThumbnailWorker::requestThumbnail);
-    //connect(m_thumbWorker, &ThumbnailWorker::thumbnailReady, this, [=](QImage img, int64_t ts) {
-        // Make sure the user's mouse hasn't moved away while we were decoding
-    //    if (previewLabel->isVisible()) {
-    //        previewLabel->setPixmap(QPixmap::fromImage(img));
-    //    }
-    //});
-    //m_thumbWorker->start();
 }
 
 void VideoSlider::mousePressEvent(QMouseEvent *event) {
@@ -197,35 +155,7 @@ void VideoSlider::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
         const int value = valueFromPos(event->pos().x());
         setValue(value);
-
-    } else {
-        /*
-        if (!m_source.isEmpty()) {
-            // 1. Calculate percentage based on mouse X position
-            double percentage = static_cast<double>(event->pos().x()) / width();
-
-            // Clamp the percentage between 0.0 and 1.0
-            percentage = std::max(0.0, std::min(percentage, 1.0));
-
-            // 2. Map to a specific video timestamp (assuming slider range maps to duration)
-            int64_t hoverTimestamp = percentage * m_maximum;
-
-            // Send request to the background thread.
-            // It instantly overwrites the previous request if it was still processing!
-            //m_thumbWorker->requestThumbnail(hoverTimestamp);
-
-            // 3. Move the floating label to follow the cursor
-            QPoint globalPos = mapToGlobal(event->pos());
-            previewLabel->move(globalPos.x() - (previewLabel->width() / 2),
-                               globalPos.y() - previewLabel->height() - 10);
-            previewLabel->show();
-
-            // 4. Request the frame for the 'hoverTimestamp'
-            m_thumbWorker->requestThumbnail(hoverTimestamp);
-        }
-        */
     }
-
     QWidget::mouseMoveEvent(event);
 }
 
@@ -257,13 +187,13 @@ int VideoSlider::validLength() const
 
 int VideoSlider::valueFromPos(const int x) const
 {
-    const int val = static_cast<double>(x) / width() * m_maximum;
+    const int val = x / width() * m_maximum;
     return qBound(0, val, m_maximum);
 }
 
 QSize VideoSlider::minimumSizeHint() const
 {
-    return QSize(m_indicatorSideLength * 2 + m_leftRightMargin * 2, m_indicatorSideLength);
+    return {m_indicatorSideLength * 2 + m_leftRightMargin * 2, m_indicatorSideLength};
 }
 
 int VideoSlider::GetMinimun() const
@@ -351,9 +281,10 @@ void VideoSlider::setMarkerTypeVisible(const QString& markerType, const bool vis
     update();
 }
 
-// PUBLIC SLOTS
 void VideoSlider::updateVideoSlider()
 {
+    m_videoMarkers.clear();
+    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
     update();
 }
 
@@ -361,14 +292,11 @@ void VideoSlider::setValue(const int value)
 {
     if (value >= m_minimum && value <= m_maximum) {
         m_value = value;
-
     } else {
         if (value < m_minimum) {
             m_value = m_minimum;
-
         } else if (value > m_maximum) {
             m_value = m_maximum;
-
         } else {
             qWarning() << "Failed to set video slider value: " << QString::number(value) << ". Maximum Value: " << m_maximum << ". Minimum Value: " << m_minimum;
             return;
@@ -377,18 +305,16 @@ void VideoSlider::setValue(const int value)
     if (m_sliderPressed)
         emit valueChanged(m_value);
 
-    int padding = 8;
+    constexpr int padding = 8;
     int trackWidth = width() - (padding * 2);
 
     const double distanceFromMin = (GetValue() - GetMinimun());
     const double sliderRange = (GetMaximun() - GetMinimun());
     const double sliderPercent = (distanceFromMin / sliderRange);
-
-    float percentage = static_cast<float>(sliderPercent);
+    const auto percentage = static_cast<float>(sliderPercent);
 
     // Clamp between 0.0 and 1.0
     m_sliderPercent = std::clamp(percentage, 0.0f, 1.0f);
-
     update();
 }
 
@@ -396,12 +322,10 @@ void VideoSlider::setMinimum(const int minimum)
 {
     if (minimum <= m_maximum) {
         m_minimum = minimum;
-
     } else {
         qWarning() << "Failed to set video slider minimum: " << QString::number(minimum) << ". Maximum Value: " << m_maximum;
         return;
     }
-
     update();
 }
 
@@ -409,12 +333,10 @@ void VideoSlider::setMaximum(const int maximum)
 {
     if (maximum >= m_minimum) {
         m_maximum = maximum;
-
     } else {
         qWarning() << "Failed to set video slider maximum: " << QString::number(maximum) << ". Minimum Value: " << m_minimum;
         return;
     }
-
     update();
 }
 
@@ -422,13 +344,12 @@ void VideoSlider::goToNextMarker(const double currentPercent)
 {
     double newVal = 0.0;
 
-    for (const VuraVideoMarker &marker : *m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp > currentPercent + 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -438,7 +359,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -448,7 +368,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -458,7 +377,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -468,7 +386,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -478,7 +395,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -488,7 +404,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -498,7 +413,6 @@ void VideoSlider::goToNextMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp < newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -507,7 +421,7 @@ void VideoSlider::goToNextMarker(const double currentPercent)
     }
 
     if (newVal != 0.0) {
-        int x = newVal * (m_maximum - m_minimum);
+        const int x = newVal * (m_maximum - m_minimum);
         emit valueChanged(x);
     }
 }
@@ -516,13 +430,12 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
 {
     double newVal = 0.0;
 
-    for (const VuraVideoMarker &marker : *m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp < currentPercent - 0.001) {
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -532,7 +445,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -542,7 +454,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -552,7 +463,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -562,7 +472,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -572,7 +481,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -582,7 +490,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -592,7 +499,6 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
                 if (newVal != 0.0) {
                     if (marker.timestamp > newVal)
                         newVal = marker.timestamp;
-
                 } else {
                     newVal = marker.timestamp;
                 }
@@ -601,7 +507,14 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
     }
 
     if (newVal != 0.0) {
-        int x = newVal * (m_maximum - m_minimum);
+        const int x = newVal * (m_maximum - m_minimum);
         emit valueChanged(x);
     }
+}
+
+void VideoSlider::loadVideoMarkers()
+{
+    m_videoMarkers.clear();
+    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
+    update();
 }

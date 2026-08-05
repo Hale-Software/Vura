@@ -20,8 +20,6 @@
 #include "PlaylistEmptyStateWidget.h"
 #include "ui_VuraMainWindow.h"
 
-#include <libvura/media-io/media-functions.h>
-
 #include <ui-config.h>
 #include <qglobal.h>
 
@@ -30,7 +28,7 @@
 #endif
 
 
-static Blogger* globalRedirector = nullptr;
+static Logger* globalRedirector = nullptr;
 
 VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::VuraMainWindow)
 {
@@ -48,14 +46,15 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
 
     ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
 
-    qInstallMessageHandler(Blogger::messageHandler);
-    globalRedirector = Blogger::instance();
+    qInstallMessageHandler(Logger::messageHandler);
+    globalRedirector = Logger::instance();
 
     m_playbackController = new PlaybackController(ui->mediaAreaWidget, this);
     m_playlistController = new PlaylistController(
             ui->playlistView,
             ui->emptyPlaylistView,
             ui->playlistWidget,
+            ui->actionViewTogglePlaylist,
             this
         );
 
@@ -63,14 +62,10 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
         initializeVideoWidget();
         m_playbackController->setVideoWidget(ui->videoWidget);
     } else {
-        //initializeVuraMediaEngine();
-        //m_playbackController->setOpenGLWidget(ui->openGLWidget);
-        m_videoWidget = new VideoWidget(nullptr, this);
-        ui->verticalLayout_7->addWidget(m_videoWidget);
-        //m_playbackController->setOpenGLWidget(m_videoWidget);
+        m_openGLWidget = new VuraMediaEngine(this);
+        ui->verticalLayout_8->addWidget(m_openGLWidget);
+        m_playbackController->setOpenGLWidget(m_openGLWidget);
     }
-
-
 
     connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
 
@@ -112,14 +107,17 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     this->addAction(ui->actionAudioVolumeUp);
     ui->actionAudioVolumeUp->setShortcutContext(Qt::WindowShortcut);
 
+    m_videoMarkerController = new VideoMarkerController(this);
+
     // Video Slider
-    m_videoSlider = new VideoSlider(&m_videoMarkers, this);
+    m_videoSlider = new VideoSlider(m_videoMarkerController, this);
     m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *m_playbackController, this);
+    connect(m_videoMarkerController, &VideoMarkerController::markerAdded, m_videoSlider, &VideoSlider::updateVideoSlider);
+    connect(m_videoMarkerController, &VideoMarkerController::markersLoaded, m_videoSlider, &VideoSlider::loadVideoMarkers);
 
     ui->verticalLayout->addWidget(m_videoSliderWidget);
     ui->verticalLayout->setStretch(0, 1);
 
-    connect(this, &VuraMainWindow::updateVideoSlider, m_videoSlider, &VideoSlider::updateVideoSlider);
     connect(m_playbackController, &PlaybackController::positionChanged, m_videoSlider, &VideoSlider::setValue);
     connect(m_playbackController, &PlaybackController::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
     connect(m_playbackController, &PlaybackController::sourceChanged, this, &VuraMainWindow::sourceChanged);
@@ -150,6 +148,10 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     this->addAction(ui->actionFileOpenFolder);
     ui->actionFileOpenFolder->setShortcutContext(Qt::WindowShortcut);
 
+    connect(ui->actionFileOpenNetworkStream, &QAction::triggered, this, &VuraMainWindow::actionOpenNetworkStream);
+    this->addAction(ui->actionFileOpenNetworkStream);
+    ui->actionFileOpenNetworkStream->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionFileOpenMultipleFiles, &QAction::triggered, m_playlistController, &PlaylistController::requestMultipleFileImport);
     this->addAction(ui->actionFileOpenMultipleFiles);
     ui->actionFileOpenMultipleFiles->setShortcutContext(Qt::WindowShortcut);
@@ -161,6 +163,12 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(ui->actionFileOpenPlaylist, &QAction::triggered, m_playlistController, &PlaylistController::loadPlaylistFile);
     this->addAction(ui->actionFileOpenPlaylist);
     ui->actionFileOpenPlaylist->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleStatusBar, &QAction::triggered, this, &VuraMainWindow::actionViewToggleStatusBar);
+    this->addAction(ui->actionViewToggleStatusBar);
+    ui->actionViewToggleStatusBar->setShortcutContext(Qt::WindowShortcut);
+    ui->actionViewToggleStatusBar->setChecked(false);
+    ui->statusBar->hide();
 
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
     connect(ui->actionHelpViewCurrentLog, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);
@@ -303,6 +311,12 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
     populateAudioDevicesMenu();
 
+    m_crashReporter = new CrashReporter(this);
+    connect(m_crashReporter, &CrashReporter::scanFinished, this, &VuraMainWindow::crashReportScanFinished);
+    connect(m_crashReporter, &CrashReporter::uploadStarted, this, &VuraMainWindow::crashReportUploadStarted);
+    connect(m_crashReporter, &CrashReporter::finished, this, &VuraMainWindow::crashReportUploadFinished);
+    m_crashReporter->checkForPreviousCrashes();
+
     /*
     auto* updater = new UpdateChecker(this);
 
@@ -388,6 +402,20 @@ void VuraMainWindow::openFolder(const QString &path) const
     }
 }
 
+void VuraMainWindow::openNetworkStream(QString networkUrl) const
+{
+    qDebug() << "Open with network stream requested. Network URL: " << networkUrl;
+    if (!networkUrl.isEmpty()) {
+        m_playlistController->hidePlaylist();
+
+        networkUrl.remove('"');
+        networkUrl.remove(0, 7);
+        networkUrl.insert(5, ":");
+        qDebug() << "Cleaned Network URL: " << networkUrl;
+        m_playlistController->addNetworkVideo(networkUrl);
+    }
+}
+
 void VuraMainWindow::initializeVideoWidget()
 {
     ui->videoWidget->setMouseTracking(true);
@@ -416,7 +444,7 @@ void VuraMainWindow::initializeVuraMediaEngine()
 
 void VuraMainWindow::closeEvent(QCloseEvent *event)
 {
-    VideoMarkers::write("debug/global.json", m_playbackController->getVideoWidget()->source().toLocalFile(), m_videoMarkers);
+    m_videoMarkerController->saveVideoMarkers();
     event->accept();
 }
 
@@ -496,10 +524,10 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
     return QMainWindow::eventFilter(obj, event);
 }
 
-void VuraMainWindow::stateChanged(PlaybackState state)
+void VuraMainWindow::stateChanged(const PlaybackState state)
 {
     m_currentPlaybackState = state;
-    if (state == PlaybackState::Playing && !m_videoSliderHideTimer->isActive()) {
+    if (state == Playing && !m_videoSliderHideTimer->isActive()) {
         m_videoSliderHideTimer->start();
     } else {
         m_videoSliderHideTimer->stop();
@@ -510,14 +538,8 @@ void VuraMainWindow::stateChanged(PlaybackState state)
 
 void VuraMainWindow::sourceChanged(const QUrl &source)
 {
-    QSettings settings;
-
-    m_videoMarkers.clear();
-    m_videoMarkers = VideoMarkers::read("debug/global.json", source.toString());
-
-    m_videoSlider->setSource(source.toLocalFile());
     qCDebug(Core) << "Source changed to: " << source.toLocalFile();
-
+    m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
 }
 
@@ -530,7 +552,7 @@ void VuraMainWindow::errorOccurred(const QString &errorMessage)
 
 void VuraMainWindow::hideVideoSlider()
 {
-    if (m_currentPlaybackState == PlaybackState::Playing && autohideSlider) {
+    if (m_currentPlaybackState == Playing && autohideSlider) {
         m_videoSliderWidget->hide();
         this->setCursor(Qt::BlankCursor);
     }
@@ -542,7 +564,7 @@ void VuraMainWindow::resetVideoSliderVisibility()
     m_videoSliderWidget->show();
     this->unsetCursor();
 
-    if (m_currentPlaybackState == PlaybackState::Playing && !m_videoSliderHideTimer->isActive())
+    if (m_currentPlaybackState == Playing && !m_videoSliderHideTimer->isActive())
         m_videoSliderHideTimer->start();
 }
 
@@ -553,13 +575,13 @@ void VuraMainWindow::updateCheckReplyFinished(QNetworkReply *reply)
         return;
     }
 
-    QByteArray response = reply->readAll();
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
+    const QByteArray response = reply->readAll();
+    const QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
     QJsonObject jsonObj = jsonDoc.object();
 
     bool isRemoteBeta = jsonObj["is_beta"].toBool();
-    QString remoteVersion = jsonObj["version"].toString();
-    QString releaseDate = jsonObj["release_date"].toString();
+    const QString remoteVersion = jsonObj["version"].toString();
+    const QString releaseDate = jsonObj["release_date"].toString();
 
     if (remoteVersion != VURA_VERSION_STRING) {
         // Parsing logic inside your update checker function:
@@ -573,13 +595,13 @@ void VuraMainWindow::updateCheckReplyFinished(QNetworkReply *reply)
         QJsonObject currentPlatform = platforms["linux"].toObject();
 #endif
 
-        QString downloadUrl = currentPlatform["url"].toString();
-        QString expectedHash = currentPlatform["sha256"].toString();
-        QString changelogUrl = jsonObj["changelog_url"].toString();
+        const QString downloadUrl = currentPlatform["url"].toString();
+        const QString expectedHash = currentPlatform["sha256"].toString();
+        const QString changelogUrl = jsonObj["changelog_url"].toString();
 
 
         QSettings settings;
-        QString lastCheckedVersion = settings.value("lastCheckedVersion", "").toString();
+        const QString lastCheckedVersion = settings.value("lastCheckedVersion", "").toString();
         if (remoteVersion != lastCheckedVersion) {
             if (m_updateDialog)
                 m_updateDialog->close();
@@ -614,10 +636,23 @@ void VuraMainWindow::actionHelpCheckForUpdates()
 
 void VuraMainWindow::actionTestFunction()
 {
-    qCDebug(Core) << "Test function called.";
-    qCInfo(Core) << "Test function called.";
-    qCWarning(Core) << "Test function called.";
-    qCCritical(Core) << "Test function called.";
+    Helpers::simulateApplicationCrash();
+}
+
+void VuraMainWindow::actionOpenNetworkStream()
+{
+    bool ok;
+    const QString networkUrl = QInputDialog::getText(this,
+            tr("Open Network Stream"),
+            tr("Network Stream URL:"),
+            QLineEdit::Normal,
+            QString(),
+            &ok
+        );
+
+    if (ok && !networkUrl.isEmpty()) {
+        m_playlistController->addNetworkVideo(networkUrl);
+    }
 }
 
 void VuraMainWindow::actionEmergencyClose()
@@ -642,6 +677,7 @@ void VuraMainWindow::actionToggleFullscreen()
         this->showNormal();
 
         ui->menubar->show();
+        m_videoSliderWidget->show();
         if (m_wasPlaylistShowing) m_playlistController->showPlaylist();
 
     } else {
@@ -649,6 +685,7 @@ void VuraMainWindow::actionToggleFullscreen()
         this->showFullScreen();
 
         ui->menubar->hide();
+        m_videoSliderWidget->hide();
         m_playlistController->hidePlaylist();
     }
 }
@@ -727,32 +764,63 @@ void VuraMainWindow::populateAudioDevicesMenu()
     }
 }
 
+void VuraMainWindow::actionViewToggleStatusBar()
+{
+    if (ui->statusBar->isVisible()) {
+        ui->statusBar->hide();
+    } else {
+        ui->statusBar->show();
+    }
+    ui->actionViewToggleStatusBar->setChecked(ui->statusBar->isVisible());
+}
+
 void VuraMainWindow::actionMarkersAddCumshotMarker()
 {
     const double sliderPercent = getSliderPercent();
-
-    VuraVideoMarker marker;
-    marker.id = VideoMarkers::generateMarkerID("debug/global.json");
-    marker.fileName = m_playbackController->getVideoWidget()->source().toLocalFile();
-    marker.markerType = "cumshot";
-    marker.timestamp = sliderPercent;
-
-    m_videoMarkers.append(marker);
+    m_videoMarkerController->addCumshotMarker(sliderPercent);
 }
 
-void VuraMainWindow::actionMarkersAddCyanMarker() {}
+void VuraMainWindow::actionMarkersAddCyanMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addCyanMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddDialogMarker() {}
+void VuraMainWindow::actionMarkersAddDialogMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addDialogMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddMagentaMarker() {}
+void VuraMainWindow::actionMarkersAddMagentaMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addMagentaMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddMarker() {}
+void VuraMainWindow::actionMarkersAddMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddOrangeMarker() {}
+void VuraMainWindow::actionMarkersAddOrangeMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addOrangeMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddSceneMarker() {}
+void VuraMainWindow::actionMarkersAddSceneMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addSceneMarker(sliderPercent);
+}
 
-void VuraMainWindow::actionMarkersAddStripMarker() {}
+void VuraMainWindow::actionMarkersAddStripMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoMarkerController->addStripMarker(sliderPercent);
+}
 
 void VuraMainWindow::actionMarkersClearIn() {}
 
@@ -768,11 +836,19 @@ void VuraMainWindow::actionMarkersEditSelectedMarker() {}
 
 void VuraMainWindow::actionMarkersGoToIn() {}
 
-void VuraMainWindow::actionMarkersGoToNextMarker() {}
+void VuraMainWindow::actionMarkersGoToNextMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoSlider->goToNextMarker(sliderPercent);
+}
 
 void VuraMainWindow::actionMarkersGoToOut() {}
 
-void VuraMainWindow::actionMarkersGoToPreviousMarker() {}
+void VuraMainWindow::actionMarkersGoToPreviousMarker()
+{
+    const double sliderPercent = getSliderPercent();
+    m_videoSlider->goToPreviousMarker(sliderPercent);
+}
 
 void VuraMainWindow::actionMarkersMarkIn() {}
 
@@ -812,11 +888,12 @@ void VuraMainWindow::setApplicationWindowTitle()
 {
     QString windowTitle;
 
-    if (!m_playbackController->getVideoWidget()->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2").arg(MediaFunctions::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()), VURA_VERSION_STRING);
-    } else {
-        windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
-    }
+    //if (!m_playbackController->getVideoWidget()->source().isEmpty()) {
+    //    windowTitle = QString("%1 - Vura %2").arg(Helpers::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()), VURA_VERSION_STRING);
+    //} else {
+    //    windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
+    //}
+    windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
 
     this->setWindowTitle(windowTitle);
 }
@@ -851,7 +928,7 @@ VuraVideoMarker VuraMainWindow::findNearestVisibleMarker(double sliderPercent, d
     VuraVideoMarker best;
     best.timestamp = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
         if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
         const double dist = std::abs(marker.timestamp - sliderPercent);
         if (dist > markerRange) continue;
@@ -873,7 +950,7 @@ bool VuraMainWindow::checkMarkerProximity()
     const double sliderPercent = getSliderPercent();
     constexpr double markerRange = 0.005;
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
         if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
         const double dist = std::abs(marker.timestamp - sliderPercent);
         if (dist <= markerRange) return true;
@@ -886,7 +963,7 @@ bool VuraMainWindow::isPreviousMarkerAvailable(const VuraVideoMarker &videoMarke
     VuraVideoMarker previousMarker;
     previousMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
         if (marker.timestamp < videoMarker.timestamp) {
             if (std::isnan(previousMarker.timestamp)) {
                 previousMarker = marker;
@@ -910,7 +987,7 @@ bool VuraMainWindow::isNextMarkerAvailable(const VuraVideoMarker &videoMarker)
     VuraVideoMarker nextMarker;
     nextMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
         if (marker.timestamp > videoMarker.timestamp) {
             if (std::isnan(nextMarker.timestamp)) {
                 nextMarker = marker;
@@ -935,9 +1012,9 @@ void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const Q
     QProgressDialog *progressDialog = new QProgressDialog("Downloading Update...", "Cancel", 0, 100, this);
     progressDialog->setWindowModality(Qt::WindowModal);
 
-    AppUpdater *updater = new AppUpdater(this);
+    Updater *updater = new Updater(this);
 
-    connect(updater, &AppUpdater::downloadProgress, this, [progressDialog](qint64 received, qint64 total) {
+    connect(updater, &Updater::downloadProgress, this, [progressDialog](qint64 received, qint64 total) {
         if (total > 0) {
             int percentage = static_cast<int>((received * 100) / total);
             progressDialog->setValue(percentage);
@@ -948,7 +1025,7 @@ void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const Q
         // Handle download abortion if necessary
     });
 
-    connect(updater, &AppUpdater::downloadFinished, this, [progressDialog](bool success, const QString &message) {
+    connect(updater, &Updater::downloadFinished, this, [progressDialog](bool success, const QString &message) {
         progressDialog->close();
         if (!success) {
             QMessageBox::critical(nullptr, "Update Error", message);
@@ -956,4 +1033,36 @@ void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const Q
     });
 
     updater->startDownload(targetDownloadUrl, expectedHash);
+}
+
+void VuraMainWindow::crashReportScanFinished(bool crashFileExists)
+{
+    if (crashFileExists) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Vura Crash Recovery",
+            "Vura Video Player closed unexpectedly during your last session.\n\n"
+            "Would you like to send the crash dump to the developers to help fix the issue?",
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::Yes) {
+            qDebug() << "User selected to send crash files.";
+            m_crashReporter->uploadCrashFile(true);
+        } else {
+            qDebug() << "User selected not to send crash files.";
+            m_crashReporter->uploadCrashFile(false);
+        }
+    }
+}
+
+void VuraMainWindow::crashReportUploadStarted() {}
+
+void VuraMainWindow::crashReportUploadFinished(bool success, const QString& message)
+{
+    if (success) {
+        QMessageBox::information(this, "Vura Crash Recovery", "Crash report uploaded successfully!");
+    } else {
+        QMessageBox::warning(this, "Vura Crash Recovery",
+            "Failed to upload crash report.\n\n"
+            "Error message: " + message);
+    }
 }

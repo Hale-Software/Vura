@@ -51,10 +51,7 @@ class AudioDecoder : public QThread
     Q_OBJECT
 
 public:
-    AudioDecoder(PacketQueue* packetQueue,
-                 FrameQueue*  frameQueue,
-                 AVCodecParameters* codecParams,
-                 QObject* parent = nullptr);
+    AudioDecoder(PacketQueue* packetQueue, FrameQueue*  frameQueue, AVCodecParameters* codecParams, QObject* parent = nullptr);
     ~AudioDecoder() override;
 
     bool initDecoder();
@@ -69,7 +66,7 @@ protected:
 
 private:
     bool initResampler();
-    AVFrame* resampleFrame(AVFrame* input);
+    AVFrame* resampleFrame(const AVFrame * input) const;
 
     PacketQueue*       m_packetQueue  = nullptr;
     FrameQueue*        m_frameQueue   = nullptr;

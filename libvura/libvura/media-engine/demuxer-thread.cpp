@@ -18,13 +18,10 @@
 
 #include "demuxer-thread.h"
 
-DemuxerThread::DemuxerThread(PacketQueue* videoQueue,
-                             PacketQueue* audioQueue,
-                             QObject*     parent)
-    : QThread(parent)
-    , m_videoQueue(videoQueue)
-    , m_audioQueue(audioQueue)
-{}
+DemuxerThread::DemuxerThread(PacketQueue* videoQueue, PacketQueue* audioQueue, QObject* parent)
+    : QThread(parent),
+      m_videoQueue(videoQueue),
+      m_audioQueue(audioQueue) {}
 
 DemuxerThread::~DemuxerThread()
 {
@@ -43,12 +40,10 @@ bool DemuxerThread::openFile(const QString& filePath)
     if (m_formatContext)
         avformat_close_input(&m_formatContext);
 
-    m_currentFile    = filePath;
-    m_formatContext  = avformat_alloc_context();
+    m_currentFile = filePath;
+    m_formatContext = avformat_alloc_context();
 
-    if (avformat_open_input(&m_formatContext,
-                            m_currentFile.toStdString().c_str(),
-                            nullptr, nullptr) != 0) {
+    if (avformat_open_input(&m_formatContext, m_currentFile.toStdString().c_str(), nullptr, nullptr) != 0) {
         qWarning() << "DemuxerThread: could not open" << m_currentFile;
         return false;
     }
@@ -59,23 +54,21 @@ bool DemuxerThread::openFile(const QString& filePath)
     }
 
     // Find best video stream
-    m_videoStreamIndex = av_find_best_stream(
-        m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+    m_videoStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
     if (m_videoStreamIndex < 0) {
         qWarning() << "DemuxerThread: no video stream found";
         return false;
     }
 
     // Find best audio stream (optional — files may be video-only)
-    m_audioStreamIndex = av_find_best_stream(
-        m_formatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStreamIndex, nullptr, 0);
+    m_audioStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStreamIndex, nullptr, 0);
     if (m_audioStreamIndex < 0)
         qDebug() << "DemuxerThread: no audio stream (video-only file)";
     else
         qDebug() << "DemuxerThread: audio stream index" << m_audioStreamIndex;
 
     // Emit video dimensions for the UI
-    AVCodecParameters* vpar = m_formatContext->streams[m_videoStreamIndex]->codecpar;
+    const AVCodecParameters * vpar = m_formatContext->streams[m_videoStreamIndex]->codecpar;
     emit videoDimentionsFound(vpar->width, vpar->height);
 
     return true;
@@ -95,11 +88,9 @@ void DemuxerThread::run()
 
         // --- Seek handling ---
         if (m_seekRequested.exchange(false)) {
-            int64_t target = m_seekTargetTs.load();
+            const int64_t target = m_seekTargetTs.load();
 
-            avformat_seek_file(m_formatContext, -1,
-                               INT64_MIN, target, INT64_MAX,
-                               AVSEEK_FLAG_BACKWARD);
+            avformat_seek_file(m_formatContext, -1, INT64_MIN, target, INT64_MAX, AVSEEK_FLAG_BACKWARD);
 
             // Flush both queues and send flush sentinels to both decoders
             if (m_videoQueue) {
@@ -116,7 +107,7 @@ void DemuxerThread::run()
 
         // --- Read next packet ---
         AVPacket* pkt = av_packet_alloc();
-        int ret = av_read_frame(m_formatContext, pkt);
+        const int ret = av_read_frame(m_formatContext, pkt);
 
         if (ret < 0) {
             av_packet_free(&pkt);
@@ -157,7 +148,7 @@ AVRational DemuxerThread::getTimeBase() const
     return {1, 1};
 }
 
-void DemuxerThread::seekTo(int seconds)
+void DemuxerThread::seekTo(const int seconds)
 {
     m_seekTargetTs  = static_cast<int64_t>(seconds) * AV_TIME_BASE;
     m_seekRequested = true;

@@ -34,7 +34,7 @@
 #include <QString>
 #include <QList>
 
-#include <libvura/util/blogger.h>
+#include <libvura/logging/logger.h>
 
 
 QT_BEGIN_NAMESPACE

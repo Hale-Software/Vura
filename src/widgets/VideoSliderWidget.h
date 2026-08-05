@@ -22,9 +22,10 @@
 #include <QLabel>
 #include <QPropertyAnimation>
 
-#include "PlaybackController.h"
 #include "ClickableLabel.h"
 #include "VideoSlider.h"
+
+#include <libvura/playback/playback-controller.h>
 
 
 QT_BEGIN_NAMESPACE

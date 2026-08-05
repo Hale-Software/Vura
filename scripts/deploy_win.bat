@@ -4,9 +4,20 @@ SET QT_BIN=C:\Qt\6.11.1\mingw_64\bin
 SET MINGW_BIN=C:\Qt\Tools\mingw1120_64\bin
 SET FFMPEG_BIN=C:\Users\halea\bin\ffmpeg-8.1.1-full_build-shared\bin
 SET FFMPEG_DIR=C:\Users\halea\bin\ffmpeg-8.1.1-full_build-shared
+set "NSIS_PATH=C:\Program Files (x86)\NSIS\makensis.exe"
+
+SETLOCAL
+
+FOR /F "usebackq delims=" %%A IN (`git describe --tags --abbrev^=0`) DO (
+    SET "GIT_TAG=%%A"
+)
 
 SET OUTPUT_DIR=..\build\deploy
 SET DEPLOY_DIR=..\build\deploy\dist_windows
+
+SET NSIS_SCRIPT=..\installer\installer.nsi
+
+rmdir /s /q %DEPLOY_DIR%
 
 mkdir %DEPLOY_DIR%
 copy ..\build\release\src\vura.exe %DEPLOY_DIR%\
@@ -31,3 +42,17 @@ copy %FFMPEG_BIN%\avutil-*.dll %DEPLOY_DIR%\
 copy %FFMPEG_BIN%\swscale-*.dll %DEPLOY_DIR%\
 
 echo Deployment package built in %DEPLOY_DIR%
+
+echo Running NSIS script...
+
+copy %NSIS_SCRIPT% %OUTPUT_DIR%\
+cd /d "%OUTPUT_DIR%"
+"%NSIS_PATH%" /V1 /DVERSION=%GIT_TAG% "installer.nsi"
+
+if %ERRORLEVEL% equ 0 (
+    echo Compilation succeeded!
+) else (
+    echo Compilation failed with error code %ERRORLEVEL%.
+)
+
+pause

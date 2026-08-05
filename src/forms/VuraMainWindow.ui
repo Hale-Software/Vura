@@ -123,6 +123,13 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+          </layout>
+         </item>
         </layout>
        </widget>
       </widget>
@@ -321,6 +328,7 @@
     </widget>
     <addaction name="actionViewTogglePlaylist"/>
     <addaction name="actionViewToggleVideoControls"/>
+    <addaction name="actionViewToggleStatusBar"/>
     <addaction name="separator"/>
     <addaction name="menuViewToggleMarkers"/>
     <addaction name="separator"/>
@@ -570,6 +578,7 @@
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionFileOpenFile">
    <property name="text">
     <string>Open File...</string>
@@ -684,7 +693,7 @@
     <string>Toggle Mute</string>
    </property>
    <property name="shortcut">
-    <string>M</string>
+    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="actiona">
@@ -1488,6 +1497,14 @@
    </property>
    <property name="text">
     <string>OpenGL</string>
+   </property>
+  </action>
+  <action name="actionViewToggleStatusBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Status Bar</string>
    </property>
   </action>
  </widget>

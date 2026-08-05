@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "util/crash-reporter.h"
+
 class Libvura
 {
 public:

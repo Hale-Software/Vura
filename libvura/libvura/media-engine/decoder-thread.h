@@ -28,6 +28,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 }
 
+
 class DecoderThread : public QThread {
     Q_OBJECT
 

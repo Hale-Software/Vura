@@ -50,37 +50,37 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProgressDialog>
+#include <QInputDialog>
 #include <QDebug>
 
+#include <libvura/libvura.h>
 #include <libvura/constants.h>
-#include <libvura/logger.h>
+#include <libvura/logging/logger.h>
 #include <libvura/settings.h>
-#include <libvura/ErrorService.h>
-#include <libvura/util/blogger.h>
-#include <libvura/data/video-markers.h>
-#include <libvura/playlist/playlist-model.h>
+#include <libvura/exceptions/error-service.h>
+#include <libvura/video-marker/video-marker-controller.h>
+#include <libvura/models/playlist-model.h>
 #include <libvura/playlist/playlist-delegate.h>
+#include <libvura/platform/updater.h>
+#include <libvura/playback/playback-controller.h>
+#include <libvura/playlist/playlist-controller.h>
+#include <libvura/helpers.h>
+#include <libvura/media-engine/media-engine.h>
 
 #include "HelpDialog.h"
 #include "AboutDialog.h"
 #include "UpdateDialog.h"
-#include "../settings/SettingsWindow.h"
+#include "SettingsWindow.h"
 #include "FeedbackDialog.h"
 #include "LogViewerDialog.h"
 #include "MarkerEditDialog.h"
 #include "ConvertMediaDialog.h"
 #include "MediaInformationDialog.h"
 #include "UpdateChecker.h"
-#include "AppUpdater.h"
 
 #include "SystemTrayWidget.h"
 #include "VideoSliderWidget.h"
 #include "VideoControlWidget.h"
-
-#include "PlaybackController.h"
-#include "PlaylistController.h"
-
-#include <libvura/media-engine/video-widget.h>
 
 
 namespace Ui {
@@ -108,6 +108,7 @@ public:
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
     void openFolder(const QString &path) const;
+    void openNetworkStream(QString networkUrl) const;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 protected:
@@ -118,13 +119,13 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 signals:
-    void updateVideoSlider();
     void quitProgram();
 
 private slots:
     void updateCheckReplyFinished(QNetworkReply *reply);
 
     static void actionTestFunction();
+    void actionOpenNetworkStream();
     void actionEmergencyClose();
     void actionShowLogViewer();
     void actionToggleFullscreen();
@@ -134,6 +135,8 @@ private slots:
     void actionExit();
     void actionToggleVideoControls();
     void populateAudioDevicesMenu();
+
+    void actionViewToggleStatusBar();
 
     void actionMarkersAddCumshotMarker();
     void actionMarkersAddCyanMarker();
@@ -169,6 +172,9 @@ public slots:
     void hideVideoSlider();
     void resetVideoSliderVisibility();
     void onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash);
+    void crashReportScanFinished(bool crashFileExists);
+    void crashReportUploadStarted();
+    void crashReportUploadFinished(bool success, const QString& message);
 
 private:
     Ui::VuraMainWindow *ui;
@@ -191,7 +197,7 @@ private:
 
     QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
-    QList<VuraVideoMarker> m_videoMarkers;
+    VideoMarkerController *m_videoMarkerController = nullptr;
     VideoSlider *m_videoSlider = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
@@ -219,6 +225,7 @@ private:
     int m_outMarker = 0;
     PlaybackState m_currentPlaybackState = PlaybackState::Stopped;
 
-    VideoWidget *m_videoWidget = nullptr;
+    VuraMediaEngine *m_openGLWidget = nullptr;
+    CrashReporter *m_crashReporter = nullptr;
 
 };

@@ -71,8 +71,8 @@ LogViewerDialog::LogViewerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
     connect(ui->btnClear, &QPushButton::clicked, this, &LogViewerDialog::clearButton_Clicked);
     connect(ui->btnExport, &QPushButton::clicked, this, &LogViewerDialog::exportButton_Clicked);
 
-    const Blogger *blogger = Blogger::instance();
-    connect(blogger, &Blogger::newLogEntry, this, &LogViewerDialog::appendLogMessage);
+    const Logger *blogger = Logger::instance();
+    connect(blogger, &Logger::newLogEntry, this, &LogViewerDialog::appendLogMessage);
 
     QList<LogMessage> previousMessages = blogger->getLogMessages();
     for (const auto &[timestamp, type, component, message] : previousMessages) {
@@ -200,7 +200,7 @@ void LogViewerDialog::clearButton_Clicked()
     m_logBuffer.clear();
     ui->logTextArea->clear();
 
-    Blogger::instance()->clearLogFile();
+    Logger::instance()->clearLogFile();
 }
 
 void LogViewerDialog::exportButton_Clicked()

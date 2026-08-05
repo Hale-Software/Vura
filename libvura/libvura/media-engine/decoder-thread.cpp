@@ -20,38 +20,44 @@
 #include <QDebug>
 
 DecoderThread::DecoderThread(PacketQueue* packetQueue, FrameQueue* frameQueue, AVCodecParameters* codecParams, QObject *parent)
-    : QThread(parent), packetQueue(packetQueue), frameQueue(frameQueue), codecParams(codecParams), codecContext(nullptr), abortRequested(false) {
-}
+    : QThread(parent),
+      packetQueue(packetQueue),
+      frameQueue(frameQueue),
+      codecParams(codecParams),
+      codecContext(nullptr),
+      abortRequested(false) {}
 
-DecoderThread::~DecoderThread() {
+DecoderThread::~DecoderThread()
+{
     stop();
     if (codecContext) {
         avcodec_free_context(&codecContext);
     }
 }
 
-bool DecoderThread::initDecoder() {
-    // 1. Find the specific decoder for the video stream
+bool DecoderThread::initDecoder()
+{
+    // Find the specific decoder for the video stream
     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
     if (!codec) {
         qWarning() << "Unsupported codec!";
         return false;
     }
 
-    // 2. Allocate the codec context
+    // Allocate the codec context
     codecContext = avcodec_alloc_context3(codec);
     if (!codecContext) {
         qWarning() << "Failed to allocate codec context.";
         return false;
     }
 
-    // 3. Copy parameters from the demuxer's stream to the codec context
+    // Copy parameters from the demuxer's stream to the codec context
     if (avcodec_parameters_to_context(codecContext, codecParams) < 0) {
         qWarning() << "Failed to copy codec parameters.";
         return false;
     }
 
-    // 4. Open the decoder
+    // Open the decoder
     if (avcodec_open2(codecContext, codec, nullptr) < 0) {
         qWarning() << "Failed to open codec.";
         return false;
@@ -60,14 +66,16 @@ bool DecoderThread::initDecoder() {
     return true;
 }
 
-void DecoderThread::stop() {
+void DecoderThread::stop()
+{
     requestInterruption();
     frameQueue->abort();
     packetQueue->abort();
     wait();
 }
 
-void DecoderThread::run() {
+void DecoderThread::run()
+{
     while (!isInterruptionRequested()) {
         AVPacket* packet = packetQueue->pop();
         if (!packet) continue;

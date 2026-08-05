@@ -8,6 +8,6 @@ target_sources(
         widgets/VideoSliderWidget.h
         widgets/VuraMainWindow.cpp
         widgets/VuraMainWindow.h
-        widgets/VuraMediaEngine.cpp
-        widgets/VuraMediaEngine.h
+        widgets/testwindow.cpp
+        widgets/testwindow.h
 )

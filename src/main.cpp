@@ -17,28 +17,27 @@
  ******************************************************************************/
 
 #include <QApplication>
-#include <QCommandLineParser>
 #include <QFileInfo>
 #include <QSurfaceFormat>
 #include <QMessageBox>
 #include <QDir>
 #include <QDebug>
 
-#include <libvura/ErrorService.h>
-//#include <libvura/util/singleinstance.h>
+#include <libvura/platform/platform.h>
+#include <libvura/exceptions/error-service.h>
+#include <libvura/util/single-instance-controller.h>
 
 #include <ui-config.h>
-
-#include "SingleInstanceController.h"
 #include "VuraMainWindow.h"
 
 
 int main(int argc, char *argv[])
 {
+    // --- Initialize crash handler ---
+    CrashHandler::install();
+
     // --- Initialize your player main window UI context layer --
-    QApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
-    );
+    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
@@ -50,7 +49,6 @@ int main(int argc, char *argv[])
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setDepthBufferSize(24);
     QSurfaceFormat::setDefaultFormat(format);
-
 
     try {
 
@@ -71,7 +69,7 @@ int main(int argc, char *argv[])
 
         // Setup IPC slot connection to open files smoothly when incoming signals fire
         QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
-            QFileInfo checkFile(filePath);
+            const QFileInfo checkFile(filePath);
             if (checkFile.exists() && checkFile.isFile()) {
                 // Bring the primary window to the foreground instantly
                 mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
@@ -79,54 +77,36 @@ int main(int argc, char *argv[])
                 mainWindow.activateWindow();
 
                 // Load and play the file inside your pipeline
-                // Example: w.loadVideo(filePath);
+                // Example: mainWindow.openFile(filePath);
                 mainWindow.openFile(filePath);
             }
         });
 
-        // --- Command Line Argument Parsing Configuration ---
-        QCommandLineParser parser;
-        parser.setApplicationDescription(VURA_COMMENTS);
-        parser.addHelpOption();
-        parser.addVersionOption();
+        if (argc == 2) {
+            QString openFileArg = QString::fromUtf8(argv[1]);
 
-        // Add positional argument for capturing target media files
-        parser.addPositionalArgument("file", "The media file path to open on initialization.");
-
-        QCommandLineOption launchInFullscreenOption(QStringList() << "fullscreen", "Launch the media file directly in fullscreen mode.");
-        parser.addOption(launchInFullscreenOption);
-
-        QCommandLineOption quitterAfterFinishOption(QStringList() << "quit", "Quit the application after playback or conversion finishes.");
-        parser.addOption(quitterAfterFinishOption);
-
-        QCommandLineOption openGLOption(QStringList() << "opengl", "Enable OpenGL rendering for video playback.");
-        parser.addOption(openGLOption);
-
-        parser.process(app);
-        const QStringList positionalArguments = parser.positionalArguments();
-
-        if (!positionalArguments.isEmpty()) {
-            QString targetFilePath = positionalArguments.first();
-
-            // Confirm the file actually exists on local user storage bounds
-            QFileInfo checkFile(targetFilePath);
+            QFileInfo checkFile(openFileArg);
             if (checkFile.exists() && checkFile.isFile()) {
-                // Pass the absolute file path into your FFmpeg decoder worker pipeline thread
-                // Example: emit w.startVideoPlayback(targetFilePath);
                 if (checkFile.isFile()) {
-                    mainWindow.openFile(targetFilePath);
+                    mainWindow.openFile(openFileArg);
 
                 } else if (checkFile.isDir()) {
-                    mainWindow.openFolder(targetFilePath);
+                    mainWindow.openFolder(openFileArg);
                 }
             }
-        }
+        } else if (argc == 3) {
+            QString openFileArg = QString::fromUtf8(argv[1]);
+            QString openOptionArg = QString::fromUtf8(argv[2]);
 
+            if (openOptionArg == "--network") {
+                mainWindow.openNetworkStream(openFileArg);
+            }
+        }
 
         return QApplication::exec();
 
     } catch (const std::exception &e) {
-        ErrorService::instance().postError({"Fatal Crash", e.what(), ErrorSeverity::Critical});
+        ErrorService::instance().postError({.title = "Fatal Crash", .message = e.what(), .severity = ErrorSeverity::Critical});
         return -1;
     }
 }

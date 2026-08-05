@@ -5,8 +5,8 @@
 !/.github
 !/assets
 !/cmake
-!/deps
 !/docs
+!/installer
 !/libvura
 !/scripts
 !/src
@@ -14,6 +14,7 @@
 !.clang-format
 !.editorconfig
 !.gitmodules
+!.gitattributes
 !.gitignore
 !.mailmap
 !AUTHORS
@@ -26,10 +27,6 @@
 !COPYING
 !README.md
 
-# Exclude installer files
-!/installer/installer.iss
-!/installer/vura.ico
-
 # Exclude lock files
 *.lock.json
 
@@ -38,3 +35,4 @@
 
 # Exclude CMake build number cache
 /cmake/.CMakeBuildNumber
+deps/ffmpeg/bin/avfilter-11.dll

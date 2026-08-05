@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(FFMPEG_DIR "C:\\Users\\halea\\bin\\ffmpeg-8.1.1-full_build-shared")
-
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets)
 
 add_library(libvura STATIC)
@@ -14,15 +12,7 @@ target_sources(
         libvura
         PUBLIC
         libvura/constants.h
-        libvura/filemanager.h
         libvura/libvura.h
-        libvura/logger.h
-        libvura/markermanager.h
-        libvura/mediacontroller.h
-        libvura/datafile-handler.h
-        libvura/error.h
-        libvura/ErrorTypes.h
-        libvura/ErrorService.h
         libvura/helpers.h
         libvura/hotkeys.h
         libvura/settings.h
@@ -31,14 +21,8 @@ target_sources(
 
         PRIVATE
         libvura/constants.cpp
-        libvura/filemanager.cpp
         libvura/libvura.cpp
-        libvura/logger.cpp
-        libvura/markermanager.cpp
-        libvura/mediacontroller.cpp
-        libvura/datafile-handler.cpp
         libvura/defs.h
-        libvura/error.cpp
         libvura/helpers.cpp
         libvura/hotkeys.cpp
         libvura/settings.cpp
@@ -46,17 +30,36 @@ target_sources(
         libvura/theme-manager.cpp
 )
 
-# data Directory
+# exceptions Directory
+target_sources(
+    libvura
+    PUBLIC
+    libvura/exceptions/error-service.h
+    libvura/exceptions/error-types.h
+)
+
+# io Directory
+target_sources(
+    libvura
+    PUBLIC
+    libvura/io/remuxer-thread.h
+    libvura/io/video-converter.h
+
+    PRIVATE
+    libvura/io/remuxer-thread.cpp
+    libvura/io/video-converter.cpp
+)
+
+# logging Directory
 target_sources(
         libvura
         PUBLIC
-        libvura/data/version-info.h
-        libvura/data/video-markers.h
-        libvura/data/VideoMarker.h
+        libvura/logging/categories.h
+        libvura/logging/logger.h
 
         PRIVATE
-        libvura/data/video-markers.cpp
-        libvura/data/VideoMarker.cpp
+        libvura/logging/categories.cpp
+        libvura/logging/logger.cpp
 )
 
 # media-engine Directory
@@ -69,6 +72,7 @@ target_sources(
         libvura/media-engine/demuxer-thread.h
         libvura/media-engine/fragment.glsl
         libvura/media-engine/frame-queue.h
+        libvura/media-engine/media-engine.h
         libvura/media-engine/packet-queue.h
         libvura/media-engine/vertex.glsl
         libvura/media-engine/video-widget.h
@@ -79,18 +83,9 @@ target_sources(
         libvura/media-engine/decoder-thread.cpp
         libvura/media-engine/demuxer-thread.cpp
         libvura/media-engine/frame-queue.cpp
+        libvura/media-engine/media-engine.cpp
         libvura/media-engine/packet-queue.cpp
         libvura/media-engine/video-widget.cpp
-)
-
-# media-io Directory
-target_sources(
-        libvura
-        PUBLIC
-        libvura/media-io/media-functions.h
-
-        PRIVATE
-        libvura/media-io/media-functions.cpp
 )
 
 # models Directory
@@ -98,17 +93,29 @@ target_sources(
         libvura
         PUBLIC
         libvura/models/playlist-item.h
+        libvura/models/playlist-model.cpp
+        libvura/models/version.h
+)
+
+# playback Directory
+target_sources(
+    libvura
+    PUBLIC
+    libvura/playback/playback-controller.h
+
+    PRIVATE
+    libvura/playback/playback-controller.cpp
 )
 
 # playlist Directory
 target_sources(
         libvura
         PUBLIC
-        libvura/playlist/playlist-model.h
+        libvura/playlist/playlist-controller.h
         libvura/playlist/playlist-delegate.h
 
         PRIVATE
-        libvura/playlist/playlist-model.cpp
+        libvura/playlist/playlist-controller.cpp
         libvura/playlist/playlist-delegate.cpp
 )
 
@@ -116,25 +123,27 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        libvura/util/blogger.h
-        libvura/util/messagebox.h
-        libvura/util/singleinstance.h
+        libvura/util/crash-reporter.h
+        libvura/util/single-instance-controller.h
 
         PRIVATE
-        libvura/util/blogger.cpp
-        libvura/util/messagebox.cpp
-        libvura/util/singleinstance.cpp
+        libvura/util/crash-reporter.cpp
+        libvura/util/single-instance-controller.cpp
 )
 
-# util/windows Directory
-#target_sources(
-#        libvura
-#        PUBLIC
-#        util/windows/windowskeyboardhandler.h
+# video-marker Directory
+target_sources(
+        libvura
+        PUBLIC
+        libvura/video-marker/video-marker-controller.h
+        libvura/video-marker/video-markers.h
+        libvura/video-marker/VideoMarker.h
 
-#        PRIVATE
-#        util/windows/windowskeyboardhandler.cpp
-#)
+        PRIVATE
+        libvura/video-marker/video-marker-controller.cpp
+        libvura/video-marker/video-markers.cpp
+        libvura/video-marker/VideoMarker.cpp
+)
 
 target_link_libraries(
         libvura PRIVATE
@@ -142,12 +151,47 @@ target_link_libraries(
         Qt6::Network
         Qt6::MultimediaWidgets
         Qt6::OpenGLWidgets
-        ${FFMPEG_DIR}/lib/avformat.lib
-        ${FFMPEG_DIR}/lib/avcodec.lib
-        ${FFMPEG_DIR}/lib/avfilter.lib
-        ${FFMPEG_DIR}/lib/avutil.lib
-        ${FFMPEG_DIR}/lib/swscale.lib
-        ${FFMPEG_DIR}/lib/swresample.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
 )
 
-target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${FFMPEG_DIR}/include)
+# Platform specific files
+if(WIN32)
+    target_sources(
+        libvura
+        PUBLIC
+        libvura/platform/platform.h
+        libvura/platform/updater.h
+        libvura/platform/windows/crash-handler.h
+        libvura/platform/windows/keyboard-handler.h
+
+        PRIVATE
+        libvura/platform/platform-windows.cpp
+        libvura/platform/updater.cpp
+        libvura/platform/windows/crash-handler.cpp
+        libvura/platform/windows/keyboard-handler.cpp
+    )
+
+    target_link_libraries(libvura PRIVATE dbghelp ole32 oleaut32 wbemuuid)
+
+else()
+    target_sources(
+        libvura
+        PUBLIC
+        libvura/platform/platform.h
+        libvura/platform/linux/crash-handler.h
+        libvura/platform/macos/crash-handler.h
+
+        PRIVATE
+        libvura/platform/platform-linux.cpp
+        libvura/platform/platform-macos.cpp
+        libvura/platform/linux/crash-handler.cpp
+        libvura/platform/macos/crash-handler.cpp
+    )
+endif()
+
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)

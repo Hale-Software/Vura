@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -32,7 +32,8 @@
 #include <QLabel>
 #include <QDebug>
 
-#include <libvura/data/video-markers.h>
+#include <libvura/video-marker/video-markers.h>
+#include <libvura/video-marker/video-marker-controller.h>
 
 
 class VideoSlider : public QWidget
@@ -40,7 +41,7 @@ class VideoSlider : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent = nullptr);
+    explicit VideoSlider(VideoMarkerController *videoMarkerController, QWidget *parent = nullptr);
 
     QSize minimumSizeHint() const override;
 
@@ -61,14 +62,13 @@ public:
     bool getMarkerTypesVisible(const QString& markerType) const;
     void setMarkerTypeVisible(const QString& markerType, bool visible);
 
-    void setSource(const QString &fileName);
-
 signals:
     void valueChanged(int value);
     void sliderPressed(bool pressed);
     void requestThumbnail(int64_t hoverTimestamp);
 
 public slots:
+    void loadVideoMarkers();
     void updateVideoSlider();
     void setValue(int value);
     void setMinimum(int minimum);
@@ -86,11 +86,11 @@ protected:
     QRectF handleRect(int value) const;
 
 private:
+    VideoMarkerController *m_videoMarkerController;
     int validLength() const;
     int valueFromPos(int x) const;
 
-    QString m_source = "";
-    QList<VuraVideoMarker> *m_videoMarkers;
+    QList<VuraVideoMarker> m_videoMarkers;
     float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
     int m_minimum;
     int m_maximum;

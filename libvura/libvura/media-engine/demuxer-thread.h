@@ -30,6 +30,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+
 class DemuxerThread : public QThread {
     Q_OBJECT
 

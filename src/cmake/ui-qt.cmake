@@ -25,11 +25,15 @@ target_sources(
         PRIVATE
         forms/vura.qrc
         forms/AboutDialog.ui
+        forms/AdvancedSettings.ui
+        forms/AssociationsSettings.ui
         forms/ConvertMediaDialog.ui
         forms/ErrorDialog.ui
         forms/FeedbackDialog.ui
+        forms/GeneralSettings.ui
         forms/HelpDialog.ui
-        forms/HotkeyEditWidget.ui
+        forms/HotkeysSettings.ui
+        forms/InterfaceSettings.ui
         forms/LogUploadDialog.ui
         forms/LogViewerDialog.ui
         forms/mainwindow.ui
@@ -38,6 +42,9 @@ target_sources(
         forms/MediaInformationDialog.ui
         forms/MissingFilesDialog.ui
         forms/PermissionsDialog.ui
+        forms/PlaybackSettings.ui
+        forms/PlayerSettings.ui
+        forms/PlaylistSettings.ui
         forms/SettingsDialog.ui
         forms/SettingsWindow.ui
         forms/TitleBar.ui
@@ -46,6 +53,7 @@ target_sources(
         forms/VideoSliderWidget.ui
         forms/VuraMainWindow.ui
         forms/WhatsNewDialog.ui
+        forms/testwindow.ui
 )
 
 # OS-Specific system libraries linking

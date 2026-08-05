@@ -59,8 +59,8 @@ void VideoWidget::initializeGL()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     shaderProgram = new QOpenGLShaderProgram(this);
-    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/vertex.glsl");
-    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragment.glsl");
+    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,   "vertex.glsl");
+    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "fragment.glsl");
     shaderProgram->link();
 
     glGenVertexArrays(1, &vao);
@@ -107,7 +107,8 @@ int64_t VideoWidget::masterClockMs() const
     if (m_audioOutput) {
         // IAudioClock reports how many ms of audio have been sent to the
         // hardware DAC. This is the most accurate sync source available.
-        return m_audioOutput->getPositionMs();
+        //return m_audioOutput->getPositionMs();
+        return (m_audioOutput->getPositionMs() - m_clockAnchorMs) + m_ptsAnchorMs;
     }
 
     // --- Wall clock fallback (video-only) ---
@@ -149,10 +150,13 @@ void VideoWidget::paintGL()
             if (!m_audioOutput) {
                 // Wall-clock mode: record the wall time at this PTS
                 m_clockAnchorMs = m_wallClock.elapsed();
-                m_ptsAnchorMs   = nextPtsMs;
+                //m_ptsAnchorMs   = nextPtsMs;
+            } else {
+                m_clockAnchorMs = m_audioOutput->getPositionMs();
             }
             // Audio-clock mode: no anchor needed — IAudioClock starts at 0
             // and advances as audio is consumed, which naturally matches PTS.
+            m_ptsAnchorMs = nextPtsMs;
             m_clockAnchored = true;
         }
 

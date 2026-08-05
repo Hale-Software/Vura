@@ -39,8 +39,7 @@ static constexpr int    k_channels    = 2;
 static constexpr int    k_bitsPerSamp = 16;          // S16
 
 AudioOutput::AudioOutput(FrameQueue* frameQueue, QObject* parent)
-    : QThread(parent), m_frameQueue(frameQueue)
-{}
+    : QThread(parent), m_frameQueue(frameQueue) {}
 
 AudioOutput::~AudioOutput()
 {
@@ -110,14 +109,14 @@ int64_t AudioOutput::getPositionMs() const
 
     UINT64 pos  = 0;
     UINT64 qpc  = 0;
-    HRESULT hr = m_clock->GetPosition(&pos, &qpc);
+    const HRESULT hr = m_clock->GetPosition(&pos, &qpc);
     if (FAILED(hr)) return 0;
 
     // pos is in units of m_clockFreq ticks per second
     return static_cast<int64_t>((pos * 1000ULL) / m_clockFreq);
 }
 
-void AudioOutput::setPaused(bool paused)
+void AudioOutput::setPaused(const bool paused)
 {
     m_paused = paused;
 }
@@ -165,7 +164,7 @@ void AudioOutput::run()
         HRESULT hr = m_client->GetCurrentPadding(&padding);
         if (FAILED(hr)) break;
 
-        UINT32 available = m_bufferFrames - padding;
+        const UINT32 available = m_bufferFrames - padding;
         if (available == 0) {
             // Buffer is full — sleep for half the buffer duration
             QThread::msleep(10);
@@ -182,7 +181,7 @@ void AudioOutput::run()
         // frame->data[0] contains interleaved S16 stereo PCM
         // frame->nb_samples is the number of sample frames in this AVFrame
         const int frameSamples = frame->nb_samples;
-        const int bytesPerFrame = k_channels * (k_bitsPerSamp / 8);
+        constexpr int bytesPerFrame = k_channels * (k_bitsPerSamp / 8);
 
         // We may need to write in chunks if the AVFrame is larger than
         // the available WASAPI buffer space
@@ -199,7 +198,7 @@ void AudioOutput::run()
                 continue;
             }
 
-            UINT32 toWrite = qMin(canWrite, static_cast<UINT32>(samplesRemaining));
+            const UINT32 toWrite = qMin(canWrite, static_cast<UINT32>(samplesRemaining));
 
             BYTE* dest = nullptr;
             hr = m_render->GetBuffer(toWrite, &dest);

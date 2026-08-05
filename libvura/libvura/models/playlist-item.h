@@ -27,4 +27,5 @@ struct PlaylistItem
     QString filePath;
     qint64 duration; // in milliseconds
     qint64 progress; // current watch position
+    bool isLocalFile = true;
 };

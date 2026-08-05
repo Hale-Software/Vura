@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#include "data/video-markers.h"
+#include "video-marker/video-markers.h"
 
 
 class VuraSettings : public QObject

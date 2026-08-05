@@ -19,15 +19,8 @@
 #include "audio-decoder.h"
 
 
-AudioDecoder::AudioDecoder(PacketQueue*       packetQueue,
-                           FrameQueue*        frameQueue,
-                           AVCodecParameters* codecParams,
-                           QObject*           parent)
-    : QThread(parent)
-    , m_packetQueue(packetQueue)
-    , m_frameQueue(frameQueue)
-    , m_codecParams(codecParams)
-{}
+AudioDecoder::AudioDecoder(PacketQueue* packetQueue, FrameQueue* frameQueue, AVCodecParameters* codecParams, QObject* parent)
+    : QThread(parent), m_packetQueue(packetQueue), m_frameQueue(frameQueue), m_codecParams(codecParams) {}
 
 AudioDecoder::~AudioDecoder()
 {
@@ -36,13 +29,9 @@ AudioDecoder::~AudioDecoder()
     m_frameQueue->abort();
     wait();
 
-    if (m_swrContext)   { swr_free(&m_swrContext);             }
+    if (m_swrContext) { swr_free(&m_swrContext); }
     if (m_codecContext) { avcodec_free_context(&m_codecContext); }
 }
-
-// ---------------------------------------------------------------------------
-// Initialisation
-// ---------------------------------------------------------------------------
 
 bool AudioDecoder::initDecoder()
 {
@@ -76,9 +65,9 @@ bool AudioDecoder::initResampler()
     // Input layout: take it from the codec context.
     // FFmpeg 5.1+ uses AVChannelLayout; we use the legacy ch_layout field
     // which is available in both old and new API.
-    AVChannelLayout outLayout = AV_CHANNEL_LAYOUT_STEREO;
+    constexpr AVChannelLayout outLayout = AV_CHANNEL_LAYOUT_STEREO;
 
-    int ret = swr_alloc_set_opts2(
+    const int ret = swr_alloc_set_opts2(
         &m_swrContext,
         &outLayout,                    // output channel layout
         k_outFmt,                      // output sample format (S16)
@@ -107,11 +96,7 @@ bool AudioDecoder::initResampler()
     return true;
 }
 
-// ---------------------------------------------------------------------------
-// Resampling
-// ---------------------------------------------------------------------------
-
-AVFrame* AudioDecoder::resampleFrame(AVFrame* input)
+AVFrame* AudioDecoder::resampleFrame(const AVFrame * input) const
 {
     AVFrame* out = av_frame_alloc();
     out->format         = k_outFmt;
@@ -119,7 +104,7 @@ AVFrame* AudioDecoder::resampleFrame(AVFrame* input)
     out->ch_layout      = AV_CHANNEL_LAYOUT_STEREO;
 
     // Calculate how many output samples we'll produce
-    int outSamples = static_cast<int>(
+    const int outSamples = static_cast<int>(
         av_rescale_rnd(swr_get_delay(m_swrContext, input->sample_rate) + input->nb_samples,
                        k_outSampleRate, input->sample_rate, AV_ROUND_UP)
     );
@@ -133,7 +118,7 @@ AVFrame* AudioDecoder::resampleFrame(AVFrame* input)
     }
 
     // Convert
-    int converted = swr_convert(
+    const int converted = swr_convert(
         m_swrContext,
         out->data, outSamples,
         const_cast<const uint8_t**>(input->data), input->nb_samples
@@ -149,16 +134,10 @@ AVFrame* AudioDecoder::resampleFrame(AVFrame* input)
 
     // Carry the PTS through (rescaled to the output sample rate's timebase)
     // so AudioOutput's IAudioClock can be cross-checked if needed.
-    out->pts = av_rescale_q(input->pts,
-                            m_codecContext->time_base,
-                            AVRational{1, k_outSampleRate});
+    out->pts = av_rescale_q(input->pts, m_codecContext->time_base, AVRational{1, k_outSampleRate});
 
     return out;
 }
-
-// ---------------------------------------------------------------------------
-// Run loop
-// ---------------------------------------------------------------------------
 
 void AudioDecoder::run()
 {
@@ -179,7 +158,7 @@ void AudioDecoder::run()
             continue;
         }
 
-        int ret = avcodec_send_packet(m_codecContext, packet);
+        const int ret = avcodec_send_packet(m_codecContext, packet);
         av_packet_free(&packet);
 
         if (ret < 0 && ret != AVERROR(EAGAIN)) {
