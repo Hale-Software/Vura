@@ -35,4 +35,3 @@
 
 # Exclude CMake build number cache
 /cmake/.CMakeBuildNumber
-deps/ffmpeg/bin/avfilter-11.dll

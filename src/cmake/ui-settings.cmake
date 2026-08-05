@@ -1,9 +1,21 @@
 target_sources(
         vura PRIVATE
-        settings/HotkeyEditWidget.cpp
-        settings/HotkeyEditWidget.h
-        settings/SettingsDialog.cpp
-        settings/SettingsDialog.h
+        settings/AdvancedSettings.cpp
+        settings/AdvancedSettings.h
+        settings/AssociationsSettings.cpp
+        settings/AssociationsSettings.h
+        settings/GeneralSettings.cpp
+        settings/GeneralSettings.h
+        settings/HotkeysSettings.cpp
+        settings/HotkeysSettings.h
+        settings/InterfaceSettings.cpp
+        settings/InterfaceSettings.h
+        settings/PlaybackSettings.cpp
+        settings/PlaybackSettings.h
+        settings/PlayerSettings.cpp
+        settings/PlayerSettings.h
+        settings/PlaylistSettings.cpp
+        settings/PlaylistSettings.h
         settings/SettingsWindow.cpp
         settings/SettingsWindow.h
 )
