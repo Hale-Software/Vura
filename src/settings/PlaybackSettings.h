@@ -1,11 +1,10 @@
-//
-// Created by halea on 8/5/2026.
-//
-
-#ifndef VURA_PLAYBACKSETTINGS_H
-#define VURA_PLAYBACKSETTINGS_H
+#pragma once
 
 #include <QWidget>
+#include <QSettings>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QDebug>
 
 
 QT_BEGIN_NAMESPACE
@@ -22,9 +21,18 @@ public:
     explicit PlaybackSettings(QWidget *parent = nullptr);
     ~PlaybackSettings() override;
 
+    bool unsavedChanges();
+
+signals:
+    void settingsChanged();
+    void requiresRestart();
+
+public slots:
+    void resetToDefaults();
+    void saveSettings();
+
 private:
     Ui::PlaybackSettings *ui;
+    bool m_unsavedChanges = false;
+
 };
-
-
-#endif //VURA_PLAYBACKSETTINGS_H

@@ -16,6 +16,6 @@ target_sources(
         settings/PlayerSettings.h
         settings/PlaylistSettings.cpp
         settings/PlaylistSettings.h
-        settings/SettingsWindow.cpp
-        settings/SettingsWindow.h
+        settings/SettingsDialog.cpp
+        settings/SettingsDialog.h
 )

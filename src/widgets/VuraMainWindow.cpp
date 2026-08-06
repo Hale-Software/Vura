@@ -695,7 +695,7 @@ void VuraMainWindow::actionShowSettings()
     if (m_settingsWindow)
         m_settingsWindow->close();
 
-    m_settingsWindow = new SettingsWindow(this);
+    m_settingsWindow = new SettingsDialog(this);
     m_settingsWindow->show();
     m_settingsWindow->setAttribute(Qt::WA_DeleteOnClose, true);
 }

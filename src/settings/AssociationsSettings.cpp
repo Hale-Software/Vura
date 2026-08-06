@@ -1,10 +1,4 @@
-//
-// Created by halea on 8/5/2026.
-//
-
-// You may need to build the project (run Qt uic code generator) to get "ui_AssociationsSettings.h" resolved
-
-#include "associationssettings.h"
+#include "AssociationsSettings.h"
 #include "ui_AssociationsSettings.h"
 
 
@@ -16,4 +10,19 @@ AssociationsSettings::AssociationsSettings(QWidget *parent) : QWidget(parent), u
 AssociationsSettings::~AssociationsSettings()
 {
     delete ui;
+}
+
+bool AssociationsSettings::unsavedChanges()
+{
+    return m_unsavedChanges;
+}
+
+void AssociationsSettings::resetToDefaults()
+{
+
+}
+
+void AssociationsSettings::saveSettings()
+{
+
 }

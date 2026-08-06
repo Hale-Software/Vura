@@ -1,11 +1,8 @@
-//
-// Created by halea on 8/5/2026.
-//
-
-#ifndef VURA_PLAYLISTSETTINGS_H
-#define VURA_PLAYLISTSETTINGS_H
+#pragma once
 
 #include <QWidget>
+#include <QSettings>
+#include <QDebug>
 
 
 QT_BEGIN_NAMESPACE
@@ -22,9 +19,18 @@ public:
     explicit PlaylistSettings(QWidget *parent = nullptr);
     ~PlaylistSettings() override;
 
+    bool unsavedChanges();
+
+signals:
+    void settingsChanged();
+    void requiresRestart();
+
+public slots:
+    void resetToDefaults();
+    void saveSettings();
+
 private:
     Ui::PlaylistSettings *ui;
+    bool m_unsavedChanges = false;
+
 };
-
-
-#endif //VURA_PLAYLISTSETTINGS_H

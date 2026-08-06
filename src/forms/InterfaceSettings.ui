@@ -1,22 +1,244 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <author/>
-    <comment/>
-    <exportmacro/>
-    <class>InterfaceSettings</class>
-    <widget class="QWidget" name="InterfaceSettings">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>400</width>
-                <height>300</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>InterfaceSettings</string>
-        </property>
+ <class>InterfaceSettings</class>
+ <widget class="QWidget" name="InterfaceSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>582</width>
+    <height>437</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>InterfaceSettings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <pointsize>16</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Interface Settings</string>
+     </property>
     </widget>
-    <pixmapfunction/>
-    <connections/>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>12</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>-136</y>
+        <width>566</width>
+        <height>540</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Appearance</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Current Theme:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="currentTheme"/>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Dynamic themes are loaded from JSON files. Re-skin the entire application.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="rememberWindowSize">
+            <property name="text">
+             <string>Remember Window Size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="showPlaylistOnStart">
+            <property name="text">
+             <string>Show Playlist on Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QCheckBox" name="showVideoControlsOnStart">
+            <property name="text">
+             <string>Show Video Controls on Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QCheckBox" name="showStatusBarOnStart">
+            <property name="text">
+             <string>Show Status Bar on Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>180</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Video Slider</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0" colspan="2">
+           <widget class="QCheckBox" name="autohideSlider">
+            <property name="text">
+             <string>Autohide Slider When Video is Playing</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="unhideSliderOnHotkey">
+            <property name="text">
+             <string>Unhide Slider on Hotkey Press</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Slider Autohide Timer (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="sliderAutohideTimer"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Slider Height:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="sliderHeight"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Video Marker Height:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="videoMarkerHeight"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Video Marker Width:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="videoMarkerWidth"/>
+          </item>
+          <item row="8" column="0">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>180</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Video Marker Side Length:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="videoMarkerSideLength"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpinBoxIgnoreWheel</class>
+   <extends>QSpinBox</extends>
+   <header location="global">SpinBoxIgnoreWheel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
 </ui>

@@ -1,11 +1,8 @@
-//
-// Created by halea on 8/5/2026.
-//
-
-#ifndef VURA_HOTKEYSSETTINGS_H
-#define VURA_HOTKEYSSETTINGS_H
+#pragma once
 
 #include <QWidget>
+#include <QSettings>
+#include <QDebug>
 
 
 QT_BEGIN_NAMESPACE
@@ -22,9 +19,18 @@ public:
     explicit HotkeysSettings(QWidget *parent = nullptr);
     ~HotkeysSettings() override;
 
+    bool unsavedChanges();
+
+signals:
+    void settingsChanged();
+    void requiresRestart();
+
+public slots:
+    void resetToDefaults();
+    void saveSettings();
+
 private:
     Ui::HotkeysSettings *ui;
+    bool m_unsavedChanges = false;
+
 };
-
-
-#endif //VURA_HOTKEYSSETTINGS_H

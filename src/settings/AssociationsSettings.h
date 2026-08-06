@@ -1,11 +1,8 @@
-//
-// Created by halea on 8/5/2026.
-//
-
-#ifndef VURA_ASSOCIATIONSSETTINGS_H
-#define VURA_ASSOCIATIONSSETTINGS_H
+#pragma once
 
 #include <QWidget>
+#include <QSettings>
+#include <QDebug>
 
 
 QT_BEGIN_NAMESPACE
@@ -22,9 +19,18 @@ public:
     explicit AssociationsSettings(QWidget *parent = nullptr);
     ~AssociationsSettings() override;
 
+    bool unsavedChanges();
+
+signals:
+    void settingsChanged();
+    void requiresRestart();
+
+public slots:
+    void resetToDefaults();
+    void saveSettings();
+
 private:
     Ui::AssociationsSettings *ui;
+    bool m_unsavedChanges = false;
+
 };
-
-
-#endif //VURA_ASSOCIATIONSSETTINGS_H
