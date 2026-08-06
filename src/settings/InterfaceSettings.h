@@ -23,6 +23,8 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QColorDialog>
+#include <QPushButton>
 #include <QDebug>
 
 
@@ -49,6 +51,36 @@ signals:
 public slots:
     void resetToDefaults();
     void saveSettings();
+
+private slots:
+    void emptySliderColor_TextChanged(const QString &text);
+    void emptySliderColorBrowse_Clicked();
+    void stripMarkerColor_TextChanged(const QString &text);
+    void stripMarkerColorBrowse_Clicked();
+    void dialogMarkerColor_TextChanged(const QString &text);
+    void dialogMarkerColorBrowse_Clicked();
+    void cyanMarkerColor_TextChanged(const QString &text);
+    void cyanMarkerColorBrowse_Clicked();
+    void magentaMarkerColor_TextChanged(const QString &text);
+    void magentaMarkerColorBrowse_Clicked();
+    void orangeMarkerColor_TextChanged(const QString &text);
+    void orangeMarkerColorBrowse_Clicked();
+    void fullSliderColor_TextChanged(const QString &text);
+    void fullSliderColorBrowse_Clicked();
+    void caretColor_TextChanged(const QString &text);
+    void caretColorBrowse_Clicked();
+    void backgroundTrackColor_TextChanged(const QString &text);
+    void backgroundTrackColorBrowse_Clicked();
+    void progressFillColor_TextChanged(const QString &text);
+    void progressFillColorBrowse_Clicked();
+    void handlePlayheadColor_TextChanged(const QString &text);
+    void handlePlayheadColorBrowse_Clicked();
+    void markerColor_TextChanged(const QString &text);
+    void markerColorBrowse_Clicked();
+    void sceneMarkerColor_TextChanged(const QString &text);
+    void sceneMarkerColorBrowse_Clicked();
+    void cumshotMarkerColor_TextChanged(const QString &text);
+    void cumshotMarkerColorBrowse_Clicked();
 
 private:
     Ui::InterfaceSettings *ui;

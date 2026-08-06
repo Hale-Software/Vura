@@ -61,7 +61,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-26</y>
+        <y>-40</y>
         <width>566</width>
         <height>428</height>
        </rect>
@@ -133,7 +133,11 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="extraLargeJump"/>
+           <widget class="SpinBoxIgnoreWheel" name="extraLargeJump">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_6">
@@ -143,7 +147,11 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="largeJump"/>
+           <widget class="SpinBoxIgnoreWheel" name="largeJump">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_7">
@@ -153,7 +161,11 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="mediumJump"/>
+           <widget class="SpinBoxIgnoreWheel" name="mediumJump">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_8">
@@ -163,7 +175,11 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="smallJump"/>
+           <widget class="SpinBoxIgnoreWheel" name="smallJump">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_9">
@@ -173,7 +189,11 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="extraSmallJump"/>
+           <widget class="SpinBoxIgnoreWheel" name="extraSmallJump">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_10">
@@ -183,7 +203,11 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="jumpToEndPercentage"/>
+           <widget class="SpinBoxIgnoreWheel" name="jumpToEndPercentage">
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+           </widget>
           </item>
           <item row="6" column="0">
            <spacer name="horizontalSpacer_2">

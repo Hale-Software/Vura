@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QSettings>
 #include <QPainter>
 #include <QPaintEvent>
 #include <QColor>
@@ -104,14 +105,6 @@ private:
     bool m_showingSceneMarkers;
     bool m_showingStripMarkers;
     bool m_sliderPressed;
-    QColor m_emptySliderColor;
-    QColor m_fullSliderColor;
-    QColor m_caretColor;
-    QColor m_markerColor;
-    QColor m_sceneMarkerColor;
-    QColor m_cumshotMarkerColor;
-    QColor m_stripMarkerColor;
-    QColor m_dialogMarkerColor;
     int m_delta;
     int m_interval;
     double m_sliderBarHeightValue;

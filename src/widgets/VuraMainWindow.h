@@ -53,6 +53,8 @@
 #include <QInputDialog>
 #include <QDebug>
 
+#include <algorithm>
+
 #include <libvura/libvura.h>
 #include <libvura/constants.h>
 #include <libvura/logging/logger.h>
@@ -105,6 +107,7 @@ class VuraMainWindow : public QMainWindow
 public:
     explicit VuraMainWindow(QWidget *parent = nullptr);
 
+    void setConnections();
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
     void openFolder(const QString &path) const;
@@ -136,16 +139,16 @@ private slots:
     void actionToggleVideoControls();
     void populateAudioDevicesMenu();
 
-    void actionViewToggleStatusBar();
+    void actionViewToggleStatusBar() const;
 
-    void actionMarkersAddCumshotMarker();
-    void actionMarkersAddCyanMarker();
-    void actionMarkersAddDialogMarker();
-    void actionMarkersAddMagentaMarker();
-    void actionMarkersAddMarker();
-    void actionMarkersAddOrangeMarker();
-    void actionMarkersAddSceneMarker();
-    void actionMarkersAddStripMarker();
+    void actionMarkersAddCumshotMarker() const;
+    void actionMarkersAddCyanMarker() const;
+    void actionMarkersAddDialogMarker() const;
+    void actionMarkersAddMagentaMarker() const;
+    void actionMarkersAddMarker() const;
+    void actionMarkersAddOrangeMarker() const;
+    void actionMarkersAddSceneMarker() const;
+    void actionMarkersAddStripMarker() const;
     void actionMarkersClearIn();
     void actionMarkersClearInOut();
     void actionMarkersClearMarkers();
@@ -153,14 +156,14 @@ private slots:
     void actionMarkersClearSelectedMarker();
     void actionMarkersEditSelectedMarker();
     void actionMarkersGoToIn();
-    void actionMarkersGoToNextMarker();
+    void actionMarkersGoToNextMarker() const;
     void actionMarkersGoToOut();
-    void actionMarkersGoToPreviousMarker();
+    void actionMarkersGoToPreviousMarker() const;
     void actionMarkersMarkIn();
     void actionMarkersMarkOut();
 
-    void actionRendererVideoWidget_toggled(bool checked);
-    void actionRendererOpenGLWidget_toggled(bool checked);
+    void actionRendererVideoWidget_toggled(bool checked) const;
+    void actionRendererOpenGLWidget_toggled(bool checked) const;
 
     void actionHelpCheckForUpdates();
 
@@ -179,8 +182,6 @@ public slots:
 private:
     Ui::VuraMainWindow *ui;
 
-    bool autohideSlider = false;
-
     void initializeVideoWidget();
     void initializeVuraMediaEngine();
 
@@ -191,9 +192,11 @@ private:
     void updateMarkerMenuItems();
     VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
     double getSliderPercent() const;
-    bool checkMarkerProximity();
-    bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker);
-    bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker);
+    bool checkMarkerProximity() const;
+    bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker) const;
+    bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker) const;
+
+    void configureUpdater();
 
     QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
@@ -209,12 +212,12 @@ private:
     QPointer<HelpDialog> m_helpDialog;
     QPointer<AboutDialog> m_aboutDialog;
     QPointer<UpdateDialog> m_updateDialog;
-    QPointer<SettingsDialog> m_settingsWindow;
+    QPointer<SettingsDialog> m_settingsDialog;
     QPointer<FeedbackDialog> m_feedbackDialog;
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
 
-    QTimer *m_videoSliderHideTimer;
+    QTimer *m_videoSliderHideTimer = nullptr;
     QMediaDevices m_mediaDevices;
     QString m_trackInfo;
     QString m_statusInfo;
@@ -223,7 +226,7 @@ private:
     bool m_wasPlaylistShowing = false;
     int m_inMarker = 0;
     int m_outMarker = 0;
-    PlaybackState m_currentPlaybackState = PlaybackState::Stopped;
+    PlaybackState m_currentPlaybackState = Stopped;
 
     VuraMediaEngine *m_openGLWidget = nullptr;
     CrashReporter *m_crashReporter = nullptr;

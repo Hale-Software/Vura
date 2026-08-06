@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSettings>
 #include <QWidget>
 #include <QStackedWidget>
 #include <QMediaPlayer>
@@ -95,7 +96,7 @@ signals:
     void jumpCompleted();
 
 private slots:
-    void mediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void mediaStatusChanged(QMediaPlayer::MediaStatus status) const;
     void videoWidgetStateChanged(QMediaPlayer::PlaybackState state);
 
 private:

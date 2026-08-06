@@ -18,15 +18,6 @@
 
 #include "VideoSlider.h"
 
-namespace {
-constexpr int m_sliderBarHeight = 5;
-constexpr int m_markerHeight = 10;
-constexpr int m_markerWidth = 2;
-constexpr int m_indicatorSideLength = 14;
-constexpr int m_leftRightMargin = 1;
-constexpr int m_bottomMargin = 8;
-}
-
 
 VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *parent)
     : QWidget(parent),
@@ -42,15 +33,7 @@ VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *
     m_showingOrangeMarkers(true),
     m_showingSceneMarkers(true),
     m_showingStripMarkers(true),
-    m_sliderPressed(false),
-    m_emptySliderColor(QColor(0xD0, 0xD0, 0xD0)),
-    m_fullSliderColor(QColor(0, 217, 255)),
-    m_caretColor(QColor(0xFA, 0xFA, 0xFA)),
-    m_markerColor(QColor()),
-    m_sceneMarkerColor(QColor()),
-    m_cumshotMarkerColor(QColor()),
-    m_stripMarkerColor(QColor()),
-    m_dialogMarkerColor(QColor())
+    m_sliderPressed(false)
 {
     setMouseTracking(true);
     this->setFixedHeight(20);
@@ -58,83 +41,103 @@ VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *
 
 void VideoSlider::paintEvent(QPaintEvent *event)
 {
+    QSettings settings;
+    int sliderHeight = settings.value("sliderHeight", 6).toInt();
+    int videoMarkerHeight = settings.value("videoMarkerHeight", 10).toInt();
+    int videoMarkerWidth = settings.value("videoMarkerWidth", 2).toInt();
+    int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
+    int videoMarkerVerticalMargin = settings.value("videoMarkerVerticalMargin", 0).toInt();
+    int handleRadius = settings.value("sliderHandleRadius", 8).toInt();
+    int padding = handleRadius + settings.value("sliderPadding", 2).toInt();
+    int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
+
+    QString emptySliderColor = settings.value("emptySliderColor", "#000000").toString();
+    QString fullSliderColor = settings.value("fullSliderColor", "#00d9ff").toString();
+    QString caretColor = settings.value("carretColor", "#ffffff").toString();
+    QString backgroundTrackColor = settings.value("backgroundTrackColor", "#323232").toString();
+    QString progressFillColor = settings.value("progressFillColor", "#0076d7").toString();
+    QString handlePlayheadColor = settings.value("handlePlayheadColor", "#ffffff").toString();
+    QString markerColor = settings.value("markerColor", "#03c200").toString();
+    QString sceneMarkerColor = settings.value("sceneMarkerColor", "#000eab").toString();
+    QString cumshotMarkerColor = settings.value("cumshotMarkerColor", "#ffffff").toString();
+    QString stripMarkerColor = settings.value("stripMarkerColor", "#cf0202").toString();
+    QString dialogMarkerColor = settings.value("dialogMarkerColor", "#e0f500").toString();
+    QString cyanMarkerColor = settings.value("cyanMarkerColor", "#00edf5").toString();
+    QString magentaMarkerColor = settings.value("magentaMarkerColor", "#f5007e").toString();
+    QString orangeMarkerColor = settings.value("orangeMarkerColor", "#f56a00").toString();
+
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    constexpr int trackHeight = 6;
-    constexpr int handleRadius = 8;
     const int yCenter = height() / 2;
-    constexpr int padding = handleRadius + 2;
     const int trackWidth = width() - (padding * 2);
 
     // Draw the Background Track
-    const QRectF bgRect(padding, yCenter - (trackHeight / 2.0), trackWidth, trackHeight);
+    const QRectF bgRect(padding, yCenter - (sliderHeight / 2.0), trackWidth, sliderHeight);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(50, 50, 50));
-    painter.drawRoundedRect(bgRect, trackHeight / 2.0, trackHeight / 2.0);
+    painter.setBrush(QColor(backgroundTrackColor));
+    painter.drawRoundedRect(bgRect, sliderHeight / 2.0, sliderHeight / 2.0);
 
     // Draw the Progress Fill
     const float fillWidth = trackWidth * m_sliderPercent;
-    const QRectF fillRect(padding, yCenter - (trackHeight / 2.0), fillWidth, trackHeight);
-    painter.setBrush(QColor(0, 120, 215));
-    painter.drawRoundedRect(fillRect, trackHeight / 2.0, trackHeight / 2.0);
+    const QRectF fillRect(padding, yCenter - (sliderHeight / 2.0), fillWidth, sliderHeight);
+    painter.setBrush(QColor(progressFillColor));
+    painter.drawRoundedRect(fillRect, sliderHeight / 2.0, sliderHeight / 2.0);
 
     // Draw the Handle / Playhead
     const float handleX = padding + fillWidth;
-    painter.setBrush(Qt::white);
-    // Add a subtle border to the handle
-    // painter.setPen(QPen(QColor(200, 200, 200), 1));
+    painter.setBrush(handlePlayheadColor);
     painter.drawEllipse(QPointF(handleX, yCenter), handleRadius, handleRadius);
 
     // Draw Markers
     for (const VuraVideoMarker &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::green, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(markerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::blue, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(sceneMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::white, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(cumshotMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "strip" && m_showingStripMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::red, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(stripMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::yellow, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(dialogMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::cyan, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(cyanMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::magenta, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(magentaMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
             if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
-                painter.setPen(QPen(Qt::darkYellow, m_markerWidth));
-                const int x = (marker.timestamp * validLength() + m_leftRightMargin) + (m_indicatorSideLength / 2);
-                painter.drawLine(x, 0, x, m_markerHeight);
+                painter.setPen(QPen(QColor(orangeMarkerColor), videoMarkerWidth));
+                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         }
     }
@@ -167,22 +170,30 @@ void VideoSlider::mouseReleaseEvent(QMouseEvent *event)
 
 QRectF VideoSlider::carrotHandleRect() const
 {
+    const QSettings settings;
+    const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
+
     const double distanceFromMin = (GetValue() - GetMinimun());
     const double sliderRange = (GetMaximun() - GetMinimun());
     const double sliderPercent = (distanceFromMin / sliderRange);
 
-    return handleRect(sliderPercent * validLength() + m_leftRightMargin);
+    return handleRect(sliderPercent * validLength() + sliderLeftRightMargin);
 }
 
 QRectF VideoSlider::handleRect(const int value) const
 {
-    return QRect(value, ((m_sliderBarHeightValue + m_indicatorSideLength) / 2)-3, m_indicatorSideLength, m_indicatorSideLength);
+    const QSettings settings;
+    const int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
+    return QRect(value, ((m_sliderBarHeightValue + videoMarkerSideLength) / 2)-3, videoMarkerSideLength, videoMarkerSideLength);
 }
 
 int VideoSlider::validLength() const
 {
+    const QSettings settings;
+    const int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
+    const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
     const int len = width();
-    return len - m_leftRightMargin * 2 - m_indicatorSideLength * (1);
+    return len - sliderLeftRightMargin * 2 - videoMarkerSideLength * (1);
 }
 
 int VideoSlider::valueFromPos(const int x) const
@@ -193,7 +204,10 @@ int VideoSlider::valueFromPos(const int x) const
 
 QSize VideoSlider::minimumSizeHint() const
 {
-    return {m_indicatorSideLength * 2 + m_leftRightMargin * 2, m_indicatorSideLength};
+    const QSettings settings;
+    int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
+    const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
+    return {videoMarkerSideLength * 2 + sliderLeftRightMargin * 2, videoMarkerSideLength};
 }
 
 int VideoSlider::GetMinimun() const

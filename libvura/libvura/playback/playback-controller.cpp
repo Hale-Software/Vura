@@ -19,14 +19,11 @@
 #include "playback-controller.h"
 
 
-PlaybackController::PlaybackController(QStackedWidget* container, QObject* parent, const int volume, const double playbackRate) :
-    QObject(parent),
+PlaybackController::PlaybackController(QStackedWidget* container, QObject* parent, const int volume, const double playbackRate)
+    : QObject(parent),
     m_container(container),
     m_volume(volume),
-    m_playbackRate(playbackRate)
-{
-
-}
+    m_playbackRate(playbackRate) {}
 
 PlaybackController::~PlaybackController()
 {
@@ -211,7 +208,7 @@ void PlaybackController::togglePlayPause() const
             m_player->play();
         }
     } else {
-        if (m_openGLWidget->currentState() == PlaybackState::Playing) {
+        if (m_openGLWidget->currentState() == Playing) {
             m_openGLWidget->pause();
         } else {
             m_openGLWidget->play();
@@ -243,7 +240,7 @@ void PlaybackController::stop() const
             m_player->stop();
         }
     } else {
-        if (m_openGLWidget->currentState() != PlaybackState::Stopped) {
+        if (m_openGLWidget->currentState() != Stopped) {
             m_openGLWidget->stop();
         }
     }
@@ -295,16 +292,20 @@ void PlaybackController::changeVolume(const int newVolume) const
 
 void PlaybackController::volumeUp() const
 {
+    QSettings settings;
+    double volumeStep = settings.value("volumeStep", 0.1).toDouble();
     const float currentVolume = m_audioOutput->volume();
     if (currentVolume >= 1.0) return;
-    m_audioOutput->setVolume(currentVolume + 0.1);
+    m_audioOutput->setVolume(currentVolume + volumeStep);
 }
 
 void PlaybackController::volumeDown() const
 {
+    QSettings settings;
+    double volumeStep = settings.value("volumeStep", 0.1).toDouble();
     const float currentVolume = m_audioOutput->volume();
     if (currentVolume <= 0.1) return;
-    m_audioOutput->setVolume(currentVolume - 0.1);
+    m_audioOutput->setVolume(currentVolume - volumeStep);
 }
 
 void PlaybackController::toggleMute() const
@@ -367,55 +368,75 @@ void PlaybackController::jumpBackward(qint64 mseconds)
 
 void PlaybackController::jumpForwardExtraLarge()
 {
-    jumpForward(120000);
+    const QSettings settings;
+    const int jump = settings.value("extraLargeJump", 90).toInt();
+    jumpForward(jump * 1000);
 }
 
 void PlaybackController::jumpBackwardExtraLarge()
 {
-    jumpBackward(120000);
+    const QSettings settings;
+    const int jump = settings.value("extraLargeJump", 90).toInt();
+    jumpBackward(jump * 1000);
 }
 
 void PlaybackController::jumpForwardLarge()
 {
-    jumpForward(60000);
+    const QSettings settings;
+    const int jump = settings.value("largeJump", 30).toInt();
+    jumpForward(jump * 1000);
 }
 
 void PlaybackController::jumpBackwardLarge()
 {
-    jumpBackward(60000);
+    const QSettings settings;
+    const int jump = settings.value("largeJump", 30).toInt();
+    jumpBackward(jump * 1000);
 }
 
 void PlaybackController::jumpForwardMedium()
 {
-    jumpForward(30000);
+    const QSettings settings;
+    const int jump = settings.value("mediumJump", 15).toInt();
+    jumpForward(jump * 1000);
 }
 
 void PlaybackController::jumpBackwardMedium()
 {
-    jumpBackward(30000);
+    const QSettings settings;
+    const int jump = settings.value("mediumJump", 15).toInt();
+    jumpBackward(jump * 1000);
 }
 
 void PlaybackController::jumpForwardSmall()
 {
-    jumpForward(15000);
+    const QSettings settings;
+    const int jump = settings.value("smallJump", 5).toInt();
+    jumpForward(jump * 1000);
 }
 
 void PlaybackController::jumpBackwardSmall()
 {
-    jumpBackward(15000);
+    const QSettings settings;
+    const int jump = settings.value("smallJump", 5).toInt();
+    jumpBackward(jump * 1000);
 }
 
 void PlaybackController::jumpForwardExtraSmall()
 {
-    jumpForward(5000);
+    const QSettings settings;
+    const int jump = settings.value("extraSmallJump", 1).toInt();
+    jumpForward(jump * 1000);
 }
 
 void PlaybackController::jumpBackwardExtraSmall()
 {
-    jumpBackward(5000);
+    const QSettings settings;
+    const int jump = settings.value("extraSmallJump", 1).toInt();
+    jumpBackward(jump * 1000);
 }
 
-void PlaybackController::mediaStatusChanged(QMediaPlayer::MediaStatus status)
+void PlaybackController::mediaStatusChanged(const QMediaPlayer::MediaStatus status) const
 {
     if (status == QMediaPlayer::NoMedia) {
         m_container->setCurrentIndex(0);
@@ -428,13 +449,13 @@ void PlaybackController::mediaStatusChanged(QMediaPlayer::MediaStatus status)
     }
 }
 
-void PlaybackController::videoWidgetStateChanged(QMediaPlayer::PlaybackState state)
+void PlaybackController::videoWidgetStateChanged(const QMediaPlayer::PlaybackState state)
 {
     if (state == QMediaPlayer::StoppedState) {
-        emit stateChanged(PlaybackState::Stopped);
+        emit stateChanged(Stopped);
     } else if (state == QMediaPlayer::PausedState) {
-        emit stateChanged(PlaybackState::Paused);
+        emit stateChanged(Paused);
     } else if (state == QMediaPlayer::PlayingState) {
-        emit stateChanged(PlaybackState::Playing);
+        emit stateChanged(Playing);
     }
 }

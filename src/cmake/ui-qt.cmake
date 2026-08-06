@@ -29,7 +29,6 @@ target_sources(
         forms/ErrorDialog.ui
         forms/FeedbackDialog.ui
         forms/HelpDialog.ui
-        forms/HotkeyEditWidget.ui
         forms/LogUploadDialog.ui
         forms/LogViewerDialog.ui
         forms/mainwindow.ui
