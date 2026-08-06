@@ -1,8 +1,27 @@
 # ============================================================================
-# NSIS Installer Script for Custom Qt/FFmpeg Media Player
+# NSIS Installer Script for Vura (Qt/FFmpeg Media Player)
+# ============================================================================
+# Refactor notes (see accompanying summary for full details):
+#   - File-association registration/unregistration is now driven from ONE
+#     list per category (macros ending in _FILE_ASSOCS below). Each line is
+#     the single source of truth for that extension: it is used to both
+#     generate the installer's per-extension checkbox AND to remove that
+#     exact registration on uninstall. There is no second place to keep in
+#     sync, which was the root cause of two bugs in the previous version:
+#       1. Every association wrote its Capabilities\FileAssociations value
+#          under the literal name "." instead of the extension, so only the
+#          last-registered extension ever showed up in Windows' Default Apps.
+#       2. The uninstaller only knew how to remove ~25 of the ~60 registered
+#          ProgIDs, leaving orphaned registry entries after uninstall.
+#   - SetShellVarContext all added so Start Menu/Desktop shortcuts are
+#     written to (and removed from) the all-users location, matching the
+#     all-users $PROGRAMFILES64 install dir.
+#   - "Launch Vura" on the finish page now launches de-elevated (via the
+#     explorer.exe relay trick) instead of inheriting the installer's admin
+#     token, since a media player has no reason to run elevated.
+#   - APP_NAME is used consistently instead of a hardcoded "Vura" string.
 # ============================================================================
 
-# Handle setting application version being passed from command line or default to 0.0.0-dev
 !ifndef VERSION
   !define VERSION "0.0.0-dev"
 !endif
@@ -10,21 +29,18 @@
 !define APP_NAME "Vura"
 !define COMP_NAME "Hale Software"
 !define EXE_NAME "vura.exe"
+!define PROG_ID_PREFIX "CustomMediaPlayer.AssocFile"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
-# Define installer name and compression type
 Name "${APP_NAME}"
 OutFile "vura-${VERSION}-windows.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 SetCompressor /SOLID lzma
 
-# Request administrative execution level for Windows privileges
 RequestExecutionLevel admin
 
-# Variables
 Var StartMenuFolder
 
-# Include modern user interface design elements
 !include "MUI2.nsh"
 
 # Interface Settings
@@ -33,20 +49,18 @@ Var StartMenuFolder
 !define MUI_ICON "vura.ico"
 !define MUI_UNICON "vura.ico"
 
-# Remember the installed language for future uninstalls
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
-!define MUI_LANGDLL_REGISTRY_KEY "Software\Vura"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\${APP_NAME}"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
-# Page layout definitions
+# Page layout
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "license.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 
-# Start Menu Folder Page Configuration
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU"
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Vura"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\${APP_NAME}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 
@@ -54,6 +68,7 @@ Var StartMenuFolder
 
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE_NAME}"
 !define MUI_FINISHPAGE_RUN_TEXT "Launch Vura"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchAppUnelevated"
 
 !insertmacro MUI_PAGE_FINISH
 
@@ -68,99 +83,155 @@ Var StartMenuFolder
 !insertmacro MUI_LANGUAGE "German"
 
 # ============================================================================
-# FILE ASSOCIATION HANDLERS
+# INIT — make sure all-users shell folders are used for shortcuts, both for
+# install and uninstall (fixes shortcuts being written to the invoking
+# admin's per-user Start Menu/Desktop instead of the all-users one).
 # ============================================================================
+Function .onInit
+    SetShellVarContext all
+FunctionEnd
 
-# Application File Association Program IDs (ProgIDs) for Windows
-!define PROG_ID_VHK "CustomMediaPlayer.AssocFile.VHK"
-!define PROG_ID_VPL "CustomMediaPlayer.AssocFile.VPL"
-!define PROG_ID_VPRJ "CustomMediaPlayer.AssocFile.VPRJ"
-!define PROG_ID_VVM "CustomMediaPlayer.AssocFile.VVM"
+Function un.onInit
+    SetShellVarContext all
+FunctionEnd
 
-# Audio File Associations Program IDs (ProgIDs) for Windows
-!define PROG_ID_3GA "CustomMediaPlayer.AssocFile.3GA"
-!define PROG_ID_669 "CustomMediaPlayer.AssocFile.669"
-!define PROG_ID_A52 "CustomMediaPlayer.AssocFile.A52"
-!define PROG_ID_AAC "CustomMediaPlayer.AssocFile.AAC"
-!define PROG_ID_AC3 "CustomMediaPlayer.AssocFile.AC3"
-!define PROG_ID_ADT "CustomMediaPlayer.AssocFile.ADT"
-!define PROG_ID_ADTS "CustomMediaPlayer.AssocFile.ADTS"
-!define PROG_ID_AIF "CustomMediaPlayer.AssocFile.AIF"
-!define PROG_ID_AIFC "CustomMediaPlayer.AssocFile.AIFC"
-!define PROG_ID_AIFF "CustomMediaPlayer.AssocFile.AIFF"
-!define PROG_ID_AU "CustomMediaPlayer.AssocFile.AU"
-!define PROG_ID_AMR "CustomMediaPlayer.AssocFile.AMR"
-!define PROG_ID_AOB "CustomMediaPlayer.AssocFile.AOB"
-!define PROG_ID_APE "CustomMediaPlayer.AssocFile.APE"
-!define PROG_ID_CAF "CustomMediaPlayer.AssocFile.CAF"
-!define PROG_ID_CDA "CustomMediaPlayer.AssocFile.CDA"
-!define PROG_ID_DTS "CustomMediaPlayer.AssocFile.DTS"
-!define PROG_ID_FLAC "CustomMediaPlayer.AssocFile.FLAC"
-!define PROG_ID_IT "CustomMediaPlayer.AssocFile.IT"
-!define PROG_ID_M4A "CustomMediaPlayer.AssocFile.M4A"
-!define PROG_ID_M4P "CustomMediaPlayer.AssocFile.M4P"
-!define PROG_ID_MLP "CustomMediaPlayer.AssocFile.MLP"
-!define PROG_ID_MOD "CustomMediaPlayer.AssocFile.MOD"
-!define PROG_ID_MP1 "CustomMediaPlayer.AssocFile.MP1"
-!define PROG_ID_MP2 "CustomMediaPlayer.AssocFile.MP2"
-!define PROG_ID_MP3 "CustomMediaPlayer.AssocFile.MP3"
-!define PROG_ID_MPC "CustomMediaPlayer.AssocFile.MPC"
-!define PROG_ID_MPGA "CustomMediaPlayer.AssocFile.MPGA"
-!define PROG_ID_OGA "CustomMediaPlayer.AssocFile.OGA"
-!define PROG_ID_OMA "CustomMediaPlayer.AssocFile.OMA"
-!define PROG_ID_OPUS "CustomMediaPlayer.AssocFile.OPUS"
-!define PROG_ID_QCP "CustomMediaPlayer.AssocFile.QCP"
-!define PROG_ID_RA "CustomMediaPlayer.AssocFile.RA"
-!define PROG_ID_RMI "CustomMediaPlayer.AssocFile.RMI"
-!define PROG_ID_SND "CustomMediaPlayer.AssocFile.SND"
-!define PROG_ID_S3M "CustomMediaPlayer.AssocFile.S3M"
-!define PROG_ID_SPX "CustomMediaPlayer.AssocFile.SPX"
-!define PROG_ID_TTA "CustomMediaPlayer.AssocFile.TTA"
-!define PROG_ID_VOC "CustomMediaPlayer.AssocFile.VOC"
-!define PROG_ID_VQF "CustomMediaPlayer.AssocFile.VQF"
-!define PROG_ID_W64 "CustomMediaPlayer.AssocFile.W64"
-!define PROG_ID_WAV "CustomMediaPlayer.AssocFile.WAV"
-!define PROG_ID_WMA "CustomMediaPlayer.AssocFile.WMA"
-!define PROG_ID_WV "CustomMediaPlayer.AssocFile.WV"
-!define PROG_ID_XA "CustomMediaPlayer.AssocFile.XA"
-!define PROG_ID_XM "CustomMediaPlayer.AssocFile.XM"
+# ============================================================================
+# Launch the app un-elevated from the finish page.
+# The installer runs elevated (RequestExecutionLevel admin), but Vura itself
+# has no reason to run as admin. Relaying the launch through explorer.exe
+# (which already runs at the logged-in user's integrity level) starts the
+# app un-elevated, with no extra plugin dependency.
+# ============================================================================
+Function LaunchAppUnelevated
+    Exec '"$WINDIR\explorer.exe" "$INSTDIR\${EXE_NAME}"'
+FunctionEnd
 
-# Video File Associations Program IDs (ProgIDs) for Windows
-!define PROG_ID_3G2 "CustomMediaPlayer.AssocFile.3G2"
-!define PROG_ID_3GP "CustomMediaPlayer.AssocFile.3GP"
-!define PROG_ID_3GP2 "CustomMediaPlayer.AssocFile.3GP2"
-!define PROG_ID_3GPP "CustomMediaPlayer.AssocFile.3GPP"
-!define PROG_ID_AMV "CustomMediaPlayer.AssocFile.AMV"
-!define PROG_ID_ASF "CustomMediaPlayer.AssocFile.ASF"
-!define PROG_ID_AVI "CustomMediaPlayer.AssocFile.AVI"
-!define PROG_ID_BIK "CustomMediaPlayer.AssocFile.BIK"
-!define PROG_ID_DAV "CustomMediaPlayer.AssocFile.DAV"
-!define PROG_ID_DIVX "CustomMediaPlayer.AssocFile.DIVX"
-!define PROG_ID_DRC "CustomMediaPlayer.AssocFile.DRC"
-!define PROG_ID_DV "CustomMediaPlayer.AssocFile.DV"
+# ============================================================================
+# FILE ASSOCIATION MACROS
+# ============================================================================
+# FILEASSOC_ENTRY is the single source of truth for one extension.
+#
+#   - During install (UNINSTALL_MODE not defined), it expands into a
+#     checkbox Section that writes all the registry keys for that
+#     extension, including the Capabilities\FileAssociations value keyed
+#     correctly by extension (not the literal "." from the old script).
+#   - During uninstall (UNINSTALL_MODE defined before the group macros are
+#     invoked again), the exact same line expands into the matching
+#     registry removal instead — so install and uninstall can never drift
+#     out of sync, because they're generated from one list.
+# ============================================================================
+!macro FILEASSOC_ENTRY EXT SUFFIX DESC
+  !ifdef UNINSTALL_MODE
+    DeleteRegKey HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}"
+    DeleteRegValue HKLM "Software\Classes\${EXT}\OpenWithProgids" "${PROG_ID_PREFIX}.${SUFFIX}"
+  !else
+    Section "${EXT}"
+        WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "${EXT}" "${PROG_ID_PREFIX}.${SUFFIX}"
+        WriteRegStr HKLM "Software\Classes\${EXT}\OpenWithProgids" "${PROG_ID_PREFIX}.${SUFFIX}" ""
+        WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
+        WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}" "" "${DESC}"
+        WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+    SectionEnd
+  !endif
+!macroend
 
-!define PROG_ID_M4V "CustomMediaPlayer.AssocFile.M4V"
-!define PROG_ID_MKV "CustomMediaPlayer.AssocFile.MKV"
-!define PROG_ID_MOV "CustomMediaPlayer.AssocFile.MOV"
-!define PROG_ID_MP2V "CustomMediaPlayer.AssocFile.MP2V"
-!define PROG_ID_MP4 "CustomMediaPlayer.AssocFile.MP4"
-!define PROG_ID_MP4V "CustomMediaPlayer.AssocFile.MP4V"
-!define PROG_ID_MPEG "CustomMediaPlayer.AssocFile.MPEG"
-!define PROG_ID_MPEG1 "CustomMediaPlayer.AssocFile.MPEG1"
-!define PROG_ID_MPEG2 "CustomMediaPlayer.AssocFile.MPEG2"
-!define PROG_ID_MPEG4 "CustomMediaPlayer.AssocFile.MPEG4"
-!define PROG_ID_MPG "CustomMediaPlayer.AssocFile.MPG"
-!define PROG_ID_OGG "CustomMediaPlayer.AssocFile.OGG"
-!define PROG_ID_WEBM "CustomMediaPlayer.AssocFile.WEBM"
-!define PROG_ID_WMV "CustomMediaPlayer.AssocFile.WMV"
+# ---- Application file types --------------------------------------------
+!macro APP_FILE_ASSOCS
+    !insertmacro FILEASSOC_ENTRY ".vhk"  "VHK"  "Vura Hotkey File"
+    !insertmacro FILEASSOC_ENTRY ".vpl"  "VPL"  "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".vprj" "VPRJ" "Vura Project File"
+    !insertmacro FILEASSOC_ENTRY ".vvm"  "VVM"  "Vura Marker File"
+!macroend
 
-# Other File Associations Program IDs (ProgIDs) for Windows
-!define PROG_ID_B4S "CustomMediaPlayer.AssocFile.B4S"
-!define PROG_ID_M3U "CustomMediaPlayer.AssocFile.M3U"
-!define PROG_ID_M3U8 "CustomMediaPlayer.AssocFile.M3U8"
-!define PROG_ID_PLS "CustomMediaPlayer.AssocFile.PLS"
-!define PROG_ID_WPL "CustomMediaPlayer.AssocFile.WPL"
-!define PROG_ID_XSPF "CustomMediaPlayer.AssocFile.XSPF"
+# ---- Audio file types -----------------------------------------------------
+!macro AUDIO_FILE_ASSOCS
+    !insertmacro FILEASSOC_ENTRY ".3ga"  "3GA"  "3GA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".669"  "669"  "669 Module File"
+    !insertmacro FILEASSOC_ENTRY ".a52"  "A52"  "A52 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".aac"  "AAC"  "AAC Audio File"
+    !insertmacro FILEASSOC_ENTRY ".ac3"  "AC3"  "AC3 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".adt"  "ADT"  "ADT Audio File"
+    !insertmacro FILEASSOC_ENTRY ".adts" "ADTS" "ADTS Audio File"
+    !insertmacro FILEASSOC_ENTRY ".aif"  "AIF"  "AIF Audio File"
+    !insertmacro FILEASSOC_ENTRY ".aifc" "AIFC" "AIFC Audio File"
+    !insertmacro FILEASSOC_ENTRY ".aiff" "AIFF" "AIFF Audio File"
+    !insertmacro FILEASSOC_ENTRY ".au"   "AU"   "AU Audio File"
+    !insertmacro FILEASSOC_ENTRY ".amr"  "AMR"  "AMR Audio File"
+    !insertmacro FILEASSOC_ENTRY ".aob"  "AOB"  "AOB Audio File"
+    !insertmacro FILEASSOC_ENTRY ".ape"  "APE"  "APE Audio File"
+    !insertmacro FILEASSOC_ENTRY ".caf"  "CAF"  "CAF Audio File"
+    !insertmacro FILEASSOC_ENTRY ".cda"  "CDA"  "CDA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".dts"  "DTS"  "DTS Audio File"
+    !insertmacro FILEASSOC_ENTRY ".flac" "FLAC" "FLAC Audio File"
+    !insertmacro FILEASSOC_ENTRY ".it"   "IT"   "IT Module File"
+    !insertmacro FILEASSOC_ENTRY ".m4a"  "M4A"  "M4A Audio File"
+    !insertmacro FILEASSOC_ENTRY ".m4p"  "M4P"  "M4P Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mlp"  "MLP"  "MLP Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mod"  "MOD"  "MOD Module File"
+    !insertmacro FILEASSOC_ENTRY ".mp1"  "MP1"  "MP1 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mp2"  "MP2"  "MP2 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mp3"  "MP3"  "MP3 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mpc"  "MPC"  "MPC Audio File"
+    !insertmacro FILEASSOC_ENTRY ".mpga" "MPGA" "MPGA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".oga"  "OGA"  "OGA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".oma"  "OMA"  "OMA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".opus" "OPUS" "OPUS Audio File"
+    !insertmacro FILEASSOC_ENTRY ".qcp"  "QCP"  "QCP Audio File"
+    !insertmacro FILEASSOC_ENTRY ".ra"   "RA"   "RA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".rmi"  "RMI"  "RMI Audio File"
+    !insertmacro FILEASSOC_ENTRY ".snd"  "SND"  "SND Audio File"
+    !insertmacro FILEASSOC_ENTRY ".s3m"  "S3M"  "S3M Module File"
+    !insertmacro FILEASSOC_ENTRY ".spx"  "SPX"  "SPX Audio File"
+    !insertmacro FILEASSOC_ENTRY ".tta"  "TTA"  "TTA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".voc"  "VOC"  "VOC Audio File"
+    !insertmacro FILEASSOC_ENTRY ".vqf"  "VQF"  "VQF Audio File"
+    !insertmacro FILEASSOC_ENTRY ".w64"  "W64"  "W64 Audio File"
+    !insertmacro FILEASSOC_ENTRY ".wav"  "WAV"  "WAV Audio File"
+    !insertmacro FILEASSOC_ENTRY ".wma"  "WMA"  "WMA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".wv"   "WV"   "WV Audio File"
+    !insertmacro FILEASSOC_ENTRY ".xa"   "XA"   "XA Audio File"
+    !insertmacro FILEASSOC_ENTRY ".xm"   "XM"   "XM Module File"
+!macroend
+
+# ---- Video file types -------------------------------------------------
+!macro VIDEO_FILE_ASSOCS
+    !insertmacro FILEASSOC_ENTRY ".3g2"   "3G2"   "3G2 Video File"
+    !insertmacro FILEASSOC_ENTRY ".3gp"   "3GP"   "3GP Video File"
+    !insertmacro FILEASSOC_ENTRY ".3gp2"  "3GP2"  "3GP2 Video File"
+    !insertmacro FILEASSOC_ENTRY ".3gpp"  "3GPP"  "3GPP Video File"
+    !insertmacro FILEASSOC_ENTRY ".amv"   "AMV"   "AMV Video File"
+    !insertmacro FILEASSOC_ENTRY ".asf"   "ASF"   "ASF Video File"
+    !insertmacro FILEASSOC_ENTRY ".avi"   "AVI"   "AVI Video File"
+    !insertmacro FILEASSOC_ENTRY ".bik"   "BIK"   "BIK Video File"
+    !insertmacro FILEASSOC_ENTRY ".dav"   "DAV"   "DAV Video File"
+    !insertmacro FILEASSOC_ENTRY ".divx"  "DIVX"  "DIVX Video File"
+    !insertmacro FILEASSOC_ENTRY ".drc"   "DRC"   "DRC Video File"
+    !insertmacro FILEASSOC_ENTRY ".dv"    "DV"    "DV Video File"
+    !insertmacro FILEASSOC_ENTRY ".m4v"   "M4V"   "M4V Video File"
+    !insertmacro FILEASSOC_ENTRY ".mkv"   "MKV"   "MKV Video File"
+    !insertmacro FILEASSOC_ENTRY ".mov"   "MOV"   "MOV Video File"
+    !insertmacro FILEASSOC_ENTRY ".mp2v"  "MP2V"  "MP2V Video File"
+    !insertmacro FILEASSOC_ENTRY ".mp4"   "MP4"   "MP4 Video File"
+    !insertmacro FILEASSOC_ENTRY ".mp4v"  "MP4V"  "MP4V Video File"
+    !insertmacro FILEASSOC_ENTRY ".mpeg"  "MPEG"  "MPEG Video File"
+    !insertmacro FILEASSOC_ENTRY ".mpeg1" "MPEG1" "MPEG1 Video File"
+    !insertmacro FILEASSOC_ENTRY ".mpeg2" "MPEG2" "MPEG2 Video File"
+    !insertmacro FILEASSOC_ENTRY ".mpeg4" "MPEG4" "MPEG4 Video File"
+    !insertmacro FILEASSOC_ENTRY ".mpg"   "MPG"   "MPG Video File"
+    !insertmacro FILEASSOC_ENTRY ".ogg"   "OGG"   "OGG Video File"
+    !insertmacro FILEASSOC_ENTRY ".webm"  "WEBM"  "WEBM Video File"
+    !insertmacro FILEASSOC_ENTRY ".wmv"   "WMV"   "WMV Video File"
+!macroend
+
+# ---- Playlist / misc file types ----------------------------------------
+!macro MISC_FILE_ASSOCS
+    !insertmacro FILEASSOC_ENTRY ".b4s"  "B4S"  "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".m3u"  "M3U"  "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".m3u8" "M3U8" "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".pls"  "PLS"  "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".wpl"  "WPL"  "Vura Playlist File"
+    !insertmacro FILEASSOC_ENTRY ".xspf" "XSPF" "Vura Playlist File"
+!macroend
 
 # ============================================================================
 # INSTALLATION SECTION
@@ -170,8 +241,11 @@ Section "Media Player (Required)" SecCore
 
     SetOutPath "$INSTDIR"
 
+    # Close a running instance first so files aren't locked mid-install
+    ExecWait 'taskkill /F /IM ${EXE_NAME}'
+
     # Store Installation Path in Registry for future reference
-    WriteRegStr HKCU "Software\Vura" "" $INSTDIR
+    WriteRegStr HKCU "Software\${APP_NAME}" "" $INSTDIR
 
     # Main Executable and Core Plugins
     File "dist_windows\${EXE_NAME}"
@@ -207,8 +281,6 @@ Section "Media Player (Required)" SecCore
     WriteRegStr HKLM "Software\Classes\${APP_NAME}" "URL Protocol" ""
     WriteRegStr HKLM "Software\Classes\${APP_NAME}\DefaultIcon" "" "$INSTDIR\${EXE_NAME},0"
     WriteRegStr HKLM "Software\Classes\${APP_NAME}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1" "--network"'
-
-
 SectionEnd
 
 # Optional Section for Desktop Shortcut
@@ -223,318 +295,24 @@ Section "Create Start Menu Shortcut" SecStartMenuShortcut
     CreateShortcut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 SectionEnd
 
-# Optional Section for File Associations
+# Optional Section for File Associations — each group macro expands into one
+# checkbox Section per extension, exactly as in the original script.
 SectionGroup "File Associations" SecFileAssociations
 
-    # Application File Associations
     SectionGroup "Application Files" ApplicationFilesGroup
-
-        Section ".vhk"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_VHK}"
-            WriteRegStr HKLM "Software\Classes\.vhk\OpenWithProgids" "${PROG_ID_VHK}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VHK}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VHK}" "" "Vura Hotkey File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VHK}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".vpl"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_VPL}"
-            WriteRegStr HKLM "Software\Classes\.vpl\OpenWithProgids" "${PROG_ID_VPL}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPL}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPL}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPL}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".vprj"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_VPRJ}"
-            WriteRegStr HKLM "Software\Classes\.vprj\OpenWithProgids" "${PROG_ID_VPRJ}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPRJ}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPRJ}" "" "Vura Project File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VPRJ}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".vvm"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_VVM}"
-            WriteRegStr HKLM "Software\Classes\.vvm\OpenWithProgids" "${PROG_ID_VVM}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VVM}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VVM}" "" "Vura Marker File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VVM}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
+        !insertmacro APP_FILE_ASSOCS
     SectionGroupEnd
 
-
-    # Audio File Associations
     SectionGroup "Audio Files" AudioFilesGroup
-
-        Section ".3ga"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_3GA}"
-            WriteRegStr HKLM "Software\Classes\.3ga\OpenWithProgids" "${PROG_ID_3GA}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_3GA}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_3GA}" "" "3GA Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_3GA}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".a52"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_A52}"
-            WriteRegStr HKLM "Software\Classes\.a52\OpenWithProgids" "${PROG_ID_A52}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_A52}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_A52}" "" "A52 Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_A52}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".aac"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_AAC}"
-            WriteRegStr HKLM "Software\Classes\.aac\OpenWithProgids" "${PROG_ID_AAC}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AAC}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AAC}" "" "AAC Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AAC}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".m4a"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_M4A}"
-            WriteRegStr HKLM "Software\Classes\.m4a\OpenWithProgids" "${PROG_ID_M4A}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4A}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4A}" "" "M4A Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4A}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".m4p"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_M4P}"
-            WriteRegStr HKLM "Software\Classes\.m4p\OpenWithProgids" "${PROG_ID_M4P}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4P}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4P}" "" "M4P Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M4P}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mp1"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MP1}"
-            WriteRegStr HKLM "Software\Classes\.mp1\OpenWithProgids" "${PROG_ID_MP1}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP1}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP1}" "" "MP1 Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP1}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mp2"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MP2}"
-            WriteRegStr HKLM "Software\Classes\.mp2\OpenWithProgids" "${PROG_ID_MP2}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP2}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP2}" "" "MP2 Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP2}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mp3"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MP3}"
-            WriteRegStr HKLM "Software\Classes\.mp3\OpenWithProgids" "${PROG_ID_MP3}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP3}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP3}" "" "MP3 Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP3}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpga"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPGA}"
-            WriteRegStr HKLM "Software\Classes\.mpga\OpenWithProgids" "${PROG_ID_MPGA}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPGA}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPGA}" "" "MPGA Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPGA}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".voc"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_VOC}"
-            WriteRegStr HKLM "Software\Classes\.voc\OpenWithProgids" "${PROG_ID_VOC}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VOC}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VOC}" "" "VOC Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_VOC}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".wav"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_WAV}"
-            WriteRegStr HKLM "Software\Classes\.wav\OpenWithProgids" "${PROG_ID_WAV}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WAV}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WAV}" "" "WAV Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WAV}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".wma"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_WMA}"
-            WriteRegStr HKLM "Software\Classes\.wma\OpenWithProgids" "${PROG_ID_WMA}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMA}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMA}" "" "WMA Audio File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMA}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
+        !insertmacro AUDIO_FILE_ASSOCS
     SectionGroupEnd
 
-
-    # Video File Associations
     SectionGroup "Video Files" VideoFilesGroup
-
-        Section ".avi"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_AVI}"
-            WriteRegStr HKLM "Software\Classes\.avi\OpenWithProgids" "${PROG_ID_AVI}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AVI}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AVI}" "" "AVI Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_AVI}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".bik"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_BIK}"
-            WriteRegStr HKLM "Software\Classes\.bik\OpenWithProgids" "${PROG_ID_BIK}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_BIK}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_BIK}" "" "BIK Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_BIK}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mkv"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MKV}"
-            WriteRegStr HKLM "Software\Classes\.mkv\OpenWithProgids" "${PROG_ID_MKV}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MKV}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MKV}" "" "MKV Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MKV}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mov"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MOV}"
-            WriteRegStr HKLM "Software\Classes\.mov\OpenWithProgids" "${PROG_ID_MOV}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MOV}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MOV}" "" "MOV Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MOV}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mp4"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MP4}"
-            WriteRegStr HKLM "Software\Classes\.mp4\OpenWithProgids" "${PROG_ID_MP4}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4}" "" "MP4 Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mp4v"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MP4V}"
-            WriteRegStr HKLM "Software\Classes\.mp4v\OpenWithProgids" "${PROG_ID_MP4V}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4V}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4V}" "" "MP4V Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MP4V}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpeg"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPEG}"
-            WriteRegStr HKLM "Software\Classes\.mpeg\OpenWithProgids" "${PROG_ID_MPEG}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG}" "" "MPEG Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpeg1"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPEG1}"
-            WriteRegStr HKLM "Software\Classes\.mpeg1\OpenWithProgids" "${PROG_ID_MPEG1}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG1}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG1}" "" "MPEG1 Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG1}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpeg2"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPEG2}"
-            WriteRegStr HKLM "Software\Classes\.mpeg2\OpenWithProgids" "${PROG_ID_MPEG2}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG2}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG2}" "" "MPEG2 Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG2}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpeg4"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPEG4}"
-            WriteRegStr HKLM "Software\Classes\.mpeg4\OpenWithProgids" "${PROG_ID_MPEG4}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG4}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG4}" "" "MPEG4 Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPEG4}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".mpg"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_MPG}"
-            WriteRegStr HKLM "Software\Classes\.mpg\OpenWithProgids" "${PROG_ID_MPG}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPG}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPG}" "" "MPG Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_MPG}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".ogg"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_OGG}"
-            WriteRegStr HKLM "Software\Classes\.ogg\OpenWithProgids" "${PROG_ID_OGG}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_OGG}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_OGG}" "" "OGG Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_OGG}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".webm"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_WEBM}"
-            WriteRegStr HKLM "Software\Classes\.webm\OpenWithProgids" "${PROG_ID_WEBM}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WEBM}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WEBM}" "" "WebM Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WEBM}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".wmv"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_WMV}"
-            WriteRegStr HKLM "Software\Classes\.wmv\OpenWithProgids" "${PROG_ID_WMV}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMV}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMV}" "" "WMV Video File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WMV}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
+        !insertmacro VIDEO_FILE_ASSOCS
     SectionGroupEnd
 
-
-    # Misc File Associations
     SectionGroup "Misc Files" MiscFilesGroup
-
-        Section ".b4s"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_B4S}"
-            WriteRegStr HKLM "Software\Classes\.b4s\OpenWithProgids" "${PROG_ID_B4S}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_B4S}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_B4S}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_B4S}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".m3u"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_M3U}"
-            WriteRegStr HKLM "Software\Classes\.m3u\OpenWithProgids" "${PROG_ID_M3U}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".m3u8"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_M3U8}"
-            WriteRegStr HKLM "Software\Classes\.m3u8\OpenWithProgids" "${PROG_ID_M3U8}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U8}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U8}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_M3U8}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".pls"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_PLS}"
-            WriteRegStr HKLM "Software\Classes\.pls\OpenWithProgids" "${PROG_ID_PLS}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_PLS}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_PLS}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_PLS}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".wpl"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_WPL}"
-            WriteRegStr HKLM "Software\Classes\.wpl\OpenWithProgids" "${PROG_ID_WPL}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WPL}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WPL}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_WPL}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
-        Section ".xspf"
-            WriteRegStr HKLM "Software\Clients\Media\${APP_NAME}\Capabilities\FileAssociations" "." "${PROG_ID_XSPF}"
-            WriteRegStr HKLM "Software\Classes\.xspf\OpenWithProgids" "${PROG_ID_XSPF}" ""
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_XSPF}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_XSPF}" "" "Vura Playlist File"
-            WriteRegStr HKLM "Software\Classes\${PROG_ID_XSPF}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-        SectionEnd
-
+        !insertmacro MISC_FILE_ASSOCS
     SectionGroupEnd
 
 SectionGroupEnd
@@ -553,20 +331,20 @@ SectionEnd
 # Optional Section for Context Menu
 Section "Context Menus" SecContextMenus
 
-	# Add Windows Registry Entries for Open File Context Menus
-	WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "" "Play with ${APP_NAME}"
-	WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "Icon" "$INSTDIR\${EXE_NAME},0"
-	WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-	
-	# Add Windows Registry Entries for Open Directory Context Menus
-	WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
-	WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
-	WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
-	
-	WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
-	WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
-	WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%V"'
-	
+    # Add Windows Registry Entries for Open File Context Menus
+    WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "" "Play with ${APP_NAME}"
+    WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "Icon" "$INSTDIR\${EXE_NAME},0"
+    WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+
+    # Add Windows Registry Entries for Open Directory Context Menus
+    WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
+    WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
+    WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+
+    WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
+    WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
+    WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%V"'
+
 SectionEnd
 
 
@@ -591,7 +369,9 @@ Section "Uninstall"
     RMDir /r "$INSTDIR\tls"
     RMDir /r "$INSTDIR\networkinformation"
     RMDir /r "$INSTDIR\translations"
-    RMDir "$INSTDIR"
+    # Recursive fallback: catches anything left behind (e.g. a future build
+    # adds a new Qt plugin directory and this list isn't updated in lockstep).
+    RMDir /r "$INSTDIR"
 
     # Wipe system shortcuts
     Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
@@ -599,97 +379,32 @@ Section "Uninstall"
     RMDir "$SMPROGRAMS\${APP_NAME}"
     Delete "$DESKTOP\${APP_NAME}.lnk"
 
-    # Remove Windows Add/Remove configuration registry branches
+    # Remove Windows Add/Remove configuration registry branch
     DeleteRegKey HKLM "${UNINSTALL_KEY}"
+    DeleteRegKey HKCU "Software\${APP_NAME}"
 
-    # Wipe programmatic handler blocks
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_VHK}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_VPL}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_VPRJ}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_VVM}"
+    # Remove all file-association registrations. Defining UNINSTALL_MODE
+    # switches FILEASSOC_ENTRY from "install checkbox Section" to "delete
+    # these two registry entries" — using the exact same list that install
+    # used, so nothing can be left behind or drift out of sync.
+    !define UNINSTALL_MODE
+    !insertmacro APP_FILE_ASSOCS
+    !insertmacro AUDIO_FILE_ASSOCS
+    !insertmacro VIDEO_FILE_ASSOCS
+    !insertmacro MISC_FILE_ASSOCS
+    !undef UNINSTALL_MODE
 
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_3GA}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_A52}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_AAC}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_M4A}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_M4P}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MP1}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MP2}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MP3}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPGA}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_VOC}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_WAV}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_WMA}"
+    # Remove context-menu registrations
+    DeleteRegKey HKLM "Software\Classes\*\shell\${APP_NAME}"
+    DeleteRegKey HKLM "Software\Classes\Directory\shell\${APP_NAME}"
+    DeleteRegKey HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}"
 
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_AVI}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_BIK}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MKV}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MOV}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MP4}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MP4V}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPEG}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPEG1}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPEG2}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPEG4}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_MPG}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_OGG}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_WEBM}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_WMV}"
-
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_B4S}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_M3U}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_M3U8}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_PLS}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_WPL}"
-    DeleteRegKey HKLM "Software\Classes\${PROG_ID_XSPF}"
-
-    # Remove app entry mapping inside OpenWith lists
-    DeleteRegValue HKLM "Software\Classes\.vhk\OpenWithProgids" "${PROG_ID_VHK}"
-    DeleteRegValue HKLM "Software\Classes\.vpl\OpenWithProgids" "${PROG_ID_VPL}"
-    DeleteRegValue HKLM "Software\Classes\.vprj\OpenWithProgids" "${PROG_ID_VPRJ}"
-    DeleteRegValue HKLM "Software\Classes\.vvm\OpenWithProgids" "${PROG_ID_VVM}"
-
-    DeleteRegValue HKLM "Software\Classes\.3ga\OpenWithProgids" "${PROG_ID_3GA}"
-    DeleteRegValue HKLM "Software\Classes\.a52\OpenWithProgids" "${PROG_ID_A52}"
-    DeleteRegValue HKLM "Software\Classes\.aac\OpenWithProgids" "${PROG_ID_AAC}"
-    DeleteRegValue HKLM "Software\Classes\.m4a\OpenWithProgids" "${PROG_ID_M4A}"
-    DeleteRegValue HKLM "Software\Classes\.m4p\OpenWithProgids" "${PROG_ID_M4P}"
-    DeleteRegValue HKLM "Software\Classes\.mp1\OpenWithProgids" "${PROG_ID_MP1}"
-    DeleteRegValue HKLM "Software\Classes\.mp2\OpenWithProgids" "${PROG_ID_MP2}"
-    DeleteRegValue HKLM "Software\Classes\.mp3\OpenWithProgids" "${PROG_ID_MP3}"
-    DeleteRegValue HKLM "Software\Classes\.mpga\OpenWithProgids" "${PROG_ID_MPGA}"
-    DeleteRegValue HKLM "Software\Classes\.voc\OpenWithProgids" "${PROG_ID_VOC}"
-    DeleteRegValue HKLM "Software\Classes\.wav\OpenWithProgids" "${PROG_ID_WAV}"
-    DeleteRegValue HKLM "Software\Classes\.wma\OpenWithProgids" "${PROG_ID_WMA}"
-
-    DeleteRegValue HKLM "Software\Classes\.avi\OpenWithProgids" "${PROG_ID_AVI}"
-    DeleteRegValue HKLM "Software\Classes\.bik\OpenWithProgids" "${PROG_ID_BIK}"
-    DeleteRegValue HKLM "Software\Classes\.mkv\OpenWithProgids" "${PROG_ID_MKV}"
-    DeleteRegValue HKLM "Software\Classes\.mov\OpenWithProgids" "${PROG_ID_MOV}"
-    DeleteRegValue HKLM "Software\Classes\.mp4\OpenWithProgids" "${PROG_ID_MP4}"
-    DeleteRegValue HKLM "Software\Classes\.mp4v\OpenWithProgids" "${PROG_ID_MP4V}"
-    DeleteRegValue HKLM "Software\Classes\.mpeg\OpenWithProgids" "${PROG_ID_MPEG}"
-    DeleteRegValue HKLM "Software\Classes\.mpeg1\OpenWithProgids" "${PROG_ID_MPEG1}"
-    DeleteRegValue HKLM "Software\Classes\.mpeg2\OpenWithProgids" "${PROG_ID_MPEG2}"
-    DeleteRegValue HKLM "Software\Classes\.mpeg4\OpenWithProgids" "${PROG_ID_MPEG4}"
-    DeleteRegValue HKLM "Software\Classes\.mpg\OpenWithProgids" "${PROG_ID_MPG}"
-    DeleteRegValue HKLM "Software\Classes\.ogg\OpenWithProgids" "${PROG_ID_OGG}"
-    DeleteRegValue HKLM "Software\Classes\.webm\OpenWithProgids" "${PROG_ID_WEBM}"
-    DeleteRegValue HKLM "Software\Classes\.wmv\OpenWithProgids" "${PROG_ID_WMV}"
-
-    DeleteRegValue HKLM "Software\Classes\.b4s\OpenWithProgids" "${PROG_ID_B4S}"
-    DeleteRegValue HKLM "Software\Classes\.m3u\OpenWithProgids" "${PROG_ID_M3U}"
-    DeleteRegValue HKLM "Software\Classes\.m3u8\OpenWithProgids" "${PROG_ID_M3U8}"
-    DeleteRegValue HKLM "Software\Classes\.pls\OpenWithProgids" "${PROG_ID_PLS}"
-    DeleteRegValue HKLM "Software\Classes\.wpl\OpenWithProgids" "${PROG_ID_WPL}"
-    DeleteRegValue HKLM "Software\Classes\.xspf\OpenWithProgids" "${PROG_ID_XSPF}"
+    # Remove custom URI scheme registration
+    DeleteRegKey HKLM "Software\Classes\${APP_NAME}"
 
     # Clean up Capabilities registry trees
     DeleteRegKey HKLM "Software\Clients\Media\${APP_NAME}"
     DeleteRegValue HKLM "Software\RegisteredApplications" "${APP_NAME}"
-
-    # Completely delete app registry keys
-    DeleteRegKey HKLM "Software\Classes\${APP_NAME}"
 
     # Notify Windows Shell API of changes
     System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
