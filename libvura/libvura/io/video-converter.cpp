@@ -18,11 +18,47 @@
 
 #include "video-converter.h"
 
+#include "libvura/media-engine/audio-output.h"
+
 
 VideoConverter::VideoConverter(QObject *parent) : QObject(parent) {}
 
-bool VideoConverter::convert(const QString &inputPath, const QString &outputPath, AVCodecID chosenVideoCodecId)
+bool VideoConverter::convert(const QString &inputPath, const QString &outputPath, int chosenVideoCodecId)
 {
+    AVCodecID videoCodecId;
+    switch (chosenVideoCodecId) {
+        case 1:
+            videoCodecId = AV_CODEC_ID_MPEG1VIDEO;
+            break;
+        case 2:
+            videoCodecId = AV_CODEC_ID_MPEG2VIDEO;
+            break;
+        case 3:
+            videoCodecId = AV_CODEC_ID_MPEG4;
+            break;
+        case 4:
+            videoCodecId = AV_CODEC_ID_WMV1;
+            break;
+        case 5:
+            videoCodecId = AV_CODEC_ID_WMV2;
+            break;
+        case 6:
+            videoCodecId = AV_CODEC_ID_H264;
+            break;
+        case 7:
+            videoCodecId = AV_CODEC_ID_ASV1;
+            break;
+        case 8:
+            videoCodecId = AV_CODEC_ID_ASV2;
+            break;
+        case 9:
+            videoCodecId = AV_CODEC_ID_AVS;
+            break;
+        default:
+            videoCodecId = AV_CODEC_ID_H264;
+            break;
+    }
+
     AVFormatContext *inFmtCtx = nullptr;
     AVFormatContext *outFmtCtx = nullptr;
     AVCodecContext *videoDecCtx = nullptr;
@@ -75,7 +111,7 @@ bool VideoConverter::convert(const QString &inputPath, const QString &outputPath
             }
 
             // Dynamically query and allocate the custom video encoder chosen by the user
-            const AVCodec *userEncoder = avcodec_find_encoder(chosenVideoCodecId);
+            const AVCodec *userEncoder = avcodec_find_encoder(videoCodecId);
             if (!userEncoder) {
                 emit statusMessage("Error: Target selected Video Encoder not found or supported on this system.");
                 return false;

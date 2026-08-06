@@ -322,6 +322,10 @@ void VuraMainWindow::setConnections()
     this->addAction(ui->actionMarkersMarkOut);
     ui->actionMarkersMarkOut->setShortcutContext(Qt::WindowShortcut);
 
+    connect(ui->actionFileConvertSave, &QAction::triggered, this, &VuraMainWindow::actionShowConvertMedia);
+    this->addAction(ui->actionFileConvertSave);
+    ui->actionFileConvertSave->setShortcutContext(Qt::WindowShortcut);
+
     connect(ui->actionRendererVideoWidget, &QAction::toggled, this, &VuraMainWindow::actionRendererVideoWidget_toggled);
     connect(ui->actionRendererOpenGL, &QAction::toggled, this, &VuraMainWindow::actionRendererOpenGLWidget_toggled);
 
@@ -643,6 +647,16 @@ void VuraMainWindow::actionShowSettings()
     m_settingsDialog = new SettingsDialog(this);
     m_settingsDialog->show();
     m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void VuraMainWindow::actionShowConvertMedia()
+{
+    if (m_convertMediaDialog)
+        m_convertMediaDialog->close();
+
+    m_convertMediaDialog = new ConvertMediaDialog(this);
+    m_convertMediaDialog->show();
+    m_convertMediaDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void VuraMainWindow::actionExit()

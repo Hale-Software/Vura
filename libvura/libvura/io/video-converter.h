@@ -38,7 +38,7 @@ class VideoConverter : public QObject
 public:
     explicit VideoConverter(QObject *parent = nullptr);
 
-    bool convert(const QString &inputPath, const QString &outputPath, AVCodecID chosenVideoCodecId);
+    bool convert(const QString &inputPath, const QString &outputPath, int chosenVideoCodecId);
 
 signals:
     void progressUpdated(int percentage);

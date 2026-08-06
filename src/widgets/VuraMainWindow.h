@@ -133,6 +133,7 @@ private slots:
     void actionShowLogViewer();
     void actionToggleFullscreen();
     void actionShowSettings();
+    void actionShowConvertMedia();
     //void actionShowFeedback();
     //void actionShowAbout();
     void actionExit();
@@ -216,6 +217,7 @@ private:
     QPointer<FeedbackDialog> m_feedbackDialog;
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
+    QPointer<ConvertMediaDialog> m_convertMediaDialog;
 
     QTimer *m_videoSliderHideTimer = nullptr;
     QMediaDevices m_mediaDevices;
