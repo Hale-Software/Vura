@@ -111,3 +111,28 @@ QString Helpers::timestampString(const qint64 position, const qint64 duration)
     }
     return tStr;
 }
+
+QString Helpers::networkUrlFormatter(QString networkUrl)
+{
+    if (networkUrl.startsWith("vura://", Qt::CaseInsensitive)) {
+        networkUrl.remove(0, 7);
+    }
+
+    const QRegularExpression httpRegex(R"(^(https?)(?::*)(?://)?)", QRegularExpression::CaseInsensitiveOption);
+
+    if (httpRegex.match(networkUrl).hasMatch()) {
+        const QRegularExpressionMatch match = httpRegex.match(networkUrl);
+        const QString protocol = match.captured(1).toLower();
+
+        networkUrl.remove(httpRegex);
+        networkUrl = protocol + "://" + networkUrl;
+    }
+
+    if (!networkUrl.endsWith("/stream", Qt::CaseInsensitive)) {
+        if (networkUrl.endsWith('/')) {
+            networkUrl.chop(1);
+        }
+        networkUrl.append("/stream");
+    }
+    return networkUrl;
+}

@@ -63,11 +63,19 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
         ui->verticalLayout_8->addWidget(m_openGLWidget);
         m_playbackController->setOpenGLWidget(m_openGLWidget);
     } else {
-        initializeVideoWidget();
+        ui->videoWidget->setMouseTracking(true);
+        if (!ui->videoWidget->children().isEmpty()) {
+            const auto videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
+            if (videoChild) {
+                videoChild->setMouseTracking(true);
+                videoChild->installEventFilter(this);
+            }
+        }
         m_playbackController->setVideoWidget(ui->videoWidget);
     }
 
     connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
+    connect(m_playbackController, &PlaybackController::mediaEnded, m_playlistController, &PlaylistController::nextTrack);
 
     if (settings.value("showPlaylistOnStart", true).toBool()) {
         m_playlistController->showPlaylist();
@@ -80,8 +88,107 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     setConnections();
     //configureUpdater();
 
+    if (settings.value("rememberWindowSize", false).toBool()) {
+        qDebug() << "Rememmber window size setting set to true. Restoring previous window size.";
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }
+
     qCDebug(Core) << "Application Initialized!";
     qCInfo(Core) << "Vura Version: " << VURA_VERSION_STRING;
+}
+
+// Application Events
+void VuraMainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings;
+    settings.setValue("geometry", saveGeometry());
+    saveCurrentPlaybackPosition();
+    m_videoMarkerController->saveVideoMarkers();
+    event->accept();
+}
+
+bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+#ifdef Q_OS_WIN
+    if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG")
+    {
+        const auto msg = static_cast<MSG *>(message);
+        if (msg->message == WM_NCLBUTTONDBLCLK)
+        {
+            this->resize(1200, 700);
+            return true;
+        }
+    }
+#endif
+    return QWidget::nativeEvent(eventType, message, result);
+}
+
+void VuraMainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    } else {
+        event->ignore();
+    }
+}
+
+void VuraMainWindow::dropEvent(QDropEvent *event)
+{
+    const QMimeData *mimeData = event->mimeData();
+    if (mimeData->hasUrls()) {
+        QStringList droppedFiles;
+        for (const QUrl &url : mimeData->urls()) {
+            droppedFiles << url.toLocalFile();
+        }
+        m_playlistController->filesDropped(droppedFiles);
+        event->acceptProposedAction();
+    }
+}
+
+void VuraMainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (this->isFullScreen() && event->key() == Qt::Key_Escape) {
+        actionToggleFullscreen();
+        event->accept();
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
+void VuraMainWindow::changeEvent(QEvent *event)
+{
+    QSettings settings;
+
+    if (event->type() == QEvent::WindowStateChange) {
+        const auto *stateEvent = dynamic_cast<QWindowStateChangeEvent*>(event);
+        if (!(stateEvent->oldState() & Qt::WindowMinimized) && (windowState() & Qt::WindowMinimized)) {
+            if (m_playbackController && settings.value("pausePlaybackWhenMinimized", true).toBool())
+                m_playbackController->pause();
+        }
+    }
+    QMainWindow::changeEvent(event);
+}
+
+bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (event->type() == QEvent::MouseMove) {
+        const auto *mouseEvent = dynamic_cast<QMouseEvent*>(event);
+
+        QPointF localPos = mouseEvent->position();
+
+        this->unsetCursor();
+        m_videoSliderWidget->show();
+        if (m_currentPlaybackState == Playing) {
+            m_videoSliderHideTimer->start();
+        }
+    } else if (event->type() == QEvent::MouseButtonDblClick) {
+        if (m_currentPlaybackState == Playing) {
+            m_playbackController->pause();
+        } else if (m_currentPlaybackState == Paused) {
+            m_playbackController->play();
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void VuraMainWindow::setConnections()
@@ -138,6 +245,10 @@ void VuraMainWindow::setConnections()
     connect(m_playbackController, &PlaybackController::jumpCompleted, this, &VuraMainWindow::resetVideoSliderVisibility);
     connect(m_videoSlider, &VideoSlider::valueChanged, m_playbackController, &PlaybackController::setPosition);
     connect(m_videoSlider, &VideoSlider::sliderPressed, m_playbackController, &PlaybackController::setPaused);
+
+    connect(m_playbackController, &PlaybackController::positionChanged, this, [this](const qint64 pos) {
+        m_lastPosition = pos;
+    });
 
     const int autoHideTimer = settings.value("sliderAutohideTime", 5).toInt() * 1000;
     m_videoSliderHideTimer = new QTimer(this);
@@ -373,106 +484,17 @@ void VuraMainWindow::openFolder(const QString &path) const
     }
 }
 
-void VuraMainWindow::openNetworkStream(QString networkUrl) const
+void VuraMainWindow::openNetworkStream(const QString& networkUrl) const
 {
     qDebug() << "Open with network stream requested. Network URL: " << networkUrl;
     if (!networkUrl.isEmpty()) {
         m_playlistController->hidePlaylist();
 
-        networkUrl.remove('"');
-        networkUrl.remove(0, 7);
-        networkUrl.insert(5, ":");
-        qDebug() << "Cleaned Network URL: " << networkUrl;
-        m_playlistController->addNetworkVideo(networkUrl);
+        const QString formattedUrl = Helpers::networkUrlFormatter(networkUrl);
+
+        qDebug() << "Cleaned Network URL: " << formattedUrl;
+        m_playlistController->addNetworkVideo(formattedUrl);
     }
-}
-
-void VuraMainWindow::initializeVideoWidget()
-{
-    ui->videoWidget->setMouseTracking(true);
-    if (!ui->videoWidget->children().isEmpty()) {
-        const auto videoChild = qobject_cast<QWidget*>(ui->videoWidget->children().first());
-        if (videoChild) {
-            videoChild->setMouseTracking(true);
-            videoChild->installEventFilter(this);
-        }
-    }
-}
-
-void VuraMainWindow::closeEvent(QCloseEvent *event)
-{
-    m_videoMarkerController->saveVideoMarkers();
-    event->accept();
-}
-
-bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-{
-#ifdef Q_OS_WIN
-    if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG")
-    {
-        const auto msg = static_cast<MSG *>(message);
-        if (msg->message == WM_NCLBUTTONDBLCLK)
-        {
-            this->resize(1200, 700);
-            return true;
-        }
-    }
-#endif
-    return QWidget::nativeEvent(eventType, message, result);
-}
-
-void VuraMainWindow::dragEnterEvent(QDragEnterEvent *event)
-{
-    if (event->mimeData()->hasUrls()) {
-        event->acceptProposedAction();
-    } else {
-        event->ignore();
-    }
-}
-
-void VuraMainWindow::dropEvent(QDropEvent *event)
-{
-    const QMimeData *mimeData = event->mimeData();
-    if (mimeData->hasUrls()) {
-        QStringList droppedFiles;
-        for (const QUrl &url : mimeData->urls()) {
-            droppedFiles << url.toLocalFile();
-        }
-        m_playlistController->filesDropped(droppedFiles);
-        event->acceptProposedAction();
-    }
-}
-
-void VuraMainWindow::keyPressEvent(QKeyEvent *event)
-{
-    if (this->isFullScreen() && event->key() == Qt::Key_Escape) {
-        actionToggleFullscreen();
-        event->accept();
-    } else {
-        QMainWindow::keyPressEvent(event);
-    }
-}
-
-bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
-    if (event->type() == QEvent::MouseMove) {
-        const auto *mouseEvent = dynamic_cast<QMouseEvent*>(event);
-
-        QPointF localPos = mouseEvent->position();
-
-        this->unsetCursor();
-        m_videoSliderWidget->show();
-        if (m_currentPlaybackState == Playing) {
-            m_videoSliderHideTimer->start();
-        }
-    } else if (event->type() == QEvent::MouseButtonDblClick) {
-        if (m_currentPlaybackState == Playing) {
-            m_playbackController->pause();
-        } else if (m_currentPlaybackState == Paused) {
-            m_playbackController->play();
-        }
-    }
-
-    return QMainWindow::eventFilter(obj, event);
 }
 
 void VuraMainWindow::stateChanged(const PlaybackState state)
@@ -489,9 +511,64 @@ void VuraMainWindow::stateChanged(const PlaybackState state)
 
 void VuraMainWindow::sourceChanged(const QUrl &source)
 {
-    qCDebug(Core) << "Source changed to: " << source.toLocalFile();
+    QSettings settings;
+
+    // Save position of the outgoing file
+    saveCurrentPlaybackPosition();
+    m_currentSource = source;
+
+    qCDebug(Core) << "Source changed to: " << source.toString();
     m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
+
+    // Continue playback
+    if (source.isLocalFile()) {
+        const QByteArray pathBytes = source.toLocalFile().toUtf8();
+        const QString fileHash = QCryptographicHash::hash(pathBytes, QCryptographicHash::Md5).toHex();
+
+        settings.beginGroup("ResumeData");
+        const qint64 savedPosition = settings.value(fileHash, 0).toLongLong();
+        settings.endGroup();
+
+        if (savedPosition > 5000) {
+            const int continuePlayback = settings.value("continuePlayback", 1).toInt();
+            switch (continuePlayback) {
+                // Never continue
+                case 0:
+                    break;
+                // Ask user
+                case 1:
+                    showResumeOverlay(savedPosition);
+                    break;
+                // Always continue
+                case 2:
+                    m_playbackController->seek(savedPosition);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // Media Change Alert
+    const int showMediaChangeNotification = settings.value("showMediaChangeNotification", 1).toInt();
+    switch (showMediaChangeNotification) {
+        // Never alert
+        case 0:
+            break;
+        // Alert when minimized
+        case 1:
+            if (this->windowState() & Qt::WindowMinimized) {
+                QApplication::alert(this);
+            }
+            break;
+        // Always alert
+        case 2:
+            QApplication::alert(this);
+            break;
+        default:
+            break;
+    }
 }
 
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
@@ -1065,4 +1142,57 @@ void VuraMainWindow::configureUpdater()
 
     connect(ui->actionHelpCheckForUpdates, &QAction::triggered, updater, &UpdateChecker::check);
 */
+}
+
+void VuraMainWindow::saveCurrentPlaybackPosition()
+{
+    if (m_lastPosition > 0 && !m_currentSource.isEmpty() && m_currentSource.isLocalFile()) {
+        QSettings settings;
+
+        // Hash the file path to create a safe QSettings key
+        const QByteArray pathBytes = m_currentSource.toLocalFile().toUtf8();
+        const QString fileHash = QCryptographicHash::hash(pathBytes, QCryptographicHash::Md5).toHex();
+
+        // Save to a dedicated "Resume" group
+        settings.beginGroup("ResumeData");
+        settings.setValue(fileHash, m_lastPosition);
+        settings.endGroup();
+    }
+}
+
+void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
+{
+    if (m_continuePlaybackWidget)
+        continuePlaybackDelete();
+
+    m_continuePlaybackWidget = new ContinuePlaybackWidget(savedPosition, this);
+    connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::continuePlayback, this, &VuraMainWindow::continuePlaybackAccepted);
+    connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::closeWidget, this, &VuraMainWindow::continuePlaybackDeclined);
+
+    ui->verticalLayout->insertWidget(0, m_continuePlaybackWidget);
+    ui->verticalLayout->setStretch(1, 1);
+
+    QTimer::singleShot(5000, this, &VuraMainWindow::continuePlaybackDelete);
+}
+
+void VuraMainWindow::continuePlaybackDeclined()
+{
+    continuePlaybackDelete();
+}
+
+void VuraMainWindow::continuePlaybackAccepted(const qint64 savedPosition)
+{
+    m_playbackController->setPosition(savedPosition);
+    continuePlaybackDelete();
+}
+
+void VuraMainWindow::continuePlaybackDelete()
+{
+    if (ui->verticalLayout->indexOf(m_continuePlaybackWidget) != -1)
+        ui->verticalLayout->removeWidget(m_continuePlaybackWidget);
+
+    if (m_continuePlaybackWidget) {
+        m_continuePlaybackWidget->deleteLater();
+        m_continuePlaybackWidget = nullptr;
+    }
 }

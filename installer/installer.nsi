@@ -46,8 +46,8 @@ Var StartMenuFolder
 # Interface Settings
 !define MUI_ABORTWARNING
 !define MUI_LANGDLL_ALLLANGUAGES
-!define MUI_ICON "vura.ico"
-!define MUI_UNICON "vura.ico"
+!define MUI_ICON "deploy\dist_windows\assets\icons\vura.ico"
+!define MUI_UNICON "deploy\dist_windows\assets\icons\vura.ico"
 
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
 !define MUI_LANGDLL_REGISTRY_KEY "Software\${APP_NAME}"
@@ -55,7 +55,7 @@ Var StartMenuFolder
 
 # Page layout
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "license.txt"
+!insertmacro MUI_PAGE_LICENSE "deploy\dist_windows\assets\data\license.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 
@@ -248,20 +248,20 @@ Section "Media Player (Required)" SecCore
     WriteRegStr HKCU "Software\${APP_NAME}" "" $INSTDIR
 
     # Main Executable and Core Plugins
-    File "dist_windows\${EXE_NAME}"
-    File "dist_windows\*.dll"
-    File /r "dist_windows\assets"
+    File "deploy\dist_windows\${EXE_NAME}"
+    File "deploy\dist_windows\*.dll"
+    File /r "deploy\dist_windows\assets"
 
     # Copy Qt Runtime Directory Trees
-    File /r "dist_windows\generic"
-    File /r "dist_windows\iconengines"
-    File /r "dist_windows\imageformats"
-    File /r "dist_windows\multimedia"
-    File /r "dist_windows\platforms"
-    File /r "dist_windows\styles"
-    File /r "dist_windows\tls"
-    File /r "dist_windows\networkinformation"
-    File /r "dist_windows\translations"
+    File /r "deploy\dist_windows\generic"
+    File /r "deploy\dist_windows\iconengines"
+    File /r "deploy\dist_windows\imageformats"
+    File /r "deploy\dist_windows\multimedia"
+    File /r "deploy\dist_windows\platforms"
+    File /r "deploy\dist_windows\styles"
+    File /r "deploy\dist_windows\tls"
+    File /r "deploy\dist_windows\networkinformation"
+    File /r "deploy\dist_windows\translations"
 
     # Write Registry Uninstall Entries for Windows Control Panel
     WriteUninstaller "$INSTDIR\uninstall.exe"

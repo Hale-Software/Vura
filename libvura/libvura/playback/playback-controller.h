@@ -46,6 +46,19 @@ public:
     QMediaPlayer* getVideoWidget() const { return m_player; }
     QAudioOutput* getAudioOutput() const { return m_audioOutput; }
 
+signals:
+    void positionChanged(qint64 position);
+    void durationChanged(qint64 duration);
+    void stateChanged(PlaybackState state);
+    void bufferProgressChanged(float filled);
+    void playbackRateChanged(qreal rate);
+    void playingChanged(bool playing);
+    void sourceChanged(const QUrl& media);
+    void tracksChanged();
+    void errorOccurred(const QString& errorMessage);
+    void jumpCompleted();
+    void mediaEnded();
+
 public slots:
     void playTrack(const QUrl& mediaUrl);
     void loadMedia(const QUrl& url);
@@ -83,20 +96,8 @@ public slots:
     void jumpForwardExtraSmall();
     void jumpBackwardExtraSmall();
 
-signals:
-    void positionChanged(qint64 position);
-    void durationChanged(qint64 duration);
-    void stateChanged(PlaybackState state);
-    void bufferProgressChanged(float filled);
-    void playbackRateChanged(qreal rate);
-    void playingChanged(bool playing);
-    void sourceChanged(const QUrl& media);
-    void tracksChanged();
-    void errorOccurred(const QString& errorMessage);
-    void jumpCompleted();
-
 private slots:
-    void mediaStatusChanged(QMediaPlayer::MediaStatus status) const;
+    void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void videoWidgetStateChanged(QMediaPlayer::PlaybackState state);
 
 private:

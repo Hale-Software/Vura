@@ -27,6 +27,7 @@
 #include <QUrl>
 #include <QStandardPaths>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QTime>
 
 
@@ -42,6 +43,7 @@ public:
     static bool isPlaylist(const QUrl &url);
     static QString strippedFileName(const QString &fileName);
     static QString timestampString(qint64 position, qint64 duration);
+    static QString networkUrlFormatter(QString networkUrl);
 
 };
 

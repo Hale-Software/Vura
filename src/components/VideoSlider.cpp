@@ -198,7 +198,7 @@ int VideoSlider::validLength() const
 
 int VideoSlider::valueFromPos(const int x) const
 {
-    const int val = x / width() * m_maximum;
+    const int val = static_cast<int>((static_cast<double>(x) / width()) * m_maximum);
     return qBound(0, val, m_maximum);
 }
 

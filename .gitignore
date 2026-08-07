@@ -6,7 +6,7 @@
 !/assets
 !/cmake
 !/docs
-!/installer
+!/installer/installer.nsi
 !/libvura
 !/scripts
 !/src

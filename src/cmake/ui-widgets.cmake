@@ -1,5 +1,7 @@
 target_sources(
         vura PRIVATE
+        widgets/ContinuePlaybackWidget.cpp
+        widgets/ContinuePlaybackWidget.h
         widgets/SystemTrayWidget.cpp
         widgets/SystemTrayWidget.h
         widgets/VideoControlWidget.cpp

@@ -51,6 +51,14 @@
 #include <QJsonObject>
 #include <QProgressDialog>
 #include <QInputDialog>
+#include <QChar>
+#include <QCryptographicHash>
+#include <QFrame>
+#include <QLabel>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QTime>
+#include <QWindowStateChangeEvent>
 #include <QDebug>
 
 #include <algorithm>
@@ -83,6 +91,7 @@
 #include "SystemTrayWidget.h"
 #include "VideoSliderWidget.h"
 #include "VideoControlWidget.h"
+#include "ContinuePlaybackWidget.h"
 
 
 namespace Ui {
@@ -111,7 +120,7 @@ public:
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
     void openFolder(const QString &path) const;
-    void openNetworkStream(QString networkUrl) const;
+    void openNetworkStream(const QString& networkUrl) const;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 protected:
@@ -120,6 +129,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void changeEvent(QEvent *event) override;
 
 signals:
     void quitProgram();
@@ -179,12 +189,12 @@ public slots:
     void crashReportScanFinished(bool crashFileExists);
     void crashReportUploadStarted();
     void crashReportUploadFinished(bool success, const QString& message);
+    void continuePlaybackDeclined();
+    void continuePlaybackAccepted(qint64 savedPosition);
+    void continuePlaybackDelete();
 
 private:
     Ui::VuraMainWindow *ui;
-
-    void initializeVideoWidget();
-    void initializeVuraMediaEngine();
 
     void setTrackInfo(const QString &trackInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
@@ -198,6 +208,8 @@ private:
     bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker) const;
 
     void configureUpdater();
+    void saveCurrentPlaybackPosition();
+    void showResumeOverlay(qint64 savedPosition);
 
     QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
@@ -205,6 +217,7 @@ private:
     VideoSlider *m_videoSlider = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
+    ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
 
     PlaylistController *m_playlistController = nullptr;
     PlaybackController *m_playbackController = nullptr;
@@ -229,6 +242,8 @@ private:
     int m_inMarker = 0;
     int m_outMarker = 0;
     PlaybackState m_currentPlaybackState = Stopped;
+    QUrl m_currentSource;
+    QPointer<QFrame> m_resumeOverlay;
 
     VuraMediaEngine *m_openGLWidget = nullptr;
     CrashReporter *m_crashReporter = nullptr;

@@ -436,9 +436,11 @@ void PlaybackController::jumpBackwardExtraSmall()
     jumpBackward(jump * 1000);
 }
 
-void PlaybackController::mediaStatusChanged(const QMediaPlayer::MediaStatus status) const
+void PlaybackController::mediaStatusChanged(const QMediaPlayer::MediaStatus status)
 {
-    if (status == QMediaPlayer::NoMedia) {
+    if (status == QMediaPlayer::EndOfMedia) {
+        emit mediaEnded();
+    } else if (status == QMediaPlayer::NoMedia) {
         m_container->setCurrentIndex(0);
     } else {
         if (m_usingVideoWidget) {

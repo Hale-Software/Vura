@@ -19,6 +19,8 @@
 #include "GeneralSettings.h"
 #include "ui_GeneralSettings.h"
 
+#include <ui-config.h>
+
 
 GeneralSettings::GeneralSettings(QWidget *parent) : QWidget(parent), ui(new Ui::GeneralSettings)
 {
@@ -35,6 +37,8 @@ GeneralSettings::GeneralSettings(QWidget *parent) : QWidget(parent), ui(new Ui::
     ui->systemTray->setChecked(settings.value("systemTrayIcon", true).toBool());
     ui->updateBranch->setCurrentIndex(settings.value("updateBranch", 0).toInt());
     ui->automaticUpdates->setChecked(settings.value("automaticUpdates", true).toBool());
+
+    ui->currentVersionLabel->setText(QString("Current Version: %1 (Build %2)").arg(VURA_VERSION_CANONICAL).arg(VURA_BUILD_NUMBER));
 }
 
 GeneralSettings::~GeneralSettings()

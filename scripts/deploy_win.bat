@@ -12,18 +12,16 @@ FOR /F "usebackq delims=" %%A IN (`git describe --tags --abbrev^=0`) DO (
     SET "GIT_TAG=%%A"
 )
 
-SET OUTPUT_DIR=..\build\deploy
-SET DEPLOY_DIR=..\build\deploy\dist_windows
+SET INSTALLER_DIR=..\installer
+SET OUTPUT_DIR=%INSTALLER_DIR%\deploy
+SET DEPLOY_DIR=%INSTALLER_DIR%\deploy\dist_windows
 
-SET NSIS_SCRIPT=..\installer\installer.nsi
+SET NSIS_SCRIPT=%INSTALLER_DIR%\installer.nsi
 
 rmdir /s /q %DEPLOY_DIR%
 
 mkdir %DEPLOY_DIR%
 copy ..\build\release\src\vura.exe %DEPLOY_DIR%\
-
-copy ..\assets\icons\vura.ico %OUTPUT_DIR%\
-copy ..\assets\data\license.txt %OUTPUT_DIR%\
 
 xcopy ..\assets %DEPLOY_DIR%\assets /E /I
 
@@ -45,8 +43,7 @@ echo Deployment package built in %DEPLOY_DIR%
 
 echo Running NSIS script...
 
-copy %NSIS_SCRIPT% %OUTPUT_DIR%\
-cd /d "%OUTPUT_DIR%"
+cd /d "%INSTALLER_DIR%"
 "%NSIS_PATH%" /V1 /DVERSION=%GIT_TAG% "installer.nsi"
 
 if %ERRORLEVEL% equ 0 (

@@ -25,6 +25,7 @@ target_sources(
         PRIVATE
         forms/vura.qrc
         forms/AboutDialog.ui
+        forms/ContinuePlaybackWidget.ui
         forms/ConvertMediaDialog.ui
         forms/ErrorDialog.ui
         forms/FeedbackDialog.ui
