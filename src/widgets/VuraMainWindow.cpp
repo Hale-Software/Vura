@@ -157,7 +157,7 @@ void VuraMainWindow::keyPressEvent(QKeyEvent *event)
 
 void VuraMainWindow::changeEvent(QEvent *event)
 {
-    QSettings settings;
+    const QSettings settings;
 
     if (event->type() == QEvent::WindowStateChange) {
         const auto *stateEvent = dynamic_cast<QWindowStateChangeEvent*>(event);
@@ -234,6 +234,7 @@ void VuraMainWindow::setConnections()
     m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *m_playbackController, this);
     connect(m_videoMarkerController, &VideoMarkerController::markerAdded, m_videoSlider, &VideoSlider::updateVideoSlider);
     connect(m_videoMarkerController, &VideoMarkerController::markersLoaded, m_videoSlider, &VideoSlider::loadVideoMarkers);
+    connect(m_videoMarkerController, &VideoMarkerController::markersUpdated, m_videoSlider, &VideoSlider::updateVideoSlider);
 
     ui->verticalLayout->addWidget(m_videoSliderWidget);
     ui->verticalLayout->setStretch(0, 1);
@@ -436,6 +437,38 @@ void VuraMainWindow::setConnections()
     connect(ui->actionFileConvertSave, &QAction::triggered, this, &VuraMainWindow::actionShowConvertMedia);
     this->addAction(ui->actionFileConvertSave);
     ui->actionFileConvertSave->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersCumshotMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersCumshotMarkers);
+    this->addAction(ui->actionViewToggleMarkersCumshotMarkers);
+    ui->actionViewToggleMarkersCumshotMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersCyanMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersCyanMarkers);
+    this->addAction(ui->actionViewToggleMarkersCyanMarkers);
+    ui->actionViewToggleMarkersCyanMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersDialogMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersDialogMarkers);
+    this->addAction(ui->actionViewToggleMarkersDialogMarkers);
+    ui->actionViewToggleMarkersDialogMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersMagentaMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersMagentaMarkers);
+    this->addAction(ui->actionViewToggleMarkersMagentaMarkers);
+    ui->actionViewToggleMarkersMagentaMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersMarkers);
+    this->addAction(ui->actionViewToggleMarkersMarkers);
+    ui->actionViewToggleMarkersMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersOrangeMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersOrangeMarkers);
+    this->addAction(ui->actionViewToggleMarkersOrangeMarkers);
+    ui->actionViewToggleMarkersOrangeMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersSceneMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersSceneMarkers);
+    this->addAction(ui->actionViewToggleMarkersSceneMarkers);
+    ui->actionViewToggleMarkersSceneMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionViewToggleMarkersStripMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersStripMarkers);
+    this->addAction(ui->actionViewToggleMarkersStripMarkers);
+    ui->actionViewToggleMarkersStripMarkers->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionRendererVideoWidget, &QAction::toggled, this, &VuraMainWindow::actionRendererVideoWidget_toggled);
     connect(ui->actionRendererOpenGL, &QAction::toggled, this, &VuraMainWindow::actionRendererOpenGLWidget_toggled);
@@ -807,6 +840,70 @@ void VuraMainWindow::actionViewToggleStatusBar() const
     ui->actionViewToggleStatusBar->setChecked(ui->statusBar->isVisible());
 }
 
+void VuraMainWindow::actionViewToggleMarkersCumshotMarkers()
+{
+    m_cumshotMarkerVisible = !m_cumshotMarkerVisible;
+    ui->actionViewToggleMarkersCumshotMarkers->setChecked(m_cumshotMarkerVisible);
+    m_videoMarkerController->setCumshotMarkerVisibility(m_cumshotMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("cumshot", m_cumshotMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersCyanMarkers()
+{
+    m_cyanMarkerVisible = !m_cyanMarkerVisible;
+    ui->actionViewToggleMarkersCyanMarkers->setChecked(m_cyanMarkerVisible);
+    m_videoMarkerController->setCyanMarkerVisibility(m_cyanMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("cyan", m_cyanMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersDialogMarkers()
+{
+    m_dialogMarkerVisible = !m_dialogMarkerVisible;
+    ui->actionViewToggleMarkersDialogMarkers->setChecked(m_dialogMarkerVisible);
+    m_videoMarkerController->setDialogMarkerVisibility(m_dialogMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("dialog", m_dialogMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersMagentaMarkers()
+{
+    m_magentaMarkerVisible = !m_magentaMarkerVisible;
+    ui->actionViewToggleMarkersMagentaMarkers->setChecked(m_magentaMarkerVisible);
+    m_videoMarkerController->setMagentaMarkerVisibility(m_magentaMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("magenta", m_magentaMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersMarkers()
+{
+    m_markerVisible = !m_markerVisible;
+    ui->actionViewToggleMarkersMarkers->setChecked(m_markerVisible);
+    m_videoMarkerController->setMarkerVisibility(m_markerVisible);
+    m_videoSlider->setMarkerTypeVisible("marker", m_markerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersOrangeMarkers()
+{
+    m_orangeMarkerVisible = !m_orangeMarkerVisible;
+    ui->actionViewToggleMarkersOrangeMarkers->setChecked(m_orangeMarkerVisible);
+    m_videoMarkerController->setOrangeMarkerVisibility(m_orangeMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("orange", m_orangeMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersSceneMarkers()
+{
+    m_sceneMarkerVisible = !m_sceneMarkerVisible;
+    ui->actionViewToggleMarkersSceneMarkers->setChecked(m_sceneMarkerVisible);
+    m_videoMarkerController->setSceneMarkerVisibility(m_sceneMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("scene", m_sceneMarkerVisible);
+}
+
+void VuraMainWindow::actionViewToggleMarkersStripMarkers()
+{
+    m_stripMarkerVisible = !m_stripMarkerVisible;
+    ui->actionViewToggleMarkersStripMarkers->setChecked(m_stripMarkerVisible);
+    m_videoMarkerController->setStripMarkerVisibility(m_stripMarkerVisible);
+    m_videoSlider->setMarkerTypeVisible("strip", m_stripMarkerVisible);
+}
+
 void VuraMainWindow::actionMarkersAddCumshotMarker() const
 {
     const double sliderPercent = getSliderPercent();
@@ -859,11 +956,17 @@ void VuraMainWindow::actionMarkersClearIn() {}
 
 void VuraMainWindow::actionMarkersClearInOut() {}
 
-void VuraMainWindow::actionMarkersClearMarkers() {}
+void VuraMainWindow::actionMarkersClearMarkers()
+{
+    m_videoMarkerController->clearMarkers();
+}
 
 void VuraMainWindow::actionMarkersClearOut() {}
 
-void VuraMainWindow::actionMarkersClearSelectedMarker() {}
+void VuraMainWindow::actionMarkersClearSelectedMarker()
+{
+    m_videoMarkerController->clearSelectedMarker(getSliderPercent());
+}
 
 void VuraMainWindow::actionMarkersEditSelectedMarker() {}
 

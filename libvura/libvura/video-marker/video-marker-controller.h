@@ -34,10 +34,20 @@ public:
 
     QList<VuraVideoMarker> getVideoMarkers() const;
 
+    void setCumshotMarkerVisibility(bool visible);
+    void setCyanMarkerVisibility(bool visible);
+    void setDialogMarkerVisibility(bool visible);
+    void setMagentaMarkerVisibility(bool visible);
+    void setMarkerVisibility(bool visible);
+    void setOrangeMarkerVisibility(bool visible);
+    void setSceneMarkerVisibility(bool visible);
+    void setStripMarkerVisibility(bool visible);
+
 signals:
     void markersLoaded();
     void markerAdded();
     void markerEdited(const VuraVideoMarker &videoMarker);
+    void markersUpdated();
 
 public slots:
     void saveVideoMarkers();
@@ -50,10 +60,24 @@ public slots:
     void addOrangeMarker(double timestamp);
     void addSceneMarker(double timestamp);
     void addStripMarker(double timestamp);
+    VuraVideoMarker getSelectedMarker(double sliderPercent);
+    void clearSelectedMarker(double sliderPercent);
+    void clearMarkers();
 
 private:
     QList<VuraVideoMarker> m_videoMarkers;
     QString m_videoMarkersFile;
     QString m_sourceName;
+
+    VuraVideoMarker findNearestMarker(double sliderPercent);
+
+    bool m_cumshotMarkerVisible = true;
+    bool m_cyanMarkerVisible = true;
+    bool m_dialogMarkerVisible = true;
+    bool m_magentaMarkerVisible = true;
+    bool m_markerVisible = true;
+    bool m_orangeMarkerVisible = true;
+    bool m_sceneMarkerVisible = true;
+    bool m_stripMarkerVisible = true;
 
 };

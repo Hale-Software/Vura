@@ -26,10 +26,23 @@ VideoMarkerController::VideoMarkerController(QObject *parent) : QObject(parent)
                           QString("%1/global.json").arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
-QList<VuraVideoMarker> VideoMarkerController::getVideoMarkers() const
-{
-    return m_videoMarkers;
-}
+QList<VuraVideoMarker> VideoMarkerController::getVideoMarkers() const { return m_videoMarkers; }
+
+void VideoMarkerController::setCumshotMarkerVisibility(bool visible) { m_cumshotMarkerVisible = visible; }
+
+void VideoMarkerController::setCyanMarkerVisibility(bool visible) { m_cyanMarkerVisible = visible; }
+
+void VideoMarkerController::setDialogMarkerVisibility(bool visible) { m_dialogMarkerVisible = visible; }
+
+void VideoMarkerController::setMagentaMarkerVisibility(bool visible) { m_magentaMarkerVisible = visible; }
+
+void VideoMarkerController::setMarkerVisibility(bool visible) { m_markerVisible = visible; }
+
+void VideoMarkerController::setOrangeMarkerVisibility(bool visible) { m_orangeMarkerVisible = visible; }
+
+void VideoMarkerController::setSceneMarkerVisibility(bool visible) { m_sceneMarkerVisible = visible; }
+
+void VideoMarkerController::setStripMarkerVisibility(bool visible) { m_stripMarkerVisible = visible; }
 
 void VideoMarkerController::saveVideoMarkers()
 {
@@ -152,4 +165,84 @@ void VideoMarkerController::addStripMarker(const double timestamp)
 
     qDebug() << "Added new marker: [Marker ID] " << marker.id << " [Marker Filename] " << marker.fileName << " [Marker Type] " << marker.markerType << " [Marker Timestamp] " << marker.timestamp;
     emit markerAdded();
+}
+
+VuraVideoMarker VideoMarkerController::getSelectedMarker(double sliderPercent)
+{
+    VuraVideoMarker selectedMarker = findNearestMarker(sliderPercent);
+    if (selectedMarker.id.isEmpty()) return selectedMarker;
+    if (std::isnan(selectedMarker.timestamp)) return selectedMarker;
+
+    int index = 0;
+    int markerIndex = -1;
+
+    QListIterator<VuraVideoMarker> it(m_videoMarkers);
+    while (it.hasNext()) {
+        VuraVideoMarker marker = it.next();
+        if (marker.id == selectedMarker.id) {
+            markerIndex = index;
+            break;
+        }
+        index++;
+    }
+
+    if (markerIndex != -1) {
+        return m_videoMarkers[markerIndex];
+    }
+    return selectedMarker;
+}
+
+void VideoMarkerController::clearSelectedMarker(double sliderPercent)
+{
+    VuraVideoMarker selectedMarker = findNearestMarker(sliderPercent);
+    if (selectedMarker.id.isEmpty()) return;
+    if (std::isnan(selectedMarker.timestamp)) return;
+
+    int index = 0;
+    int markerIndex = -1;
+
+    QListIterator<VuraVideoMarker> it(m_videoMarkers);
+    while (it.hasNext()) {
+        VuraVideoMarker marker = it.next();
+        if (marker.id == selectedMarker.id) {
+            markerIndex = index;
+            break;
+        }
+        index++;
+    }
+
+    if (markerIndex != -1) {
+        m_videoMarkers.removeAt(markerIndex);
+    }
+    emit markersUpdated();
+}
+
+void VideoMarkerController::clearMarkers()
+{
+    m_videoMarkers.clear();
+    emit markersUpdated();
+}
+
+VuraVideoMarker VideoMarkerController::findNearestMarker(const double sliderPercent)
+{
+    const double markerRange = 0.005;
+    VuraVideoMarker best;
+    best.timestamp = std::numeric_limits<double>::quiet_NaN();
+
+    for (const VuraVideoMarker &marker : m_videoMarkers) {
+        if (marker.markerType == "cumshot" && !m_cumshotMarkerVisible) continue;
+        if (marker.markerType == "cyan" && !m_cyanMarkerVisible) continue;
+        if (marker.markerType == "dialog" && !m_dialogMarkerVisible) continue;
+        if (marker.markerType == "magenta" && !m_magentaMarkerVisible) continue;
+        if (marker.markerType == "marker" && !m_markerVisible) continue;
+        if (marker.markerType == "orange" && !m_orangeMarkerVisible) continue;
+        if (marker.markerType == "scene" && !m_sceneMarkerVisible) continue;
+        if (marker.markerType == "strip" && !m_stripMarkerVisible) continue;
+
+        const double dist = std::abs(marker.timestamp - sliderPercent);
+        if (dist > markerRange) continue;
+        if (std::isnan(best.timestamp) || dist < std::abs(best.timestamp - sliderPercent))
+            best = marker;
+    }
+    return best;
 }

@@ -151,6 +151,14 @@ private slots:
     void populateAudioDevicesMenu();
 
     void actionViewToggleStatusBar() const;
+    void actionViewToggleMarkersCumshotMarkers();
+    void actionViewToggleMarkersCyanMarkers();
+    void actionViewToggleMarkersDialogMarkers();
+    void actionViewToggleMarkersMagentaMarkers();
+    void actionViewToggleMarkersMarkers();
+    void actionViewToggleMarkersOrangeMarkers();
+    void actionViewToggleMarkersSceneMarkers();
+    void actionViewToggleMarkersStripMarkers();
 
     void actionMarkersAddCumshotMarker() const;
     void actionMarkersAddCyanMarker() const;
@@ -248,5 +256,14 @@ private:
 
     VuraMediaEngine *m_openGLWidget = nullptr;
     CrashReporter *m_crashReporter = nullptr;
+
+    bool m_cumshotMarkerVisible = true;
+    bool m_cyanMarkerVisible = true;
+    bool m_dialogMarkerVisible = true;
+    bool m_magentaMarkerVisible = true;
+    bool m_markerVisible = true;
+    bool m_orangeMarkerVisible = true;
+    bool m_sceneMarkerVisible = true;
+    bool m_stripMarkerVisible = true;
 
 };
