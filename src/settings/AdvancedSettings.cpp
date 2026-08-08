@@ -70,20 +70,12 @@ void AdvancedSettings::saveSettings()
 
 void AdvancedSettings::logToFile_Checked(const int state)
 {
-    qDebug() << "Log to File Checked:" << state;
-    const QSettings settings;
-    if (settings.value("logToFile", true).toBool() != ui->logToFile->isChecked()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }
 
 void AdvancedSettings::maxLogFiles_ValueChanged(const int value)
 {
-    qDebug() << "Max Log Files Value Changed:" << value;
-    const QSettings settings;
-    if (settings.value("maxLogFiles", 10).toInt() != ui->maxLogFiles->value()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }

@@ -19,6 +19,11 @@
 #include "SettingsDialog.h"
 #include "ui_SettingsDialog.h"
 
+#include <QSettings>
+#include <QMessageBox>
+#include <QStackedWidget>
+#include <QDebug>
+
 
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::SettingsDialog)
 {
@@ -50,6 +55,15 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     ui->settingsViewArea->addWidget(m_associationsSettings);
     ui->settingsViewArea->addWidget(m_advancedSettings);
 
+    connect(m_advancedSettings, &AdvancedSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_associationsSettings, &AssociationsSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_generalSettings, &GeneralSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_hotkeysSettings, &HotkeysSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_interfaceSettings, &InterfaceSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_playbackSettings, &PlaybackSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_playerSettings, &PlayerSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+    connect(m_playlistSettings, &PlaylistSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
+
     ui->settingsViewArea->setCurrentIndex(0);
 }
 
@@ -60,8 +74,12 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::closeEvent(QCloseEvent *event)
 {
-    if (m_advancedSettings->unsavedChanges() || m_associationsSettings->unsavedChanges() || m_generalSettings->unsavedChanges() || m_hotkeysSettings->unsavedChanges() || m_interfaceSettings->unsavedChanges() || m_playbackSettings->unsavedChanges() || m_playerSettings->unsavedChanges() || m_playlistSettings->unsavedChanges()) {
-        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard changes?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    if (unsavedChanges()) {
+        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(this,
+            tr("Discard Changes"),
+            tr("Are you sure you want to discard changes?"),
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
         if (confirmationBox == QMessageBox::Yes) {
             event->accept();
         } else {
@@ -72,7 +90,16 @@ void SettingsDialog::closeEvent(QCloseEvent *event)
     }
 }
 
-void SettingsDialog::pageSelection_Changed()
+void SettingsDialog::settingsChanged_Slot() const
+{
+    if (unsavedChanges()) {
+        ui->applyButton->setEnabled(true);
+    } else {
+        ui->applyButton->setEnabled(false);
+    }
+}
+
+void SettingsDialog::pageSelection_Changed() const
 {
     ui->settingsViewArea->setCurrentIndex(ui->navigationList->currentRow());
 }
@@ -95,28 +122,36 @@ void SettingsDialog::resetToDefaults_Clicked()
 
 void SettingsDialog::applyChanges_Clicked()
 {
-    const QMessageBox::StandardButton confirmationBox = QMessageBox::question(this, tr("Save Settings"), tr("Are you sure you want to save the current settings?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    m_advancedSettings->saveSettings();
+    m_associationsSettings->saveSettings();
+    m_generalSettings->saveSettings();
+    m_hotkeysSettings->saveSettings();
+    m_interfaceSettings->saveSettings();
+    m_playbackSettings->saveSettings();
+    m_playerSettings->saveSettings();
+    m_playlistSettings->saveSettings();
 
-    if (confirmationBox == QMessageBox::Yes) {
-        m_advancedSettings->saveSettings();
-        m_associationsSettings->saveSettings();
-        m_generalSettings->saveSettings();
-        m_hotkeysSettings->saveSettings();
-        m_interfaceSettings->saveSettings();
-        m_playbackSettings->saveSettings();
-        m_playerSettings->saveSettings();
-        m_playlistSettings->saveSettings();
-        this->close();
-    }
+    ui->applyButton->setEnabled(false);
+    emit settingsChanged();
 }
 
 void SettingsDialog::cancel_Clicked()
 {
-    const bool unsavedChanges = m_advancedSettings->unsavedChanges() || m_associationsSettings->unsavedChanges() || m_generalSettings->unsavedChanges() || m_hotkeysSettings->unsavedChanges() || m_interfaceSettings->unsavedChanges() || m_playbackSettings->unsavedChanges() || m_playerSettings->unsavedChanges() || m_playlistSettings->unsavedChanges();
-    if (unsavedChanges) {
-        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard changes?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        if (confirmationBox == QMessageBox::Yes) {
-            this->close();
-        }
+    this->close();
+}
+
+bool SettingsDialog::unsavedChanges() const
+{
+    if (m_advancedSettings->unsavedChanges()
+        || m_associationsSettings->unsavedChanges()
+        || m_generalSettings->unsavedChanges()
+        || m_hotkeysSettings->unsavedChanges()
+        || m_interfaceSettings->unsavedChanges()
+        || m_playbackSettings->unsavedChanges()
+        || m_playerSettings->unsavedChanges()
+        || m_playlistSettings->unsavedChanges()) {
+        return true;
     }
+
+    return false;
 }

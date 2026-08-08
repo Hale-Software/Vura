@@ -80,29 +80,20 @@ void GeneralSettings::saveSettings()
 
 void GeneralSettings::language_Changed(int index)
 {
-    const QSettings settings;
-    if (settings.value("language", 0).toInt() != ui->language->currentIndex()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }
 
 void GeneralSettings::systemTrayIcon_Checked(int state)
 {
-    const QSettings settings;
-    if (settings.value("systemTrayIcon", true).toBool() != ui->systemTray->isChecked()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }
 
 void GeneralSettings::updateBranch_Changed(int index)
 {
-    const QSettings settings;
-    if (settings.value("updateBranch", 0).toInt() != ui->updateBranch->currentIndex()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }
 
 void GeneralSettings::checkForUpdates_Clicked()
@@ -112,9 +103,6 @@ void GeneralSettings::checkForUpdates_Clicked()
 
 void GeneralSettings::enableAutomaticUpdates_Checked(int state)
 {
-    const QSettings settings;
-    if (settings.value("automaticUpdates", true).toBool() != ui->automaticUpdates->isChecked()) {
-        m_unsavedChanges = true;
-        emit settingsChanged();
-    }
+    unsavedChanges();
+    emit settingsChanged();
 }

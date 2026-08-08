@@ -19,11 +19,7 @@
 #pragma once
 
 #include <QDialog>
-#include <QSettings>
-#include <QMessageBox>
-#include <QStackedWidget>
 #include <QCloseEvent>
-#include <QDebug>
 
 #include "AdvancedSettings.h"
 #include "AssociationsSettings.h"
@@ -33,6 +29,11 @@
 #include "PlaybackSettings.h"
 #include "PlayerSettings.h"
 #include "PlaylistSettings.h"
+
+class QSettings;
+class QMessageBox;
+class QStackedWidget;
+class QDebug;
 
 
 QT_BEGIN_NAMESPACE
@@ -57,8 +58,11 @@ signals:
     void settingsChanged();
     void requiresRestart();
 
+public slots:
+    void settingsChanged_Slot() const;
+
 private slots:
-    void pageSelection_Changed();
+    void pageSelection_Changed() const;
     void resetToDefaults_Clicked();
     void applyChanges_Clicked();
     void cancel_Clicked();
@@ -74,5 +78,7 @@ private:
     PlaybackSettings *m_playbackSettings = nullptr;
     PlayerSettings *m_playerSettings = nullptr;
     PlaylistSettings *m_playlistSettings = nullptr;
+
+    bool unsavedChanges() const;
 
 };

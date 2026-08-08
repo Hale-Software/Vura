@@ -56,6 +56,37 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
     ui->magentaMarkerColor->setText(settings.value("magentaMarkerColor", "#f5007e").toString());
     ui->orangeMarkerColor->setText(settings.value("orangeMarkerColor", "#f56a00").toString());
 
+    connect(ui->currentTheme, &QComboBox::currentIndexChanged, this, &InterfaceSettings::currentTheme_Changed);
+    connect(ui->rememberWindowSize, &QCheckBox::stateChanged, this, &InterfaceSettings::rememberWindowSize_Checked);
+    connect(ui->showPlaylistOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showPlaylistOnStart_Checked);
+    connect(ui->showVideoControlsOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showVideoControlsOnStart_Checked);
+    connect(ui->showStatusBarOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showStatusBarOnStart_Checked);
+    connect(ui->autohideSlider, &QCheckBox::stateChanged, this, &InterfaceSettings::autohideSlider_Checked);
+    connect(ui->unhideSliderOnHotkey, &QCheckBox::stateChanged, this, &InterfaceSettings::unhideSliderOnHotkey_Checked);
+    connect(ui->sliderAutohideTimer, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderAutohideTimer_ValueChanged);
+    connect(ui->sliderHeight, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderHeight_ValueChanged);
+    connect(ui->videoMarkerHeight, &QSpinBox::valueChanged, this, &InterfaceSettings::videoMarkerHeight_ValueChanged);
+    connect(ui->videoMarkerWidth, &QSpinBox::valueChanged, this, &InterfaceSettings::videoMarkerWidth_ValueChanged);
+    connect(ui->videoMarkerSideLength, &QSpinBox::valueChanged, this, &InterfaceSettings::videoMarkerSideLength_ValueChanged);
+    connect(ui->videoMarkerVerticalMargin, &QSpinBox::valueChanged, this, &InterfaceSettings::videoMarkerVerticalMargin_ValueChanged);
+    connect(ui->sliderLeftRightMargin, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderLeftRightMargin_ValueChanged);
+    connect(ui->sliderHandleRadius, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderHandleRadius_ValueChanged);
+    connect(ui->sliderPadding, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderPadding_ValueChanged);
+    connect(ui->emptySliderColor, &QLineEdit::textChanged, this, &InterfaceSettings::emptySliderColor_TextChanged);
+    connect(ui->fullSliderColor, &QLineEdit::textChanged, this, &InterfaceSettings::fullSliderColor_TextChanged);
+    connect(ui->caretColor, &QLineEdit::textChanged, this, &InterfaceSettings::caretColor_TextChanged);
+    connect(ui->backgroundTrackColor, &QLineEdit::textChanged, this, &InterfaceSettings::backgroundTrackColor_TextChanged);
+    connect(ui->progressFillColor, &QLineEdit::textChanged, this, &InterfaceSettings::progressFillColor_TextChanged);
+    connect(ui->handlePlayheadColor, &QLineEdit::textChanged, this, &InterfaceSettings::handlePlayheadColor_TextChanged);
+    connect(ui->markerColor, &QLineEdit::textChanged, this, &InterfaceSettings::markerColor_TextChanged);
+    connect(ui->sceneMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::sceneMarkerColor_TextChanged);
+    connect(ui->cumshotMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::cumshotMarkerColor_TextChanged);
+    connect(ui->stripMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::stripMarkerColor_TextChanged);
+    connect(ui->dialogMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::dialogMarkerColor_TextChanged);
+    connect(ui->cyanMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::cyanMarkerColor_TextChanged);
+    connect(ui->magentaMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::magentaMarkerColor_TextChanged);
+    connect(ui->orangeMarkerColor, &QLineEdit::textChanged, this, &InterfaceSettings::orangeMarkerColor_TextChanged);
+
     connect(ui->emptySliderColorBrowse, &QPushButton::clicked, this, &InterfaceSettings::emptySliderColorBrowse_Clicked);
     connect(ui->stripMarkerColorBrowse, &QPushButton::clicked, this, &InterfaceSettings::stripMarkerColorBrowse_Clicked);
     connect(ui->dialogMarkerColorBrowse, &QPushButton::clicked, this, &InterfaceSettings::dialogMarkerColorBrowse_Clicked);
@@ -105,6 +136,42 @@ bool InterfaceSettings::unsavedChanges()
         m_unsavedChanges = true;
     } else if (settings.value("videoMarkerSideLength", 14).toInt() != ui->videoMarkerSideLength->value()) {
         m_unsavedChanges = true;
+    } else if (settings.value("videoMarkerVerticalMargin", 0).toInt() != ui->videoMarkerVerticalMargin->value()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("sliderLeftRightMargin", 1).toInt() != ui->sliderLeftRightMargin->value()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("sliderHandleRadius", 8).toInt() != ui->sliderHandleRadius->value()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("sliderPadding", 2).toInt() != ui->sliderPadding->value()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("emptySliderColor", "#000000").toString() != ui->emptySliderColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("fullSliderColor", "#00d9ff").toString() != ui->fullSliderColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("caretColor", "#ffffff").toString() != ui->caretColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("backgroundTrackColor", "#323232").toString() != ui->backgroundTrackColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("progressFillColor", "#0076d7").toString() != ui->progressFillColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("handlePlayheadColor", "#ffffff").toString() != ui->handlePlayheadColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("markerColor", "#03c200").toString() != ui->markerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("sceneMarkerColor", "#000eab").toString() != ui->sceneMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("cumshotMarkerColor", "#ffffff").toString() != ui->cumshotMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("stripMarkerColor", "#cf0202").toString() != ui->stripMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("dialogMarkerColor", "#e0f500").toString() != ui->dialogMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("cyanMarkerColor", "#00edf5").toString() != ui->cyanMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("magentaMarkerColor", "#f5007e").toString() != ui->magentaMarkerColor->text()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("orangeMarkerColor", "#f56a00").toString() != ui->orangeMarkerColor->text()) {
+        m_unsavedChanges = true;
     }
 
     return m_unsavedChanges;
@@ -112,7 +179,6 @@ bool InterfaceSettings::unsavedChanges()
 
 void InterfaceSettings::resetToDefaults()
 {
-    const QSettings settings;
     ui->currentTheme->setCurrentIndex(0);
     ui->rememberWindowSize->setChecked(false);
     ui->showPlaylistOnStart->setChecked(true);
@@ -182,170 +248,337 @@ void InterfaceSettings::saveSettings()
     m_unsavedChanges = false;
 }
 
-void InterfaceSettings::emptySliderColor_TextChanged(const QString &text) {}
+void InterfaceSettings::currentTheme_Changed(int index)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::rememberWindowSize_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::showPlaylistOnStart_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::showVideoControlsOnStart_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::showStatusBarOnStart_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::autohideSlider_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::unhideSliderOnHotkey_Checked(int state)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::sliderAutohideTimer_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::sliderHeight_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::videoMarkerHeight_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::videoMarkerWidth_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::videoMarkerSideLength_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::videoMarkerVerticalMargin_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::sliderLeftRightMargin_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::sliderHandleRadius_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::sliderPadding_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::emptySliderColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::emptySliderColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->emptySliderColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("emptySliderColor", color.name());
+        ui->emptySliderColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::stripMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::stripMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::stripMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->stripMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("stripMarkerColor", color.name());
+        ui->stripMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::dialogMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::dialogMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::dialogMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->dialogMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("dialogMarkerColor", color.name());
+        ui->dialogMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::cyanMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::cyanMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::cyanMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->cyanMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("cyanMarkerColor", color.name());
+        ui->cyanMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::magentaMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::magentaMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::magentaMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->magentaMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("magentaMarkerColor", color.name());
+        ui->magentaMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::orangeMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::orangeMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::orangeMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->orangeMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("orangeMarkerColor", color.name());
+        ui->orangeMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::fullSliderColor_TextChanged(const QString &text) {}
+void InterfaceSettings::fullSliderColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::fullSliderColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->fullSliderColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("fullSliderColor", color.name());
+        ui->fullSliderColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::caretColor_TextChanged(const QString &text) {}
+void InterfaceSettings::caretColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::caretColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->caretColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("caretColor", color.name());
+        ui->caretColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::backgroundTrackColor_TextChanged(const QString &text) {}
+void InterfaceSettings::backgroundTrackColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::backgroundTrackColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->backgroundTrackColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("backgroundTrackColor", color.name());
+        ui->backgroundTrackColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::progressFillColor_TextChanged(const QString &text) {}
+void InterfaceSettings::progressFillColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::progressFillColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->progressFillColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("progressFillColor", color.name());
+        ui->progressFillColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::handlePlayheadColor_TextChanged(const QString &text) {}
+void InterfaceSettings::handlePlayheadColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::handlePlayheadColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->handlePlayheadColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("handlePlayheadColor", color.name());
+        ui->handlePlayheadColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::markerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::markerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::markerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->markerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("markerColor", color.name());
+        ui->markerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::sceneMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::sceneMarkerColor_TextChanged(const QString &text)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::sceneMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->sceneMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("sceneMarkerColor", color.name());
+        ui->sceneMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }
 
-void InterfaceSettings::cumshotMarkerColor_TextChanged(const QString &text) {}
+void InterfaceSettings::cumshotMarkerColor_TextChanged(const QString &text)
+{
+
+    unsavedChanges();
+    emit settingsChanged();
+}
 
 void InterfaceSettings::cumshotMarkerColorBrowse_Clicked()
 {
-    QSettings settings;
     const QColor color = QColorDialog::getColor(QColor(ui->cumshotMarkerColor->text()), this, tr("Choose a Color"));
 
     if (color.isValid()) {
-        settings.setValue("cumshotMarkerColor", color.name());
+        ui->cumshotMarkerColor->setText(color.name());
+        unsavedChanges();
+        emit settingsChanged();
     }
 }

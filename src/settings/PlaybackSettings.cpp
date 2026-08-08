@@ -34,6 +34,16 @@ PlaybackSettings::PlaybackSettings(QWidget *parent) : QWidget(parent), ui(new Ui
     ui->smallJump->setValue(settings.value("smallJump", 5).toInt());
     ui->extraSmallJump->setValue(settings.value("extraSmallJump", 1).toInt());
     ui->jumpToEndPercentage->setValue(settings.value("jumpToEndPercentage", 90).toInt());
+
+    connect(ui->playbackSpeedAdjustment, &QDoubleSpinBox::valueChanged, this, &PlaybackSettings::playbackSpeedAdjustment_ValueChanged);
+    connect(ui->playbackSpeedAdjustmentFine, &QDoubleSpinBox::valueChanged, this, &PlaybackSettings::playbackSpeedAdjustmentFine_ValueChanged);
+    connect(ui->volumeStep, &QDoubleSpinBox::valueChanged, this, &PlaybackSettings::volumeStep_ValueChanged);
+    connect(ui->extraLargeJump, &QSpinBox::valueChanged, this, &PlaybackSettings::extraLargeJump_ValueChanged);
+    connect(ui->largeJump, &QSpinBox::valueChanged, this, &PlaybackSettings::largeJump_ValueChanged);
+    connect(ui->mediumJump, &QSpinBox::valueChanged, this, &PlaybackSettings::mediumJump_ValueChanged);
+    connect(ui->smallJump, &QSpinBox::valueChanged, this, &PlaybackSettings::smallJump_ValueChanged);
+    connect(ui->extraSmallJump, &QSpinBox::valueChanged, this, &PlaybackSettings::extraSmallJump_ValueChanged);
+    connect(ui->jumpToEndPercentage, &QSpinBox::valueChanged, this, &PlaybackSettings::jumpToEndPercentage_ValueChanged);
 }
 
 PlaybackSettings::~PlaybackSettings()
@@ -69,7 +79,6 @@ bool PlaybackSettings::unsavedChanges()
 
 void PlaybackSettings::resetToDefaults()
 {
-    const QSettings settings;
     ui->playbackSpeedAdjustment->setValue(0.5);
     ui->playbackSpeedAdjustmentFine->setValue(0.25);
     ui->volumeStep->setValue(0.10);
@@ -95,4 +104,58 @@ void PlaybackSettings::saveSettings()
     settings.setValue("extraSmallJump", ui->extraSmallJump->value());
     settings.setValue("jumpToEndPercentage", ui->jumpToEndPercentage->value());
     m_unsavedChanges = false;
+}
+
+void PlaybackSettings::playbackSpeedAdjustment_ValueChanged(double value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::playbackSpeedAdjustmentFine_ValueChanged(double value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::volumeStep_ValueChanged(double value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::extraLargeJump_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::largeJump_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::mediumJump_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::smallJump_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::extraSmallJump_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void PlaybackSettings::jumpToEndPercentage_ValueChanged(int value)
+{
+    unsavedChanges();
+    emit settingsChanged();
 }

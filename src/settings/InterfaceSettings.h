@@ -53,6 +53,22 @@ public slots:
     void saveSettings();
 
 private slots:
+    void currentTheme_Changed(int index);
+    void rememberWindowSize_Checked(int state);
+    void showPlaylistOnStart_Checked(int state);
+    void showVideoControlsOnStart_Checked(int state);
+    void showStatusBarOnStart_Checked(int state);
+    void autohideSlider_Checked(int state);
+    void unhideSliderOnHotkey_Checked(int state);
+    void sliderAutohideTimer_ValueChanged(int value);
+    void sliderHeight_ValueChanged(int value);
+    void videoMarkerHeight_ValueChanged(int value);
+    void videoMarkerWidth_ValueChanged(int value);
+    void videoMarkerSideLength_ValueChanged(int value);
+    void videoMarkerVerticalMargin_ValueChanged(int value);
+    void sliderLeftRightMargin_ValueChanged(int value);
+    void sliderHandleRadius_ValueChanged(int value);
+    void sliderPadding_ValueChanged(int value);
     void emptySliderColor_TextChanged(const QString &text);
     void emptySliderColorBrowse_Clicked();
     void stripMarkerColor_TextChanged(const QString &text);
