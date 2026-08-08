@@ -19,6 +19,12 @@
 #include "PlayerSettings.h"
 #include "ui_PlayerSettings.h"
 
+#include <QSettings>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QSlider>
+#include <QDebug>
+
 
 PlayerSettings::PlayerSettings(QWidget *parent) : QWidget(parent), ui(new Ui::PlayerSettings)
 {

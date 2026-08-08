@@ -19,6 +19,14 @@
 #include "InterfaceSettings.h"
 #include "ui_InterfaceSettings.h"
 
+#include <QSettings>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QColorDialog>
+#include <QPushButton>
+#include <QDebug>
+
 
 InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new Ui::InterfaceSettings)
 {

@@ -19,10 +19,11 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
-#include <QSpinBox>
-#include <QDoubleSpinBox>
-#include <QDebug>
+
+class QSettings;
+class QSpinBox;
+class QDoubleSpinBox;
+class QDebug;
 
 
 QT_BEGIN_NAMESPACE

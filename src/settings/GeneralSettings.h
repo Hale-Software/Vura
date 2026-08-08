@@ -19,12 +19,13 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QDebug>
+
+class QSettings;
+class QComboBox;
+class QCheckBox;
+class QPushButton;
+class QMessageBox;
+class QDebug;
 
 
 QT_BEGIN_NAMESPACE

@@ -19,6 +19,13 @@
 #include "GeneralSettings.h"
 #include "ui_GeneralSettings.h"
 
+#include <QSettings>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QMessageBox>
+#include <QDebug>
+
 #include <ui-config.h>
 
 

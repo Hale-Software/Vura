@@ -19,6 +19,11 @@
 #include "AdvancedSettings.h"
 #include "ui_AdvancedSettings.h"
 
+#include <QSettings>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QDebug>
+
 
 AdvancedSettings::AdvancedSettings(QWidget *parent) : QWidget(parent), ui(new Ui::AdvancedSettings)
 {

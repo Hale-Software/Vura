@@ -19,6 +19,11 @@
 #include "PlaybackSettings.h"
 #include "ui_PlaybackSettings.h"
 
+#include <QSettings>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QDebug>
+
 
 PlaybackSettings::PlaybackSettings(QWidget *parent) : QWidget(parent), ui(new Ui::PlaybackSettings)
 {
