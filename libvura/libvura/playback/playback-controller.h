@@ -74,6 +74,11 @@ public slots:
     void setPosition(qint64 position);
 
     void setPlaybackRate(double rate);
+    void playbackRateFaster();
+    void playbackRateFasterFine();
+    void playbackRateNormal();
+    void playbackRateSlower();
+    void playbackRateSlowerFine();
 
     void changeVolume(int newVolume) const;
     void volumeUp() const;

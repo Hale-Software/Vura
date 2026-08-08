@@ -138,9 +138,10 @@ void VideoSliderWidget::positionChanged(const qint64 position)
     updateTimestamps(position / 1000);
 }
 
-void VideoSliderWidget::playbackRateChanged(const qreal playbackRate) const
+void VideoSliderWidget::playbackRateChanged(const qreal playbackRate)
 {
-    ui->playbackRate->setText("x" + QString::number(playbackRate));
+    m_playbackSpeed = playbackRate;
+    ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void VideoSliderWidget::updateTimestamps(const qint64 currentPosition)

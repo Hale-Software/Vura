@@ -282,6 +282,80 @@ void PlaybackController::setPlaybackRate(const double rate)
     //emit jumpCompleted();
 }
 
+void PlaybackController::playbackRateFaster()
+{
+    const QSettings settings;
+    const double playbackRateStep = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+    const double maxPlaybackRate = settings.value("playbackSpeedMax", 10.0).toDouble();
+
+    if (m_usingVideoWidget) {
+        const double currentPlaybackRate = m_player->playbackRate();
+        double newPlaybackRate = currentPlaybackRate + playbackRateStep;
+        if (newPlaybackRate > maxPlaybackRate)
+            newPlaybackRate = maxPlaybackRate;
+        m_player->setPlaybackRate(newPlaybackRate);
+    }
+
+    emit playbackRateChanged(m_player->playbackRate());
+}
+
+void PlaybackController::playbackRateFasterFine()
+{
+    const QSettings settings;
+    const double playbackRateStep = settings.value("playbackSpeedAdjustmentFine", 0.25).toDouble();
+    const double maxPlaybackRate = settings.value("playbackSpeedMax", 10.0).toDouble();
+
+    if (m_usingVideoWidget) {
+        const double currentPlaybackRate = m_player->playbackRate();
+        double newPlaybackRate = currentPlaybackRate + playbackRateStep;
+        if (newPlaybackRate > maxPlaybackRate)
+            newPlaybackRate = maxPlaybackRate;
+        m_player->setPlaybackRate(newPlaybackRate);
+    }
+
+    emit playbackRateChanged(m_player->playbackRate());
+}
+
+void PlaybackController::playbackRateNormal()
+{
+    if (m_usingVideoWidget) {
+        m_player->setPlaybackRate(1.0);
+    }
+    emit playbackRateChanged(m_player->playbackRate());
+}
+
+void PlaybackController::playbackRateSlower()
+{
+    const QSettings settings;
+    const double playbackRateStep = settings.value("playbackSpeedAdjustment", 0.5).toDouble();
+
+    if (m_usingVideoWidget) {
+        const double currentPlaybackRate = m_player->playbackRate();
+        double newPlaybackRate = currentPlaybackRate - playbackRateStep;
+        if (newPlaybackRate < 0.1)
+            newPlaybackRate = 0.1;
+        m_player->setPlaybackRate(newPlaybackRate);
+    }
+
+    emit playbackRateChanged(m_player->playbackRate());
+}
+
+void PlaybackController::playbackRateSlowerFine()
+{
+    const QSettings settings;
+    const double playbackRateStep = settings.value("playbackSpeedAdjustmentFine", 0.25).toDouble();
+
+    if (m_usingVideoWidget) {
+        const double currentPlaybackRate = m_player->playbackRate();
+        double newPlaybackRate = currentPlaybackRate - playbackRateStep;
+        if (newPlaybackRate < 0.1)
+            newPlaybackRate = 0.1;
+        m_player->setPlaybackRate(newPlaybackRate);
+    }
+
+    emit playbackRateChanged(m_player->playbackRate());
+}
+
 void PlaybackController::changeVolume(const int newVolume) const
 {
     // Qt6 QAudioOutput volume is a linear float from 0.0 to 1.0

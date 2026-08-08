@@ -372,7 +372,18 @@
      <addaction name="actionPlaybackJumpBackwardSmall"/>
      <addaction name="actionPlaybackJumpBackwardExtraSmall"/>
     </widget>
+    <widget class="QMenu" name="menuPlaybackMode">
+     <property name="title">
+      <string>Playback Mode</string>
+     </property>
+     <addaction name="actionPlaybackModeDoNotLoopPlaylist"/>
+     <addaction name="actionPlaybackModeLoopPlaylist"/>
+     <addaction name="actionPlaybackModeLoopCurrentTrack"/>
+     <addaction name="actionPlaybackModeShuffle"/>
+    </widget>
     <addaction name="menuSpeed"/>
+    <addaction name="separator"/>
+    <addaction name="menuPlaybackMode"/>
     <addaction name="separator"/>
     <addaction name="actionPlaybackNextFrame"/>
     <addaction name="actionPlaybackPreviousFrame"/>
@@ -1529,6 +1540,38 @@
    </property>
    <property name="text">
     <string>Toggle Status Bar</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeDoNotLoopPlaylist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Do Not Loop Playlist</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeLoopPlaylist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop Playlist</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeLoopCurrentTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop Current Track</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeShuffle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Shuffle</string>
    </property>
   </action>
  </widget>

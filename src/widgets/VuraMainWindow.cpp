@@ -58,6 +58,18 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
             this
         );
 
+    connect(m_playbackController, &PlaybackController::mediaEnded, this, [this]() {
+        int count = m_playlistController->getModel()->rowCount();
+        int currentIndex = ui->playlistView->currentIndex().row();
+        auto mode = m_playlistController->playbackMode();
+
+        if (mode == PlaylistController::DoNotLoopPlaylist && currentIndex >= count - 1) {
+            m_playbackController->pause();
+        } else {
+            m_playlistController->nextTrack();
+        }
+    });
+
     if (settings.value("useHardwareAcceleration", false).toBool()) {
         m_openGLWidget = new VuraMediaEngine(this);
         ui->verticalLayout_8->addWidget(m_openGLWidget);
@@ -194,6 +206,42 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
 void VuraMainWindow::setConnections()
 {
     const QSettings settings;
+
+    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
+    switch (mode) {
+        case PlaylistController::DoNotLoopPlaylist:
+            ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
+            break;
+        case PlaylistController::LoopPlaylist:
+            ui->actionPlaybackModeLoopPlaylist->setChecked(true);
+            break;
+        case PlaylistController::LoopCurrentVideo:
+            ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
+            break;
+        case PlaylistController::Shuffle:
+            ui->actionPlaybackModeShuffle->setChecked(true);
+            break;
+        default:
+            break;
+    }
+
+    connect(ui->actionPlaybackModeDoNotLoopPlaylist, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeDoNotLoopPlaylist);
+    this->addAction(ui->actionPlaybackModeDoNotLoopPlaylist);
+    ui->actionPlaybackModeDoNotLoopPlaylist->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackModeLoopCurrentTrack, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeLoopCurrentTrack);
+    this->addAction(ui->actionPlaybackModeLoopCurrentTrack);
+    ui->actionPlaybackModeLoopCurrentTrack->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackModeLoopPlaylist, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeLoopPlaylist);
+    this->addAction(ui->actionPlaybackModeLoopPlaylist);
+    ui->actionPlaybackModeLoopPlaylist->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackModeShuffle, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeShuffle);
+    this->addAction(ui->actionPlaybackModeShuffle);
+    ui->actionPlaybackModeShuffle->setShortcutContext(Qt::WindowShortcut);
+
+    connect(m_playlistController, &PlaylistController::playbackModeChanged, this, &VuraMainWindow::playbackModeChanged);
 
     // Playback Actions
     connect(ui->actionPlaybackNext, &QAction::triggered, m_playlistController, &PlaylistController::nextTrack);
@@ -348,6 +396,26 @@ void VuraMainWindow::setConnections()
     connect(ui->actionPlaybackJumpForwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpForwardExtraSmall);
     this->addAction(ui->actionPlaybackJumpForwardExtraSmall);
     ui->actionPlaybackJumpForwardExtraSmall->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackSpeedFaster, &QAction::triggered, m_playbackController, &PlaybackController::playbackRateFaster);
+    this->addAction(ui->actionPlaybackSpeedFaster);
+    ui->actionPlaybackSpeedFaster->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackSpeedFasterFine, &QAction::triggered, m_playbackController, &PlaybackController::playbackRateFasterFine);
+    this->addAction(ui->actionPlaybackSpeedFasterFine);
+    ui->actionPlaybackSpeedFasterFine->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackSpeedNormal, &QAction::triggered, m_playbackController, &PlaybackController::playbackRateNormal);
+    this->addAction(ui->actionPlaybackSpeedNormal);
+    ui->actionPlaybackSpeedNormal->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackSpeedSlowerFine, &QAction::triggered, m_playbackController, &PlaybackController::playbackRateSlowerFine);
+    this->addAction(ui->actionPlaybackSpeedSlowerFine);
+    ui->actionPlaybackSpeedSlowerFine->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionPlaybackSpeedSlower, &QAction::triggered, m_playbackController, &PlaybackController::playbackRateSlower);
+    this->addAction(ui->actionPlaybackSpeedSlower);
+    ui->actionPlaybackSpeedSlower->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionPlaybackJumpBackwardExtraSmall, &QAction::triggered, m_playbackController, &PlaybackController::jumpBackwardExtraSmall);
     this->addAction(ui->actionPlaybackJumpBackwardExtraSmall);
@@ -598,6 +666,31 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
         // Always alert
         case 2:
             QApplication::alert(this);
+            break;
+        default:
+            break;
+    }
+}
+
+void VuraMainWindow::playbackModeChanged(PlaylistController::PlaybackMode mode)
+{
+    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeShuffle->setChecked(false);
+
+    switch (mode) {
+        case PlaylistController::DoNotLoopPlaylist:
+            ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
+            break;
+        case PlaylistController::LoopCurrentVideo:
+            ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
+            break;
+        case PlaylistController::LoopPlaylist:
+            ui->actionPlaybackModeLoopPlaylist->setChecked(true);
+            break;
+        case PlaylistController::Shuffle:
+            ui->actionPlaybackModeShuffle->setChecked(true);
             break;
         default:
             break;
@@ -902,6 +995,66 @@ void VuraMainWindow::actionViewToggleMarkersStripMarkers()
     ui->actionViewToggleMarkersStripMarkers->setChecked(m_stripMarkerVisible);
     m_videoMarkerController->setStripMarkerVisibility(m_stripMarkerVisible);
     m_videoSlider->setMarkerTypeVisible("strip", m_stripMarkerVisible);
+}
+
+void VuraMainWindow::actionPlaybackModeDoNotLoopPlaylist()
+{
+    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
+    if (mode == PlaylistController::DoNotLoopPlaylist) {
+        ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
+        return;
+    }
+
+    m_playlistController->setPlaybackMode(PlaylistController::DoNotLoopPlaylist);
+    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
+    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeShuffle->setChecked(false);
+}
+
+void VuraMainWindow::actionPlaybackModeLoopCurrentTrack()
+{
+    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
+    if (mode == PlaylistController::LoopCurrentVideo) {
+        ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
+        return;
+    }
+
+    m_playlistController->setPlaybackMode(PlaylistController::LoopCurrentVideo);
+    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
+    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeShuffle->setChecked(false);
+}
+
+void VuraMainWindow::actionPlaybackModeLoopPlaylist()
+{
+    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
+    if (mode == PlaylistController::LoopPlaylist) {
+        ui->actionPlaybackModeLoopPlaylist->setChecked(true);
+        return;
+    }
+
+    m_playlistController->setPlaybackMode(PlaylistController::LoopPlaylist);
+    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+    ui->actionPlaybackModeLoopPlaylist->setChecked(true);
+    ui->actionPlaybackModeShuffle->setChecked(false);
+}
+
+void VuraMainWindow::actionPlaybackModeShuffle()
+{
+    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
+    if (mode == PlaylistController::Shuffle) {
+        ui->actionPlaybackModeShuffle->setChecked(true);
+        return;
+    }
+
+    m_playlistController->setPlaybackMode(PlaylistController::Shuffle);
+    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
+    ui->actionPlaybackModeShuffle->setChecked(true);
 }
 
 void VuraMainWindow::actionMarkersAddCumshotMarker() const

@@ -38,11 +38,19 @@
 
 class PlaylistModel;
 
-
 class PlaylistController : public QObject {
     Q_OBJECT
 
 public:
+    enum PlaybackMode
+    {
+        DoNotLoopPlaylist,
+        LoopPlaylist,
+        LoopCurrentVideo,
+        Shuffle
+    };
+    Q_ENUM(PlaybackMode)
+
     explicit PlaylistController(QListView* view,
                                 QWidget* emptyPlaylistWidget,
                                 QStackedWidget* container,
@@ -51,8 +59,11 @@ public:
 
     PlaylistModel* getModel() const { return m_model; }
     bool isPlaylistVisible() const { return m_container->isVisible(); }
+    PlaybackMode playbackMode() const;
+    void setPlaybackMode(PlaybackMode mode);
 
 public slots:
+    bool isLastTrack() const;
     void showContextMenu(const QPoint& pos);
     void requestFileImport();
     void requestMultipleFileImport();
@@ -67,10 +78,15 @@ public slots:
     void previousTrack();
     void savePlaylistAs() const;
     void loadPlaylistFile();
+    void contextMenuNoLoop();
+    void contextMenuLoopTrack();
+    void contextMenuLoopPlaylist();
+    void contextMenuShuffle();
 
 signals:
     void playTrackRequested(const QUrl &mediaUrl);
     void playlistUpdated(int mediaCount);
+    void playbackModeChanged(PlaybackMode mode);
 
 private slots:
     void updateEmptyState();
@@ -80,6 +96,8 @@ private:
     void processFilePaths(const QStringList &paths, bool autoPlay, bool isLocalFile = true);
 
     PlaylistModel* m_model;
+    PlaybackMode m_playbackMode = DoNotLoopPlaylist;
+    QList<int> m_shuffledIndexes;
     QListView* m_view;
     QWidget* m_emptyPlaylistWidget;
     QStackedWidget* m_container;
@@ -89,11 +107,16 @@ private:
     QAction* m_addFileAction = nullptr;
     QAction* m_addFolderAction = nullptr;
     QAction* m_clearPlaylistAction = nullptr;
-    QAction* m_loadPlaylistAction = nullptr;
     QAction* m_savePlaylistAction = nullptr;
     QAction* m_videoInformationAction = nullptr;
     QAction* m_showFolderAction = nullptr;
     QAction* m_removeSelectedAction = nullptr;
+
+    QMenu* m_playbackModeMenu = nullptr;
+    QAction* m_noLoopAction = nullptr;
+    QAction* m_loopPlaylistAction = nullptr;
+    QAction* m_loopCurrentVideoAction = nullptr;
+    QAction* m_shuffleAction = nullptr;
 
     bool saveToFile(const QString &filePath) const;
     bool loadFromFile(const QString &filePath);

@@ -160,6 +160,11 @@ private slots:
     void actionViewToggleMarkersSceneMarkers();
     void actionViewToggleMarkersStripMarkers();
 
+    void actionPlaybackModeDoNotLoopPlaylist();
+    void actionPlaybackModeLoopCurrentTrack();
+    void actionPlaybackModeLoopPlaylist();
+    void actionPlaybackModeShuffle();
+
     void actionMarkersAddCumshotMarker() const;
     void actionMarkersAddCyanMarker() const;
     void actionMarkersAddDialogMarker() const;
@@ -190,6 +195,7 @@ private slots:
 public slots:
     void stateChanged(PlaybackState state);
     void sourceChanged(const QUrl &source);
+    void playbackModeChanged(PlaylistController::PlaybackMode mode);
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
     void resetVideoSliderVisibility();

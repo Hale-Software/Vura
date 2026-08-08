@@ -16,6 +16,8 @@
 
  ******************************************************************************/
 
+#include <QRandomGenerator>
+
 #include "playlist-controller.h"
 #include "../models/playlist-model.h"
 #include "playlist-delegate.h"
@@ -46,6 +48,18 @@ PlaylistController::PlaylistController(QListView* view, QWidget* emptyPlaylistWi
     updateEmptyState();
 }
 
+PlaylistController::PlaybackMode PlaylistController::playbackMode() const
+{
+    return m_playbackMode;
+}
+
+void PlaylistController::setPlaybackMode(PlaybackMode mode)
+{
+    if (m_playbackMode == mode) return;
+    m_playbackMode = mode;
+    emit playbackModeChanged(mode);
+}
+
 void PlaylistController::handleItemDoubleClicked(const QModelIndex &index)
 {
     if (!index.isValid())
@@ -64,22 +78,48 @@ void PlaylistController::handleItemDoubleClicked(const QModelIndex &index)
 
 void PlaylistController::nextTrack()
 {
-    if (m_model->rowCount() == 0) return;
+    const int count = m_model->rowCount();
+    if (count == 0) return;
 
     int currentIndex = m_view->currentIndex().row();
+    if (currentIndex < 0) currentIndex = 0;
 
-    if (currentIndex < 0) {
-        currentIndex = 0;
-    }
+    int nextIndex = currentIndex;
 
-    int nextIndex = currentIndex + 1;
+    switch (m_playbackMode) {
+        case LoopCurrentVideo:
+            // Keep playing the current video
+            nextIndex = currentIndex;
+            break;
 
-    if (nextIndex >= m_model->rowCount()) {
-        nextIndex = 0;
+        case Shuffle: {
+            // Pick a random track that isn't the current track (unless total count == 1)
+            if (count > 1) {
+                do {
+                    nextIndex = QRandomGenerator::global()->bounded(count);
+                } while (nextIndex == currentIndex);
+            } else {
+                nextIndex = 0;
+            }
+            break;
+        }
+
+        case DoNotLoopPlaylist:
+            // Stop advancing if at the end of the playlist
+            if (currentIndex >= count - 1) {
+                return;
+            }
+            nextIndex = currentIndex + 1;
+            break;
+
+        case LoopPlaylist:
+        default:
+            // Wrap around to the beginning
+            nextIndex = (currentIndex + 1) % count;
+            break;
     }
 
     const QString filePath = m_model->currentURL(nextIndex);
-
     if (!filePath.isEmpty()) {
         m_view->setCurrentIndex(m_model->index(nextIndex, 0));
         if (m_model->getItemAt(nextIndex).isLocalFile) {
@@ -92,22 +132,44 @@ void PlaylistController::nextTrack()
 
 void PlaylistController::previousTrack()
 {
-    if (m_model->rowCount() == 0) return;
+    const int count = m_model->rowCount();
+    if (count == 0) return;
 
     int currentIndex = m_view->currentIndex().row();
+    if (currentIndex < 0) currentIndex = 0;
 
-    if (currentIndex < 0) {
-        currentIndex = 0;
-    }
+    int previousIndex = currentIndex;
 
-    int previousIndex = currentIndex - 1;
+    switch (m_playbackMode) {
+        case LoopCurrentVideo:
+            previousIndex = currentIndex;
+            break;
 
-    if (previousIndex < 0) {
-        previousIndex = m_model->rowCount() - 1;
+        case Shuffle: {
+            if (count > 1) {
+                do {
+                    previousIndex = QRandomGenerator::global()->bounded(count);
+                } while (previousIndex == currentIndex);
+            } else {
+                previousIndex = 0;
+            }
+            break;
+        }
+
+        case DoNotLoopPlaylist:
+            if (currentIndex <= 0) {
+                return;
+            }
+            previousIndex = currentIndex - 1;
+            break;
+
+        case LoopPlaylist:
+        default:
+            previousIndex = (currentIndex - 1 + count) % count;
+            break;
     }
 
     const QString filePath = m_model->currentURL(previousIndex);
-
     if (!filePath.isEmpty()) {
         m_view->setCurrentIndex(m_model->index(previousIndex, 0));
         if (m_model->getItemAt(previousIndex).isLocalFile) {
@@ -116,6 +178,15 @@ void PlaylistController::previousTrack()
             emit playTrackRequested(QUrl(filePath));
         }
     }
+}
+
+bool PlaylistController::isLastTrack() const
+{
+    if (!m_model || m_model->rowCount() == 0)
+        return false;
+
+    int currentIndex = m_view->currentIndex().row();
+    return (currentIndex >= m_model->rowCount() - 1);
 }
 
 void PlaylistController::showContextMenu(const QPoint &pos)
@@ -132,10 +203,6 @@ void PlaylistController::showContextMenu(const QPoint &pos)
     m_contextMenu->addAction(m_addFolderAction);
 
     m_contextMenu->addSeparator();
-
-    m_loadPlaylistAction = new QAction(tr("Load Playlist..."), m_contextMenu);
-    connect(m_loadPlaylistAction, &QAction::triggered, this, &PlaylistController::loadPlaylistFile);
-    m_contextMenu->addAction(m_loadPlaylistAction);
 
     m_savePlaylistAction = new QAction(tr("Save Playlist As..."), m_contextMenu);
     connect(m_savePlaylistAction, &QAction::triggered, this, &PlaylistController::savePlaylistAs);
@@ -159,6 +226,36 @@ void PlaylistController::showContextMenu(const QPoint &pos)
 
     m_removeSelectedAction = new QAction(tr("Remove Selected"), m_contextMenu);
     m_contextMenu->addAction(m_removeSelectedAction);
+
+    m_contextMenu->addSeparator();
+
+    m_playbackModeMenu = new QMenu(tr("Playback Mode"), m_contextMenu);
+
+    m_noLoopAction = new QAction(tr("No Loop"), m_playbackModeMenu);
+    m_noLoopAction->setCheckable(true);
+    m_noLoopAction->setChecked(m_playbackMode == DoNotLoopPlaylist);
+    connect(m_noLoopAction, &QAction::triggered, this, &PlaylistController::contextMenuNoLoop);
+    m_playbackModeMenu->addAction(m_noLoopAction);
+
+    m_loopPlaylistAction = new QAction(tr("Loop Playlist"), m_playbackModeMenu);
+    m_loopPlaylistAction->setCheckable(true);
+    m_loopPlaylistAction->setChecked(m_playbackMode == LoopPlaylist);
+    connect(m_loopPlaylistAction, &QAction::triggered, this, &PlaylistController::contextMenuLoopPlaylist);
+    m_playbackModeMenu->addAction(m_loopPlaylistAction);
+
+    m_loopCurrentVideoAction = new QAction(tr("Loop Current Video"), m_playbackModeMenu);
+    m_loopCurrentVideoAction->setCheckable(true);
+    m_loopCurrentVideoAction->setChecked(m_playbackMode == LoopCurrentVideo);
+    connect(m_loopCurrentVideoAction, &QAction::triggered, this, &PlaylistController::contextMenuLoopTrack);
+    m_playbackModeMenu->addAction(m_loopCurrentVideoAction);
+
+    m_shuffleAction = new QAction(tr("Shuffle"), m_playbackModeMenu);
+    m_shuffleAction->setCheckable(true);
+    m_shuffleAction->setChecked(m_playbackMode == Shuffle);
+    connect(m_shuffleAction, &QAction::triggered, this, &PlaylistController::contextMenuShuffle);
+    m_playbackModeMenu->addAction(m_shuffleAction);
+
+    m_contextMenu->addMenu(m_playbackModeMenu);
 
     m_contextMenu->exec(m_view->mapToGlobal(pos));
 }
@@ -351,6 +448,66 @@ void PlaylistController::loadPlaylistFile()
             QMessageBox::critical(m_view, tr("Error"), tr("Could not read playlist file."));
         }
     }
+}
+
+void PlaylistController::contextMenuNoLoop()
+{
+    if (m_playbackMode == DoNotLoopPlaylist) {
+        m_noLoopAction->setChecked(true);
+        return;
+    }
+
+    m_playbackMode = DoNotLoopPlaylist;
+    m_noLoopAction->setChecked(true);
+    m_loopPlaylistAction->setChecked(false);
+    m_loopCurrentVideoAction->setChecked(false);
+    m_shuffleAction->setChecked(false);
+    emit playbackModeChanged(m_playbackMode);
+}
+
+void PlaylistController::contextMenuLoopTrack()
+{
+    if (m_playbackMode == LoopCurrentVideo) {
+        m_loopCurrentVideoAction->setChecked(true);
+        return;
+    }
+
+    m_playbackMode = LoopCurrentVideo;
+    m_noLoopAction->setChecked(false);
+    m_loopPlaylistAction->setChecked(false);
+    m_loopCurrentVideoAction->setChecked(true);
+    m_shuffleAction->setChecked(false);
+    emit playbackModeChanged(m_playbackMode);
+}
+
+void PlaylistController::contextMenuLoopPlaylist()
+{
+    if (m_playbackMode == LoopPlaylist) {
+        m_loopPlaylistAction->setChecked(true);
+        return;
+    }
+
+    m_playbackMode = LoopPlaylist;
+    m_noLoopAction->setChecked(false);
+    m_loopPlaylistAction->setChecked(true);
+    m_loopCurrentVideoAction->setChecked(false);
+    m_shuffleAction->setChecked(false);
+    emit playbackModeChanged(m_playbackMode);
+}
+
+void PlaylistController::contextMenuShuffle()
+{
+    if (m_playbackMode == Shuffle) {
+        m_shuffleAction->setChecked(true);
+        return;
+    }
+
+    m_playbackMode = Shuffle;
+    m_noLoopAction->setChecked(false);
+    m_loopPlaylistAction->setChecked(false);
+    m_loopCurrentVideoAction->setChecked(false);
+    m_shuffleAction->setChecked(true);
+    emit playbackModeChanged(m_playbackMode);
 }
 
 bool PlaylistController::saveToFile(const QString &filePath) const

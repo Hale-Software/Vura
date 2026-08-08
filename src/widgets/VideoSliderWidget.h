@@ -45,10 +45,10 @@ public:
 
     void setVisible(bool visible) override;
 
-private slots:
+public slots:
     void onAnimationFinished();
     void positionLabel_Clicked();
-    void playbackRateChanged(qreal playbackRate) const;
+    void playbackRateChanged(qreal playbackRate);
     void updateTimestamps(qint64 currentPosition);
     void durationChanged(qint64 duration);
     void positionChanged(qint64 position);
