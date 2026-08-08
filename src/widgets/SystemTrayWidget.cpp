@@ -16,6 +16,13 @@
 
  ******************************************************************************/
 
+#include <QIcon>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QSettings>
+#include <QDebug>
+
 #include "SystemTrayWidget.h"
 
 
@@ -28,18 +35,17 @@ SystemTrayWidget::SystemTrayWidget(QWidget *parent) : QSystemTrayIcon(parent)
     setActionEnables();
 }
 
-void SystemTrayWidget::show()
+void SystemTrayWidget::setVisibility(const bool visible)
 {
-    m_systemTrayIcon->show();
-    m_showing = true;
-    setActionEnables();
-}
-
-void SystemTrayWidget::hide()
-{
-    m_systemTrayIcon->hide();
-    m_showing = false;
-    setActionEnables();
+    if (visible) {
+        m_systemTrayIcon->show();
+        m_showing = true;
+        setActionEnables();
+    } else {
+        m_systemTrayIcon->hide();
+        m_showing = false;
+        setActionEnables();
+    }
 }
 
 void SystemTrayWidget::createContextMenu()
@@ -68,7 +74,7 @@ void SystemTrayWidget::createContextMenu()
     m_openFileAction = new QAction(this);
     m_quitAction = new QAction(this);
 
-    QMenu *menu = new QMenu();
+    const auto menu = new QMenu();
     menu->addAction(m_toggleShow);
     menu->addSeparator();
     m_playAction = menu->addAction(tr("Play"));
@@ -115,7 +121,7 @@ void SystemTrayWidget::createContextMenu()
     m_systemTrayIcon->setToolTip(tr("Vura media player"));
 }
 
-void SystemTrayWidget::setActionEnables()
+void SystemTrayWidget::setActionEnables() const
 {
     m_playAction->setEnabled(m_showing);
     m_stopAction->setEnabled(m_showing);
@@ -134,9 +140,9 @@ void SystemTrayWidget::setActionEnables()
     m_speedMenu->setEnabled(m_showing);
 }
 
-void SystemTrayWidget::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
+void SystemTrayWidget::systemTray_Clicked(const ActivationReason reason)
 {
-    if (reason == QSystemTrayIcon::Trigger) {
+    if (reason == Trigger) {
         emit clicked();
     }
 }
@@ -147,7 +153,6 @@ void SystemTrayWidget::systemTray_Hide()
         emit hiding(true);
         m_toggleShow->setText(tr("Show Vura"));
         m_showing = false;
-
     } else {
         emit hiding(false);
         m_toggleShow->setText(tr("Hide Vura in taskbar"));
@@ -169,37 +174,37 @@ void SystemTrayWidget::systemTray_Record()
 
 void SystemTrayWidget::systemTray_Faster()
 {
-    emit changePlaybackSpeed(0.5);
+    emit playbackRateFaster();
 }
 
 void SystemTrayWidget::systemTray_FasterFine()
 {
-    emit changePlaybackSpeed(0.25);
+    emit playbackRateFasterFine();
 }
 
 void SystemTrayWidget::systemTray_NormalSpeed()
 {
-    emit setPlaybackSpeedNormal();
+    emit playbackRateNormal();
 }
 
 void SystemTrayWidget::systemTray_SlowerFine()
 {
-    emit changePlaybackSpeed(-0.25);
+    emit playbackRateSlowerFine();
 }
 
 void SystemTrayWidget::systemTray_Slower()
 {
-    emit changePlaybackSpeed(-0.5);
+    emit playbackRateSlower();
 }
 
 void SystemTrayWidget::systemTray_IncreaseVolume()
 {
-    emit changeVolume(0.10);
+    emit volumeUp();
 }
 
 void SystemTrayWidget::systemTray_DecreaseVolume()
 {
-    emit changeVolume(-0.10);
+    emit volumeDown();
 }
 
 void SystemTrayWidget::systemTray_ToggleMute()
@@ -209,39 +214,7 @@ void SystemTrayWidget::systemTray_ToggleMute()
 
 void SystemTrayWidget::systemTray_OpenFile()
 {
-    QSettings settings;
-
-    // File filters
-    QStringList fileFilters;
-    fileFilters << constants::MediaFileExtensions;
-    fileFilters << constants::VideoFileExtensions;
-    fileFilters << constants::AudioFileExtensions;
-    fileFilters << constants::ApplicationFileExtensions;
-    fileFilters << constants::PlaylistFileExtensions;
-    fileFilters << "All Files (*.*)";
-
-    // Create open file dialog.
-    QFileDialog fileDialog;
-    fileDialog.setNameFilters(fileFilters);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open File"));
-    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString());
-
-    if (fileDialog.exec() == QDialog::Accepted) {
-        QStringList selectedFiles = fileDialog.selectedFiles();
-        if (!selectedFiles.isEmpty()) {
-            QStringList fileList;
-            for (auto &url : selectedFiles) {
-                fileList.append(url);
-            }
-
-            // Set last file directory where file was opened.
-            QString lastFileDirectory = selectedFiles.last();
-            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
-
-            emit openFiles(fileList);
-        }
-    }
+    emit openFile();
 }
 
 void SystemTrayWidget::systemTray_TogglePlayPause()

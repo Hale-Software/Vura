@@ -39,15 +39,16 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
 
     const QSettings settings;
 
-    ui->actionRendererVideoWidget->setChecked(!settings.value("useHardwareAcceleration", false).toBool());
-    ui->actionRendererOpenGL->setChecked(settings.value("useHardwareAcceleration", false).toBool());
-
     setAcceptDrops(true);
 
     ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
 
     qInstallMessageHandler(Logger::messageHandler);
     globalRedirector = Logger::instance();
+
+    const int defaultWindowHeight = settings.value("defaultWindowHeight", 550).toInt();
+    const int defaultWindowWidth = settings.value("defaultWindowWidth", 955).toInt();
+    resize(defaultWindowWidth, defaultWindowHeight);
 
     m_playbackController = new PlaybackController(ui->mediaAreaWidget, this);
     m_playlistController = new PlaylistController(
@@ -59,9 +60,9 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
         );
 
     connect(m_playbackController, &PlaybackController::mediaEnded, this, [this]() {
-        int count = m_playlistController->getModel()->rowCount();
-        int currentIndex = ui->playlistView->currentIndex().row();
-        auto mode = m_playlistController->playbackMode();
+        const int count = m_playlistController->getModel()->rowCount();
+        const int currentIndex = ui->playlistView->currentIndex().row();
+        const auto mode = m_playlistController->playbackMode();
 
         if (mode == PlaylistController::DoNotLoopPlaylist && currentIndex >= count - 1) {
             m_playbackController->pause();
@@ -87,6 +88,8 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     }
 
     connect(m_playlistController, &PlaylistController::playTrackRequested, m_playbackController, &PlaybackController::playTrack);
+    connect(m_playlistController, &PlaylistController::playlistCleared, m_playbackController, &PlaybackController::stop);
+    connect(m_playlistController, &PlaylistController::playlistCleared, this, &VuraMainWindow::continuePlaybackDelete);
     connect(m_playbackController, &PlaybackController::mediaEnded, m_playlistController, &PlaylistController::nextTrack);
 
     if (settings.value("showPlaylistOnStart", true).toBool()) {
@@ -96,6 +99,27 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
         m_playlistController->hidePlaylist();
         ui->actionViewTogglePlaylist->setChecked(false);
     }
+
+    m_systemTray = new SystemTrayWidget(this);
+    connect(m_systemTray, &SystemTrayWidget::clicked, this, &VuraMainWindow::systemTray_Clicked);
+    connect(m_systemTray, &SystemTrayWidget::hiding, this, &VuraMainWindow::systemTray_Hide);
+    connect(m_systemTray, &SystemTrayWidget::stop, m_playbackController, &PlaybackController::stop);
+    connect(m_systemTray, &SystemTrayWidget::playbackRateFaster, m_playbackController, &PlaybackController::playbackRateFaster);
+    connect(m_systemTray, &SystemTrayWidget::playbackRateFasterFine, m_playbackController, &PlaybackController::playbackRateFasterFine);
+    connect(m_systemTray, &SystemTrayWidget::playbackRateNormal, m_playbackController, &PlaybackController::playbackRateNormal);
+    connect(m_systemTray, &SystemTrayWidget::playbackRateSlowerFine, m_playbackController, &PlaybackController::playbackRateSlowerFine);
+    connect(m_systemTray, &SystemTrayWidget::playbackRateSlower, m_playbackController, &PlaybackController::playbackRateSlower);
+    connect(m_systemTray, &SystemTrayWidget::volumeUp, m_playbackController, &PlaybackController::volumeUp);
+    connect(m_systemTray, &SystemTrayWidget::volumeDown, m_playbackController, &PlaybackController::volumeDown);
+    connect(m_systemTray, &SystemTrayWidget::toggleMute, m_playbackController, &PlaybackController::toggleMute);
+    connect(m_systemTray, &SystemTrayWidget::togglePlayPause, m_playbackController, &PlaybackController::togglePlayPause);
+    connect(m_systemTray, &SystemTrayWidget::openFile, m_playlistController, &PlaylistController::requestFileImport);
+    connect(m_systemTray, &SystemTrayWidget::nextVideo, m_playlistController, &PlaylistController::nextTrack);
+    connect(m_systemTray, &SystemTrayWidget::previousVideo, m_playlistController, &PlaylistController::previousTrack);
+    connect(m_systemTray, &SystemTrayWidget::exit, this, &VuraMainWindow::actionExit);
+
+    bool systemTrayIcon = settings.value("systemTrayIcon", true).toBool();
+    m_systemTray->setVisibility(systemTrayIcon);
 
     setConnections();
     //configureUpdater();
@@ -538,9 +562,6 @@ void VuraMainWindow::setConnections()
     this->addAction(ui->actionViewToggleMarkersStripMarkers);
     ui->actionViewToggleMarkersStripMarkers->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionRendererVideoWidget, &QAction::toggled, this, &VuraMainWindow::actionRendererVideoWidget_toggled);
-    connect(ui->actionRendererOpenGL, &QAction::toggled, this, &VuraMainWindow::actionRendererOpenGLWidget_toggled);
-
     connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
     populateAudioDevicesMenu();
 
@@ -549,6 +570,11 @@ void VuraMainWindow::setConnections()
     connect(m_crashReporter, &CrashReporter::uploadStarted, this, &VuraMainWindow::crashReportUploadStarted);
     connect(m_crashReporter, &CrashReporter::finished, this, &VuraMainWindow::crashReportUploadFinished);
     m_crashReporter->checkForPreviousCrashes();
+}
+
+void VuraMainWindow::maximized()
+{
+    this->setWindowState(this->windowState() | Qt::WindowMaximized);
 }
 
 void VuraMainWindow::setMainWindowVisibility(const bool state)
@@ -1143,18 +1169,6 @@ void VuraMainWindow::actionMarkersMarkIn() {}
 
 void VuraMainWindow::actionMarkersMarkOut() {}
 
-void VuraMainWindow::actionRendererVideoWidget_toggled(const bool checked) const
-{
-    ui->actionRendererOpenGL->setChecked(!checked);
-    ui->actionRendererVideoWidget->setChecked(checked);
-}
-
-void VuraMainWindow::actionRendererOpenGLWidget_toggled(const bool checked) const
-{
-    ui->actionRendererOpenGL->setChecked(checked);
-    ui->actionRendererVideoWidget->setChecked(!checked);
-}
-
 void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 {
     m_trackInfo = trackInfo;
@@ -1223,10 +1237,11 @@ double VuraMainWindow::getSliderPercent() const
 
 bool VuraMainWindow::checkMarkerProximity() const
 {
+    const QSettings settings;
     const double sliderPercent = getSliderPercent();
-    constexpr double markerProximityThreshold = 0.005;
+    double markerProximityThreshold = settings.value("markerProximityThreshold", 0.005).toDouble();
 
-    const auto isVisibleMarkerNearSlider = [this, sliderPercent](const VuraVideoMarker &marker) {
+    const auto isVisibleMarkerNearSlider = [this, sliderPercent, markerProximityThreshold](const VuraVideoMarker &marker) {
         if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) {
             return false;
         }
@@ -1418,6 +1433,7 @@ void VuraMainWindow::saveCurrentPlaybackPosition()
 
 void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
 {
+    QSettings settings;
     if (m_continuePlaybackWidget)
         continuePlaybackDelete();
 
@@ -1448,9 +1464,10 @@ void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
         m_continuePlaybackBannerTimer = nullptr;
     }
 
+    int continuePlaybackBannerTime = settings.value("continuePlaybackBannerTime", 5).toInt();
     m_continuePlaybackBannerTimer = new QTimer(this);
     m_continuePlaybackBannerTimer->setSingleShot(true);
-    m_continuePlaybackBannerTimer->setInterval(5000);
+    m_continuePlaybackBannerTimer->setInterval(continuePlaybackBannerTime * 1000);
     connect(m_continuePlaybackBannerTimer, &QTimer::timeout, this, &VuraMainWindow::continuePlaybackDelete);
     m_continuePlaybackBannerTimer->start();
 }
@@ -1474,5 +1491,27 @@ void VuraMainWindow::continuePlaybackDelete()
     if (m_continuePlaybackWidget) {
         m_continuePlaybackWidget->deleteLater();
         m_continuePlaybackWidget = nullptr;
+    }
+}
+
+void VuraMainWindow::systemTray_Clicked()
+{
+    if (this->isHidden() || this->isMinimized()) {
+        this->showNormal();
+        this->activateWindow();
+    }
+}
+
+void VuraMainWindow::systemTray_Hide(const bool hiding)
+{
+    if (hiding) {
+        this->hide();
+        m_playbackController->pause();
+
+    } else {
+        this->show();
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
     }
 }

@@ -21,6 +21,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPropertyAnimation>
+#include <QSettings>
 
 #include "ClickableLabel.h"
 #include "VideoSlider.h"

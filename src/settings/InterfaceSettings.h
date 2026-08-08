@@ -55,6 +55,7 @@ public slots:
 
 private slots:
     void currentTheme_Changed(int index);
+    void showMaximizedOnStart_Changed(int index);
     void rememberWindowSize_Checked(int state);
     void showPlaylistOnStart_Checked(int state);
     void showVideoControlsOnStart_Checked(int state);

@@ -23,18 +23,22 @@
 #include <QListView>
 #include <QStackedWidget>
 #include <QStringList>
-#include <QFileDialog>
-#include <QDir>
-#include <QFileInfo>
 #include <QMenu>
 #include <QAction>
-#include <QSettings>
-#include <QStandardPaths>
-#include <QFile>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QDebug>
 
+
+class QRandomGenerator;
+class QFileDialog;
+class QDir;
+class QFileInfo;
+class QSettings;
+class QStandardPaths;
+class QFile;
+class QTextStream;
+class QMessageBox;
+class QUrl;
+class QDesktopServices;
+class QDebug;
 
 class PlaylistModel;
 
@@ -51,6 +55,14 @@ public:
     };
     Q_ENUM(PlaybackMode)
 
+    enum PlaylistViewMode
+    {
+        Icons,
+        DetailedList,
+        List
+    };
+    Q_ENUM(PlaylistViewMode)
+
     explicit PlaylistController(QListView* view,
                                 QWidget* emptyPlaylistWidget,
                                 QStackedWidget* container,
@@ -59,7 +71,7 @@ public:
 
     PlaylistModel* getModel() const { return m_model; }
     bool isPlaylistVisible() const { return m_container->isVisible(); }
-    PlaybackMode playbackMode() const;
+    PlaybackMode playbackMode() const { return m_playbackMode; };
     void setPlaybackMode(PlaybackMode mode);
 
 public slots:
@@ -87,30 +99,67 @@ signals:
     void playTrackRequested(const QUrl &mediaUrl);
     void playlistUpdated(int mediaCount);
     void playbackModeChanged(PlaybackMode mode);
+    void playlistCleared();
 
 private slots:
     void updateEmptyState();
     void handleItemDoubleClicked(const QModelIndex &index);
+    void playAction();
+    void streamAction();
+    void saveAction();
+    void informationAction();
+    void showContainingFolderAction();
+    void removeSelectedAction();
+    void addFileAction();
+    void addFolderAction();
+    void savePlaylistAction();
+    void clearPlaylistAction();
+    void sortByTitleAscendingAction();
+    void sortByTitleDescendingAction();
+    void sortByTrackNumberAscendingAction();
+    void sortByTrackNumberDescendingAction();
+    void displaySizeIncreaseAction();
+    void displaySizeDecreaseAction();
+    void playlistViewIconsAction();
+    void playlistViewDetailedListAction();
+    void playlistViewListAction();
 
 private:
     void processFilePaths(const QStringList &paths, bool autoPlay, bool isLocalFile = true);
+    bool saveToFile(const QString &filePath) const;
+    bool loadFromFile(const QString &filePath);
+    void resetUnplayedIndexes();
+    int getNextShuffleIndex(int currentIndex);
 
     PlaylistModel* m_model;
     PlaybackMode m_playbackMode = DoNotLoopPlaylist;
+    PlaylistViewMode m_playlistViewMode = DetailedList;
     QList<int> m_shuffledIndexes;
+    QList<int> m_unplayedIndexes;
     QListView* m_view;
     QWidget* m_emptyPlaylistWidget;
     QStackedWidget* m_container;
     QAction* m_togglePlaylistAction;
+    int selectedIndex = -1;
 
     QMenu* m_contextMenu = nullptr;
+    QAction* m_playAction = nullptr;
+    QAction* m_streamAction = nullptr;
+    QAction* m_saveAction = nullptr;
+    QAction* m_informationAction = nullptr;
+    QAction* m_showContainingFolderAction = nullptr;
+    QAction* m_removeSelectedAction = nullptr;
+
     QAction* m_addFileAction = nullptr;
     QAction* m_addFolderAction = nullptr;
-    QAction* m_clearPlaylistAction = nullptr;
     QAction* m_savePlaylistAction = nullptr;
-    QAction* m_videoInformationAction = nullptr;
-    QAction* m_showFolderAction = nullptr;
-    QAction* m_removeSelectedAction = nullptr;
+    QAction* m_clearPlaylistAction = nullptr;
+
+    QMenu* m_sortByMenu = nullptr;
+    QAction* m_sortByTitleAscendingAction = nullptr;
+    QAction* m_sortByTitleDescendingAction = nullptr;
+    QAction* m_sortByTrackNumberAscendingAction = nullptr;
+    QAction* m_sortByTrackNumberDescendingAction = nullptr;
 
     QMenu* m_playbackModeMenu = nullptr;
     QAction* m_noLoopAction = nullptr;
@@ -118,7 +167,13 @@ private:
     QAction* m_loopCurrentVideoAction = nullptr;
     QAction* m_shuffleAction = nullptr;
 
-    bool saveToFile(const QString &filePath) const;
-    bool loadFromFile(const QString &filePath);
+    QMenu* m_displaySizeMenu = nullptr;
+    QAction* m_displaySizeIncreaseAction = nullptr;
+    QAction* m_displaySizeDecreaseAction = nullptr;
+
+    QMenu* m_playlistViewMenu = nullptr;
+    QAction* m_playlistViewIconsAction = nullptr;
+    QAction* m_playlistViewDetailedListAction = nullptr;
+    QAction* m_playlistViewListAction = nullptr;
 
 };

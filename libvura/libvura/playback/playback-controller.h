@@ -69,7 +69,7 @@ public slots:
     void pause() const;
     void togglePlayPause() const;
     void setPaused(bool paused) const;
-    void stop() const;
+    void stop();
     void restart();
     void setPosition(qint64 position);
 

@@ -117,6 +117,7 @@ public:
     explicit VuraMainWindow(QWidget *parent = nullptr);
 
     void setConnections();
+    void maximized();
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
     void openFolder(const QString &path) const;
@@ -186,9 +187,6 @@ private slots:
     void actionMarkersMarkIn();
     void actionMarkersMarkOut();
 
-    void actionRendererVideoWidget_toggled(bool checked) const;
-    void actionRendererOpenGLWidget_toggled(bool checked) const;
-
     void actionHelpCheckForUpdates();
 
 
@@ -206,6 +204,8 @@ public slots:
     void continuePlaybackDeclined();
     void continuePlaybackAccepted(qint64 savedPosition);
     void continuePlaybackDelete();
+    void systemTray_Clicked();
+    void systemTray_Hide(bool hiding);
 
 private:
     Ui::VuraMainWindow *ui;

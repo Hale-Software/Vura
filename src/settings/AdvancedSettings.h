@@ -23,6 +23,7 @@
 class QSettings;
 class QCheckBox;
 class QSpinBox;
+class QDoubleSpinBox;
 class QDebug;
 
 
@@ -51,8 +52,13 @@ public slots:
     void saveSettings();
 
 private slots:
-    void logToFile_Checked(int state);
+    void logToFile_StateChanged(int state);
     void maxLogFiles_ValueChanged(int value);
+    void markerProximityThreshold_ValueChanged(double value);
+    void playbackSpeedMax_ValueChanged(double value);
+    void defaultWindowHeight_ValueChanged(int value);
+    void defaultWindowWidth_ValueChanged(int value);
+    void continuePlaybackBannerTime_ValueChanged(int value);
 
 private:
     Ui::AdvancedSettings *ui;

@@ -34,6 +34,7 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
 
     const QSettings settings;
     ui->currentTheme->setCurrentIndex(settings.value("theme", 0).toInt());
+    ui->showMaximizedOnStart->setCurrentIndex(settings.value("showMaximizedOnStart", 1).toInt());
     ui->rememberWindowSize->setChecked(settings.value("rememberWindowSize", false).toBool());
     ui->showPlaylistOnStart->setChecked(settings.value("showPlaylistOnStart", true).toBool());
     ui->showVideoControlsOnStart->setChecked(settings.value("showVideoControlsOnStart", false).toBool());
@@ -65,6 +66,7 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
     ui->orangeMarkerColor->setText(settings.value("orangeMarkerColor", "#f56a00").toString());
 
     connect(ui->currentTheme, &QComboBox::currentIndexChanged, this, &InterfaceSettings::currentTheme_Changed);
+    connect(ui->showMaximizedOnStart, &QComboBox::currentIndexChanged, this, &InterfaceSettings::showMaximizedOnStart_Changed);
     connect(ui->rememberWindowSize, &QCheckBox::stateChanged, this, &InterfaceSettings::rememberWindowSize_Checked);
     connect(ui->showPlaylistOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showPlaylistOnStart_Checked);
     connect(ui->showVideoControlsOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showVideoControlsOnStart_Checked);
@@ -121,6 +123,8 @@ bool InterfaceSettings::unsavedChanges()
     m_unsavedChanges = false;
     const QSettings settings;
     if (settings.value("theme", 0).toInt() != ui->currentTheme->currentIndex()) {
+        m_unsavedChanges = true;
+    } else if (settings.value("showMaximizedOnStart", 1).toInt() != ui->showMaximizedOnStart->currentIndex()) {
         m_unsavedChanges = true;
     } else if (settings.value("rememberWindowSize", false).toBool() != ui->rememberWindowSize->isChecked()) {
         m_unsavedChanges = true;
@@ -188,6 +192,7 @@ bool InterfaceSettings::unsavedChanges()
 void InterfaceSettings::resetToDefaults()
 {
     ui->currentTheme->setCurrentIndex(0);
+    ui->showMaximizedOnStart->setCurrentIndex(1);
     ui->rememberWindowSize->setChecked(false);
     ui->showPlaylistOnStart->setChecked(true);
     ui->showVideoControlsOnStart->setChecked(false);
@@ -224,6 +229,7 @@ void InterfaceSettings::saveSettings()
 {
     QSettings settings;
     settings.setValue("theme", ui->currentTheme->currentIndex());
+    settings.setValue("showMaximizedOnStart", ui->showMaximizedOnStart->currentIndex());
     settings.setValue("rememberWindowSize", ui->rememberWindowSize->isChecked());
     settings.setValue("showPlaylistOnStart", ui->showPlaylistOnStart->isChecked());
     settings.setValue("showVideoControlsOnStart", ui->showVideoControlsOnStart->isChecked());
@@ -257,6 +263,12 @@ void InterfaceSettings::saveSettings()
 }
 
 void InterfaceSettings::currentTheme_Changed(int index)
+{
+    unsavedChanges();
+    emit settingsChanged();
+}
+
+void InterfaceSettings::showMaximizedOnStart_Changed(int index)
 {
     unsavedChanges();
     emit settingsChanged();

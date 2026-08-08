@@ -504,18 +504,10 @@
      <addaction name="actionVideoCrop5_5"/>
      <addaction name="actionVideoCrop1_2"/>
     </widget>
-    <widget class="QMenu" name="menuRenderer">
-     <property name="title">
-      <string>Renderer</string>
-     </property>
-     <addaction name="actionRendererVideoWidget"/>
-     <addaction name="actionRendererOpenGL"/>
-    </widget>
     <addaction name="menuVideoTrack"/>
     <addaction name="separator"/>
     <addaction name="actionVideoFullscreen"/>
     <addaction name="separator"/>
-    <addaction name="menuRenderer"/>
     <addaction name="separator"/>
     <addaction name="menuVideoZoom"/>
     <addaction name="menuVideoAspectRatio"/>

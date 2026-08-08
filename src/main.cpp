@@ -64,6 +64,11 @@ int main(int argc, char *argv[])
         mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         mainWindow.show();
 
+        int showMaximizedOnStart = settings.value("showMaximizedOnStart", 1).toInt();
+
+        if (showMaximizedOnStart == 2)
+            mainWindow.maximized();
+
         if (allowOnlyOneInstance) {
             QObject::connect(&instanceController, &SingleInstanceController::pathReceived, [&mainWindow](const QString &requestedPath) {
                 const QFileInfo checkFile(requestedPath);
@@ -88,9 +93,13 @@ int main(int argc, char *argv[])
             if (checkFile.exists() && checkFile.isFile()) {
                 if (checkFile.isFile()) {
                     mainWindow.openFile(openFileArg);
+                    if (showMaximizedOnStart == 1)
+                        mainWindow.maximized();
 
                 } else if (checkFile.isDir()) {
                     mainWindow.openFolder(openFileArg);
+                    if (showMaximizedOnStart == 1)
+                        mainWindow.maximized();
                 }
             }
         } else if (argc == 3) {
@@ -99,6 +108,8 @@ int main(int argc, char *argv[])
 
             if (openOptionArg == "--network") {
                 mainWindow.openNetworkStream(openFileArg);
+                if (showMaximizedOnStart == 1)
+                    mainWindow.maximized();
             }
         }
 

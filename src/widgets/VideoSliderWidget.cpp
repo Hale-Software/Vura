@@ -30,8 +30,11 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackControlle
 {
     ui->setupUi(this);
 
+    QSettings settings;
+    int videoSliderAnimationTime = settings.value("videoSliderAnimationTime", 300).toInt();
+
     animation = new QPropertyAnimation(this, "maximumHeight", this);
-    animation->setDuration(300);
+    animation->setDuration(videoSliderAnimationTime);
     animation->setEasingCurve(QEasingCurve::InOutQuad);
     connect(animation, &QPropertyAnimation::finished, this, &VideoSliderWidget::onAnimationFinished);
 

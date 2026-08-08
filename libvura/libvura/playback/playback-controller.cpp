@@ -233,11 +233,12 @@ void PlaybackController::setPaused(const bool paused) const
     }
 }
 
-void PlaybackController::stop() const
+void PlaybackController::stop()
 {
     if (m_usingVideoWidget) {
         if (m_player->playbackState() != QMediaPlayer::StoppedState) {
             m_player->stop();
+            m_player->setSource(QUrl());
         }
     } else {
         if (m_openGLWidget->currentState() != Stopped) {
@@ -513,6 +514,11 @@ void PlaybackController::jumpBackwardExtraSmall()
 void PlaybackController::mediaStatusChanged(const QMediaPlayer::MediaStatus status)
 {
     if (status == QMediaPlayer::EndOfMedia) {
+        if (m_usingVideoWidget) {
+            m_player->stop();
+        } else {
+
+        }
         emit mediaEnded();
     } else if (status == QMediaPlayer::NoMedia) {
         m_container->setCurrentIndex(0);

@@ -17,6 +17,17 @@
  ******************************************************************************/
 
 #include <QRandomGenerator>
+#include <QFileDialog>
+#include <QDir>
+#include <QFileInfo>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QDebug>
 
 #include "playlist-controller.h"
 #include "../models/playlist-model.h"
@@ -28,8 +39,8 @@ PlaylistController::PlaylistController(QListView* view, QWidget* emptyPlaylistWi
       m_model(new PlaylistModel()),
       m_view(view),
       m_emptyPlaylistWidget(emptyPlaylistWidget),
-      m_togglePlaylistAction(togglePlaylistAction),
-      m_container(container)
+      m_container(container),
+      m_togglePlaylistAction(togglePlaylistAction)
 {
     m_view->setModel(m_model);
     m_view->setItemDelegate(new PlaylistDelegate());
@@ -44,140 +55,27 @@ PlaylistController::PlaylistController(QListView* view, QWidget* emptyPlaylistWi
     connect(m_model, &PlaylistModel::rowsInserted, this, &PlaylistController::updateEmptyState);
     connect(m_model, &PlaylistModel::rowsRemoved, this, &PlaylistController::updateEmptyState);
     connect(m_model, &PlaylistModel::modelReset, this, &PlaylistController::updateEmptyState);
+    connect(m_model, &PlaylistModel::rowsInserted, this, &PlaylistController::resetUnplayedIndexes);
+    connect(m_model, &PlaylistModel::rowsRemoved, this, &PlaylistController::resetUnplayedIndexes);
+    connect(m_model, &PlaylistModel::modelReset, this, &PlaylistController::resetUnplayedIndexes);
 
     updateEmptyState();
 }
 
-PlaylistController::PlaybackMode PlaylistController::playbackMode() const
-{
-    return m_playbackMode;
-}
-
-void PlaylistController::setPlaybackMode(PlaybackMode mode)
+void PlaylistController::setPlaybackMode(const PlaybackMode mode)
 {
     if (m_playbackMode == mode) return;
     m_playbackMode = mode;
+
+    if (m_playbackMode == Shuffle) {
+        resetUnplayedIndexes();
+        int currentIndex = m_view->currentIndex().row();
+        if (currentIndex >= 0) {
+            m_unplayedIndexes.removeAll(currentIndex);
+        }
+    }
+
     emit playbackModeChanged(mode);
-}
-
-void PlaylistController::handleItemDoubleClicked(const QModelIndex &index)
-{
-    if (!index.isValid())
-        return;
-
-    const QString filePath = m_model->currentURL(index.row());
-
-    if (!filePath.isEmpty()) {
-        if (m_model->getItemAt(index.row()).isLocalFile) {
-            emit playTrackRequested(QUrl::fromLocalFile(filePath));
-        } else {
-            emit playTrackRequested(QUrl(filePath));
-        }
-    }
-}
-
-void PlaylistController::nextTrack()
-{
-    const int count = m_model->rowCount();
-    if (count == 0) return;
-
-    int currentIndex = m_view->currentIndex().row();
-    if (currentIndex < 0) currentIndex = 0;
-
-    int nextIndex = currentIndex;
-
-    switch (m_playbackMode) {
-        case LoopCurrentVideo:
-            // Keep playing the current video
-            nextIndex = currentIndex;
-            break;
-
-        case Shuffle: {
-            // Pick a random track that isn't the current track (unless total count == 1)
-            if (count > 1) {
-                do {
-                    nextIndex = QRandomGenerator::global()->bounded(count);
-                } while (nextIndex == currentIndex);
-            } else {
-                nextIndex = 0;
-            }
-            break;
-        }
-
-        case DoNotLoopPlaylist:
-            // Stop advancing if at the end of the playlist
-            if (currentIndex >= count - 1) {
-                return;
-            }
-            nextIndex = currentIndex + 1;
-            break;
-
-        case LoopPlaylist:
-        default:
-            // Wrap around to the beginning
-            nextIndex = (currentIndex + 1) % count;
-            break;
-    }
-
-    const QString filePath = m_model->currentURL(nextIndex);
-    if (!filePath.isEmpty()) {
-        m_view->setCurrentIndex(m_model->index(nextIndex, 0));
-        if (m_model->getItemAt(nextIndex).isLocalFile) {
-            emit playTrackRequested(QUrl::fromLocalFile(filePath));
-        } else {
-            emit playTrackRequested(QUrl(filePath));
-        }
-    }
-}
-
-void PlaylistController::previousTrack()
-{
-    const int count = m_model->rowCount();
-    if (count == 0) return;
-
-    int currentIndex = m_view->currentIndex().row();
-    if (currentIndex < 0) currentIndex = 0;
-
-    int previousIndex = currentIndex;
-
-    switch (m_playbackMode) {
-        case LoopCurrentVideo:
-            previousIndex = currentIndex;
-            break;
-
-        case Shuffle: {
-            if (count > 1) {
-                do {
-                    previousIndex = QRandomGenerator::global()->bounded(count);
-                } while (previousIndex == currentIndex);
-            } else {
-                previousIndex = 0;
-            }
-            break;
-        }
-
-        case DoNotLoopPlaylist:
-            if (currentIndex <= 0) {
-                return;
-            }
-            previousIndex = currentIndex - 1;
-            break;
-
-        case LoopPlaylist:
-        default:
-            previousIndex = (currentIndex - 1 + count) % count;
-            break;
-    }
-
-    const QString filePath = m_model->currentURL(previousIndex);
-    if (!filePath.isEmpty()) {
-        m_view->setCurrentIndex(m_model->index(previousIndex, 0));
-        if (m_model->getItemAt(previousIndex).isLocalFile) {
-            emit playTrackRequested(QUrl::fromLocalFile(filePath));
-        } else {
-            emit playTrackRequested(QUrl(filePath));
-        }
-    }
 }
 
 bool PlaylistController::isLastTrack() const
@@ -185,49 +83,91 @@ bool PlaylistController::isLastTrack() const
     if (!m_model || m_model->rowCount() == 0)
         return false;
 
-    int currentIndex = m_view->currentIndex().row();
+    const int currentIndex = m_view->currentIndex().row();
     return (currentIndex >= m_model->rowCount() - 1);
 }
 
 void PlaylistController::showContextMenu(const QPoint &pos)
 {
-    QModelIndex index = m_view->indexAt(pos);
+    const QModelIndex index = m_view->indexAt(pos);
     m_contextMenu = new QMenu(tr("Context Menu"), m_view);
 
-    m_addFileAction = new QAction(tr("Add File"), m_contextMenu);
+    if (index.isValid()) {
+        selectedIndex = index.row();
+
+        m_playAction = new QAction(tr("Play"), m_contextMenu);
+        connect(m_playAction, &QAction::triggered, this, &PlaylistController::playAction);
+        m_contextMenu->addAction(m_playAction);
+
+        m_streamAction = new QAction(tr("Stream..."), m_contextMenu);
+        connect(m_streamAction, &QAction::triggered, this, &PlaylistController::streamAction);
+        m_contextMenu->addAction(m_streamAction);
+
+        m_saveAction = new QAction(tr("Save..."), m_contextMenu);
+        connect(m_saveAction, &QAction::triggered, this, &PlaylistController::saveAction);
+        m_contextMenu->addAction(m_saveAction);
+
+        m_informationAction = new QAction(tr("Information..."), m_contextMenu);
+        connect(m_informationAction, &QAction::triggered, this, &PlaylistController::informationAction);
+        m_contextMenu->addAction(m_informationAction);
+
+        m_contextMenu->addSeparator();
+
+        m_showContainingFolderAction = new QAction(tr("Show Containing Folder..."), m_contextMenu);
+        connect(m_showContainingFolderAction, &QAction::triggered, this, &PlaylistController::showContainingFolderAction);
+        m_contextMenu->addAction(m_showContainingFolderAction);
+
+        m_contextMenu->addSeparator();
+    } else {
+        selectedIndex = -1;
+    }
+
+    m_addFileAction = new QAction(tr("Add File..."), m_contextMenu);
     connect(m_addFileAction, &QAction::triggered, this, &PlaylistController::requestFileImport);
     m_contextMenu->addAction(m_addFileAction);
 
-    m_addFolderAction = new QAction(tr("Add Folder"), m_contextMenu);
+    m_addFolderAction = new QAction(tr("Add Folder..."), m_contextMenu);
     connect(m_addFolderAction, &QAction::triggered, this, &PlaylistController::requestFolderImport);
     m_contextMenu->addAction(m_addFolderAction);
 
     m_contextMenu->addSeparator();
 
-    m_savePlaylistAction = new QAction(tr("Save Playlist As..."), m_contextMenu);
+    m_savePlaylistAction = new QAction(tr("Save Playlist to File..."), m_contextMenu);
     connect(m_savePlaylistAction, &QAction::triggered, this, &PlaylistController::savePlaylistAs);
     m_contextMenu->addAction(m_savePlaylistAction);
 
     m_contextMenu->addSeparator();
 
+    if (index.isValid()) {
+        m_removeSelectedAction = new QAction(tr("Remove Selected"), m_contextMenu);
+        connect(m_removeSelectedAction, &QAction::triggered, this, &PlaylistController::removeSelectedAction);
+        m_contextMenu->addAction(m_removeSelectedAction);
+    }
     m_clearPlaylistAction = new QAction(tr("Clear Playlist"), m_contextMenu);
-    connect(m_clearPlaylistAction, &QAction::triggered, this, &PlaylistController::clearPlaylist);
+    connect(m_clearPlaylistAction, &QAction::triggered, this, &PlaylistController::clearPlaylistAction);
     m_contextMenu->addAction(m_clearPlaylistAction);
 
     m_contextMenu->addSeparator();
 
-    m_videoInformationAction = new QAction(tr("Video Information"), m_contextMenu);
-    m_contextMenu->addAction(m_videoInformationAction);
+    m_sortByMenu = new QMenu(tr("Sort By"), m_contextMenu);
 
-    m_showFolderAction = new QAction(tr("Show Folder"), m_contextMenu);
-    m_contextMenu->addAction(m_showFolderAction);
+    m_sortByTitleAscendingAction = new QAction(tr("Title Ascending"), m_sortByMenu);
+    connect(m_sortByTitleAscendingAction, &QAction::triggered, this, &PlaylistController::sortByTitleAscendingAction);
+    m_sortByMenu->addAction(m_sortByTitleAscendingAction);
 
-    m_contextMenu->addSeparator();
+    m_sortByTitleDescendingAction = new QAction(tr("Title Descending"), m_sortByMenu);
+    connect(m_sortByTitleDescendingAction, &QAction::triggered, this, &PlaylistController::sortByTitleDescendingAction);
+    m_sortByMenu->addAction(m_sortByTitleDescendingAction);
 
-    m_removeSelectedAction = new QAction(tr("Remove Selected"), m_contextMenu);
-    m_contextMenu->addAction(m_removeSelectedAction);
+    m_sortByTrackNumberAscendingAction = new QAction(tr("Track Number Ascending"), m_sortByMenu);
+    connect(m_sortByTrackNumberAscendingAction, &QAction::triggered, this, &PlaylistController::sortByTrackNumberAscendingAction);
+    m_sortByMenu->addAction(m_sortByTrackNumberAscendingAction);
 
-    m_contextMenu->addSeparator();
+    m_sortByTrackNumberDescendingAction = new QAction(tr("Track Number Descending"), m_sortByMenu);
+    connect(m_sortByTrackNumberDescendingAction, &QAction::triggered, this, &PlaylistController::sortByTrackNumberDescendingAction);
+    m_sortByMenu->addAction(m_sortByTrackNumberDescendingAction);
+
+    m_contextMenu->addMenu(m_sortByMenu);
 
     m_playbackModeMenu = new QMenu(tr("Playback Mode"), m_contextMenu);
 
@@ -257,19 +197,41 @@ void PlaylistController::showContextMenu(const QPoint &pos)
 
     m_contextMenu->addMenu(m_playbackModeMenu);
 
+    m_displaySizeMenu = new QMenu(tr("Display Size"), m_contextMenu);
+
+    m_displaySizeIncreaseAction = new QAction(tr("Increase"), m_displaySizeMenu);
+    connect(m_displaySizeIncreaseAction, &QAction::triggered, this, &PlaylistController::displaySizeIncreaseAction);
+    m_displaySizeMenu->addAction(m_displaySizeIncreaseAction);
+
+    m_displaySizeDecreaseAction = new QAction(tr("Decrease"), m_displaySizeMenu);
+    connect(m_displaySizeDecreaseAction, &QAction::triggered, this, &PlaylistController::displaySizeDecreaseAction);
+    m_displaySizeMenu->addAction(m_displaySizeDecreaseAction);
+
+    m_contextMenu->addMenu(m_displaySizeMenu);
+
+    m_playlistViewMenu = new QMenu(tr("Playlist View"), m_contextMenu);
+
+    m_playlistViewIconsAction = new QAction(tr("Icons"), m_playlistViewMenu);
+    m_playlistViewIconsAction->setCheckable(true);
+    m_playlistViewIconsAction->setChecked(m_playlistViewMode == Icons);
+    connect(m_playlistViewIconsAction, &QAction::triggered, this, &PlaylistController::playlistViewIconsAction);
+    m_playlistViewMenu->addAction(m_playlistViewIconsAction);
+
+    m_playlistViewDetailedListAction = new QAction(tr("Detailed List"), m_playlistViewMenu);
+    m_playlistViewDetailedListAction->setCheckable(true);
+    m_playlistViewDetailedListAction->setChecked(m_playlistViewMode == DetailedList);
+    connect(m_playlistViewDetailedListAction, &QAction::triggered, this, &PlaylistController::playlistViewDetailedListAction);
+    m_playlistViewMenu->addAction(m_playlistViewDetailedListAction);
+
+    m_playlistViewListAction = new QAction(tr("List"), m_playlistViewMenu);
+    m_playlistViewListAction->setCheckable(true);
+    m_playlistViewListAction->setChecked(m_playlistViewMode == List);
+    connect(m_playlistViewListAction, &QAction::triggered, this, &PlaylistController::playlistViewListAction);
+    m_playlistViewMenu->addAction(m_playlistViewListAction);
+
+    m_contextMenu->addMenu(m_playlistViewMenu);
+
     m_contextMenu->exec(m_view->mapToGlobal(pos));
-}
-
-void PlaylistController::updateEmptyState()
-{
-    const int trackCount = m_model->rowCount();
-    if (trackCount == 0) {
-        m_container->setCurrentIndex(1);
-    } else {
-        m_container->setCurrentIndex(0);
-    }
-
-    emit playlistUpdated(trackCount);
 }
 
 void PlaylistController::requestFileImport()
@@ -355,38 +317,6 @@ void PlaylistController::addNetworkVideo(const QString &mediaUrl)
     processFilePaths(urlList, true, false);
 }
 
-void PlaylistController::processFilePaths(const QStringList &paths, const bool autoPlay, const bool isLocalFile)
-{
-    const int previousCount = m_model->rowCount();
-
-    if (paths.isEmpty()) return;
-
-    for (const QString& path : paths) {
-        QFileInfo fileInfo(path);
-        m_model->addItem({.title = fileInfo.baseName(), .filePath = path, .duration = 0, .progress = 0, .isLocalFile = isLocalFile});
-    }
-
-    // Always auto-play if the playlist was completely empty
-    if (previousCount == 0 && m_model->rowCount() > 0) {
-        hidePlaylist();
-        m_view->setCurrentIndex(m_model->index(0, 0));
-        if (isLocalFile) {
-            emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(0)));
-        } else {
-            emit playTrackRequested(QUrl(m_model->currentURL(0)));
-        }
-    }
-    // Otherwise, only interrupt playback and jump if autoPlay is explicitly true
-    else if (autoPlay && m_model->rowCount() > previousCount) {
-        m_view->setCurrentIndex(m_model->index(previousCount, 0));
-        if (isLocalFile) {
-            emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(previousCount)));
-        } else {
-            emit playTrackRequested(QUrl(m_model->currentURL(previousCount)));
-        }
-    }
-}
-
 void PlaylistController::clearPlaylist() const
 {
     m_model->clear();
@@ -410,6 +340,97 @@ void PlaylistController::togglePlaylist() const
         hidePlaylist();
     } else {
         showPlaylist();
+    }
+}
+
+void PlaylistController::nextTrack()
+{
+    const int count = m_model->rowCount();
+    if (count == 0) return;
+
+    int currentIndex = m_view->currentIndex().row();
+    if (currentIndex < 0) currentIndex = 0;
+
+    int nextIndex = currentIndex;
+
+    switch (m_playbackMode) {
+        case LoopCurrentVideo:
+            nextIndex = currentIndex;
+            break;
+
+        case Shuffle:
+            nextIndex = getNextShuffleIndex(currentIndex);
+            break;
+
+        case DoNotLoopPlaylist:
+            if (currentIndex >= count - 1) return;
+            nextIndex = currentIndex + 1;
+            break;
+
+        case LoopPlaylist:
+        default:
+            nextIndex = (currentIndex + 1) % count;
+            break;
+    }
+
+    const QString filePath = m_model->currentURL(nextIndex);
+    if (!filePath.isEmpty()) {
+        m_view->setCurrentIndex(m_model->index(nextIndex, 0));
+        if (m_model->getItemAt(nextIndex).isLocalFile) {
+            emit playTrackRequested(QUrl::fromLocalFile(filePath));
+        } else {
+            emit playTrackRequested(QUrl(filePath));
+        }
+    }
+}
+
+void PlaylistController::previousTrack()
+{
+    const int count = m_model->rowCount();
+    if (count == 0) return;
+
+    int currentIndex = m_view->currentIndex().row();
+    if (currentIndex < 0) currentIndex = 0;
+
+    int previousIndex = currentIndex;
+
+    switch (m_playbackMode) {
+        case LoopCurrentVideo:
+            previousIndex = currentIndex;
+            break;
+
+        case Shuffle: {
+            if (count > 1) {
+                do {
+                    previousIndex = QRandomGenerator::global()->bounded(count);
+                } while (previousIndex == currentIndex);
+            } else {
+                previousIndex = 0;
+            }
+            break;
+        }
+
+        case DoNotLoopPlaylist:
+            if (currentIndex <= 0) {
+                return;
+            }
+            previousIndex = currentIndex - 1;
+            break;
+
+        case LoopPlaylist:
+        default:
+            previousIndex = (currentIndex - 1 + count) % count;
+            break;
+    }
+
+    const QString filePath = m_model->currentURL(previousIndex);
+    if (!filePath.isEmpty()) {
+        m_view->setCurrentIndex(m_model->index(previousIndex, 0));
+        if (m_model->getItemAt(previousIndex).isLocalFile) {
+            emit playTrackRequested(QUrl::fromLocalFile(filePath));
+        } else {
+            emit playTrackRequested(QUrl(filePath));
+        }
     }
 }
 
@@ -510,6 +531,146 @@ void PlaylistController::contextMenuShuffle()
     emit playbackModeChanged(m_playbackMode);
 }
 
+void PlaylistController::updateEmptyState()
+{
+    const int trackCount = m_model->rowCount();
+    if (trackCount == 0) {
+        m_container->setCurrentIndex(1);
+    } else {
+        m_container->setCurrentIndex(0);
+    }
+
+    emit playlistUpdated(trackCount);
+}
+
+void PlaylistController::handleItemDoubleClicked(const QModelIndex &index)
+{
+    if (!index.isValid())
+        return;
+
+    const QString filePath = m_model->currentURL(index.row());
+
+    if (!filePath.isEmpty()) {
+        if (m_model->getItemAt(index.row()).isLocalFile) {
+            emit playTrackRequested(QUrl::fromLocalFile(filePath));
+        } else {
+            emit playTrackRequested(QUrl(filePath));
+        }
+    }
+}
+
+void PlaylistController::playAction()
+{
+    if (selectedIndex == -1) return;
+    if (m_model->getItemAt(selectedIndex).isLocalFile) {
+        emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(selectedIndex)));
+    } else {
+        emit playTrackRequested(QUrl(m_model->currentURL(selectedIndex)));
+    }
+}
+
+void PlaylistController::streamAction()
+{
+    QMessageBox::information(m_view, tr("Stream"), tr("This feature is not yet implemented."));
+}
+
+void PlaylistController::saveAction()
+{
+    QMessageBox::information(m_view, tr("Save"), tr("This feature is not yet implemented."));
+}
+
+void PlaylistController::informationAction()
+{
+    QMessageBox::information(m_view, tr("Information"), tr("This feature is not yet implemented."));
+}
+
+void PlaylistController::showContainingFolderAction()
+{
+    if (selectedIndex == -1) return;
+    if (m_model->getItemAt(selectedIndex).isLocalFile) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(m_model->currentURL(selectedIndex)).toLocalFile());
+    } else {
+        QMessageBox::warning(m_view, tr("Open Containing Folder"), tr("This file is not a local file."));
+    }
+}
+
+void PlaylistController::removeSelectedAction()
+{
+    if (selectedIndex == -1) return;
+    m_model->removeRow(selectedIndex);
+    updateEmptyState();
+}
+
+void PlaylistController::addFileAction()
+{
+    requestFileImport();
+}
+
+void PlaylistController::addFolderAction()
+{
+    requestFolderImport();
+}
+
+void PlaylistController::savePlaylistAction()
+{
+    savePlaylistAs();
+}
+
+void PlaylistController::clearPlaylistAction()
+{
+    m_model->clear();
+    emit playlistCleared();
+    updateEmptyState();
+}
+
+void PlaylistController::sortByTitleAscendingAction() {}
+
+void PlaylistController::sortByTitleDescendingAction() {}
+
+void PlaylistController::sortByTrackNumberAscendingAction() {}
+
+void PlaylistController::sortByTrackNumberDescendingAction() {}
+
+void PlaylistController::displaySizeIncreaseAction() {}
+
+void PlaylistController::displaySizeDecreaseAction() {}
+
+void PlaylistController::playlistViewIconsAction() {}
+
+void PlaylistController::playlistViewDetailedListAction() {}
+
+void PlaylistController::playlistViewListAction() {}
+
+void PlaylistController::processFilePaths(const QStringList &paths, const bool autoPlay, const bool isLocalFile)
+{
+    const int previousCount = m_model->rowCount();
+
+    if (paths.isEmpty()) return;
+
+    for (const QString& path : paths) {
+        QFileInfo fileInfo(path);
+        m_model->addItem({.title = fileInfo.baseName(), .filePath = path, .duration = 0, .progress = 0, .isLocalFile = isLocalFile});
+    }
+
+    if (previousCount == 0 && m_model->rowCount() > 0) {
+        hidePlaylist();
+        m_view->setCurrentIndex(m_model->index(0, 0));
+        if (isLocalFile) {
+            emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(0)));
+        } else {
+            emit playTrackRequested(QUrl(m_model->currentURL(0)));
+        }
+    }
+    else if (autoPlay && m_model->rowCount() > previousCount) {
+        m_view->setCurrentIndex(m_model->index(previousCount, 0));
+        if (isLocalFile) {
+            emit playTrackRequested(QUrl::fromLocalFile(m_model->currentURL(previousCount)));
+        } else {
+            emit playTrackRequested(QUrl(m_model->currentURL(previousCount)));
+        }
+    }
+}
+
 bool PlaylistController::saveToFile(const QString &filePath) const
 {
     QFile file(filePath);
@@ -518,9 +679,8 @@ bool PlaylistController::saveToFile(const QString &filePath) const
     }
 
     QTextStream out(&file);
-    out << "#EXTM3U\n"; // Standard M3U header
+    out << "#EXTM3U\n";
 
-    // Iterate through the model and write each file path
     for (int i = 0; i < m_model->rowCount(); ++i) {
         QString mediaPath = m_model->currentURL(i);
         if (!mediaPath.isEmpty()) {
@@ -545,7 +705,6 @@ bool PlaylistController::loadFromFile(const QString &filePath)
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
 
-        // Skip empty lines and M3U comments/metadata (lines starting with #)
         if (!line.isEmpty() && !line.startsWith("#")) {
             pathsToAdd << line;
         }
@@ -553,11 +712,37 @@ bool PlaylistController::loadFromFile(const QString &filePath)
 
     file.close();
 
-    // Use our existing method to add the files without interrupting current playback
     if (!pathsToAdd.isEmpty()) {
         processFilePaths(pathsToAdd, false);
         return true;
     }
 
     return false;
+}
+
+void PlaylistController::resetUnplayedIndexes()
+{
+    m_unplayedIndexes.clear();
+    const int count = m_model->rowCount();
+    for (int i = 0; i < count; ++i) {
+        m_unplayedIndexes.append(i);
+    }
+}
+
+int PlaylistController::getNextShuffleIndex(int currentIndex)
+{
+    const int count = m_model->rowCount();
+    if (count == 0) return 0;
+
+    if (m_unplayedIndexes.isEmpty()) {
+        resetUnplayedIndexes();
+        if (count > 1) {
+            m_unplayedIndexes.removeAll(currentIndex);
+        }
+    }
+
+    int randomIndex = QRandomGenerator::global()->bounded(m_unplayedIndexes.size());
+    int selectedTrackIndex = m_unplayedIndexes.takeAt(randomIndex);
+
+    return selectedTrackIndex;
 }
