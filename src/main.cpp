@@ -34,10 +34,8 @@
 
 int main(int argc, char *argv[])
 {
-    // --- Initialize crash handler ---
     CrashHandler::install();
 
-    // --- Initialize your player main window UI context layer --
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QApplication app(argc, argv);
@@ -52,39 +50,42 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     try {
-        // --- Single Instance Handling ---
-        // Use a completely unique app key identifier for the local socket name
-        QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
+        const QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
         SingleInstanceController instanceController(uniqueKey);
 
-        // If another instance exists, it receives the arguments via IPC and we exit instantly
-        if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
-            return 0;
+        const QSettings settings;
+        const bool allowOnlyOneInstance = settings.value("allowOnlyOneInstance", true).toBool();
+        if (allowOnlyOneInstance) {
+            if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
+                return 0;
+            }
         }
 
-        // --- Create and show the main window ---
         VuraMainWindow mainWindow;
         mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
         mainWindow.show();
 
-        // Setup IPC slot connection to open files smoothly when incoming signals fire
-        QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
-            const QFileInfo checkFile(filePath);
-            if (checkFile.exists() && checkFile.isFile()) {
-                // Bring the primary window to the foreground instantly
-                mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-                mainWindow.raise();
-                mainWindow.activateWindow();
-
-                // Load and play the file inside your pipeline
-                mainWindow.openFile(filePath);
-            }
-        });
+        if (allowOnlyOneInstance) {
+            QObject::connect(&instanceController, &SingleInstanceController::pathReceived, [&mainWindow](const QString &requestedPath) {
+                const QFileInfo checkFile(requestedPath);
+                if (checkFile.exists() && checkFile.isFile()) {
+                    mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                    mainWindow.raise();
+                    mainWindow.activateWindow();
+                    mainWindow.openFile(requestedPath);
+                } else if (checkFile.isDir()) {
+                    mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                    mainWindow.raise();
+                    mainWindow.activateWindow();
+                    mainWindow.openFolder(requestedPath);
+                }
+            });
+        }
 
         if (argc == 2) {
-            QString openFileArg = QString::fromUtf8(argv[1]);
+            const QString openFileArg = QString::fromUtf8(argv[1]);
 
-            QFileInfo checkFile(openFileArg);
+            const QFileInfo checkFile(openFileArg);
             if (checkFile.exists() && checkFile.isFile()) {
                 if (checkFile.isFile()) {
                     mainWindow.openFile(openFileArg);
@@ -94,93 +95,14 @@ int main(int argc, char *argv[])
                 }
             }
         } else if (argc == 3) {
-            QString openFileArg = QString::fromUtf8(argv[1]);
-            QString openOptionArg = QString::fromUtf8(argv[2]);
+            const QString openFileArg = QString::fromUtf8(argv[1]);
+            const QString openOptionArg = QString::fromUtf8(argv[2]);
 
             if (openOptionArg == "--network") {
                 mainWindow.openNetworkStream(openFileArg);
             }
         }
-/*
-        QSettings settings;
-        if (settings.value("allowOnlyOneInstance", true).toBool()) {
-            // --- Single Instance Handling ---
-            // Use a completely unique app key identifier for the local socket name
-            QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
-            SingleInstanceController instanceController(uniqueKey);
 
-            // If another instance exists, it receives the arguments via IPC and we exit instantly
-            if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
-                return 0;
-            }
-
-            // --- Create and show the main window ---
-            VuraMainWindow mainWindow;
-            mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-            mainWindow.show();
-
-            // Setup IPC slot connection to open files smoothly when incoming signals fire
-            QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
-                const QFileInfo checkFile(filePath);
-                if (checkFile.exists() && checkFile.isFile()) {
-                    // Bring the primary window to the foreground instantly
-                    mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-                    mainWindow.raise();
-                    mainWindow.activateWindow();
-
-                    // Load and play the file inside your pipeline
-                    mainWindow.openFile(filePath);
-                }
-            });
-
-            if (argc == 2) {
-                QString openFileArg = QString::fromUtf8(argv[1]);
-
-                QFileInfo checkFile(openFileArg);
-                if (checkFile.exists() && checkFile.isFile()) {
-                    if (checkFile.isFile()) {
-                        mainWindow.openFile(openFileArg);
-
-                    } else if (checkFile.isDir()) {
-                        mainWindow.openFolder(openFileArg);
-                    }
-                }
-            } else if (argc == 3) {
-                QString openFileArg = QString::fromUtf8(argv[1]);
-                QString openOptionArg = QString::fromUtf8(argv[2]);
-
-                if (openOptionArg == "--network") {
-                    mainWindow.openNetworkStream(openFileArg);
-                }
-            }
-        } else {
-            // --- Create and show the main window ---
-            VuraMainWindow mainWindow;
-            mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-            mainWindow.show();
-
-            if (argc == 2) {
-                QString openFileArg = QString::fromUtf8(argv[1]);
-
-                QFileInfo checkFile(openFileArg);
-                if (checkFile.exists() && checkFile.isFile()) {
-                    if (checkFile.isFile()) {
-                        mainWindow.openFile(openFileArg);
-
-                    } else if (checkFile.isDir()) {
-                        mainWindow.openFolder(openFileArg);
-                    }
-                }
-            } else if (argc == 3) {
-                QString openFileArg = QString::fromUtf8(argv[1]);
-                QString openOptionArg = QString::fromUtf8(argv[2]);
-
-                if (openOptionArg == "--network") {
-                    mainWindow.openNetworkStream(openFileArg);
-                }
-            }
-        }
-*/
         return QApplication::exec();
 
     } catch (const std::exception &e) {

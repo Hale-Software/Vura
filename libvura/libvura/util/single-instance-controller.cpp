@@ -16,6 +16,10 @@
 
  ******************************************************************************/
 
+#include <QLocalSocket>
+#include <QDataStream>
+#include <QDebug>
+
 #include "single-instance-controller.h"
 
 
@@ -51,29 +55,25 @@ bool SingleInstanceController::checkForExistingInstance(const QStringList &args)
 
 void SingleInstanceController::handleNewConnection()
 {
+    qDebug() << "New connection received";
     QLocalSocket *socket = m_localServer->nextPendingConnection();
     if (!socket) return;
 
     connect(socket, &QLocalSocket::readyRead, this, [this, socket]() {
         QDataStream stream(socket);
         stream.setVersion(QDataStream::Qt_6_0);
-
-        // Start a read transaction
         stream.startTransaction();
 
         QStringList args;
         stream >> args;
 
-        // If the full payload hasn't arrived, back out and wait for the next readyRead
         if (!stream.commitTransaction()) {
             return;
         }
 
-        if (args.size() > 1) {
-            emit fileReceived(args.at(1)); // Index 0 is the executable path, Index 1 is the file
-        }
+        if (args.size() > 1)
+            emit pathReceived(args.at(1));
 
-        // Only disconnect once we've successfully read the complete payload
         socket->disconnectFromServer();
     });
 

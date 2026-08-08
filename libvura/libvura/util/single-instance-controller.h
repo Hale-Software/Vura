@@ -20,10 +20,11 @@
 
 #include <QObject>
 #include <QLocalServer>
-#include <QLocalSocket>
-#include <QDataStream>
-#include <QDebug>
 
+
+class QLocalSocket;
+class QDataStream;
+class QDebug;
 
 class SingleInstanceController : public QObject
 {
@@ -35,7 +36,7 @@ public:
     bool checkForExistingInstance(const QStringList &args);
 
 signals:
-    void fileReceived(const QString &filePath);
+    void pathReceived(const QString &requestedPath);
 
 private slots:
     void handleNewConnection();
