@@ -1169,10 +1169,34 @@ void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
     connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::continuePlayback, this, &VuraMainWindow::continuePlaybackAccepted);
     connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::closeWidget, this, &VuraMainWindow::continuePlaybackDeclined);
 
+    // Stop timer when mouse enters the widget
+    connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::mouseEntered, this, [this]() {
+        if (m_continuePlaybackBannerTimer && m_continuePlaybackBannerTimer->isActive()) {
+            m_continuePlaybackBannerTimer->stop();
+        }
+    });
+
+    // Restart timer when mouse leaves the widget
+    connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::mouseLeft, this, [this]() {
+        if (m_continuePlaybackBannerTimer) {
+            m_continuePlaybackBannerTimer->start();
+        }
+    });
+
     ui->verticalLayout->insertWidget(0, m_continuePlaybackWidget);
     ui->verticalLayout->setStretch(1, 1);
 
-    QTimer::singleShot(5000, this, &VuraMainWindow::continuePlaybackDelete);
+    if (m_continuePlaybackBannerTimer) {
+        m_continuePlaybackBannerTimer->stop();
+        delete m_continuePlaybackBannerTimer;
+        m_continuePlaybackBannerTimer = nullptr;
+    }
+
+    m_continuePlaybackBannerTimer = new QTimer(this);
+    m_continuePlaybackBannerTimer->setSingleShot(true);
+    m_continuePlaybackBannerTimer->setInterval(5000);
+    connect(m_continuePlaybackBannerTimer, &QTimer::timeout, this, &VuraMainWindow::continuePlaybackDelete);
+    m_continuePlaybackBannerTimer->start();
 }
 
 void VuraMainWindow::continuePlaybackDeclined()

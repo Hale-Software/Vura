@@ -20,7 +20,6 @@
 #include <QSettings>
 #include <QFileInfo>
 #include <QSurfaceFormat>
-#include <QMessageBox>
 #include <QDir>
 #include <QDebug>
 

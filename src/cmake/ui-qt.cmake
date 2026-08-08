@@ -32,20 +32,15 @@ target_sources(
         forms/HelpDialog.ui
         forms/LogUploadDialog.ui
         forms/LogViewerDialog.ui
-        forms/mainwindow.ui
-        forms/MarkerDialog.ui
         forms/MarkerEditDialog.ui
         forms/MediaInformationDialog.ui
         forms/MissingFilesDialog.ui
-        forms/PermissionsDialog.ui
         forms/SettingsDialog.ui
-        forms/TitleBar.ui
         forms/UpdateDialog.ui
         forms/VideoControlWidget.ui
         forms/VideoSliderWidget.ui
         forms/VuraMainWindow.ui
         forms/WhatsNewDialog.ui
-        forms/testwindow.ui
 )
 
 # OS-Specific system libraries linking

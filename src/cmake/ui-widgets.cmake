@@ -10,6 +10,4 @@ target_sources(
         widgets/VideoSliderWidget.h
         widgets/VuraMainWindow.cpp
         widgets/VuraMainWindow.h
-        widgets/testwindow.cpp
-        widgets/testwindow.h
 )

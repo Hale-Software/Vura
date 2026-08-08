@@ -1,11 +1,14 @@
 #pragma once
 
 #include <QWidget>
-#include <QPushButton>
-#include <QToolButton>
-#include <QLabel>
 #include <QString>
-#include <QTime>
+#include <QEvent>
+#include <QEnterEvent>
+
+class QPushButton;
+class QToolButton;
+class QLabel;
+class QTime;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,6 +28,12 @@ public:
 signals:
     void continuePlayback(qint64 savedPosition);
     void closeWidget();
+    void mouseEntered();
+    void mouseLeft();
+
+protected:
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private slots:
     void continuePlaybackClicked();

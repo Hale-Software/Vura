@@ -16,6 +16,11 @@
 
  ******************************************************************************/
 
+#include <QPushButton>
+#include <QToolButton>
+#include <QLabel>
+#include <QTime>
+
 #include "ContinuePlaybackWidget.h"
 #include "ui_ContinuePlaybackWidget.h"
 
@@ -27,11 +32,15 @@ ContinuePlaybackWidget::ContinuePlaybackWidget(const qint64 savedPosition, QWidg
 {
     ui->setupUi(this);
 
+    setAttribute(Qt::WA_Hover, true);
+
     QTime time(0, 0, 0);
     time = time.addMSecs(static_cast<int>(m_savedPosition));
     const QString timeString = time.toString("hh:mm:ss");
 
     ui->questionLabel->setText(QString("Do you want to restart the playback at %1?").arg(timeString));
+    ui->closeButton->setStyleSheet("QToolButton { background: transparent; border: none; }");
+    ui->closeButton->setAutoRaise(true);
 
     connect(ui->continueButton, &QPushButton::clicked, this, &ContinuePlaybackWidget::continuePlaybackClicked);
     connect(ui->closeButton, &QToolButton::clicked, this, &ContinuePlaybackWidget::closeWidgetClicked);
@@ -40,6 +49,18 @@ ContinuePlaybackWidget::ContinuePlaybackWidget(const qint64 savedPosition, QWidg
 ContinuePlaybackWidget::~ContinuePlaybackWidget()
 {
     delete ui;
+}
+
+void ContinuePlaybackWidget::enterEvent(QEnterEvent *event)
+{
+    emit mouseEntered();
+    QWidget::enterEvent(event);
+}
+
+void ContinuePlaybackWidget::leaveEvent(QEvent *event)
+{
+    emit mouseLeft();
+    QWidget::leaveEvent(event);
 }
 
 void ContinuePlaybackWidget::continuePlaybackClicked()

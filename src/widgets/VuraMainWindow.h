@@ -233,6 +233,7 @@ private:
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
 
     QTimer *m_videoSliderHideTimer = nullptr;
+    QTimer *m_continuePlaybackBannerTimer = nullptr;
     QMediaDevices m_mediaDevices;
     QString m_trackInfo;
     QString m_statusInfo;
