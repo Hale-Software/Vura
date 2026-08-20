@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets Sql)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
@@ -42,10 +42,12 @@ target_sources(
 target_sources(
     libvura
     PUBLIC
+    libvura/io/database-manager.h
     libvura/io/remuxer-thread.h
     libvura/io/video-converter.h
 
     PRIVATE
+    libvura/io/database-manager.cpp
     libvura/io/remuxer-thread.cpp
     libvura/io/video-converter.cpp
 )
@@ -95,6 +97,7 @@ target_sources(
         libvura/models/playlist-item.h
         libvura/models/playlist-model.cpp
         libvura/models/version.h
+        libvura/models/video-marker-record.h
 )
 
 # playback Directory
@@ -124,10 +127,12 @@ target_sources(
         libvura
         PUBLIC
         libvura/util/crash-reporter.h
+        libvura/util/crypto.h
         libvura/util/single-instance-controller.h
 
         PRIVATE
         libvura/util/crash-reporter.cpp
+        libvura/util/crypto.cpp
         libvura/util/single-instance-controller.cpp
 )
 
@@ -151,6 +156,7 @@ target_link_libraries(
         Qt6::Network
         Qt6::MultimediaWidgets
         Qt6::OpenGLWidgets
+        Qt6::Sql
         ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
         ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
         ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib

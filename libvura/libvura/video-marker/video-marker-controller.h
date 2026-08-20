@@ -22,17 +22,18 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#include <libvura/video-marker/video-markers.h>
+#include "../io/database-manager.h"
+#include "../models/video-marker-record.h"
+#include "../util/crypto.h"
 
 
 class VideoMarkerController : public QObject
 {
     Q_OBJECT
-
 public:
     explicit VideoMarkerController(QObject* parent = nullptr);
 
-    QList<VuraVideoMarker> getVideoMarkers() const;
+    QList<VideoMarkerRecord> getVideoMarkers() const;
 
     void setCumshotMarkerVisibility(bool visible);
     void setCyanMarkerVisibility(bool visible);
@@ -46,11 +47,11 @@ public:
 signals:
     void markersLoaded();
     void markerAdded();
-    void markerEdited(const VuraVideoMarker &videoMarker);
+    void markerEdited(const VideoMarkerRecord &videoMarker);
     void markersUpdated();
 
 public slots:
-    void saveVideoMarkers();
+    void saveVideoMarkers() const;
     void loadVideoMarkers(const QUrl &source);
     void addCumshotMarker(double timestamp);
     void addCyanMarker(double timestamp);
@@ -60,16 +61,21 @@ public slots:
     void addOrangeMarker(double timestamp);
     void addSceneMarker(double timestamp);
     void addStripMarker(double timestamp);
-    VuraVideoMarker getSelectedMarker(double sliderPercent);
+    void addVideoMarker(const VideoMarkerRecord &videoMarker);
+    VideoMarkerRecord getSelectedMarker(double sliderPercent);
+    void deleteVideoMarker(const VideoMarkerRecord &videoMarker);
     void clearSelectedMarker(double sliderPercent);
     void clearMarkers();
 
 private:
-    QList<VuraVideoMarker> m_videoMarkers;
+    VideoMarkerRecord findNearestMarker(double sliderPercent);
+    void refreshVideoMarkers();
+
+    DatabaseManager *m_databaseManager = nullptr;
+
+    QList<VideoMarkerRecord> m_videoMarkers;
     QString m_videoMarkersFile;
     QString m_sourceName;
-
-    VuraVideoMarker findNearestMarker(double sliderPercent);
 
     bool m_cumshotMarkerVisible = true;
     bool m_cyanMarkerVisible = true;

@@ -16,12 +16,23 @@
 
  ******************************************************************************/
 
+#include <QLineEdit>
+#include <QPushButton>
+#include <QComboBox>
+#include <QTextEdit>
+#include <QTime>
+#include <QMessageBox>
+#include <QDebug>
+
 #include "MarkerEditDialog.h"
 #include "ui_MarkerEditDialog.h"
 
 
-MarkerEditDialog::MarkerEditDialog(const VuraVideoMarker &videoMarker, int videoDuration, QWidget *parent)
-    : QDialog(parent), ui(new Ui::MarkerEditDialog), m_videoMarker(videoMarker), m_videoDuration(videoDuration)
+MarkerEditDialog::MarkerEditDialog(const VideoMarkerRecord &videoMarker, const int videoDuration, QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::MarkerEditDialog),
+      m_videoMarker(videoMarker),
+      m_videoDuration(videoDuration)
 {
     ui->setupUi(this);
 
@@ -33,8 +44,6 @@ MarkerEditDialog::MarkerEditDialog(const VuraVideoMarker &videoMarker, int video
     connect(ui->markerType, &QComboBox::currentIndexChanged, this, &MarkerEditDialog::type_IndexChanged);
     connect(ui->comments, &QTextEdit::textChanged, this, &MarkerEditDialog::comments_TextChanged);
     connect(ui->deleteButton, &QPushButton::clicked, this, &MarkerEditDialog::deleteButton_Clicked);
-    connect(ui->previousButton, &QPushButton::clicked, this, &MarkerEditDialog::prevButton_Clicked);
-    connect(ui->nextButton, &QPushButton::clicked, this, &MarkerEditDialog::nextButton_Clicked);
     connect(ui->cancelButton, &QPushButton::clicked, this, &MarkerEditDialog::cancelButton_Clicked);
     connect(ui->okButton, &QPushButton::clicked, this, &MarkerEditDialog::okButton_Clicked);
 }
@@ -48,21 +57,21 @@ void MarkerEditDialog::saveMarker()
 {
     m_videoMarker.markerName = ui->markerName->text();
 
-    QString timestampString = ui->timestamp->text();
+    const QString timestampString = ui->timestamp->text();
 
-    QStringList timestringList = timestampString.split(":");
+    const QStringList timestringList = timestampString.split(":");
     if (timestringList.count() != 3) {
         QMessageBox::warning(this, tr("Error Saving"), tr("Failed to convert entered timestring to data file format."));
         return;
     }
 
-    int hours = timestringList.at(0).toInt();
+    const int hours = timestringList.at(0).toInt();
     int minutes = timestringList.at(1).toInt();
     int seconds = timestringList.at(2).toInt();
 
-    int hoursToMinutes = hours * 60;
+    const int hoursToMinutes = hours * 60;
     minutes = minutes + hoursToMinutes;
-    int minutesToSeconds = minutes * 60;
+    const int minutesToSeconds = minutes * 60;
     seconds = seconds + minutesToSeconds;
 
     if (seconds > m_videoDuration)
@@ -71,7 +80,7 @@ void MarkerEditDialog::saveMarker()
     const double distanceFromMin = (seconds - 0);
     const double sliderRange = (m_videoDuration - 0);
     const double sliderPercent = (distanceFromMin / sliderRange);
-    m_videoMarker.timestamp = sliderPercent;
+    m_videoMarker.timestampMs = sliderPercent;
 
     m_videoMarker.markerType = ui->markerType->currentText().toLower();
     m_videoMarker.comments = ui->comments->toPlainText();
@@ -86,12 +95,11 @@ void MarkerEditDialog::closeEvent(QCloseEvent *event)
         event->accept();
 
     if (m_unsavedChanges) {
-        QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(
             this,
             tr("Unsaved Changes"),
             tr("You have unsaved changes. Save Changes?"),
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
-            );
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
         if (confirmationBox == QMessageBox::No) {
             event->accept();
@@ -112,34 +120,22 @@ void MarkerEditDialog::forceClose()
     this->close();
 }
 
-void MarkerEditDialog::loadVideoMarker(const VuraVideoMarker &videoMarker)
+void MarkerEditDialog::loadVideoMarker(const VideoMarkerRecord &videoMarker)
 {
     if (m_unsavedChanges) {
-        QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+        const QMessageBox::StandardButton confirmationBox = QMessageBox::question(
         this,
         tr("Unsaved Changes"),
         tr("Do you want to save your changes?"),
-        QMessageBox::Yes | QMessageBox::No
-        );
+        QMessageBox::Yes | QMessageBox::No);
 
-        if (confirmationBox == QMessageBox::Yes) {
+        if (confirmationBox == QMessageBox::Yes)
             saveMarker();
-        }
     }
 
     m_unsavedChanges = false;
     m_videoMarker = videoMarker;
     populateUI();
-}
-
-void MarkerEditDialog::setPrevButton_Enabled(bool enabled)
-{
-    ui->previousButton->setEnabled(enabled);
-}
-
-void MarkerEditDialog::setNextButton_Enabled(bool enabled)
-{
-    ui->nextButton->setEnabled(enabled);
 }
 
 void MarkerEditDialog::name_TextChanged(const QString &text)
@@ -153,14 +149,15 @@ void MarkerEditDialog::timestamp_TextChanged(const QString &text)
 {
     if (text != durationToTimestampString()) {
         m_unsavedChanges = true;
-        QString timestampString = ui->timestamp->text();
-        QString windowTitle = "Marker @ " + timestampString;
+        const QString timestampString = ui->timestamp->text();
+        const QString windowTitle = "Marker @ " + timestampString;
         this->setWindowTitle(windowTitle);
     }
 }
 
-void MarkerEditDialog::type_IndexChanged(int index)
+void MarkerEditDialog::type_IndexChanged(const int index)
 {
+    Q_UNUSED(index);
     if (ui->markerType->currentText().toLower() != m_videoMarker.markerType) {
         m_unsavedChanges = true;
     }
@@ -175,7 +172,7 @@ void MarkerEditDialog::comments_TextChanged()
 
 void MarkerEditDialog::deleteButton_Clicked()
 {
-    QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+    const QMessageBox::StandardButton confirmationBox = QMessageBox::question(
         this,
         tr("Delete Marker"),
         tr("Are you sure you want to delete this marker? This cannot be undone."),
@@ -185,17 +182,8 @@ void MarkerEditDialog::deleteButton_Clicked()
     if (confirmationBox == QMessageBox::Yes) {
         emit markerDeleted(m_videoMarker);
         m_unsavedChanges = false;
+        this->close();
     }
-}
-
-void MarkerEditDialog::prevButton_Clicked()
-{
-    emit getPrevMarker(m_videoMarker);
-}
-
-void MarkerEditDialog::nextButton_Clicked()
-{
-    emit getNextMarker(m_videoMarker);
 }
 
 void MarkerEditDialog::cancelButton_Clicked()
@@ -215,7 +203,7 @@ QString MarkerEditDialog::durationToTimestampString() const
 {
     const QString format = "hh:mm:ss";
 
-    const int currentPosition = m_videoMarker.timestamp * m_videoDuration;
+    const int currentPosition = m_videoMarker.timestampMs * m_videoDuration;
 
     const QTime currentTime(
             (currentPosition / 3600) % 60,
@@ -228,8 +216,8 @@ QString MarkerEditDialog::durationToTimestampString() const
 
 void MarkerEditDialog::populateUI()
 {
-    QString timestampString = durationToTimestampString();
-    QString windowTitle = "Marker @ " + timestampString;
+    const QString timestampString = durationToTimestampString();
+    const QString windowTitle = "Marker @ " + timestampString;
     this->setWindowTitle(windowTitle);
 
     ui->markerName->setText(m_videoMarker.markerName);

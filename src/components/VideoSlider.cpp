@@ -90,53 +90,53 @@ void VideoSlider::paintEvent(QPaintEvent *event)
     painter.drawEllipse(QPointF(handleX, yCenter), handleRadius, handleRadius);
 
     // Draw Markers
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VideoMarkerRecord &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(markerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(sceneMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(cumshotMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "strip" && m_showingStripMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(stripMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(dialogMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(cyanMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(magentaMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
-            if (marker.timestamp > m_minimum && marker.timestamp < m_maximum) {
+            if (marker.timestampMs > m_minimum && marker.timestampMs < m_maximum) {
                 painter.setPen(QPen(QColor(orangeMarkerColor), videoMarkerWidth));
-                const int x = (marker.timestamp * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
+                const int x = (marker.timestampMs * validLength() + sliderLeftRightMargin) + (videoMarkerSideLength / 2);
                 painter.drawLine(x, videoMarkerVerticalMargin, x, videoMarkerHeight);
             }
         }
@@ -358,77 +358,77 @@ void VideoSlider::goToNextMarker(const double currentPercent)
 {
     double newVal = 0.0;
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VideoMarkerRecord &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "strip" && m_showingStripMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
-            if (marker.timestamp > currentPercent + 0.001) {
+            if (marker.timestampMs > currentPercent + 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp < newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         }
@@ -444,77 +444,77 @@ void VideoSlider::goToPreviousMarker(const double currentPercent)
 {
     double newVal = 0.0;
 
-    for (const VuraVideoMarker &marker : m_videoMarkers) {
+    for (const VideoMarkerRecord &marker : m_videoMarkers) {
         if (marker.markerType == "marker" && m_showingMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "strip" && m_showingStripMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
-            if (marker.timestamp < currentPercent - 0.001) {
+            if (marker.timestampMs < currentPercent - 0.001) {
                 if (newVal != 0.0) {
-                    if (marker.timestamp > newVal)
-                        newVal = marker.timestamp;
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
                 } else {
-                    newVal = marker.timestamp;
+                    newVal = marker.timestampMs;
                 }
             }
         }

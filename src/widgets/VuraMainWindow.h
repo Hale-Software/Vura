@@ -70,6 +70,7 @@
 #include <libvura/exceptions/error-service.h>
 #include <libvura/video-marker/video-marker-controller.h>
 #include <libvura/models/playlist-model.h>
+#include <libvura/models/video-marker-record.h>
 #include <libvura/playlist/playlist-delegate.h>
 #include <libvura/platform/updater.h>
 #include <libvura/playback/playback-controller.h>
@@ -138,7 +139,7 @@ signals:
 private slots:
     void updateCheckReplyFinished(QNetworkReply *reply);
 
-    static void actionTestFunction();
+    void actionTestFunction();
     void actionOpenNetworkStream();
     void actionEmergencyClose();
     void actionShowLogViewer();
@@ -193,6 +194,7 @@ private slots:
 public slots:
     void stateChanged(PlaybackState state);
     void sourceChanged(const QUrl &source);
+    void durationChanged(qint64 duration);
     void playbackModeChanged(PlaylistController::PlaybackMode mode);
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
@@ -215,11 +217,11 @@ private:
     void setApplicationWindowTitle();
 
     void updateMarkerMenuItems();
-    VuraVideoMarker findNearestVisibleMarker(double sliderPercent, double markerRange) const;
+    VideoMarkerRecord findNearestVisibleMarker(double sliderPercent, double markerRange) const;
     double getSliderPercent() const;
     bool checkMarkerProximity() const;
-    bool isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker) const;
-    bool isNextMarkerAvailable(const VuraVideoMarker &videoMarker) const;
+    bool isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
+    bool isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
 
     void configureUpdater();
     void saveCurrentPlaybackPosition();
@@ -256,6 +258,7 @@ private:
     bool m_wasPlaylistShowing = false;
     int m_inMarker = 0;
     int m_outMarker = 0;
+    int m_duration = 0;
     PlaybackState m_currentPlaybackState = Stopped;
     QUrl m_currentSource;
     QPointer<QFrame> m_resumeOverlay;

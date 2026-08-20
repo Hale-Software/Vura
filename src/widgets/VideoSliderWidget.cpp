@@ -20,6 +20,7 @@
 #include "ui_VideoSliderWidget.h"
 
 #include <QEasingCurve>
+#include <QTime>
 
 
 VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent)

@@ -33,7 +33,7 @@
 #include <QLabel>
 #include <QDebug>
 
-#include <libvura/video-marker/video-markers.h>
+#include <libvura/models/video-marker-record.h>
 #include <libvura/video-marker/video-marker-controller.h>
 
 
@@ -91,7 +91,7 @@ private:
     int validLength() const;
     int valueFromPos(int x) const;
 
-    QList<VuraVideoMarker> m_videoMarkers;
+    QList<VideoMarkerRecord> m_videoMarkers;
     float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
     int m_minimum;
     int m_maximum;

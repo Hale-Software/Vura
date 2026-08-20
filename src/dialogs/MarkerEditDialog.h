@@ -19,67 +19,50 @@
 #pragma once
 
 #include <QDialog>
-#include <QString>
-#include <QStringList>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QComboBox>
-#include <QTextEdit>
-#include <QTime>
-#include <QMessageBox>
 #include <QCloseEvent>
-#include <QDebug>
 
-#include <libvura/video-marker/video-markers.h>
-
+#include <libvura/models/video-marker-record.h>
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class MarkerEditDialog;
-}
+namespace Ui { class MarkerEditDialog; }
 QT_END_NAMESPACE
+
 
 class MarkerEditDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    explicit MarkerEditDialog(const VuraVideoMarker &videoMarker, int videoDuration, QWidget *parent = nullptr);
+    explicit MarkerEditDialog(const VideoMarkerRecord &videoMarker, int videoDuration, QWidget *parent = nullptr);
     ~MarkerEditDialog() override;
+
     void saveMarker();
 
 signals:
-    void markerEdited(const VuraVideoMarker &videoMarker);
-    void markerDeleted(const VuraVideoMarker &videoMarker);
-    void getNextMarker(const VuraVideoMarker &videoMarker);
-    void getPrevMarker(const VuraVideoMarker &videoMarker);
+    void markerEdited(const VideoMarkerRecord &videoMarker);
+    void markerDeleted(const VideoMarkerRecord &videoMarker);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
 
 public slots:
     void forceClose();
-    void loadVideoMarker(const VuraVideoMarker &videoMarker);
-    void setNextButton_Enabled(bool enabled);
-    void setPrevButton_Enabled(bool enabled);
+    void loadVideoMarker(const VideoMarkerRecord &videoMarker);
     void name_TextChanged(const QString &text);
     void timestamp_TextChanged(const QString &text);
     void type_IndexChanged(int index);
     void comments_TextChanged();
     void deleteButton_Clicked();
-    void prevButton_Clicked();
-    void nextButton_Clicked();
     void cancelButton_Clicked();
     void okButton_Clicked();
 
 private:
+    QString durationToTimestampString() const;
+    void populateUI();
+
     Ui::MarkerEditDialog *ui;
-    VuraVideoMarker m_videoMarker;
+    VideoMarkerRecord m_videoMarker;
     int m_videoDuration;
     bool m_unsavedChanges = false;
     bool m_forceClose = false;
-
-    QString durationToTimestampString() const;
-    void populateUI();
 
 };

@@ -313,6 +313,7 @@ void VuraMainWindow::setConnections()
 
     connect(m_playbackController, &PlaybackController::positionChanged, m_videoSlider, &VideoSlider::setValue);
     connect(m_playbackController, &PlaybackController::durationChanged, m_videoSlider, &VideoSlider::setMaximum);
+    connect(m_playbackController, &PlaybackController::durationChanged, this, &VuraMainWindow::durationChanged);
     connect(m_playbackController, &PlaybackController::sourceChanged, this, &VuraMainWindow::sourceChanged);
     connect(m_playbackController, &PlaybackController::stateChanged, this, &VuraMainWindow::stateChanged);
     connect(m_playbackController, &PlaybackController::jumpCompleted, this, &VuraMainWindow::resetVideoSliderVisibility);
@@ -698,6 +699,11 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     }
 }
 
+void VuraMainWindow::durationChanged(const qint64 duration)
+{
+    m_duration = static_cast<int>(duration) / 1000;
+}
+
 void VuraMainWindow::playbackModeChanged(PlaylistController::PlaybackMode mode)
 {
     ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
@@ -816,7 +822,10 @@ void VuraMainWindow::actionHelpCheckForUpdates()
     m_updateNetworkManager->get(request);
 }
 
-void VuraMainWindow::actionTestFunction() {}
+void VuraMainWindow::actionTestFunction()
+{
+
+}
 
 void VuraMainWindow::actionOpenNetworkStream()
 {
@@ -1137,7 +1146,16 @@ void VuraMainWindow::actionMarkersClearInOut() {}
 
 void VuraMainWindow::actionMarkersClearMarkers()
 {
-    m_videoMarkerController->clearMarkers();
+    const QMessageBox::StandardButton confirmationBox = QMessageBox::question(
+        this,
+        tr("Clear Markers"),
+        tr("Are you sure you want to clear all markers? This cannot be undone."),
+        QMessageBox::Yes | QMessageBox::No
+        );
+
+    if (confirmationBox == QMessageBox::Yes) {
+        m_videoMarkerController->clearMarkers();
+    }
 }
 
 void VuraMainWindow::actionMarkersClearOut() {}
@@ -1147,7 +1165,28 @@ void VuraMainWindow::actionMarkersClearSelectedMarker()
     m_videoMarkerController->clearSelectedMarker(getSliderPercent());
 }
 
-void VuraMainWindow::actionMarkersEditSelectedMarker() {}
+void VuraMainWindow::actionMarkersEditSelectedMarker()
+{
+    qDebug() << "Current duration: " << m_duration;
+    const VideoMarkerRecord marker = m_videoMarkerController->getSelectedMarker(getSliderPercent());
+    if (marker.id <= 0)
+        return;
+
+    if (m_markerEditDialog)
+        m_markerEditDialog->close();
+
+    m_markerEditDialog = new MarkerEditDialog(marker, m_duration, this);
+    m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    m_markerEditDialog->show();
+
+    connect(m_markerEditDialog, &MarkerEditDialog::markerEdited, this, [this](const VideoMarkerRecord &videoMarker) {
+        m_videoMarkerController->addVideoMarker(videoMarker);
+    });
+
+    connect(m_markerEditDialog, &MarkerEditDialog::markerDeleted, this, [this](const VideoMarkerRecord &videoMarker) {
+        m_videoMarkerController->deleteVideoMarker(videoMarker);
+    });
+}
 
 void VuraMainWindow::actionMarkersGoToIn() {}
 
@@ -1213,16 +1252,16 @@ void VuraMainWindow::updateMarkerMenuItems()
     ui->actionMarkersEditSelectedMarker->setEnabled(checkMarkerProximity());
 }
 
-VuraVideoMarker VuraMainWindow::findNearestVisibleMarker(const double sliderPercent, const double markerRange) const
+VideoMarkerRecord VuraMainWindow::findNearestVisibleMarker(const double sliderPercent, const double markerRange) const
 {
-    VuraVideoMarker best;
-    best.timestamp = std::numeric_limits<double>::quiet_NaN();
+    VideoMarkerRecord best;
+    best.timestampMs = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
+    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
         if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
-        const double dist = std::abs(marker.timestamp - sliderPercent);
+        const double dist = std::abs(marker.timestampMs - sliderPercent);
         if (dist > markerRange) continue;
-        if (std::isnan(best.timestamp) || dist < std::abs(best.timestamp - sliderPercent))
+        if (std::isnan(best.timestampMs) || dist < std::abs(best.timestampMs - sliderPercent))
             best = marker;
     }
     return best;
@@ -1241,12 +1280,12 @@ bool VuraMainWindow::checkMarkerProximity() const
     const double sliderPercent = getSliderPercent();
     double markerProximityThreshold = settings.value("markerProximityThreshold", 0.005).toDouble();
 
-    const auto isVisibleMarkerNearSlider = [this, sliderPercent, markerProximityThreshold](const VuraVideoMarker &marker) {
+    const auto isVisibleMarkerNearSlider = [this, sliderPercent, markerProximityThreshold](const VideoMarkerRecord &marker) {
         if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) {
             return false;
         }
 
-        const double distanceToSlider = std::abs(marker.timestamp - sliderPercent);
+        const double distanceToSlider = std::abs(marker.timestampMs - sliderPercent);
         return distanceToSlider <= markerProximityThreshold;
     };
 
@@ -1256,49 +1295,49 @@ bool VuraMainWindow::checkMarkerProximity() const
         isVisibleMarkerNearSlider);
 }
 
-bool VuraMainWindow::isPreviousMarkerAvailable(const VuraVideoMarker &videoMarker) const
+bool VuraMainWindow::isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const
 {
-    VuraVideoMarker previousMarker;
-    previousMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+    VideoMarkerRecord previousMarker;
+    previousMarker.timestampMs = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
-        if (marker.timestamp < videoMarker.timestamp) {
-            if (std::isnan(previousMarker.timestamp)) {
+    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
+        if (marker.timestampMs < videoMarker.timestampMs) {
+            if (std::isnan(previousMarker.timestampMs)) {
                 previousMarker = marker;
 
             } else {
-                if (marker.timestamp > previousMarker.timestamp) {
+                if (marker.timestampMs > previousMarker.timestampMs) {
                     previousMarker = marker;
                 }
             }
         }
     }
 
-    if (std::isnan(previousMarker.timestamp)) {
+    if (std::isnan(previousMarker.timestampMs)) {
         return false;
     }
     return true;
 }
 
-bool VuraMainWindow::isNextMarkerAvailable(const VuraVideoMarker &videoMarker) const
+bool VuraMainWindow::isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const
 {
-    VuraVideoMarker nextMarker;
-    nextMarker.timestamp = std::numeric_limits<double>::quiet_NaN();
+    VideoMarkerRecord nextMarker;
+    nextMarker.timestampMs = std::numeric_limits<double>::quiet_NaN();
 
-    for (const VuraVideoMarker &marker : m_videoMarkerController->getVideoMarkers()) {
-        if (marker.timestamp > videoMarker.timestamp) {
-            if (std::isnan(nextMarker.timestamp)) {
+    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
+        if (marker.timestampMs > videoMarker.timestampMs) {
+            if (std::isnan(nextMarker.timestampMs)) {
                 nextMarker = marker;
 
             } else {
-                if (marker.timestamp < nextMarker.timestamp) {
+                if (marker.timestampMs < nextMarker.timestampMs) {
                     nextMarker = marker;
                 }
             }
         }
     }
 
-    if (std::isnan(nextMarker.timestamp)) {
+    if (std::isnan(nextMarker.timestampMs)) {
         return false;
     }
     return true;

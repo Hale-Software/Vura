@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg)
+find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg Sql)
 
 target_link_libraries(
         vura PRIVATE
@@ -7,6 +7,7 @@ target_link_libraries(
         Qt6::Network
         Qt6::OpenGLWidgets
         Qt6::Svg
+        Qt6::Sql
 )
 
 set_target_properties(
