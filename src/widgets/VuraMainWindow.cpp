@@ -21,14 +21,11 @@
 #include "ui_VuraMainWindow.h"
 
 #include <ui-config.h>
-#include <qglobal.h>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
-
-static Logger* globalRedirector = nullptr;
 
 VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::VuraMainWindow)
 {
@@ -42,9 +39,6 @@ VuraMainWindow::VuraMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui
     setAcceptDrops(true);
 
     ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
-
-    qInstallMessageHandler(Logger::messageHandler);
-    globalRedirector = Logger::instance();
 
     const int defaultWindowHeight = settings.value("defaultWindowHeight", 550).toInt();
     const int defaultWindowWidth = settings.value("defaultWindowWidth", 955).toInt();
@@ -590,6 +584,8 @@ void VuraMainWindow::setMainWindowVisibility(const bool state)
 
 void VuraMainWindow::openFile(const QString &file) const
 {
+    qDebug() << "Open file requested. File: " << file;
+
     QStringList fileList;
     if (!file.isEmpty()) {
         fileList << file;
@@ -599,6 +595,8 @@ void VuraMainWindow::openFile(const QString &file) const
 
 void VuraMainWindow::openFolder(const QString &path) const
 {
+    qDebug() << "Open folder requested. Path: " << path;
+
     QStringList fileList;
 
     if (!path.isEmpty()) {

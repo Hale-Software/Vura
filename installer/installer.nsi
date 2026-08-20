@@ -130,7 +130,7 @@ FunctionEnd
         WriteRegStr HKLM "Software\Classes\${EXT}\OpenWithProgids" "${PROG_ID_PREFIX}.${SUFFIX}" ""
         WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}\DefaultIcon" "" '"$INSTDIR\${EXE_NAME}",0'
         WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}" "" "${DESC}"
-        WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+        WriteRegStr HKLM "Software\Classes\${PROG_ID_PREFIX}.${SUFFIX}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "--file" "%1"'
     SectionEnd
   !endif
 !macroend
@@ -280,7 +280,7 @@ Section "Media Player (Required)" SecCore
     WriteRegStr HKLM "Software\Classes\${APP_NAME}" "" "URL:Vura Protocol"
     WriteRegStr HKLM "Software\Classes\${APP_NAME}" "URL Protocol" ""
     WriteRegStr HKLM "Software\Classes\${APP_NAME}\DefaultIcon" "" "$INSTDIR\${EXE_NAME},0"
-    WriteRegStr HKLM "Software\Classes\${APP_NAME}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "%1" "--network"'
+    WriteRegStr HKLM "Software\Classes\${APP_NAME}\shell\open\command" "" '"$INSTDIR\${EXE_NAME}" "--network" "%1"'
 SectionEnd
 
 # Optional Section for Desktop Shortcut
@@ -334,16 +334,16 @@ Section "Context Menus" SecContextMenus
     # Add Windows Registry Entries for Open File Context Menus
     WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "" "Play with ${APP_NAME}"
     WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}" "Icon" "$INSTDIR\${EXE_NAME},0"
-    WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+    WriteRegStr HKLM "Software\Classes\*\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "--file" "%1"'
 
     # Add Windows Registry Entries for Open Directory Context Menus
     WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
     WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
-    WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%1"'
+    WriteRegStr HKLM "Software\Classes\Directory\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "--folder" "%1"'
 
     WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}" "" "Open Folder in ${APP_NAME}"
     WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}"  "Icon" "$INSTDIR\${EXE_NAME},0"
-    WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "%V"'
+    WriteRegStr HKLM "Software\Classes\Directory\Background\shell\${APP_NAME}\command" "" '"$INSTDIR\${EXE_NAME}" "--folder" "%V"'
 
 SectionEnd
 

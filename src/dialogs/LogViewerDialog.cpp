@@ -75,14 +75,13 @@ LogViewerDialog::LogViewerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
     connect(blogger, &Logger::newLogEntry, this, &LogViewerDialog::appendLogMessage);
 
     QList<LogMessage> previousMessages = blogger->getLogMessages();
-    for (const auto &[timestamp, type, component, message] : previousMessages) {
+    for (const auto &[timestamp, level, component, message, fullText] : previousMessages) {
         LogEntry entry;
         entry.timestamp = timestamp;
-        entry.level = type;
+        entry.level = level;
         entry.component = component;
         entry.message = message;
-        entry.fullText = QString("[%1] %2  \t%3")
-                            .arg(entry.timestamp, getVerbosityString(type), message);
+        entry.fullText = fullText;
         m_logBuffer.append(entry);
     }
     refreshLogView();
@@ -103,11 +102,11 @@ void LogViewerDialog::appendLogMessage(LogMessage message)
 {
     LogEntry entry;
     entry.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
-    entry.level = message.type;
+    entry.level = message.level;
     entry.component = message.component;
     entry.message = message.message;
 
-    QString levelStr = getVerbosityString(message.type);
+    QString levelStr = getVerbosityString(message.level);
     entry.fullText = QString("[%1] %2  \t%3")
                         .arg(entry.timestamp, levelStr, message.message);
 

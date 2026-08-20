@@ -17,12 +17,19 @@
  ******************************************************************************/
 
 #include <QApplication>
+#include <QCoreApplication>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <QSettings>
+#include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
 #include <QFileInfo>
 #include <QSurfaceFormat>
 #include <QDir>
 #include <QDebug>
 
+#include <libvura/logging/logger.h>
 #include <libvura/platform/platform.h>
 #include <libvura/exceptions/error-service.h>
 #include <libvura/util/single-instance-controller.h>
@@ -42,6 +49,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
     QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
+    qInstallMessageHandler(Logger::messageHandler);
+
     QSurfaceFormat format;
     format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
@@ -59,6 +68,24 @@ int main(int argc, char *argv[])
                 return 0;
             }
         }
+
+        QCommandLineParser parser;
+        parser.setApplicationDescription(VURA_COMMENTS);
+
+        parser.addHelpOption();
+        parser.addVersionOption();
+
+        QCommandLineOption openFileOption(QStringList() << "f" << "file", "Specify the file to open.", "file");
+        parser.addOption(openFileOption);
+
+        QCommandLineOption openFolderOption(QStringList() << "folder", "Specify the folder to open.", "path");
+        parser.addOption(openFolderOption);
+
+        QCommandLineOption openNetworkOption(QStringList() << "network", "Open a network stream.", "url");
+        parser.addOption(openNetworkOption);
+
+        parser.process(app);
+
 
         VuraMainWindow mainWindow;
         mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
@@ -86,6 +113,20 @@ int main(int argc, char *argv[])
             });
         }
 
+        if (parser.isSet(openFileOption)) {
+            mainWindow.openFile(parser.value(openFileOption));
+            if (showMaximizedOnStart == 1)
+                mainWindow.maximized();
+        } else if (parser.isSet(openFolderOption)) {
+            mainWindow.openFolder(parser.value(openFolderOption));
+            if (showMaximizedOnStart == 1)
+                mainWindow.maximized();
+        } else if (parser.isSet(openNetworkOption)) {
+            mainWindow.openNetworkStream(parser.value(openNetworkOption));
+            if (showMaximizedOnStart == 1)
+                mainWindow.maximized();
+        }
+/*
         if (argc == 2) {
             const QString openFileArg = QString::fromUtf8(argv[1]);
 
@@ -112,7 +153,7 @@ int main(int argc, char *argv[])
                     mainWindow.maximized();
             }
         }
-
+*/
         return QApplication::exec();
 
     } catch (const std::exception &e) {

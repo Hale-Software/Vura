@@ -94,6 +94,7 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        libvura/models/log-message.h
         libvura/models/playlist-item.h
         libvura/models/playlist-model.cpp
         libvura/models/version.h

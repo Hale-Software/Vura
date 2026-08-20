@@ -23,30 +23,18 @@
 #include <QDir>
 #include <QString>
 #include <QList>
+#include <QMutex>
 #include <QMessageLogContext>
-#include <QSettings>
-#include <QStandardPaths>
-#include <QDateTime>
-#include <QFileInfo>
-#include <QDebug>
 
 #include <iostream>
 
 #include "categories.h"
+#include "../models/log-message.h"
 
-
-struct LogMessage
-{
-    QString timestamp;
-    int type;
-    QString component;
-    QString message;
-};
 
 class Logger : public QObject
 {
     Q_OBJECT
-
 public:
     static Logger* instance();
     void clearLogFile();
@@ -55,18 +43,22 @@ public:
     static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 signals:
-    void newLogEntry(LogMessage);
+    void newLogEntry(LogMessage message);
 
 private:
     explicit Logger(QObject* parent = nullptr);
     ~Logger() override;
 
     void initLogFile();
+    void writeSessionBanner();
     static void rotateLogs(const QDir& logDir, int maxLogs);
     static QString formatMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+
+    static constexpr qint64 kMaxLogSizeBytes = 10LL * 1024 * 1024;
 
     QString m_logFileName;
     QFile m_logFile;
     QList<LogMessage> m_logMessages;
+    mutable QMutex m_mutex;
 
 };

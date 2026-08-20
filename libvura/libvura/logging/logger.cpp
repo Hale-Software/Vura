@@ -16,6 +16,10 @@
 
  ******************************************************************************/
 
+#include <QSettings>
+#include <QStandardPaths>
+#include <QDebug>
+
 #include "logger.h"
 #include <libvura/config.h>
 
@@ -23,9 +27,8 @@
 Logger::Logger(QObject* parent) : QObject(parent)
 {
     const QSettings settings;
-    if (settings.value("logToFile", true).toBool()) {
+    if (settings.value("logToFile", true).toBool())
         initLogFile();
-    }
 }
 
 Logger::~Logger()
@@ -67,7 +70,30 @@ void Logger::initLogFile()
 
     if (!m_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         qCritical() << "Failed to open log file at " << m_logFile.fileName() << ". Error: " << m_logFile.errorString();
+        return;
     }
+
+    writeSessionBanner();
+}
+
+void Logger::writeSessionBanner()
+{
+    const QString banner = QStringLiteral("=== Vura %1 (%2 build %3) - log file opened %4 ===")
+        .arg(QString(VURA_VERSION_STRING),
+             QString(VURA_BUILD_TYPE),
+             QString(VURA_BUILD_NUMBER),
+             QDateTime::currentDateTime().toString(Qt::ISODate));
+
+    m_logFile.write((banner + "\n").toUtf8());
+    m_logFile.flush();
+
+    LogMessage bannerMessage;
+    bannerMessage.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
+    bannerMessage.level = LogLevel::Info;
+    bannerMessage.component = QStringLiteral("Session");
+    bannerMessage.message = banner;
+    bannerMessage.fullText = banner;
+    m_logMessages.append(bannerMessage);
 }
 
 void Logger::rotateLogs(const QDir &logDir, const int maxLogs)
@@ -112,37 +138,48 @@ QString Logger::formatMessage(const QtMsgType type, const QMessageLogContext& co
 
 QList<LogMessage> Logger::getLogMessages() const
 {
+    QMutexLocker locker(&m_mutex);
     return m_logMessages;
 }
 
 
 void Logger::messageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    Logger* logger = Logger::instance();
-    const QString output = logger->formatMessage(type, context, msg);
+    Logger* logger = instance();
+    const QString output = formatMessage(type, context, msg);
 
-    if (logger->m_logFile.isOpen()) {
-        logger->m_logFile.write((output + "\n").toUtf8());
-        logger->m_logFile.flush();
-    }
-
-    int typeInt;
+    LogLevel typeInt;
     switch (type) {
-        case QtDebugMsg:    typeInt = 0; break;
-        case QtInfoMsg:     typeInt = 1; break;
-        case QtWarningMsg:  typeInt = 2; break;
-        case QtCriticalMsg: typeInt = 3; break;
-        case QtFatalMsg:    typeInt = 4; break;
-        default:            typeInt = 0; break;
+        case QtDebugMsg:    typeInt = LogLevel::Debug; break;
+        case QtInfoMsg:     typeInt = LogLevel::Info; break;
+        case QtWarningMsg:  typeInt = LogLevel::Warning; break;
+        case QtCriticalMsg: typeInt = LogLevel::Error; break;
+        case QtFatalMsg:    typeInt = LogLevel::Fatal; break;
+        default:            typeInt = LogLevel::Debug; break;
     }
 
     LogMessage newMessage;
     newMessage.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
-    newMessage.type = typeInt;
-    newMessage.component = context.file ? QString(context.file) : "Core";
+    newMessage.level = typeInt;
+    newMessage.component = context.category ? context.category : "unknown";
     newMessage.message = msg;
-    logger->m_logMessages.append(newMessage);
-    emit logger->newLogEntry(newMessage);
+    newMessage.fullText = output;
 
-    std::cerr << output.toStdString() << std::endl;
+    {
+        QMutexLocker locker(&logger->m_mutex);
+
+        if (logger->m_logFile.isOpen()) {
+            logger->m_logFile.write((output + "\n").toUtf8());
+            logger->m_logFile.flush();
+
+            if (logger->m_logFile.size() > kMaxLogSizeBytes) {
+                logger->m_logFile.close();
+                logger->initLogFile();
+            }
+        }
+
+        logger->m_logMessages.append(newMessage);
+    }
+
+    emit logger->newLogEntry(newMessage);
 }
