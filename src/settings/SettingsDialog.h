@@ -57,6 +57,7 @@ protected:
 signals:
     void settingsChanged();
     void requiresRestart();
+    void updateRequested(const QString &targetDownloadUrl, const QString &expectedHash);
 
 public slots:
     void settingsChanged_Slot() const;

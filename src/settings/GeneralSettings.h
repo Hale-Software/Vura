@@ -20,11 +20,15 @@
 
 #include <QWidget>
 
+#include "UpdateDialog.h"
+
+
 class QSettings;
 class QComboBox;
 class QCheckBox;
 class QPushButton;
 class QMessageBox;
+class QNetworkAccessManager;
 class QDebug;
 
 
@@ -38,6 +42,8 @@ class GeneralSettings : public QWidget
 {
     Q_OBJECT
 
+    friend class UpdateDialog;
+
 public:
     explicit GeneralSettings(QWidget *parent = nullptr);
     ~GeneralSettings() override;
@@ -47,6 +53,7 @@ public:
 signals:
     void settingsChanged();
     void requiresRestart();
+    void updateRequested(const QString &targetDownloadUrl, const QString &expectedHash);
 
 public slots:
     void resetToDefaults();
@@ -58,9 +65,13 @@ private slots:
     void updateBranch_Changed(int index);
     void checkForUpdates_Clicked();
     void enableAutomaticUpdates_Checked(int state);
+    void updateCheckReplyFinished(QNetworkReply *reply);
 
 private:
     Ui::GeneralSettings *ui;
     bool m_unsavedChanges = false;
+
+    UpdateDialog *m_updateDialog = nullptr;
+    QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
 };

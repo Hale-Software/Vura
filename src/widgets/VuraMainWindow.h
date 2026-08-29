@@ -117,7 +117,6 @@ class VuraMainWindow : public QMainWindow
 public:
     explicit VuraMainWindow(QWidget *parent = nullptr);
 
-    void setConnections();
     void maximized();
     void setMainWindowVisibility(bool state);
     void openFile(const QString &file) const;
@@ -138,7 +137,10 @@ signals:
 
 private slots:
     void updateCheckReplyFinished(QNetworkReply *reply);
+    void openRecentFile() const;
+    void updateRecentFileActions() const;
 
+    void actionFileOpenRecentClear();
     void actionTestFunction();
     void actionOpenNetworkStream();
     void actionEmergencyClose();
@@ -208,9 +210,12 @@ public slots:
     void continuePlaybackDelete();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
+    void setCurrentFile(const QUrl &mediaUrl);
 
 private:
     Ui::VuraMainWindow *ui;
+
+    void updateRecentFilesList(const QString &fileName);
 
     void setTrackInfo(const QString &trackInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
@@ -226,6 +231,11 @@ private:
     void configureUpdater();
     void saveCurrentPlaybackPosition();
     void showResumeOverlay(qint64 savedPosition);
+
+    void initControllers();
+    void initSystemTray();
+    void setConnections();
+    void initUI();
 
     QNetworkAccessManager *m_updateNetworkManager = nullptr;
 
@@ -248,9 +258,12 @@ private:
     QPointer<MarkerEditDialog> m_markerEditDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
 
+    QAction *m_recentFileActions[10];
+    QAction *m_recentFilesSeparator;
     QTimer *m_videoSliderHideTimer = nullptr;
     QTimer *m_continuePlaybackBannerTimer = nullptr;
     QMediaDevices m_mediaDevices;
+    static const int MaxRecentFiles = 10;
     QString m_trackInfo;
     QString m_statusInfo;
     qint64 m_lastPosition = 0;

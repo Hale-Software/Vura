@@ -63,7 +63,7 @@
         <x>0</x>
         <y>0</y>
         <width>566</width>
-        <height>1194</height>
+        <height>1196</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -81,7 +81,26 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="ComboBoxIgnoreWheel" name="currentTheme"/>
+           <widget class="ComboBoxIgnoreWheel" name="currentTheme">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>System (default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Dark</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Light</string>
+             </property>
+            </item>
+           </widget>
           </item>
           <item row="1" column="0" colspan="2">
            <widget class="QLabel" name="label_3">
@@ -188,11 +207,38 @@
           <string>Video Slider</string>
          </property>
          <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0" colspan="2">
-           <widget class="QCheckBox" name="autohideSlider">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_28">
             <property name="text">
-             <string>Autohide Slider When Video is Playing</string>
+             <string>Autohide Slider:</string>
             </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="autohideSlider">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Never</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>When Fullscreen</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>When Maximized</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Always</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
@@ -246,22 +292,6 @@
           <item row="6" column="1">
            <widget class="SpinBoxIgnoreWheel" name="videoMarkerWidth"/>
           </item>
-          <item row="26" column="0">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Policy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>180</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
@@ -272,16 +302,6 @@
           <item row="7" column="1">
            <widget class="SpinBoxIgnoreWheel" name="videoMarkerSideLength"/>
           </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Slider Left Right Margin:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="SpinBoxIgnoreWheel" name="sliderLeftRightMargin"/>
-          </item>
           <item row="8" column="0">
            <widget class="QLabel" name="label_10">
             <property name="text">
@@ -291,6 +311,16 @@
           </item>
           <item row="8" column="1">
            <widget class="SpinBoxIgnoreWheel" name="videoMarkerVerticalMargin"/>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Slider Left Right Margin:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="SpinBoxIgnoreWheel" name="sliderLeftRightMargin"/>
           </item>
           <item row="10" column="0">
            <widget class="QLabel" name="label_11">
@@ -445,55 +475,6 @@
             </property>
            </widget>
           </item>
-          <item row="19" column="0">
-           <widget class="QLabel" name="label_20">
-            <property name="text">
-             <string>Scene Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="20" column="0">
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>Cumshot Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="21" column="0">
-           <widget class="QLabel" name="label_22">
-            <property name="text">
-             <string>Strip Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="22" column="0">
-           <widget class="QLabel" name="label_23">
-            <property name="text">
-             <string>Dialog Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="23" column="0">
-           <widget class="QLabel" name="label_24">
-            <property name="text">
-             <string>Cyan Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="24" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="text">
-             <string>Magenta Marker Color:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="25" column="0">
-           <widget class="QLabel" name="label_26">
-            <property name="text">
-             <string>Orange Marker Color:</string>
-            </property>
-           </widget>
-          </item>
           <item row="18" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
@@ -507,6 +488,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="19" column="0">
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>Scene Marker Color:</string>
+            </property>
+           </widget>
           </item>
           <item row="19" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -522,6 +510,13 @@
             </item>
            </layout>
           </item>
+          <item row="20" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>Cumshot Marker Color:</string>
+            </property>
+           </widget>
+          </item>
           <item row="20" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
@@ -535,6 +530,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="21" column="0">
+           <widget class="QLabel" name="label_22">
+            <property name="text">
+             <string>Strip Marker Color:</string>
+            </property>
+           </widget>
           </item>
           <item row="21" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -550,6 +552,13 @@
             </item>
            </layout>
           </item>
+          <item row="22" column="0">
+           <widget class="QLabel" name="label_23">
+            <property name="text">
+             <string>Dialog Marker Color:</string>
+            </property>
+           </widget>
+          </item>
           <item row="22" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
@@ -563,6 +572,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="23" column="0">
+           <widget class="QLabel" name="label_24">
+            <property name="text">
+             <string>Cyan Marker Color:</string>
+            </property>
+           </widget>
           </item>
           <item row="23" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -578,6 +594,13 @@
             </item>
            </layout>
           </item>
+          <item row="24" column="0">
+           <widget class="QLabel" name="label_25">
+            <property name="text">
+             <string>Magenta Marker Color:</string>
+            </property>
+           </widget>
+          </item>
           <item row="24" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>
@@ -592,6 +615,13 @@
             </item>
            </layout>
           </item>
+          <item row="25" column="0">
+           <widget class="QLabel" name="label_26">
+            <property name="text">
+             <string>Orange Marker Color:</string>
+            </property>
+           </widget>
+          </item>
           <item row="25" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
@@ -605,6 +635,22 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="26" column="0">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>180</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>

@@ -24,6 +24,10 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QDebug>
 
 #include <ui-config.h>
@@ -105,11 +109,73 @@ void GeneralSettings::updateBranch_Changed(int index)
 
 void GeneralSettings::checkForUpdates_Clicked()
 {
-    QMessageBox::information(this, tr("Update Check"), tr("This function is not yet implemented."));
+    const QSettings settings;
+    QString manifestFile = "stable.json";
+
+    int updateBranch = settings.value("updateBranch", 0).toInt();
+    if (updateBranch == 1) {
+        manifestFile = "beta.json";
+    }
+
+    m_updateNetworkManager = new QNetworkAccessManager(this);
+    connect(m_updateNetworkManager, &QNetworkAccessManager::finished, this, &GeneralSettings::updateCheckReplyFinished);
+
+    const QUrl url(QString("https://vura.hale-software.com/%1").arg(manifestFile));
+    const QNetworkRequest request(url);
+
+    qDebug() << "Checking for updates using URL: " << url << "...";
+    m_updateNetworkManager->get(request);
 }
 
 void GeneralSettings::enableAutomaticUpdates_Checked(int state)
 {
     unsavedChanges();
     emit settingsChanged();
+}
+
+void GeneralSettings::updateCheckReplyFinished(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Network Error:" << reply->errorString();
+        return;
+    }
+
+    const QByteArray response = reply->readAll();
+    const QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
+    QJsonObject jsonObj = jsonDoc.object();
+
+    bool isRemoteBeta = jsonObj["is_beta"].toBool();
+    const QString remoteVersion = jsonObj["version"].toString();
+    const QString releaseDate = jsonObj["release_date"].toString();
+
+    if (remoteVersion != VURA_VERSION_STRING) {
+        QJsonObject platforms = jsonObj["platforms"].toObject();
+
+#if defined(Q_OS_WIN)
+        QJsonObject currentPlatform = platforms["windows"].toObject();
+#elif defined(Q_OS_MAC)
+        QJsonObject currentPlatform = platforms["mac"].toObject();
+#else
+        QJsonObject currentPlatform = platforms["linux"].toObject();
+#endif
+
+        const QString downloadUrl = currentPlatform["url"].toString();
+        const QString expectedHash = currentPlatform["sha256"].toString();
+        const QString changelogUrl = jsonObj["changelog_url"].toString();
+
+
+        const QSettings settings;
+        const QString lastCheckedVersion = settings.value("lastCheckedVersion", "").toString();
+        if (remoteVersion != lastCheckedVersion) {
+            if (m_updateDialog)
+                m_updateDialog->close();
+
+            m_updateDialog = new UpdateDialog(remoteVersion, releaseDate, downloadUrl, changelogUrl, expectedHash, this);
+            connect(m_updateDialog, &UpdateDialog::updateNow, this, &GeneralSettings::updateRequested);
+            m_updateDialog->show();
+            m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        }
+    }
+
+    reply->deleteLater();
 }

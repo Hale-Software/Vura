@@ -15,6 +15,8 @@ version) - see the accompanying COPYING file for more details.
 Quick Links
 -----------
 
+- Publishing: [Guide](docs/PUBLISHING.md)
+
 - Help/Documentation/Guides: https://github.com/Hale-Software/Vura/wiki
 
 - Discussions: https://github.com/Hale-Software/Vura/discussions

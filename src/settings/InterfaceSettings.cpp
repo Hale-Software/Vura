@@ -39,7 +39,7 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
     ui->showPlaylistOnStart->setChecked(settings.value("showPlaylistOnStart", true).toBool());
     ui->showVideoControlsOnStart->setChecked(settings.value("showVideoControlsOnStart", false).toBool());
     ui->showStatusBarOnStart->setChecked(settings.value("showStatusBarOnStart", false).toBool());
-    ui->autohideSlider->setChecked(settings.value("autohideSlider", true).toBool());
+    ui->autohideSlider->setCurrentIndex(settings.value("autohideSlider", 1).toInt());
     ui->unhideSliderOnHotkey->setChecked(settings.value("unhideSliderOnHotkey", true).toBool());
     ui->sliderAutohideTimer->setValue(settings.value("sliderAutohideTime", 5).toInt());
     ui->sliderHeight->setValue(settings.value("sliderHeight", 6).toInt());
@@ -71,7 +71,7 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
     connect(ui->showPlaylistOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showPlaylistOnStart_Checked);
     connect(ui->showVideoControlsOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showVideoControlsOnStart_Checked);
     connect(ui->showStatusBarOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showStatusBarOnStart_Checked);
-    connect(ui->autohideSlider, &QCheckBox::stateChanged, this, &InterfaceSettings::autohideSlider_Checked);
+    connect(ui->autohideSlider, &QComboBox::currentIndexChanged, this, &InterfaceSettings::autohideSlider_Changed);
     connect(ui->unhideSliderOnHotkey, &QCheckBox::stateChanged, this, &InterfaceSettings::unhideSliderOnHotkey_Checked);
     connect(ui->sliderAutohideTimer, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderAutohideTimer_ValueChanged);
     connect(ui->sliderHeight, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderHeight_ValueChanged);
@@ -134,7 +134,7 @@ bool InterfaceSettings::unsavedChanges()
         m_unsavedChanges = true;
     } else if (settings.value("showStatusBarOnStart", false).toBool() != ui->showStatusBarOnStart->isChecked()) {
         m_unsavedChanges = true;
-    } else if (settings.value("autohideSlider", true).toBool() != ui->autohideSlider->isChecked()) {
+    } else if (settings.value("autohideSlider", 1).toInt() != ui->autohideSlider->currentIndex()) {
         m_unsavedChanges = true;
     } else if (settings.value("unhideSliderOnHotkey", true).toBool() != ui->unhideSliderOnHotkey->isChecked()) {
         m_unsavedChanges = true;
@@ -197,7 +197,7 @@ void InterfaceSettings::resetToDefaults()
     ui->showPlaylistOnStart->setChecked(true);
     ui->showVideoControlsOnStart->setChecked(false);
     ui->showStatusBarOnStart->setChecked(false);
-    ui->autohideSlider->setChecked(true);
+    ui->autohideSlider->setCurrentIndex(1);
     ui->unhideSliderOnHotkey->setChecked(true);
     ui->sliderAutohideTimer->setValue(5);
     ui->sliderHeight->setValue(6);
@@ -234,7 +234,7 @@ void InterfaceSettings::saveSettings()
     settings.setValue("showPlaylistOnStart", ui->showPlaylistOnStart->isChecked());
     settings.setValue("showVideoControlsOnStart", ui->showVideoControlsOnStart->isChecked());
     settings.setValue("showStatusBarOnStart", ui->showStatusBarOnStart->isChecked());
-    settings.setValue("autohideSlider", ui->autohideSlider->isChecked());
+    settings.setValue("autohideSlider", ui->autohideSlider->currentIndex());
     settings.setValue("unhideSliderOnHotkey", ui->unhideSliderOnHotkey->isChecked());
     settings.setValue("sliderAutohideTime", ui->sliderAutohideTimer->value());
     settings.setValue("sliderHeight", ui->sliderHeight->value());
@@ -298,7 +298,7 @@ void InterfaceSettings::showStatusBarOnStart_Checked(int state)
     emit settingsChanged();
 }
 
-void InterfaceSettings::autohideSlider_Checked(int state)
+void InterfaceSettings::autohideSlider_Changed(int index)
 {
     unsavedChanges();
     emit settingsChanged();

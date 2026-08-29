@@ -60,7 +60,7 @@ private slots:
     void showPlaylistOnStart_Checked(int state);
     void showVideoControlsOnStart_Checked(int state);
     void showStatusBarOnStart_Checked(int state);
-    void autohideSlider_Checked(int state);
+    void autohideSlider_Changed(int index);
     void unhideSliderOnHotkey_Checked(int state);
     void sliderAutohideTimer_ValueChanged(int value);
     void sliderHeight_ValueChanged(int value);
