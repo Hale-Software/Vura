@@ -64,6 +64,7 @@ as long as --version matches.
 
 from __future__ import annotations
 
+import os
 import argparse
 import mimetypes
 import sys
@@ -97,48 +98,84 @@ def normalize_version(v: str) -> str:
     return v if v.startswith("v") else f"v{v}"
 
 
+def process_file(path: Path, name: str) -> dir:
+    data = {}
+    data["path"] = path
+    data["name"] = name
+    data["hash"] = sha256_file(path)
+    data["size"] = path.stat().st_size
+    return data
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--channel", required=True, choices=["stable", "beta"], help="Release channel/branch — matches stable.json / beta.json")
     parser.add_argument("--version", required=True, help="Release version, e.g. v1.4.0 or 1.4.0-beta.1")
     parser.add_argument("--platform", required=True, choices=["windows", "mac", "linux"])
     parser.add_argument("--file", required=False, type=Path, help="Path to the built installer/artifact")
-    parser.add_argument("--dir", required=True, type=Path, help="Path to the directory to publish")
+    parser.add_argument("--dir", required=True, type=str, help="Path to the directory to publish")
     parser.add_argument("--changelog-url", default="", help="Optional changelog URL for this release")
     parser.add_argument("--force", action="store_true", help="Re-upload even if an object already exists at that key")
     parser.add_argument("--dry-run", action="store_true", help="Do everything except actually contact R2; prints what would happen")
     args = parser.parse_args()
 
-    if not args.dir.is_dir():
-        sys.exit(f"error: no such directory: {args.dir}")
+    #files = [str(file) for file in args.dir.rglob("*") if file.is_file()]
+
+    files = []
+
+    for root, dirs, filenames in os.walk(args.dir):
+        for filename in filenames:
+            data = {}
+            path = os.path.join(root, filename)
+            data["path"] = path
+            name = path.replace(args.dir + "\\", "")
+            data["name"] = name.replace("\\", "/")
+            files.append(data)
 
     file_list = []
+
+    for file in files:
+        file_list.append(process_file(Path(file["path"]), file["name"]))
+
+    #print(file_list)
+    #sys.exit(0)
 
     version = normalize_version(args.version)
     is_beta = args.channel == "beta" or "beta" in version.lower()
 
-    print(f"Hashing {args.file} ...")
-    digest = sha256_file(args.file)
-    print(f"  sha256: {digest}")
+    #print(f"Hashing {args.file} ...")
+    #digest = sha256_file(args.file)
+    #print(f"  sha256: {digest}")
 
-    key = f"releases/{args.channel}/{version}/{args.file.name}"
-    content_type = guess_content_type(args.file)
+    #key = f"releases/{args.channel}/{version}/{args.file.name}"
+    #content_type = guess_content_type(args.file)
 
-    if args.dry_run:
-        print(f"[dry-run] would upload to key: {key} (content-type: {content_type})")
-        print(f"[dry-run] would merge platform '{args.platform}' into {args.channel}.json")
-        return 0
+    #if args.dry_run:
+    #    print(f"[dry-run] would upload to key: {key} (content-type: {content_type})")
+    #    print(f"[dry-run] would merge platform '{args.platform}' into {args.channel}.json")
+    #    return 0
 
     cfg = R2Config.from_env()
     client = R2Client(cfg)
 
-    if not args.force and client.exists(key):
-        print(f"  note: {key} already exists in R2 — skipping upload (use --force to overwrite)")
-        public_url = client.public_url(key)
-    else:
-        public_url = client.upload_file(args.file, key, content_type=content_type)
+    for f in file_list:
+        if args.dry_run:
+            del f["path"]
+            continue
 
-    print(f"  public url: {public_url}")
+        key = f"releases/{args.channel}/{version}/{f['name']}"
+        content_type = guess_content_type(Path(f["path"]))
+
+        if not args.force and client.exists(key):
+            print(f"  note: {key} already exists in R2 — skipping upload (use --force to overwrite)")
+            public_url = client.public_url(key)
+        else:
+            public_url = client.upload_file(f["path"], key, content_type=content_type)
+
+        del f["path"]
+
+
+    #print(f"  public url: {public_url}")
 
     manifest_key = f"{args.channel}.json"
     existing = client.download_json(manifest_key)
@@ -148,7 +185,7 @@ def main() -> int:
         version=version,
         is_beta=is_beta,
         changelog_url=args.changelog_url,
-        platform_updates={args.platform: {"url": public_url, "sha256": digest}},
+        platform_updates={args.platform: file_list},
     )
 
     import json
