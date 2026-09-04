@@ -157,6 +157,7 @@ int main(int argc, char *argv[])
         return QApplication::exec();
 
     } catch (const std::exception &e) {
+        qFatal() << "Fatal Crash: " << e.what();
         ErrorService::instance().postError({.title = "Fatal Crash", .message = e.what(), .severity = ErrorSeverity::Critical});
         return -1;
     }
