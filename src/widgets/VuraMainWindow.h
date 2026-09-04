@@ -137,23 +137,19 @@ signals:
 
 private slots:
     void updateCheckReplyFinished(QNetworkReply *reply);
-    void openRecentFile() const;
     void updateRecentFileActions() const;
 
+    // File Menu
+    void openRecentFile() const;
     void actionFileOpenRecentClear();
-    void actionTestFunction();
     void actionOpenNetworkStream();
     void actionEmergencyClose();
-    void actionShowLogViewer();
-    void actionToggleFullscreen();
-    void actionShowSettings();
     void actionShowConvertMedia();
-    //void actionShowFeedback();
-    //void actionShowAbout();
     void actionExit();
-    void actionToggleVideoControls();
-    void populateAudioDevicesMenu();
 
+    // View Menu
+    void actionShowSettings();
+    void actionToggleVideoControls();
     void actionViewToggleStatusBar() const;
     void actionViewToggleVideoResolution();
     void actionViewMediaInformation();
@@ -166,11 +162,13 @@ private slots:
     void actionViewToggleMarkersSceneMarkers();
     void actionViewToggleMarkersStripMarkers();
 
+    // Playback Menu
     void actionPlaybackModeDoNotLoopPlaylist();
     void actionPlaybackModeLoopCurrentTrack();
     void actionPlaybackModeLoopPlaylist();
     void actionPlaybackModeShuffle();
 
+    // Markers Menu
     void actionMarkersAddCumshotMarker() const;
     void actionMarkersAddCyanMarker() const;
     void actionMarkersAddDialogMarker() const;
@@ -192,7 +190,20 @@ private slots:
     void actionMarkersMarkIn();
     void actionMarkersMarkOut();
 
+    // Audio Menu
+    void populateAudioDevicesMenu();
+
+    // Video Menu
+    void actionToggleFullscreen();
+
+    // Subtitles Menu
+
+    // Tools Menu
+    void actionTestFunction();
+
+    // Help Menu
     void actionHelpCheckForUpdates();
+    void actionShowLogViewer();
 
 
 public slots:
