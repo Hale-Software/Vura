@@ -33,20 +33,28 @@ MediaInformationDialog::~MediaInformationDialog()
     delete ui;
 }
 
-void MediaInformationDialog::setMediaInformationDialog(const QString &filePath, const QMediaMetaData &metaData)
+void MediaInformationDialog::setMetaData(const MetaData &metaData)
 {
-    ui->location->setText(filePath);
+    ui->location->setText(metaData.Source.toString());
 
-    ui->author->setText(metaData.value(QMediaMetaData::Author).toString());
-    ui->comments->setText(metaData.value(QMediaMetaData::Comment).toString());
-    ui->copyright->setText(metaData.value(QMediaMetaData::Copyright).toString());
-    ui->date->setText(metaData.value(QMediaMetaData::Date).toString());
-    ui->resolution->setText(metaData.value(QMediaMetaData::Resolution).toString());
-    ui->genre->setText(metaData.value(QMediaMetaData::Genre).toString());
-    ui->language->setText(metaData.value(QMediaMetaData::Language).toString());
-    ui->publisher->setText(metaData.value(QMediaMetaData::Publisher).toString());
-    ui->trackNumber->setText(metaData.value(QMediaMetaData::TrackNumber).toString());
-    ui->title->setText(metaData.value(QMediaMetaData::Title).toString());
+    if (!metaData.Author.isEmpty())
+        ui->author->setText(metaData.Author.join(", "));
+
+    ui->comments->setText(metaData.Comment);
+    ui->copyright->setText(metaData.Copyright);
+    ui->date->setText(metaData.Date.toString());
+
+    QString resolutionString = QString("%1 x %2").arg(QString::number(metaData.Resolution.width())).arg(QString::number(metaData.Resolution.height()));
+    ui->resolution->setText(resolutionString);
+
+    if (!metaData.Genre.isEmpty())
+        ui->genre->setText(metaData.Genre.join(", "));
+
+    ui->language->setText(QLocale::languageToString(metaData.Language));
+
+    ui->publisher->setText(metaData.Publisher);
+    ui->trackNumber->setText(QString::number(metaData.TrackNumber));
+    ui->title->setText(metaData.Title);
 
 }
 

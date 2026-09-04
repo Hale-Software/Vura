@@ -626,6 +626,19 @@ void VuraMainWindow::actionViewToggleVideoResolution()
     setApplicationWindowTitle();
 }
 
+void VuraMainWindow::actionViewMediaInformation()
+{
+    if (m_mediaInformationDialog)
+        m_mediaInformationDialog->close();
+
+    m_mediaInformationDialog = new MediaInformationDialog(this);
+
+    if (!m_playbackController->getVideoWidget()->source().isEmpty())
+        m_mediaInformationDialog->setMetaData(*m_playbackController->getMetadata());
+
+    m_mediaInformationDialog->show();
+}
+
 void VuraMainWindow::actionViewToggleMarkersCumshotMarkers()
 {
     m_cumshotMarkerVisible = !m_cumshotMarkerVisible;
@@ -1485,6 +1498,10 @@ void VuraMainWindow::setConnections()
     } else {
         ui->actionViewToggleVideoResolution->setChecked(false);
     }
+
+    connect(ui->actionViewMediaInformation, &QAction::triggered, this, &VuraMainWindow::actionViewMediaInformation);
+    this->addAction(ui->actionViewMediaInformation);
+    ui->actionViewMediaInformation->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
     connect(ui->actionHelpViewCurrentLog, &QAction::triggered, this, &VuraMainWindow::actionShowLogViewer);

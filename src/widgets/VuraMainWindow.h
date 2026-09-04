@@ -156,6 +156,7 @@ private slots:
 
     void actionViewToggleStatusBar() const;
     void actionViewToggleVideoResolution();
+    void actionViewMediaInformation();
     void actionViewToggleMarkersCumshotMarkers();
     void actionViewToggleMarkersCyanMarkers();
     void actionViewToggleMarkersDialogMarkers();
@@ -258,6 +259,7 @@ private:
     QPointer<LogViewerDialog> m_logViewerDialog;
     QPointer<MarkerEditDialog> m_markerEditDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
+    QPointer<MediaInformationDialog> m_mediaInformationDialog;
 
     QAction *m_recentFileActions[10];
     QAction *m_recentFilesSeparator;

@@ -28,9 +28,11 @@
 #include <QVideoSink>
 #include <QString>
 #include <QUrl>
+#include <QMediaMetaData>
 #include <QDebug>
 
 #include "../media-engine/media-engine.h"
+#include "../models/metadata.h"
 
 
 class PlaybackController : public QObject {
@@ -45,6 +47,7 @@ public:
 
     QMediaPlayer* getVideoWidget() const { return m_player; }
     QAudioOutput* getAudioOutput() const { return m_audioOutput; }
+    MetaData* getMetadata() const { return m_metadata; }
 
 signals:
     void positionChanged(qint64 position);
@@ -104,12 +107,14 @@ public slots:
 private slots:
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void videoWidgetStateChanged(QMediaPlayer::PlaybackState state);
+    void setMetaData(const QUrl& media);
 
 private:
     QMediaPlayer* m_player = nullptr;
     QAudioOutput* m_audioOutput = nullptr;
     QStackedWidget* m_container;
     QVideoWidget* m_videoWidget = nullptr;
+    MetaData* m_metadata = nullptr;
 
     VuraMediaEngine* m_openGLWidget = nullptr;
 

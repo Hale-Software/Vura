@@ -52,6 +52,7 @@ void PlaybackController::setVideoWidget(QVideoWidget *videoWidget)
     //connect(m_player, &QMediaPlayer::bufferProgressChanged, this, &PlaybackController::bufferProgressChanged);
     connect(m_player, &QMediaPlayer::playbackRateChanged, this, &PlaybackController::playbackRateChanged);
     connect(m_player, &QMediaPlayer::playingChanged, this, &PlaybackController::playingChanged);
+    connect(m_player, &QMediaPlayer::sourceChanged, this, &PlaybackController::setMetaData);
     connect(m_player, &QMediaPlayer::sourceChanged, this, &PlaybackController::sourceChanged);
     connect(m_player, &QMediaPlayer::tracksChanged, this, &PlaybackController::tracksChanged);
     connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &PlaybackController::mediaStatusChanged);
@@ -539,5 +540,15 @@ void PlaybackController::videoWidgetStateChanged(const QMediaPlayer::PlaybackSta
         emit stateChanged(Paused);
     } else if (state == QMediaPlayer::PlayingState) {
         emit stateChanged(Playing);
+    }
+}
+
+void PlaybackController::setMetaData(const QUrl& media)
+{
+    m_metadata = new MetaData();
+
+    if (!m_player->source().isEmpty()) {
+        m_metadata->parseQMediaMetaData(m_player->metaData());
+        m_metadata->Source = media;
     }
 }

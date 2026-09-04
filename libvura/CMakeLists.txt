@@ -95,8 +95,10 @@ target_sources(
         libvura
         PUBLIC
         libvura/models/log-message.h
+        libvura/models/metadata.h
         libvura/models/playlist-item.h
         libvura/models/playlist-model.cpp
+        libvura/models/playlist-model.h
         libvura/models/version.h
         libvura/models/video-marker-record.h
 )
