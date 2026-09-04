@@ -29,7 +29,7 @@
 SystemTrayWidget::SystemTrayWidget(QWidget *parent) : QSystemTrayIcon(parent)
 {
     m_systemTrayIcon = new QSystemTrayIcon(this);
-    m_systemTrayIcon->setIcon(QIcon(":/img/images/vura-white.png"));
+    m_systemTrayIcon->setIcon(QIcon(":/icons/vura-white.png"));
 
     createContextMenu();
     setActionEnables();
