@@ -329,6 +329,7 @@
     <addaction name="actionViewTogglePlaylist"/>
     <addaction name="actionViewToggleVideoControls"/>
     <addaction name="actionViewToggleStatusBar"/>
+    <addaction name="actionViewToggleVideoResolution"/>
     <addaction name="separator"/>
     <addaction name="menuViewToggleMarkers"/>
     <addaction name="separator"/>
@@ -1564,6 +1565,14 @@
    </property>
    <property name="text">
     <string>Shuffle</string>
+   </property>
+  </action>
+  <action name="actionViewToggleVideoResolution">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Video Resolution in Titlebar</string>
    </property>
   </action>
  </widget>

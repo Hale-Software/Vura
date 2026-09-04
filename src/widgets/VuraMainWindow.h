@@ -155,6 +155,7 @@ private slots:
     void populateAudioDevicesMenu();
 
     void actionViewToggleStatusBar() const;
+    void actionViewToggleVideoResolution();
     void actionViewToggleMarkersCumshotMarkers();
     void actionViewToggleMarkersCyanMarkers();
     void actionViewToggleMarkersDialogMarkers();

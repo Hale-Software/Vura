@@ -29,6 +29,8 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QTime>
+#include <QMediaMetaData>
+#include <QSize>
 
 
 class Helpers
@@ -44,6 +46,7 @@ public:
     static QString strippedFileName(const QString &fileName);
     static QString timestampString(qint64 position, qint64 duration);
     static QString networkUrlFormatter(QString networkUrl);
+    static QString videoResolutionString(const QMediaMetaData &metaData);
 
 };
 

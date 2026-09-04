@@ -619,6 +619,13 @@ void VuraMainWindow::actionViewToggleStatusBar() const
     ui->actionViewToggleStatusBar->setChecked(ui->statusBar->isVisible());
 }
 
+void VuraMainWindow::actionViewToggleVideoResolution()
+{
+    QSettings settings;
+    settings.setValue("showVideoResolutionOnStart", ui->actionViewToggleVideoResolution->isChecked());
+    setApplicationWindowTitle();
+}
+
 void VuraMainWindow::actionViewToggleMarkersCumshotMarkers()
 {
     m_cumshotMarkerVisible = !m_cumshotMarkerVisible;
@@ -892,10 +899,17 @@ void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 void VuraMainWindow::setApplicationWindowTitle()
 {
     QString windowTitle;
+
     if (!m_playbackController->getVideoWidget()->source().isEmpty()) {
-        windowTitle = QString("%1 - Vura %2")
-                        .arg(Helpers::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()),
-                                                        VURA_VERSION_STRING);
+        if (ui->actionViewToggleVideoResolution->isChecked()) {
+            windowTitle = QString("%1 [%2] - Vura %3").arg(Helpers::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()),
+                                                            Helpers::videoResolutionString(m_playbackController->getVideoWidget()->metaData()),
+                                                            VURA_VERSION_STRING);
+        } else {
+            windowTitle = QString("%1 - Vura %2")
+            .arg(Helpers::strippedFileName(m_playbackController->getVideoWidget()->source().toLocalFile()),
+                                                            VURA_VERSION_STRING);
+        }
     } else {
         windowTitle = QString("Vura %1").arg(VURA_VERSION_STRING);
     }
@@ -1461,6 +1475,15 @@ void VuraMainWindow::setConnections()
     } else {
         ui->actionViewToggleStatusBar->setChecked(false);
         ui->statusBar->hide();
+    }
+
+    connect(ui->actionViewToggleVideoResolution, &QAction::triggered, this, &VuraMainWindow::actionViewToggleVideoResolution);
+    this->addAction(ui->actionViewToggleVideoResolution);
+    ui->actionViewToggleVideoResolution->setShortcutContext(Qt::WindowShortcut);
+    if (settings.value("showVideoResolutionOnStart", false).toBool()) {
+        ui->actionViewToggleVideoResolution->setChecked(true);
+    } else {
+        ui->actionViewToggleVideoResolution->setChecked(false);
     }
 
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);

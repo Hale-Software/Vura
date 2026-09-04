@@ -136,3 +136,16 @@ QString Helpers::networkUrlFormatter(QString networkUrl)
     }
     return networkUrl;
 }
+
+QString Helpers::videoResolutionString(const QMediaMetaData &metaData)
+{
+    const QVariant resolutionValue = metaData.value(QMediaMetaData::Resolution);
+
+    if (resolutionValue.isValid()) {
+        const QSize videoSize = resolutionValue.toSize();
+        QString resolutionString = QString::number(videoSize.height()) + "p";
+        return resolutionString;
+    }
+
+    return "UNKNOWN";
+}
