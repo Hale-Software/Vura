@@ -14,7 +14,7 @@
    <string>VuraMainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="vura.qrc">
+   <iconset>
     <normaloff>:/img/images/vura-white.png</normaloff>:/img/images/vura-white.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -75,7 +75,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="vura.qrc">:/img/images/vura-white.png</pixmap>
+            <pixmap>:/img/images/vura-white.png</pixmap>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -220,7 +220,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="vura.qrc">:/images/file-drop.png</pixmap>
+               <pixmap resource="vura.qrc">:/icons/file-drop.png</pixmap>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignCenter</set>

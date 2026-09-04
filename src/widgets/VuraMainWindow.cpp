@@ -1393,6 +1393,7 @@ void VuraMainWindow::setConnections()
     // Video Slider
     m_videoSlider = new VideoSlider(m_videoMarkerController, this);
     m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, *m_playbackController, this);
+    //m_videoSliderWidget->setStyleSheet("border-top: 1px solid #ffffff;");
     connect(m_videoMarkerController, &VideoMarkerController::markerAdded, m_videoSlider, &VideoSlider::updateVideoSlider);
     connect(m_videoMarkerController, &VideoMarkerController::markersLoaded, m_videoSlider, &VideoSlider::loadVideoMarkers);
     connect(m_videoMarkerController, &VideoMarkerController::markersUpdated, m_videoSlider, &VideoSlider::updateVideoSlider);

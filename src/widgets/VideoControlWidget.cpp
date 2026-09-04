@@ -24,7 +24,7 @@ VideoControlWidget::VideoControlWidget(QWidget *parent) : QWidget(parent), ui(ne
 {
     ui->setupUi(this);
 
-    connect(ui->playButton, &QToolButton::clicked, this, &VideoControlWidget::playClicked);
+    connect(ui->playButton, &QToolButton::clicked, this, &VideoControlWidget::playButton_Clicked);
     connect(ui->stopButton, &QToolButton::clicked, this, &VideoControlWidget::stop);
     connect(ui->nextButton, &QToolButton::clicked, this, &VideoControlWidget::next);
     connect(ui->previousButton, &QToolButton::clicked, this, &VideoControlWidget::previous);
@@ -32,7 +32,9 @@ VideoControlWidget::VideoControlWidget(QWidget *parent) : QWidget(parent), ui(ne
     connect(ui->playlistButton, &QToolButton::clicked, this, &VideoControlWidget::playlistClicked);
     connect(ui->loopButton, &QToolButton::clicked, this, &VideoControlWidget::loopClicked);
     connect(ui->shuffleButton, &QToolButton::clicked, this, &VideoControlWidget::shuffleClicked);
-    connect(ui->muteButton, &QToolButton::clicked, this, &VideoControlWidget::muteClicked);
+    connect(ui->volumeLabel, &ClickableLabel::clicked, this, &VideoControlWidget::volumeLabelClicked);
+    connect(ui->settingsButton, &QPushButton::clicked, this, &VideoControlWidget::settingsRequested);
+    connect(ui->subtitlesButton, &QPushButton::clicked, this, &VideoControlWidget::subtitlesRequested);
 
     connect(ui->volumeSlider, &QSlider::valueChanged, this, &VideoControlWidget::onVolumeSliderValueChanged);
 
@@ -44,6 +46,41 @@ VideoControlWidget::VideoControlWidget(QWidget *parent) : QWidget(parent), ui(ne
 VideoControlWidget::~VideoControlWidget()
 {
     delete ui;
+}
+
+QMediaPlayer::PlaybackState VideoControlWidget::state() const
+{
+    return m_playerState;
+}
+
+float VideoControlWidget::volume() const
+{
+    const qreal linearVolume = QAudio::convertVolume(ui->volumeSlider->value() / static_cast<qreal>(100),
+                            QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
+
+    return linearVolume;
+}
+
+bool VideoControlWidget::isMuted() const { return m_playerMuted; }
+
+void VideoControlWidget::setState(const QMediaPlayer::PlaybackState state)
+{
+    m_playerState = state;
+    refreshUI();
+}
+
+void VideoControlWidget::setVolume(const double volume)
+{
+    const qreal logarithmicVolume = QAudio::convertVolume(volume, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
+    ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
+
+    refreshUI();
+}
+
+void VideoControlWidget::setMuted(const bool muted)
+{
+    m_playerMuted = muted;
+    refreshUI();
 }
 
 void VideoControlWidget::refreshUI()
@@ -68,19 +105,17 @@ void VideoControlWidget::refreshUI()
     } else {
         ui->loopButton->setIcon(setButtonIcon("loop", theme));
     }
-
+/*
     if (m_playerMuted) {
         ui->muteButton->setIcon(setButtonIcon("mute", theme));
     } else {
-        if (m_volumeLevel <= 33) {
+        if (m_volumeLevel <= 50) {
             ui->muteButton->setIcon(setButtonIcon("volume-low", theme));
-        } else if (m_volumeLevel <= 66 && m_volumeLevel > 33) {
-            ui->muteButton->setIcon(setButtonIcon("volume-medium", theme));
         } else {
             ui->muteButton->setIcon(setButtonIcon("volume-high", theme));
         }
     }
-
+*/
     ui->previousButton->setIcon(setButtonIcon("back", theme));
     ui->stopButton->setIcon(setButtonIcon("stop", theme));
     ui->nextButton->setIcon(setButtonIcon("next", theme));
@@ -101,42 +136,7 @@ void VideoControlWidget::refreshUI()
     }
 }
 
-QMediaPlayer::PlaybackState VideoControlWidget::state() const
-{
-    return m_playerState;
-}
-
-void VideoControlWidget::setState(const QMediaPlayer::PlaybackState state)
-{
-    m_playerState = state;
-    refreshUI();
-}
-
-float VideoControlWidget::volume() const
-{
-    const qreal linearVolume = QAudio::convertVolume(ui->volumeSlider->value() / static_cast<qreal>(100),
-                            QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
-
-    return linearVolume;
-}
-
-void VideoControlWidget::setVolume(const double volume)
-{
-    const qreal logarithmicVolume = QAudio::convertVolume(volume, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
-    ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
-
-    refreshUI();
-}
-
-bool VideoControlWidget::isMuted() const { return m_playerMuted; }
-
-void VideoControlWidget::setMuted(const bool muted)
-{
-    m_playerMuted = muted;
-    refreshUI();
-}
-
-void VideoControlWidget::playClicked()
+void VideoControlWidget::playButton_Clicked()
 {
     if (m_playerState == QMediaPlayer::PlayingState) {
         emit pause();
@@ -182,9 +182,14 @@ void VideoControlWidget::shuffleClicked()
     refreshUI();
 }
 
-void VideoControlWidget::muteClicked()
+void VideoControlWidget::volumeLabelClicked()
 {
     emit changeMuting(!m_playerMuted);
+}
+
+void VideoControlWidget::settingsButtonClicked()
+{
+
 }
 
 void VideoControlWidget::onVolumeSliderValueChanged()
@@ -197,44 +202,73 @@ QIcon VideoControlWidget::setButtonIcon(const QString &buttonName, const QString
 {
     qDebug() << "Setting button icon...";
 
-    QPixmap pixmap;
-    QColor color;
-
     if (buttonName == "play") {
-        pixmap = QPixmap(":/img/images/play.svg");
-    } else if (buttonName == "pause") {
-        pixmap = QPixmap(":/img/images/pause.svg");
-    } else if (buttonName == "back") {
-        pixmap = QPixmap(":/img/images/back.svg");
-    } else if (buttonName == "stop") {
-        pixmap = QPixmap(":/img/images/stop.svg");
-    } else if (buttonName == "next") {
-        pixmap = QPixmap(":/img/images/next.svg");
-    } else if (buttonName == "fullscreen") {
-        pixmap = QPixmap(":/img/images/fullscreen.svg");
-    } else if (buttonName == "fullscreen-exit") {
-        pixmap = QPixmap(":/img/images/fullscreen-exit.svg");
-    } else if (buttonName == "playlist") {
-        pixmap = QPixmap(":/img/images/playlist.svg");
-    } else if (buttonName == "loop") {
-        pixmap = QPixmap(":/img/images/loop.svg");
-    } else if (buttonName == "loop-one") {
-        pixmap = QPixmap(":/img/images/loop-one.svg");
-    } else if (buttonName == "shuffle") {
-        pixmap = QPixmap(":/img/images/shuffle.svg");
-    } else if (buttonName == "mute") {
-        pixmap = QPixmap(":/img/images/mute.svg");
-    } else if (buttonName == "volume-low") {
-        pixmap = QPixmap(":/img/images/volume-low.svg");
-    } else if (buttonName == "volume-medium") {
-        pixmap = QPixmap(":/img/images/volume-medium.svg");
-    } else if (buttonName == "volume-high") {
-        pixmap = QPixmap(":/img/images/volume-high.svg");
-    } else {
-        qCritical() << "Button name doesnt have a file assigned to it.";
-        return QIcon();
+        return QIcon(":/icons/play-white.png");
     }
 
+    if (buttonName == "pause") {
+        return QIcon(":/icons/pause-white.png");
+    }
+
+    if (buttonName == "back") {
+        return QIcon(":/icons/back-white.png");
+    }
+
+    if (buttonName == "stop") {
+        return QIcon(":/icons/stop-white.png");
+    }
+
+    if (buttonName == "next") {
+        return QIcon(":/icons/next-white.png");
+    }
+
+    if (buttonName == "fullscreen") {
+        return QIcon(":/icons/maximize-white.png");
+    }
+
+    //if (buttonName == "fullscreen-exit") {
+    //    return QIcon(":/icons/-white.png");
+    //}
+
+    if (buttonName == "playlist") {
+        return QIcon(":/icons/playlist-white.png");
+    }
+
+    if (buttonName == "loop") {
+        return QIcon(":/icons/repeat-white.png");
+    }
+
+    //if (buttonName == "loop-one") {
+    //    return QIcon(":/icons/-white.png");
+    //}
+
+    if (buttonName == "shuffle") {
+        return QIcon(":/icons/shuffle-white.png");
+    }
+
+    if (buttonName == "mute") {
+        return QIcon(":/icons/mute-white.png");
+    }
+
+    if (buttonName == "volume-low") {
+        return QIcon(":/icons/low-volume-white.png");
+    }
+
+    //if (buttonName == "volume-medium") {
+    //    return QIcon(":/icons/-white.png");
+    //}
+
+    if (buttonName == "volume-high") {
+        return QIcon(":/icons/volume-up-white.png");
+    }
+
+    if (buttonName == "subtitles")
+        return QIcon(":/icons/subtitles-white.png");
+
+    qCritical() << "Button name doesnt have a file assigned to it.";
+    return QIcon();
+
+/*
     if (theme == "System") {
         qDebug() << "Using system theme for video control buttons.";
         if (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Light) {
@@ -264,4 +298,5 @@ QIcon VideoControlWidget::setButtonIcon(const QString &buttonName, const QString
     painter.end();
 
     return QIcon(pixmap);
+*/
 }

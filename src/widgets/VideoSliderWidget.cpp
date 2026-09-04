@@ -51,6 +51,8 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackControlle
     ui->horizontalLayout->removeWidget(ui->placeholder);
     ui->horizontalLayout->insertWidget(1, m_videoSlider);
     ui->horizontalLayout->setStretch(1, 2);
+
+    //this->setStyleSheet("QWidget { border-top: 1px solid #ffffff; }");
 }
 
 VideoSliderWidget::~VideoSliderWidget()

@@ -31,16 +31,15 @@
 #include <QColor>
 #include <QGuiApplication>
 #include <QStyleHints>
-#include <QSvgRenderer>
 #include <QDebug>
 
+#include "ClickableLabel.h"
+
+
 QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class VideoControlWidget;
-}
-
+namespace Ui { class VideoControlWidget; }
 QT_END_NAMESPACE
+
 
 enum class LoopOption {
     LoopAll,
@@ -50,7 +49,6 @@ enum class LoopOption {
 
 class VideoControlWidget : public QWidget {
     Q_OBJECT
-
 public:
     explicit VideoControlWidget(QWidget *parent = nullptr);
     ~VideoControlWidget() override;
@@ -72,6 +70,8 @@ signals:
     void next();
     void previous();
     void fullScreen();
+    void settingsRequested();
+    void subtitlesRequested();
     void togglePlaylist();
     void setLoop(int loopOption);
     void shuffle();
@@ -80,22 +80,23 @@ signals:
     void changeRate(qreal rate);
 
 private slots:
-    void playClicked();
+    void playButton_Clicked();
     void fullScreenClicked();
     void playlistClicked();
     void loopClicked();
     void shuffleClicked();
-    void muteClicked();
+    void volumeLabelClicked();
+    void settingsButtonClicked();
     void onVolumeSliderValueChanged();
 
 private:
+    static QIcon setButtonIcon(const QString &buttonName, const QString &theme);
+
     Ui::VideoControlWidget *ui;
     QMediaPlayer::PlaybackState m_playerState = QMediaPlayer::StoppedState;
     bool m_playerMuted = false;
     LoopOption m_loopOption = LoopOption::LoopAll;
     bool m_isShuffle = false;
     int m_volumeLevel = 100;
-
-    static QIcon setButtonIcon(const QString &buttonName, const QString &theme);
 
 };
