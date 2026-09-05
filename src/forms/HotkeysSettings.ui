@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  -     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+  -
+  -     This program is free software: you can redistribute it and/or modify
+  -     it under the terms of the GNU General Public License as published by
+  -     the Free Software Foundation, either version 3 of the License, or
+  -     (at your option) any later version.
+  -
+  -     This program is distributed in the hope that it will be useful,
+  -     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  -     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  -     GNU General Public License for more details.
+  -
+  -     You should have received a copy of the GNU General Public License
+  -     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -
+  -->
+
 <ui version="4.0">
  <class>HotkeysSettings</class>
  <widget class="QWidget" name="HotkeysSettings">
@@ -53,21 +71,135 @@
     </spacer>
    </item>
    <item>
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="widgetResizable">
+    <widget class="QLabel" name="descriptionLabel">
+     <property name="text">
+      <string>Double click a hotkey to change it. Press Delete to remove it.</string>
+     </property>
+     <property name="wordWrap">
       <bool>true</bool>
      </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>578</width>
-        <height>372</height>
-       </rect>
-      </property>
-     </widget>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="searchLayout">
+     <item>
+      <widget class="QLabel" name="searchLabel">
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="searchEdit">
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="placeholderText">
+        <string>Filter actions and hotkeys...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="scopeLabel">
+       <property name="text">
+        <string>in</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="searchScope">
+       <item>
+        <property name="text">
+         <string>Any field</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Action</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Category</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Hotkey</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTreeView" name="hotkeyView">
+     <property name="editTriggers">
+      <set>QAbstractItemView::EditTrigger::DoubleClicked|QAbstractItemView::EditTrigger::EditKeyPressed|QAbstractItemView::EditTrigger::SelectedClicked</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+     </property>
+     <property name="rootIsDecorated">
+      <bool>false</bool>
+     </property>
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="allColumnsShowFocus">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QLabel" name="statusLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="clearButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Clear Hotkey</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="restoreButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Restore Default</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

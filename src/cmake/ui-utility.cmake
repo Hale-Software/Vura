@@ -1,4 +1,5 @@
 target_sources(
         vura PRIVATE
-        utility/HotkeyDelegate.h
+        utility/KeySequenceDelegate.cpp
+        utility/KeySequenceDelegate.h
 )

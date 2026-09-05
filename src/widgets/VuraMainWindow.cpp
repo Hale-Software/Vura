@@ -57,6 +57,9 @@ VuraMainWindow::VuraMainWindow(QWidget *parent)
     //configureUpdater();
     initUI();
 
+    HotkeyManager::instance()->registerWindow(this);
+    HotkeyManager::instance()->load();
+
     qCDebug(Core) << "Application Initialized!";
     qCInfo(Core) << "Vura Version: " << VURA_VERSION_STRING;
 }
@@ -73,6 +76,9 @@ void VuraMainWindow::closeEvent(QCloseEvent *event)
 
 bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
+    if (HotkeyManager::instance()->handleNativeEvent(eventType, message, result))
+        return true;
+
 #ifdef Q_OS_WIN
     if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG")
     {

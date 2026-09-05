@@ -19,9 +19,14 @@
 #pragma once
 
 #include <QWidget>
+#include <QModelIndex>
 
 class QSettings;
+class QSortFilterProxyModel;
 class QDebug;
+
+class HotkeyModel;
+class KeySequenceDelegate;
 
 
 QT_BEGIN_NAMESPACE
@@ -48,8 +53,27 @@ public slots:
     void resetToDefaults();
     void saveSettings();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+private slots:
+    void search_Changed(const QString &text);
+    void searchScope_Changed(int index);
+    void selection_Changed();
+    void clearHotkey_Clicked();
+    void restoreDefault_Clicked();
+    void model_Modified();
+    void model_ErrorMessage(const QString &message);
+
 private:
+    int currentSourceRow() const;
+    bool confirmReassignment(const QString &requestingLabel, const QString &currentOwnerLabel,
+                             const QKeySequence &sequence);
+
     Ui::HotkeysSettings *ui;
-    bool m_unsavedChanges = false;
+
+    HotkeyModel *m_model = nullptr;
+    QSortFilterProxyModel *m_proxyModel = nullptr;
+    KeySequenceDelegate *m_delegate = nullptr;
 
 };

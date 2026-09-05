@@ -68,6 +68,7 @@
 #include <libvura/logging/logger.h>
 #include <libvura/settings.h>
 #include <libvura/exceptions/error-service.h>
+#include <libvura/hotkeys/hotkey-manager.h>
 #include <libvura/video-marker/video-marker-controller.h>
 #include <libvura/models/playlist-model.h>
 #include <libvura/models/video-marker-record.h>

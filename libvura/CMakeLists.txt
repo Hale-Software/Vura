@@ -38,6 +38,18 @@ target_sources(
     libvura/exceptions/error-types.h
 )
 
+# hotkeys Directory
+target_sources(
+    libvura
+    PUBLIC
+    libvura/hotkeys/global-hotkey-host.h
+    libvura/hotkeys/hotkey-manager.h
+
+    PRIVATE
+    libvura/hotkeys/global-hotkey-host.cpp
+    libvura/hotkeys/hotkey-manager.cpp
+)
+
 # io Directory
 target_sources(
     libvura
@@ -94,6 +106,7 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        libvura/models/hotkey-model.h
         libvura/models/log-message.h
         libvura/models/metadata.h
         libvura/models/playlist-item.h
@@ -101,6 +114,9 @@ target_sources(
         libvura/models/playlist-model.h
         libvura/models/version.h
         libvura/models/video-marker-record.h
+
+        PRIVATE
+        libvura/models/hotkey-model.cpp
 )
 
 # playback Directory

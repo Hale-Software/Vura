@@ -10,8 +10,6 @@ target_sources(
         dialogs/FeedbackDialog.h
         dialogs/HelpDialog.cpp
         dialogs/HelpDialog.h
-        dialogs/HotkeySettingsDialog.cpp
-        dialogs/HotkeySettingsDialog.h
         dialogs/LogUploadDialog.cpp
         dialogs/LogUploadDialog.h
         dialogs/LogViewerDialog.cpp
