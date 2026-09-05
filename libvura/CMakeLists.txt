@@ -69,10 +69,12 @@ target_sources(
         libvura
         PUBLIC
         libvura/logging/categories.h
+        libvura/logging/log-uploader.h
         libvura/logging/logger.h
 
         PRIVATE
         libvura/logging/categories.cpp
+        libvura/logging/log-uploader.cpp
         libvura/logging/logger.cpp
 )
 
