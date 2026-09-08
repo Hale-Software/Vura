@@ -38,6 +38,7 @@ void PlaybackController::setVideoWidget(QVideoWidget *videoWidget)
 
     m_player->setAudioOutput(m_audioOutput);
     m_player->setVideoOutput(m_videoWidget);
+    m_videoSink = m_player->videoSink();
 
     const float linearVolume = QAudio::convertVolume(m_volume / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     m_audioOutput->setVolume(linearVolume);
@@ -56,6 +57,7 @@ void PlaybackController::setVideoWidget(QVideoWidget *videoWidget)
     connect(m_player, &QMediaPlayer::sourceChanged, this, &PlaybackController::sourceChanged);
     connect(m_player, &QMediaPlayer::tracksChanged, this, &PlaybackController::tracksChanged);
     connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &PlaybackController::mediaStatusChanged);
+    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &PlaybackController::videoFrameChanged);
 
     // Handle errors cleanly
     connect(m_player, &QMediaPlayer::errorOccurred, this, [this](const QMediaPlayer::Error error, const QString &errorString) {
@@ -268,6 +270,17 @@ void PlaybackController::setPosition(const qint64 position)
         m_openGLWidget->seek(position);
     }
     //emit jumpCompleted();
+}
+
+void PlaybackController::setSubtitleFile(const QString &filePath)
+{
+    m_subtitleTrack = new SubtitleTrack(this);
+    m_subtitleTrack->loadSrt(filePath);
+}
+
+void PlaybackController::setSubtitleEnabled(bool enabled)
+{
+    m_subtitlesEnabled = enabled;
 }
 
 void PlaybackController::setPlaybackRate(const double rate)
@@ -551,4 +564,17 @@ void PlaybackController::setMetaData(const QUrl& media)
         m_metadata->parseQMediaMetaData(m_player->metaData());
         m_metadata->Source = media;
     }
+}
+
+void PlaybackController::videoFrameChanged(const QVideoFrame &frame)
+{
+    if (!m_subtitleTrack)
+        return;
+
+    if (!m_subtitlesEnabled)
+        return;
+
+    const qint64 ms = frame.startTime() / 1000;
+    m_currentCue = m_subtitleTrack->cueAt(ms + m_offsetMs);
+    m_videoSink->setSubtitleText(m_currentCue ? m_currentCue->lines.join('\n') : QString());
 }

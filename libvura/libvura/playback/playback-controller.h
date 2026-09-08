@@ -29,10 +29,13 @@
 #include <QString>
 #include <QUrl>
 #include <QMediaMetaData>
+#include <QVideoFrame>
 #include <QDebug>
 
+#include "subtitle-track.h"
 #include "../media-engine/media-engine.h"
 #include "../models/metadata.h"
+#include "../models/subtitle-cue.h"
 
 
 class PlaybackController : public QObject {
@@ -75,6 +78,8 @@ public slots:
     void stop();
     void restart();
     void setPosition(qint64 position);
+    void setSubtitleFile(const QString& filePath);
+    void setSubtitleEnabled(bool enabled);
 
     void setPlaybackRate(double rate);
     void playbackRateFaster();
@@ -108,19 +113,25 @@ private slots:
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void videoWidgetStateChanged(QMediaPlayer::PlaybackState state);
     void setMetaData(const QUrl& media);
+    void videoFrameChanged(const QVideoFrame& frame);
 
 private:
     QMediaPlayer* m_player = nullptr;
     QAudioOutput* m_audioOutput = nullptr;
     QStackedWidget* m_container;
     QVideoWidget* m_videoWidget = nullptr;
+    QVideoSink* m_videoSink = nullptr;
     MetaData* m_metadata = nullptr;
 
     VuraMediaEngine* m_openGLWidget = nullptr;
+    SubtitleTrack* m_subtitleTrack = nullptr;
+    SubtitleCue* m_currentCue = nullptr;
 
     int m_volume;
     double m_playbackRate;
+    qint64 m_offsetMs = 0;
 
     bool m_usingVideoWidget = true;
+    bool m_subtitlesEnabled = false;
 
 };

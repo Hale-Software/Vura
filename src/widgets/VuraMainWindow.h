@@ -198,6 +198,8 @@ private slots:
     void actionToggleFullscreen();
 
     // Subtitles Menu
+    void actionSubtitlesOpenSubtitlesFile();
+    void actionSubtitlesToggleSubtitles(bool checked);
 
     // Tools Menu
     void actionTestFunction();

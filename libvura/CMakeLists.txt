@@ -114,6 +114,7 @@ target_sources(
         libvura/models/playlist-item.h
         libvura/models/playlist-model.cpp
         libvura/models/playlist-model.h
+        libvura/models/subtitle-cue.h
         libvura/models/version.h
         libvura/models/video-marker-record.h
 
@@ -126,9 +127,11 @@ target_sources(
     libvura
     PUBLIC
     libvura/playback/playback-controller.h
+    libvura/playback/subtitle-track.h
 
     PRIVATE
     libvura/playback/playback-controller.cpp
+    libvura/playback/subtitle-track.cpp
 )
 
 # playlist Directory

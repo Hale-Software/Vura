@@ -885,6 +885,24 @@ void VuraMainWindow::actionMarkersMarkIn() {}
 
 void VuraMainWindow::actionMarkersMarkOut() {}
 
+void VuraMainWindow::actionSubtitlesOpenSubtitlesFile()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        tr("Open Subtitle File"),
+        "/home",
+        tr("All Files (*.*)")
+        );
+
+    if (!filePath.isEmpty())
+        m_playbackController->setSubtitleFile(filePath);
+}
+
+void VuraMainWindow::actionSubtitlesToggleSubtitles(bool checked)
+{
+    m_playbackController->setSubtitleEnabled(checked);
+}
+
 void VuraMainWindow::setCurrentFile(const QUrl &mediaUrl)
 {
     if (mediaUrl.isLocalFile()) {
@@ -1698,6 +1716,14 @@ void VuraMainWindow::setConnections()
     connect(ui->actionViewToggleMarkersStripMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersStripMarkers);
     this->addAction(ui->actionViewToggleMarkersStripMarkers);
     ui->actionViewToggleMarkersStripMarkers->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionSubtitlesOpenSubtitlesFile, &QAction::triggered, this, &VuraMainWindow::actionSubtitlesOpenSubtitlesFile);
+    this->addAction(ui->actionSubtitlesOpenSubtitlesFile);
+    ui->actionSubtitlesOpenSubtitlesFile->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionSubtitlesToggleSubtitles, &QAction::toggled, this, &VuraMainWindow::actionSubtitlesToggleSubtitles);
+    this->addAction(ui->actionSubtitlesToggleSubtitles);
+    ui->actionSubtitlesToggleSubtitles->setShortcutContext(Qt::WindowShortcut);
 
     connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
     populateAudioDevicesMenu();
