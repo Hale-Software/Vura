@@ -228,6 +228,11 @@ void InterfaceSettings::resetToDefaults()
 void InterfaceSettings::saveSettings()
 {
     QSettings settings;
+    if (ui->currentTheme->currentIndex() != settings.value("theme", 0).toInt()) {
+        emit requiresRestart();
+    }
+
+
     settings.setValue("theme", ui->currentTheme->currentIndex());
     settings.setValue("showMaximizedOnStart", ui->showMaximizedOnStart->currentIndex());
     settings.setValue("rememberWindowSize", ui->rememberWindowSize->isChecked());

@@ -64,6 +64,15 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(m_playerSettings, &PlayerSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
     connect(m_playlistSettings, &PlaylistSettings::settingsChanged, this, &SettingsDialog::settingsChanged_Slot);
 
+    connect(m_advancedSettings, &AdvancedSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_associationsSettings, &AssociationsSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_generalSettings, &GeneralSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_hotkeysSettings, &HotkeysSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_interfaceSettings, &InterfaceSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_playbackSettings, &PlaybackSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_playerSettings, &PlayerSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+    connect(m_playlistSettings, &PlaylistSettings::requiresRestart, this, &SettingsDialog::requiresRestart);
+
     connect(m_generalSettings, &GeneralSettings::updateRequested, this, &SettingsDialog::updateRequested);
 
     ui->settingsViewArea->setCurrentIndex(0);

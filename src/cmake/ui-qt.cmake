@@ -36,6 +36,7 @@ target_sources(
         forms/MarkerEditDialog.ui
         forms/MediaInformationDialog.ui
         forms/MissingFilesDialog.ui
+        forms/PlaylistWidget.ui
         forms/SettingsDialog.ui
         forms/UpdateDialog.ui
         forms/VideoControlWidget.ui

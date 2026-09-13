@@ -19,19 +19,9 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QColor>
-#include <QPen>
-#include <QBrush>
-#include <QEvent>
-#include <QTimer>
-#include <QMouseEvent>
-#include <QString>
 #include <QList>
-#include <QLabel>
-#include <QDebug>
+#include <QMouseEvent>
+#include <QSize>
 
 #include <libvura/models/video-marker-record.h>
 #include <libvura/video-marker/video-marker-controller.h>
@@ -46,51 +36,45 @@ public:
 
     QSize minimumSizeHint() const override;
 
-    int GetMinimun() const;
-    void SetMinimum(int minimum);
+    int minimum() const { return m_minimum; }
+    int maximum() const { return m_maximum; }
+    int value() const { return m_value; }
 
-    int GetMaximun() const;
-    void SetMaximum(int maximum);
-
-    int GetValue() const;
-    void SetValue(int value);
-
-    void SetRange(int minimum, int maximum);
-
-    bool GetSliderPressed() const;
-    void SetSliderPressed(bool value);
+    bool isScrubbing() const { return m_scrubbing; }
+    void setPositionFromEngine(qint64 ms);
 
     bool getMarkerTypesVisible(const QString& markerType) const;
     void setMarkerTypeVisible(const QString& markerType, bool visible);
 
 signals:
-    void valueChanged(int value);
-    void sliderPressed(bool pressed);
+    void scrubbed(qint64 ms);
+    void scrubFinished(qint64 ms);
     void requestThumbnail(int64_t hoverTimestamp);
 
 public slots:
     void loadVideoMarkers();
     void updateVideoSlider();
-    void setValue(int value);
+    void setValue(int val);
     void setMinimum(int minimum);
     void setMaximum(int maximum);
+    void setRange(int minimum, int maximum);
     void goToNextMarker(double currentPercent);
     void goToPreviousMarker(double currentPercent);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
 
     QRectF carrotHandleRect() const;
     QRectF handleRect(int value) const;
 
 private:
-    VideoMarkerController *m_videoMarkerController;
+    int valueForPosition(int x) const;
     int validLength() const;
     int valueFromPos(int x) const;
 
+    VideoMarkerController *m_videoMarkerController;
     QList<VideoMarkerRecord> m_videoMarkers;
     float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
     int m_minimum;
@@ -104,9 +88,9 @@ private:
     bool m_showingOrangeMarkers;
     bool m_showingSceneMarkers;
     bool m_showingStripMarkers;
-    bool m_sliderPressed;
     int m_delta;
     int m_interval;
     double m_sliderBarHeightValue;
+    bool m_scrubbing = false;
 
 };

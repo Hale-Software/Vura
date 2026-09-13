@@ -19,19 +19,9 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QSlider>
-#include <QToolButton>
-#include <QLabel>
 #include <QIcon>
-#include <QStyle>
-#include <QPixmap>
-#include <QPainter>
-#include <QColor>
-#include <QGuiApplication>
-#include <QStyleHints>
-#include <QDebug>
+
+#include <libvura/media/types.h>
 
 #include "ClickableLabel.h"
 
@@ -53,13 +43,13 @@ public:
     explicit VideoControlWidget(QWidget *parent = nullptr);
     ~VideoControlWidget() override;
 
-    QMediaPlayer::PlaybackState state() const;
-    float volume() const;
+    media::PlaybackState state() const;
+    int volume() const;
     bool isMuted() const;
 
 public slots:
-    void setState(QMediaPlayer::PlaybackState state);
-    void setVolume(double volume);
+    void setState(media::PlaybackState state);
+    void setVolume(int volume);
     void setMuted(bool muted);
     void refreshUI();
 
@@ -75,7 +65,7 @@ signals:
     void togglePlaylist();
     void setLoop(int loopOption);
     void shuffle();
-    void changeVolume(double volume);
+    void changeVolume(int volume);
     void changeMuting(bool muting);
     void changeRate(qreal rate);
 
@@ -87,13 +77,12 @@ private slots:
     void shuffleClicked();
     void volumeLabelClicked();
     void settingsButtonClicked();
-    void onVolumeSliderValueChanged();
 
 private:
-    static QIcon setButtonIcon(const QString &buttonName, const QString &theme);
+    static QIcon setButtonIcon(const QString &buttonName, const int &theme);
 
     Ui::VideoControlWidget *ui;
-    QMediaPlayer::PlaybackState m_playerState = QMediaPlayer::StoppedState;
+    media::PlaybackState m_playerState = media::PlaybackState::Stopped;
     bool m_playerMuted = false;
     LoopOption m_loopOption = LoopOption::LoopAll;
     bool m_isShuffle = false;

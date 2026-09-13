@@ -72,6 +72,7 @@ void SystemTrayWidget::createContextMenu()
     m_decreaseVolumeAction = new QAction(this);
     m_muteAction = new QAction(this);
     m_openFileAction = new QAction(this);
+    m_fullScreenAction = new QAction(this);
     m_quitAction = new QAction(this);
 
     const auto menu = new QMenu();
@@ -95,8 +96,13 @@ void SystemTrayWidget::createContextMenu()
     m_increaseVolumeAction = menu->addAction(tr("Increase Volume"));
     m_decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
     m_muteAction = menu->addAction(tr("Mute"));
+    m_muteAction->setCheckable(true);
     menu->addSeparator();
     m_openFileAction = menu->addAction(tr("Open File"));
+    menu->addSeparator();
+    m_fullScreenAction = menu->addAction(tr("Full Screen"));
+    m_fullScreenAction->setCheckable(true);
+    menu->addSeparator();
     m_quitAction = menu->addAction(tr("Quit"));
 
     connect(m_systemTrayIcon, &QSystemTrayIcon::activated, this, &SystemTrayWidget::systemTray_Clicked);
@@ -115,7 +121,8 @@ void SystemTrayWidget::createContextMenu()
     connect(m_playAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_TogglePlayPause);
     connect(m_nextAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_Next);
     connect(m_previousAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_Previous);
-    connect(m_muteAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_ToggleMute);
+    connect(m_muteAction, &QAction::toggled, this, &SystemTrayWidget::systemTray_ToggleMute);
+    connect(m_fullScreenAction, &QAction::triggered, this, &SystemTrayWidget::toggleFullscreen);
 
     m_systemTrayIcon->setContextMenu(menu);
     m_systemTrayIcon->setToolTip(tr("Vura media player"));
@@ -207,9 +214,9 @@ void SystemTrayWidget::systemTray_DecreaseVolume()
     emit volumeDown();
 }
 
-void SystemTrayWidget::systemTray_ToggleMute()
+void SystemTrayWidget::systemTray_ToggleMute(const bool value)
 {
-    emit toggleMute();
+    emit setMuted(value);
 }
 
 void SystemTrayWidget::systemTray_OpenFile()

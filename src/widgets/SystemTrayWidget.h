@@ -51,11 +51,13 @@ signals:
     void playbackRateSlowerFine();
     void volumeUp();
     void volumeDown();
+    void setMuted(bool muted);
     void toggleMute();
     void openFile();
     void togglePlayPause();
     void nextVideo();
     void previousVideo();
+    void toggleFullscreen();
     void exit();
 
 private slots:
@@ -70,7 +72,7 @@ private slots:
     void systemTray_Slower();
     void systemTray_IncreaseVolume();
     void systemTray_DecreaseVolume();
-    void systemTray_ToggleMute();
+    void systemTray_ToggleMute(bool value);
     void systemTray_OpenFile();
     void systemTray_TogglePlayPause();
     void systemTray_Next();
@@ -98,6 +100,7 @@ private:
     QAction *m_decreaseVolumeAction = nullptr;
     QAction *m_muteAction = nullptr;
     QAction *m_openFileAction = nullptr;
+    QAction *m_fullScreenAction = nullptr;
     QAction *m_quitAction = nullptr;
 
     bool m_showing = true;

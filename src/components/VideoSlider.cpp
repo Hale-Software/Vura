@@ -18,6 +18,19 @@
 
 #include "VideoSlider.h"
 
+#include <QSettings>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QColor>
+#include <QPen>
+#include <QBrush>
+#include <QString>
+#include <QStyleOptionSlider>
+#include <QSignalBlocker>
+#include <QRect>
+#include <QStyle>
+#include <QDebug>
+
 
 VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *parent)
     : QWidget(parent),
@@ -32,11 +45,312 @@ VideoSlider::VideoSlider(VideoMarkerController *videoMarkerController, QWidget *
     m_showingMagentaMarkers(true),
     m_showingOrangeMarkers(true),
     m_showingSceneMarkers(true),
-    m_showingStripMarkers(true),
-    m_sliderPressed(false)
+    m_showingStripMarkers(true)
 {
     setMouseTracking(true);
     this->setFixedHeight(20);
+}
+
+QSize VideoSlider::minimumSizeHint() const
+{
+    const QSettings settings;
+    int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
+    const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
+    return {videoMarkerSideLength * 2 + sliderLeftRightMargin * 2, videoMarkerSideLength};
+}
+
+void VideoSlider::setPositionFromEngine(qint64 ms)
+{
+    if (m_scrubbing)
+        return;
+
+    QSignalBlocker blocker(this);
+    const qint64 lo = minimum();
+    const qint64 hi = maximum();
+    setValue(int(qBound(lo, ms, hi)));
+}
+
+bool VideoSlider::getMarkerTypesVisible(const QString &markerType) const
+{
+    if (markerType == "marker") return m_showingMarkers;
+    if (markerType == "cumshot") return m_showingCumshotMarkers;
+    if (markerType == "cyan") return m_showingCyanMarkers;
+    if (markerType == "dialog") return m_showingDialogMarkers;
+    if (markerType == "magenta") return m_showingMagentaMarkers;
+    if (markerType == "orange") return m_showingOrangeMarkers;
+    if (markerType == "scene") return m_showingSceneMarkers;
+    if (markerType == "strip") return m_showingStripMarkers;
+
+    return false;
+}
+
+void VideoSlider::setMarkerTypeVisible(const QString& markerType, const bool visible)
+{
+    if (markerType == "marker") m_showingMarkers = visible;
+    if (markerType == "cumshot") m_showingCumshotMarkers = visible;
+    if (markerType == "cyan") m_showingCyanMarkers = visible;
+    if (markerType == "dialog") m_showingDialogMarkers = visible;
+    if (markerType == "magenta") m_showingMagentaMarkers = visible;
+    if (markerType == "orange") m_showingOrangeMarkers = visible;
+    if (markerType == "scene") m_showingSceneMarkers = visible;
+    if (markerType == "strip") m_showingStripMarkers = visible;
+
+    update();
+}
+
+void VideoSlider::loadVideoMarkers()
+{
+    m_videoMarkers.clear();
+    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
+    update();
+}
+
+void VideoSlider::updateVideoSlider()
+{
+    m_videoMarkers.clear();
+    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
+    update();
+}
+
+void VideoSlider::setValue(int val)
+{
+    if (val >= m_minimum && val <= m_maximum) {
+        m_value = val;
+    } else {
+        if (val < m_minimum) {
+            m_value = m_minimum;
+        } else if (val > m_maximum) {
+            m_value = m_maximum;
+        } else {
+            qWarning() << "Failed to set video slider value: " << QString::number(val) << ". Maximum Value: " << m_maximum << ". Minimum Value: " << m_minimum;
+            return;
+        }
+    }
+    if (m_scrubbing)
+        emit scrubbed(m_value);
+
+    constexpr int padding = 8;
+    int trackWidth = width() - (padding * 2);
+
+    const double distanceFromMin = (value() - minimum());
+    const double sliderRange = (maximum() - minimum());
+    const double sliderPercent = (distanceFromMin / sliderRange);
+    const auto percentage = static_cast<float>(sliderPercent);
+
+    // Clamp between 0.0 and 1.0
+    m_sliderPercent = std::clamp(percentage, 0.0f, 1.0f);
+    update();
+}
+
+void VideoSlider::setMinimum(const int minimum)
+{
+    if (minimum <= m_maximum) {
+        m_minimum = minimum;
+    } else {
+        qWarning() << "Failed to set video slider minimum: " << QString::number(minimum) << ". Maximum Value: " << m_maximum;
+        return;
+    }
+    update();
+}
+
+void VideoSlider::setMaximum(const int maximum)
+{
+    if (maximum >= m_minimum) {
+        m_maximum = maximum;
+    } else {
+        qWarning() << "Failed to set video slider maximum: " << QString::number(maximum) << ". Minimum Value: " << m_minimum;
+        return;
+    }
+    update();
+}
+
+void VideoSlider::setRange(int minimum, int maximum)
+{
+    if (maximum < m_minimum) {
+        qWarning() << "Failed to set video slider maximum: " << QString::number(maximum) << ". Minimum Value: " << m_minimum;
+        return;
+    }
+
+    if (minimum > m_maximum) {
+        qWarning() << "Failed to set video slider minimum: " << QString::number(minimum) << ". Maximum Value: " << m_maximum;
+        return;
+    }
+
+    m_minimum = minimum;
+    m_maximum = maximum;
+    update();
+}
+
+void VideoSlider::goToNextMarker(const double currentPercent)
+{
+    double newVal = 0.0;
+
+    for (const VideoMarkerRecord &marker : m_videoMarkers) {
+        if (marker.markerType == "marker" && m_showingMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
+            if (marker.timestampMs > currentPercent + 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs < newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        }
+    }
+
+    if (newVal != 0.0) {
+        const int x = newVal * (m_maximum - m_minimum);
+        emit scrubFinished(x);
+    }
+}
+
+void VideoSlider::goToPreviousMarker(const double currentPercent)
+{
+    double newVal = 0.0;
+
+    for (const VideoMarkerRecord &marker : m_videoMarkers) {
+        if (marker.markerType == "marker" && m_showingMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
+            if (marker.timestampMs < currentPercent - 0.001) {
+                if (newVal != 0.0) {
+                    if (marker.timestampMs > newVal)
+                        newVal = marker.timestampMs;
+                } else {
+                    newVal = marker.timestampMs;
+                }
+            }
+        }
+    }
+
+    if (newVal != 0.0) {
+        const int x = newVal * (m_maximum - m_minimum);
+        emit scrubFinished(x);
+    }
 }
 
 void VideoSlider::paintEvent(QPaintEvent *event)
@@ -145,27 +459,14 @@ void VideoSlider::paintEvent(QPaintEvent *event)
 
 void VideoSlider::mousePressEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
-        if (!m_sliderPressed) {
-            m_sliderPressed = true;
-            emit sliderPressed(m_sliderPressed);
-            const int value = valueFromPos(event->pos().x());
-            setValue(value);
-        }
+        m_scrubbing = true;
     }
-}
-
-void VideoSlider::mouseMoveEvent(QMouseEvent *event) {
-    if (event->buttons() & Qt::LeftButton) {
-        const int value = valueFromPos(event->pos().x());
-        setValue(value);
-    }
-    QWidget::mouseMoveEvent(event);
 }
 
 void VideoSlider::mouseReleaseEvent(QMouseEvent *event)
 {
-    m_sliderPressed = false;
-    emit sliderPressed(m_sliderPressed);
+    m_scrubbing = false;
+    emit scrubFinished(m_value);
 }
 
 QRectF VideoSlider::carrotHandleRect() const
@@ -173,8 +474,8 @@ QRectF VideoSlider::carrotHandleRect() const
     const QSettings settings;
     const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
 
-    const double distanceFromMin = (GetValue() - GetMinimun());
-    const double sliderRange = (GetMaximun() - GetMinimun());
+    const double distanceFromMin = (value() - minimum());
+    const double sliderRange = (maximum() - minimum());
     const double sliderPercent = (distanceFromMin / sliderRange);
 
     return handleRect(sliderPercent * validLength() + sliderLeftRightMargin);
@@ -185,6 +486,22 @@ QRectF VideoSlider::handleRect(const int value) const
     const QSettings settings;
     const int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
     return QRect(value, ((m_sliderBarHeightValue + videoMarkerSideLength) / 2)-3, videoMarkerSideLength, videoMarkerSideLength);
+}
+
+int VideoSlider::valueForPosition(int x) const
+{
+    QStyleOptionSlider option;
+    //initStyleOption(&option);
+
+    const QRect groove = style()->subControlRect(QStyle::CC_Slider, &option, QStyle::SC_SliderGroove, this);
+    const QRect handle = style()->subControlRect(QStyle::CC_Slider, &option, QStyle::SC_SliderHandle, this);
+
+    const int span = groove.width() - handle.width();
+    if (span <= 0)
+        return minimum();
+
+    const int pos = x - groove.left() - handle.width() / 2;
+    return QStyle::sliderValueFromPosition(minimum(), maximum(), pos, span, option.upsideDown);
 }
 
 int VideoSlider::validLength() const
@@ -200,335 +517,4 @@ int VideoSlider::valueFromPos(const int x) const
 {
     const int val = static_cast<int>((static_cast<double>(x) / width()) * m_maximum);
     return qBound(0, val, m_maximum);
-}
-
-QSize VideoSlider::minimumSizeHint() const
-{
-    const QSettings settings;
-    int videoMarkerSideLength = settings.value("videoMarkerSideLength", 14).toInt();
-    const int sliderLeftRightMargin = settings.value("sliderLeftRightMargin", 1).toInt();
-    return {videoMarkerSideLength * 2 + sliderLeftRightMargin * 2, videoMarkerSideLength};
-}
-
-int VideoSlider::GetMinimun() const
-{
-    return m_minimum;
-}
-
-void VideoSlider::SetMinimum(const int minimum)
-{
-    setMinimum(minimum);
-}
-
-int VideoSlider::GetMaximun() const
-{
-    return m_maximum;
-}
-
-void VideoSlider::SetMaximum(const int maximum)
-{
-    setMaximum(maximum);
-}
-
-int VideoSlider::GetValue() const
-{
-    return m_value;
-}
-
-void VideoSlider::SetValue(const int value)
-{
-    setValue(value);
-}
-
-void VideoSlider::SetRange(const int minimum, const int maximum)
-{
-    if (maximum < m_minimum) {
-        qWarning() << "Failed to set video slider maximum: " << QString::number(maximum) << ". Minimum Value: " << m_minimum;
-        return;
-    }
-
-    if (minimum > m_maximum) {
-        qWarning() << "Failed to set video slider minimum: " << QString::number(minimum) << ". Maximum Value: " << m_maximum;
-        return;
-    }
-
-    m_minimum = minimum;
-    m_maximum = maximum;
-    update();
-}
-
-bool VideoSlider::GetSliderPressed() const
-{
-    return m_sliderPressed;
-}
-
-void VideoSlider::SetSliderPressed(const bool value)
-{
-    m_sliderPressed = value;
-}
-
-bool VideoSlider::getMarkerTypesVisible(const QString &markerType) const
-{
-    if (markerType == "marker") return m_showingMarkers;
-    if (markerType == "cumshot") return m_showingCumshotMarkers;
-    if (markerType == "cyan") return m_showingCyanMarkers;
-    if (markerType == "dialog") return m_showingDialogMarkers;
-    if (markerType == "magenta") return m_showingMagentaMarkers;
-    if (markerType == "orange") return m_showingOrangeMarkers;
-    if (markerType == "scene") return m_showingSceneMarkers;
-    if (markerType == "strip") return m_showingStripMarkers;
-
-    return false;
-}
-
-void VideoSlider::setMarkerTypeVisible(const QString& markerType, const bool visible)
-{
-    if (markerType == "marker") m_showingMarkers = visible;
-    if (markerType == "cumshot") m_showingCumshotMarkers = visible;
-    if (markerType == "cyan") m_showingCyanMarkers = visible;
-    if (markerType == "dialog") m_showingDialogMarkers = visible;
-    if (markerType == "magenta") m_showingMagentaMarkers = visible;
-    if (markerType == "orange") m_showingOrangeMarkers = visible;
-    if (markerType == "scene") m_showingSceneMarkers = visible;
-    if (markerType == "strip") m_showingStripMarkers = visible;
-
-    update();
-}
-
-void VideoSlider::updateVideoSlider()
-{
-    m_videoMarkers.clear();
-    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
-    update();
-}
-
-void VideoSlider::setValue(const int value)
-{
-    if (value >= m_minimum && value <= m_maximum) {
-        m_value = value;
-    } else {
-        if (value < m_minimum) {
-            m_value = m_minimum;
-        } else if (value > m_maximum) {
-            m_value = m_maximum;
-        } else {
-            qWarning() << "Failed to set video slider value: " << QString::number(value) << ". Maximum Value: " << m_maximum << ". Minimum Value: " << m_minimum;
-            return;
-        }
-    }
-    if (m_sliderPressed)
-        emit valueChanged(m_value);
-
-    constexpr int padding = 8;
-    int trackWidth = width() - (padding * 2);
-
-    const double distanceFromMin = (GetValue() - GetMinimun());
-    const double sliderRange = (GetMaximun() - GetMinimun());
-    const double sliderPercent = (distanceFromMin / sliderRange);
-    const auto percentage = static_cast<float>(sliderPercent);
-
-    // Clamp between 0.0 and 1.0
-    m_sliderPercent = std::clamp(percentage, 0.0f, 1.0f);
-    update();
-}
-
-void VideoSlider::setMinimum(const int minimum)
-{
-    if (minimum <= m_maximum) {
-        m_minimum = minimum;
-    } else {
-        qWarning() << "Failed to set video slider minimum: " << QString::number(minimum) << ". Maximum Value: " << m_maximum;
-        return;
-    }
-    update();
-}
-
-void VideoSlider::setMaximum(const int maximum)
-{
-    if (maximum >= m_minimum) {
-        m_maximum = maximum;
-    } else {
-        qWarning() << "Failed to set video slider maximum: " << QString::number(maximum) << ". Minimum Value: " << m_minimum;
-        return;
-    }
-    update();
-}
-
-void VideoSlider::goToNextMarker(const double currentPercent)
-{
-    double newVal = 0.0;
-
-    for (const VideoMarkerRecord &marker : m_videoMarkers) {
-        if (marker.markerType == "marker" && m_showingMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
-            if (marker.timestampMs > currentPercent + 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs < newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        }
-    }
-
-    if (newVal != 0.0) {
-        const int x = newVal * (m_maximum - m_minimum);
-        emit valueChanged(x);
-    }
-}
-
-void VideoSlider::goToPreviousMarker(const double currentPercent)
-{
-    double newVal = 0.0;
-
-    for (const VideoMarkerRecord &marker : m_videoMarkers) {
-        if (marker.markerType == "marker" && m_showingMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "scene" && m_showingSceneMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "cumshot" && m_showingCumshotMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "strip" && m_showingStripMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "dialog" && m_showingDialogMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "cyan" && m_showingCyanMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "magenta" && m_showingMagentaMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        } else if (marker.markerType == "orange" && m_showingOrangeMarkers) {
-            if (marker.timestampMs < currentPercent - 0.001) {
-                if (newVal != 0.0) {
-                    if (marker.timestampMs > newVal)
-                        newVal = marker.timestampMs;
-                } else {
-                    newVal = marker.timestampMs;
-                }
-            }
-        }
-    }
-
-    if (newVal != 0.0) {
-        const int x = newVal * (m_maximum - m_minimum);
-        emit valueChanged(x);
-    }
-}
-
-void VideoSlider::loadVideoMarkers()
-{
-    m_videoMarkers.clear();
-    m_videoMarkers = m_videoMarkerController->getVideoMarkers();
-    update();
 }

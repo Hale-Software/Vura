@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network MultimediaWidgets OpenGLWidgets Sql)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network Multimedia MultimediaWidgets OpenGLWidgets Sql)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
@@ -12,12 +12,16 @@ target_sources(
         libvura
         PUBLIC
         libvura/constants.h
+        #libvura/engine.h
+        libvura/enums.h
         libvura/libvura.h
         libvura/helpers.h
         libvura/hotkeys.h
+        #libvura/media-controller.h
         libvura/settings.h
         libvura/settings-manager.h
         libvura/theme-manager.h
+        #libvura/video-output.h
 
         PRIVATE
         libvura/constants.cpp
@@ -78,43 +82,76 @@ target_sources(
         libvura/logging/logger.cpp
 )
 
-# media-engine Directory
+# media Directory
 target_sources(
-        libvura
-        PUBLIC
-        libvura/media-engine/audio-decoder.h
-        libvura/media-engine/audio-output.h
-        libvura/media-engine/decoder-thread.h
-        libvura/media-engine/demuxer-thread.h
-        libvura/media-engine/fragment.glsl
-        libvura/media-engine/frame-queue.h
-        libvura/media-engine/media-engine.h
-        libvura/media-engine/packet-queue.h
-        libvura/media-engine/vertex.glsl
-        libvura/media-engine/video-widget.h
+    libvura
+    PUBLIC
+    libvura/media/engine.h
+    libvura/media/engine-factory.h
+    libvura/media/media-controller.h
+    #libvura/media/mpv-engine.h
+    libvura/media/null-engine.h
+    libvura/media/playlist.h
+    libvura/media/qt-engine.h
+    libvura/media/resume-store.h
+    libvura/media/sleep-inhibitor.h
+    libvura/media/types.h
+    libvura/media/video-output.h
+    libvura/media/video-stage.h
 
-        PRIVATE
-        libvura/media-engine/audio-decoder.cpp
-        libvura/media-engine/audio-output.cpp
-        libvura/media-engine/decoder-thread.cpp
-        libvura/media-engine/demuxer-thread.cpp
-        libvura/media-engine/frame-queue.cpp
-        libvura/media-engine/media-engine.cpp
-        libvura/media-engine/packet-queue.cpp
-        libvura/media-engine/video-widget.cpp
+    PRIVATE
+    libvura/media/engine.cpp
+    libvura/media/engine-factory.cpp
+    libvura/media/media-controller.cpp
+    #libvura/media/mpv-engine.cpp
+    libvura/media/null-engine.cpp
+    libvura/media/playlist.cpp
+    libvura/media/qt-engine.cpp
+    libvura/media/resume-store.cpp
+    libvura/media/sleep-inhibitor.cpp
+    libvura/media/types.cpp
+    libvura/media/video-stage.cpp
 )
+
+# media-engine Directory
+#target_sources(
+#        libvura
+#        PUBLIC
+#        libvura/media-engine/audio-decoder.h
+#        libvura/media-engine/audio-output.h
+#        libvura/media-engine/decoder-thread.h
+#        libvura/media-engine/demuxer-thread.h
+#        libvura/media-engine/fragment.glsl
+#        libvura/media-engine/frame-queue.h
+#        libvura/media-engine/media-engine.h
+#        libvura/media-engine/packet-queue.h
+#        libvura/media-engine/vertex.glsl
+#        libvura/media-engine/video-widget.h
+
+#        PRIVATE
+#        libvura/media-engine/audio-decoder.cpp
+#        libvura/media-engine/audio-output.cpp
+#        libvura/media-engine/decoder-thread.cpp
+#        libvura/media-engine/demuxer-thread.cpp
+#        libvura/media-engine/frame-queue.cpp
+#        libvura/media-engine/media-engine.cpp
+#        libvura/media-engine/packet-queue.cpp
+#        libvura/media-engine/video-widget.cpp
+#)
 
 # models Directory
 target_sources(
         libvura
         PUBLIC
+#        libvura/models/capabilities.h
         libvura/models/hotkey-model.h
         libvura/models/log-message.h
-        libvura/models/metadata.h
-        libvura/models/playlist-item.h
-        libvura/models/playlist-model.cpp
-        libvura/models/playlist-model.h
+#        libvura/models/metadata.h
+#        libvura/models/playlist-item.h
+#        libvura/models/playlist-model.cpp
+#        libvura/models/playlist-model.h
         libvura/models/subtitle-cue.h
+#        libvura/models/track-info.h
         libvura/models/version.h
         libvura/models/video-marker-record.h
 
@@ -126,24 +163,24 @@ target_sources(
 target_sources(
     libvura
     PUBLIC
-    libvura/playback/playback-controller.h
-    libvura/playback/subtitle-track.h
+    #libvura/playback/playback-controller.h
+    #libvura/playback/subtitle-track.h
 
     PRIVATE
-    libvura/playback/playback-controller.cpp
-    libvura/playback/subtitle-track.cpp
+    #libvura/playback/playback-controller.cpp
+    #libvura/playback/subtitle-track.cpp
 )
 
 # playlist Directory
 target_sources(
         libvura
         PUBLIC
-        libvura/playlist/playlist-controller.h
-        libvura/playlist/playlist-delegate.h
+        #libvura/playlist/playlist-controller.h
+        #libvura/playlist/playlist-delegate.h
 
         PRIVATE
-        libvura/playlist/playlist-controller.cpp
-        libvura/playlist/playlist-delegate.cpp
+        #libvura/playlist/playlist-controller.cpp
+        #libvura/playlist/playlist-delegate.cpp
 )
 
 # util Directory
@@ -178,6 +215,7 @@ target_link_libraries(
         libvura PRIVATE
         Qt6::Widgets
         Qt6::Network
+        Qt6::Multimedia
         Qt6::MultimediaWidgets
         Qt6::OpenGLWidgets
         Qt6::Sql
@@ -188,6 +226,8 @@ target_link_libraries(
         ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
         ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
 )
+
+target_compile_definitions(libvura PUBLIC MEDIA_HAVE_QTMULTIMEDIA)
 
 # Platform specific files
 if(WIN32)

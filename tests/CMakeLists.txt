@@ -6,15 +6,16 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Test Widgets MultimediaWidgets Network OpenGLWidgets Svg Sql)
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets Multimedia MultimediaWidgets Network OpenGLWidgets Svg Sql)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
 
 qt_add_executable(CoreTest
+    hotkey-smoke-test.cpp
     #tst_coretest.cpp
     #tst_datafiletest.cpp
-    hotkey-smoke-test.cpp
+    tst_player.cpp
 )
 #add_test(NAME CoreTest COMMAND CoreTest)
 add_test(NAME DataFileTest COMMAND DataFileTest)
@@ -28,6 +29,7 @@ set_target_properties(CoreTest PROPERTIES
 target_link_libraries(CoreTest
     PRIVATE Qt6::Test
     Qt6::Widgets
+    Qt6::Multimedia
     Qt6::MultimediaWidgets
     Qt6::Network
     Qt6::OpenGLWidgets

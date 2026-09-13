@@ -20,6 +20,7 @@
     <qresource prefix="">
         <file>styles/dark.qss</file>
         <file>styles/light.qss</file>
+        <file>styles/nova.qss</file>
         <file>icons/back-black.png</file>
         <file>icons/back-cyan.png</file>
         <file>icons/back-grey.png</file>

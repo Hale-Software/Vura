@@ -19,6 +19,12 @@
 #include "VideoControlWidget.h"
 #include "ui_VideoControlWidget.h"
 
+#include <QSettings>
+#include <QSlider>
+#include <QPainter>
+#include <QAudio>
+#include <QDebug>
+
 
 VideoControlWidget::VideoControlWidget(QWidget *parent) : QWidget(parent), ui(new Ui::VideoControlWidget)
 {
@@ -36,9 +42,9 @@ VideoControlWidget::VideoControlWidget(QWidget *parent) : QWidget(parent), ui(ne
     connect(ui->settingsButton, &QPushButton::clicked, this, &VideoControlWidget::settingsRequested);
     connect(ui->subtitlesButton, &QPushButton::clicked, this, &VideoControlWidget::subtitlesRequested);
 
-    connect(ui->volumeSlider, &QSlider::valueChanged, this, &VideoControlWidget::onVolumeSliderValueChanged);
+    connect(ui->volumeSlider, &QSlider::valueChanged, this, &VideoControlWidget::changeVolume);
 
-    setState(QMediaPlayer::StoppedState);
+    setState(media::PlaybackState::Stopped);
 
     refreshUI();
 }
@@ -48,32 +54,28 @@ VideoControlWidget::~VideoControlWidget()
     delete ui;
 }
 
-QMediaPlayer::PlaybackState VideoControlWidget::state() const
+media::PlaybackState VideoControlWidget::state() const
 {
     return m_playerState;
 }
 
-float VideoControlWidget::volume() const
+int VideoControlWidget::volume() const
 {
-    const qreal linearVolume = QAudio::convertVolume(ui->volumeSlider->value() / static_cast<qreal>(100),
-                            QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
-
-    return linearVolume;
+    return ui->volumeSlider->value();
 }
 
 bool VideoControlWidget::isMuted() const { return m_playerMuted; }
 
-void VideoControlWidget::setState(const QMediaPlayer::PlaybackState state)
+void VideoControlWidget::setState(const media::PlaybackState state)
 {
     m_playerState = state;
     refreshUI();
 }
 
-void VideoControlWidget::setVolume(const double volume)
+void VideoControlWidget::setVolume(const int volume)
 {
-    const qreal logarithmicVolume = QAudio::convertVolume(volume, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
-    ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
-
+    m_volumeLevel = volume;
+    ui->volumeSlider->setValue(volume);
     refreshUI();
 }
 
@@ -85,16 +87,13 @@ void VideoControlWidget::setMuted(const bool muted)
 
 void VideoControlWidget::refreshUI()
 {
-    const double volumeDouble = ui->volumeSlider->value();
-    const int val = qRound(volumeDouble);
-    const QString volumeString = QString::number(val) + "%";
+    const QString volumeString = QString::number(ui->volumeSlider->value()) + "%";
     ui->volumeLabel->setText(volumeString);
-    m_volumeLevel = val;
 
     const QSettings settings;
-    const QString theme = settings.value("theme", "System").toString();
+    const int theme = settings.value("theme", 0).toInt();
 
-    if (m_playerState == QMediaPlayer::StoppedState || m_playerState == QMediaPlayer::PausedState) {
+    if (m_playerState == media::PlaybackState::Stopped || m_playerState == media::PlaybackState::Paused) {
         ui->playButton->setIcon(setButtonIcon("play", theme));
     } else {
         ui->playButton->setIcon(setButtonIcon("pause", theme));
@@ -124,21 +123,21 @@ void VideoControlWidget::refreshUI()
     ui->shuffleButton->setIcon(setButtonIcon("shuffle", theme));
 
     if (m_loopOption == LoopOption::LoopNone) {
-        ui->loopButton->setStyleSheet("QToolButton { border: none; }");
+        //ui->loopButton->setStyleSheet("QToolButton { border: none; }");
     } else {
-        ui->loopButton->setStyleSheet("QToolButton { border-width: 1px; border-style: solid; border-color: rgb(0, 140, 255); }");
+        //ui->loopButton->setStyleSheet("QToolButton { border-width: 1px; border-style: solid; border-color: rgb(0, 140, 255); }");
     }
 
     if (m_isShuffle) {
-        ui->shuffleButton->setStyleSheet("QToolButton { border-width: 1px; border-style: solid; border-color: rgb(0, 140, 255); }");
+        //ui->shuffleButton->setStyleSheet("QToolButton { border-width: 1px; border-style: solid; border-color: rgb(0, 140, 255); }");
     } else {
-        ui->shuffleButton->setStyleSheet("QToolButton { border: none; }");
+        //ui->shuffleButton->setStyleSheet("QToolButton { border: none; }");
     }
 }
 
 void VideoControlWidget::playButton_Clicked()
 {
-    if (m_playerState == QMediaPlayer::PlayingState) {
+    if (m_playerState == media::PlaybackState::Playing) {
         emit pause();
     } else {
         emit play();
@@ -192,13 +191,7 @@ void VideoControlWidget::settingsButtonClicked()
 
 }
 
-void VideoControlWidget::onVolumeSliderValueChanged()
-{
-    emit changeVolume(volume());
-    refreshUI();
-}
-
-QIcon VideoControlWidget::setButtonIcon(const QString &buttonName, const QString &theme)
+QIcon VideoControlWidget::setButtonIcon(const QString &buttonName, const int &theme)
 {
     qDebug() << "Setting button icon...";
 

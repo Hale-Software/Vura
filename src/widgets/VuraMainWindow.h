@@ -20,64 +20,19 @@
 
 #include <QMainWindow>
 #include <QWidget>
-#include <QSettings>
-#include <QStringList>
-#include <QFileDialog>
-#include <QMenuBar>
-#include <QPointer>
-#include <QSplitter>
-#include <QItemSelectionModel>
 #include <QMimeData>
-#include <QDropEvent>
-#include <QAction>
-#include <QMessageBox>
-#include <QFileInfo>
-#include <QTimer>
-#include <QDirIterator>
-#include <QCloseEvent>
-#include <QAbstractItemView>
-#include <QMediaPlayer>
-#include <QAudioOutput>
-#include <QKeyEvent>
 #include <QMediaDevices>
 #include <QAudioDevice>
-#include <QActionGroup>
-#include <QMouseEvent>
-#include <QVideoWidget>
-#include <QEvent>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QProgressDialog>
-#include <QInputDialog>
-#include <QChar>
-#include <QCryptographicHash>
-#include <QFrame>
-#include <QLabel>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QTime>
-#include <QWindowStateChangeEvent>
-#include <QDebug>
-
-#include <algorithm>
 
 #include <libvura/libvura.h>
-#include <libvura/constants.h>
-#include <libvura/logging/logger.h>
 #include <libvura/settings.h>
-#include <libvura/exceptions/error-service.h>
 #include <libvura/hotkeys/hotkey-manager.h>
 #include <libvura/video-marker/video-marker-controller.h>
-#include <libvura/models/playlist-model.h>
 #include <libvura/models/video-marker-record.h>
-#include <libvura/playlist/playlist-delegate.h>
 #include <libvura/platform/updater.h>
-#include <libvura/playback/playback-controller.h>
-#include <libvura/playlist/playlist-controller.h>
 #include <libvura/helpers.h>
-#include <libvura/media-engine/media-engine.h>
+#include <libvura/media/types.h>
+#include <libvura/media/engine-factory.h>
 
 #include "HelpDialog.h"
 #include "AboutDialog.h"
@@ -90,10 +45,29 @@
 #include "MediaInformationDialog.h"
 #include "UpdateChecker.h"
 
+#include "VideoSlider.h"
+#include "PlaylistWidget.h"
 #include "SystemTrayWidget.h"
 #include "VideoSliderWidget.h"
 #include "VideoControlWidget.h"
 #include "ContinuePlaybackWidget.h"
+
+QT_BEGIN_NAMESPACE
+class QAction;
+class QActionGroup;
+class QComboBox;
+class QDockWidget;
+class QLabel;
+class QListView;
+class QMenu;
+class QToolButton;
+class QTimer;
+QT_END_NAMESPACE
+
+class MediaController;
+class SeekSlider;
+class SleepInhibitor;
+class VideoStage;
 
 
 namespace Ui {
@@ -116,13 +90,14 @@ class VuraMainWindow : public QMainWindow
     friend class MediaInformationDialog;
 
 public:
-    explicit VuraMainWindow(QWidget *parent = nullptr);
+    explicit VuraMainWindow(MediaController *controller, QWidget *parent = nullptr);
+    ~VuraMainWindow() override;
 
     void maximized();
     void setMainWindowVisibility(bool state);
-    void openFile(const QString &file) const;
-    void openFolder(const QString &path) const;
-    void openNetworkStream(const QString& networkUrl) const;
+    void openFile(const QString &file);
+    void openFolder(const QString &path);
+    void openNetworkStream(const QString& networkUrl);
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 protected:
@@ -134,6 +109,7 @@ protected:
     void changeEvent(QEvent *event) override;
 
 signals:
+    void restartProgram();
     void quitProgram();
 
 private slots:
@@ -141,14 +117,20 @@ private slots:
     void updateRecentFileActions() const;
 
     // File Menu
-    void openRecentFile() const;
-    void actionFileOpenRecentClear();
+    void actionFileOpenFile();
+    void actionFileOpenMultipleFiles();
+    void actionFileOpenFolder();
     void actionOpenNetworkStream();
+    void openRecentFile();
+    void actionFileOpenRecentClear();
+    void actionFileOpenPlaylist();
+    void actionFileSavePlaylist();
     void actionEmergencyClose();
     void actionShowConvertMedia();
     void actionExit();
 
     // View Menu
+    void actionViewTogglePlaylist();
     void actionShowSettings();
     void actionToggleVideoControls();
     void actionViewToggleStatusBar() const;
@@ -210,10 +192,10 @@ private slots:
 
 
 public slots:
-    void stateChanged(PlaybackState state);
+    void openPaths(const QList<QUrl> &urls);
+    void stateChanged(media::PlaybackState state);
     void sourceChanged(const QUrl &source);
     void durationChanged(qint64 duration);
-    void playbackModeChanged(PlaylistController::PlaybackMode mode);
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
     void resetVideoSliderVisibility();
@@ -229,7 +211,15 @@ public slots:
     void setCurrentFile(const QUrl &mediaUrl);
 
 private:
-    Ui::VuraMainWindow *ui;
+    void initSystemTray();
+    void buildMenus();
+    void buildPlaylistDock();
+    void initUI();
+    void connectController();
+    void initMisc();
+
+    void applyCapabilities(const media::Capabilities &capabilities);
+    void rebuildTrackMenus();
 
     void updateRecentFilesList(const QString &fileName);
 
@@ -245,25 +235,38 @@ private:
     bool isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
 
     void configureUpdater();
-    void saveCurrentPlaybackPosition();
     void showResumeOverlay(qint64 savedPosition);
 
-    void initControllers();
-    void initSystemTray();
-    void setConnections();
-    void initUI();
-
-    QNetworkAccessManager *m_updateNetworkManager = nullptr;
-
-    VideoMarkerController *m_videoMarkerController = nullptr;
-    VideoSlider *m_videoSlider = nullptr;
+    Ui::VuraMainWindow *ui;
+    SystemTrayWidget *m_systemTray = nullptr;
+    MediaController *m_controller = nullptr;
+    SleepInhibitor *m_sleepInhibitor = nullptr;
+    VideoStage *m_stage = nullptr;
+    QDockWidget *m_playlistDock = nullptr;
+    QDockWidget *m_videoSliderDock = nullptr;
+    QDockWidget *m_videoControlDock = nullptr;
+    QDockWidget *m_continuePlaybackDock = nullptr;
+    PlaylistWidget *m_playlistWidget = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
     ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
+    VideoMarkerController *m_videoMarkerController = nullptr;
+    VideoSlider *m_videoSlider = nullptr;
 
-    PlaylistController *m_playlistController = nullptr;
-    PlaybackController *m_playbackController = nullptr;
-    SystemTrayWidget *m_systemTray = nullptr;
+    bool m_wasMaximized = false;
+
+
+    QNetworkAccessManager *m_updateNetworkManager = nullptr;
+
+    //VideoMarkerController *m_videoMarkerController = nullptr;
+    //VideoSlider *m_videoSlider = nullptr;
+    //VideoSliderWidget *m_videoSliderWidget = nullptr;
+    //VideoControlWidget *m_videoControlWidget = nullptr;
+    //ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
+
+    //PlaylistController *m_playlistController = nullptr;
+    //PlaybackController *m_playbackController = nullptr;
+    //SystemTrayWidget *m_systemTray = nullptr;
 
     QPointer<HelpDialog> m_helpDialog;
     QPointer<AboutDialog> m_aboutDialog;
@@ -277,7 +280,7 @@ private:
 
     QAction *m_recentFileActions[10];
     QAction *m_recentFilesSeparator;
-    QTimer *m_videoSliderHideTimer = nullptr;
+    //QTimer *m_videoSliderHideTimer = nullptr;
     QTimer *m_continuePlaybackBannerTimer = nullptr;
     QMediaDevices m_mediaDevices;
     static const int MaxRecentFiles = 10;
@@ -289,11 +292,11 @@ private:
     int m_inMarker = 0;
     int m_outMarker = 0;
     int m_duration = 0;
-    PlaybackState m_currentPlaybackState = Stopped;
+    //PlaybackState m_currentPlaybackState = Stopped;
     QUrl m_currentSource;
     QPointer<QFrame> m_resumeOverlay;
 
-    VuraMediaEngine *m_openGLWidget = nullptr;
+    //VuraMediaEngine *m_openGLWidget = nullptr;
     CrashReporter *m_crashReporter = nullptr;
 
     bool m_cumshotMarkerVisible = true;

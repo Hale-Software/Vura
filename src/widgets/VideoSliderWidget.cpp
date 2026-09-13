@@ -23,11 +23,10 @@
 #include <QTime>
 
 
-VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent)
+VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::VideoSliderWidget),
-      m_videoSlider(&videoSlider),
-      m_playbackController(&playbackController)
+      m_videoSlider(&videoSlider)
 {
     ui->setupUi(this);
 
@@ -40,9 +39,6 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackControlle
     connect(animation, &QPropertyAnimation::finished, this, &VideoSliderWidget::onAnimationFinished);
 
     connect(ui->position, &ClickableLabel::clicked, this, &VideoSliderWidget::positionLabel_Clicked);
-    connect(m_playbackController, &PlaybackController::playbackRateChanged, this, &VideoSliderWidget::playbackRateChanged);
-    connect(m_playbackController, &PlaybackController::durationChanged, this, &VideoSliderWidget::durationChanged);
-    connect(m_playbackController, &PlaybackController::positionChanged, this, &VideoSliderWidget::positionChanged);
 
     ui->position->setToolTip(tr("Elapsed time"));
     ui->duration->setToolTip(tr("Total/Remaining time\n -Click to toggle between total and remaining time"));
@@ -51,8 +47,6 @@ VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackControlle
     ui->horizontalLayout->removeWidget(ui->placeholder);
     ui->horizontalLayout->insertWidget(1, m_videoSlider);
     ui->horizontalLayout->setStretch(1, 2);
-
-    //this->setStyleSheet("QWidget { border-top: 1px solid #ffffff; }");
 }
 
 VideoSliderWidget::~VideoSliderWidget()
@@ -109,7 +103,7 @@ void VideoSliderWidget::positionLabel_Clicked()
     if (m_lastPosition > 0)
         updateTimestamps(m_lastPosition);
 }
-
+/*
 void VideoSliderWidget::statusChanged(const QMediaPlayer::MediaStatus status)
 {
     switch (status) {
@@ -129,7 +123,7 @@ void VideoSliderWidget::statusChanged(const QMediaPlayer::MediaStatus status)
             break;
     }
 }
-
+*/
 void VideoSliderWidget::durationChanged(const qint64 duration)
 {
     m_duration = duration / 1000;
@@ -138,8 +132,8 @@ void VideoSliderWidget::durationChanged(const qint64 duration)
 
 void VideoSliderWidget::positionChanged(const qint64 position)
 {
-    if (!m_videoSlider->GetSliderPressed())
-        m_videoSlider->setValue(static_cast<int>(position));
+    //if (!m_videoSlider->GetSliderPressed())
+    //    m_videoSlider->setValue(static_cast<int>(position));
 
     updateTimestamps(position / 1000);
 }
