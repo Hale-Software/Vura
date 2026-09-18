@@ -108,6 +108,20 @@ struct TrackInfo {
     friend bool operator!=(const TrackInfo &lhs, const TrackInfo &rhs) { return !(lhs == rhs); }
 };
 
+/// An audio output device the engine can render to.
+///
+/// Like TrackInfo::id, `id` is opaque and engine-assigned. Qt hands out
+/// QAudioDevice::id() byte arrays, mpv uses "coreaudio/AppleHDA" style
+/// strings. An empty id means "follow the system default", which is not
+/// the same as naming whichever device happens to be default right now.
+struct AudioDeviceInfo {
+    QString id;
+    QString description;
+    bool isDefault = false;
+
+    QString displayName() const;
+};
+
 /// Backends are not interchangeable in what they can do, and pretending
 /// otherwise turns a backend swap into a set of silent no-ops. The
 /// controller publishes this so the UI can disable what is unavailable.
@@ -120,6 +134,7 @@ struct Capabilities {
     bool videoTrackSelection = false;
     bool audioTrackSelection = false;
     bool subtitleTrackSelection = false;
+    bool audioDeviceSelection = false;
     bool video = false;
     std::pair<qreal, qreal> rateRange{1.0, 1.0};
 };

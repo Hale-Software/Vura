@@ -76,8 +76,10 @@ bool MediaController::setBackend(media::Backend backend, QString *errorOut)
         qreal rate = 1.0;
         qreal volume = 1.0;
         bool muted = false;
+        QString videoTrack;
         QString audioTrack;
         QString subtitleTrack;
+        QString audioDevice;
         bool valid = false;
     } snapshot;
 
@@ -88,8 +90,10 @@ bool MediaController::setBackend(media::Backend backend, QString *errorOut)
         snapshot.rate = m_engine->rate();
         snapshot.volume = m_engine->volume();
         snapshot.muted = m_engine->isMuted();
+        snapshot.videoTrack = m_engine->activeTrack(media::TrackType::Video);
         snapshot.audioTrack = m_engine->activeTrack(media::TrackType::Audio);
         snapshot.subtitleTrack = m_engine->activeTrack(media::TrackType::Subtitle);
+        snapshot.audioDevice = m_engine->activeAudioDevice();
         snapshot.valid = true;
 
         m_engine->stop();
@@ -111,6 +115,9 @@ bool MediaController::setBackend(media::Backend backend, QString *errorOut)
     m_backend = media::backendFromId(m_engine->name());
     connectEngine();
     attachOutput();
+
+    if (snapshot.valid && !snapshot.audioDevice.isEmpty())
+        m_engine->setAudioDevice(snapshot.audioDevice);
 
     m_engine->setVolume(snapshot.valid ? snapshot.volume : m_volume);
     m_engine->setMuted(snapshot.valid ? snapshot.muted : m_muted);
@@ -186,6 +193,8 @@ void MediaController::connectEngine()
                                    m_duration);
         emit metaDataChanged(data);
     });
+
+    connect(engine, &media::Engine::audioDevicesChanged, this, &MediaController::audioDevicesChanged);
 }
 
 void MediaController::setVideoOutputProvider(
@@ -208,6 +217,16 @@ void MediaController::attachOutput()
         qWarning() << "Engine" << m_engine->name()
                    << "rejected the supplied video output kind";
     }
+}
+
+QVector<media::AudioDeviceInfo> MediaController::audioDevices() const
+{
+    return m_engine ? m_engine->audioDevices() : QVector<media::AudioDeviceInfo>{};
+}
+
+QString MediaController::activeAudioDevice() const
+{
+    return m_engine ? m_engine->activeAudioDevice() : QString();
 }
 
 void MediaController::openUrls(const QList<QUrl> &urls)
@@ -453,6 +472,12 @@ bool MediaController::loadExternalSubtitle(const QUrl &url)
     if (!m_engine || !m_engine->capabilities().externalSubtitles)
         return false;
     return m_engine->loadExternalSubtitle(url);
+}
+
+void MediaController::setAudioDevice(const QString &id)
+{
+    if (m_engine && m_engine->capabilities().audioDeviceSelection)
+        m_engine->setAudioDevice(id);
 }
 
 void MediaController::rememberPosition()

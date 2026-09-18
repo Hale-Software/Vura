@@ -35,7 +35,11 @@ public:
 
     enum Roles {
         UrlRole = Qt::UserRole + 1,
+        TitleRole,
+        StatusRole,
+        MetaRole,
         DurationRole,
+        ThumbnailRole,
         IsCurrentRole,
     };
 

@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "qt-engine.h"
 
 #include <QAudioOutput>
@@ -6,6 +24,8 @@
 #include <QMediaMetaData>
 #include <QMediaPlayer>
 #include <QVideoSink>
+#include <QAudioDevice>
+#include <QMediaDevices>
 
 #include <algorithm>
 
@@ -110,31 +130,29 @@ QVector<TrackInfo> convertTracks(const QList<QMediaMetaData> &source, TrackType 
 
 } // namespace
 
+
 QtEngine::QtEngine(QObject *parent)
-    : Engine(parent)
-    , m_player(new QMediaPlayer(this))
-    , m_audioOutput(new QAudioOutput(this))
+    : Engine(parent),
+      m_player(new QMediaPlayer(this)),
+      m_audioOutput(new QAudioOutput(this))
 {
     m_player->setAudioOutput(m_audioOutput);
+    m_videoSink = m_player->videoSink();
 
-    connect(m_player, &QMediaPlayer::positionChanged, this,
-            [this](qint64 ms) { updatePosition(ms); });
-    connect(m_player, &QMediaPlayer::durationChanged, this,
-            [this](qint64 ms) { updateDuration(ms); });
-    connect(m_player, &QMediaPlayer::playbackStateChanged, this,
-            [this](QMediaPlayer::PlaybackState s) { updatePlaybackState(toPlaybackState(s)); });
-    connect(m_player, &QMediaPlayer::seekableChanged, this,
-            [this](bool seekable) { updateSeekable(seekable); });
-    connect(m_player, &QMediaPlayer::playbackRateChanged, this,
-            [this](qreal rate) { updateRate(rate); });
+    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &QtEngine::videoFrameChanged);
 
-    connect(m_player, &QMediaPlayer::mediaStatusChanged, this,
-            [this](QMediaPlayer::MediaStatus status) {
-                // Track lists only become valid once the media is loaded.
-                if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia)
-                    rebuildTrackCache();
-                updateMediaStatus(toMediaStatus(status));
-            });
+    connect(m_player, &QMediaPlayer::positionChanged, this, [this](qint64 ms) { updatePosition(ms); });
+    connect(m_player, &QMediaPlayer::durationChanged, this, [this](qint64 ms) { updateDuration(ms); });
+    connect(m_player, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState s) { updatePlaybackState(toPlaybackState(s)); });
+    connect(m_player, &QMediaPlayer::seekableChanged, this, [this](bool seekable) { updateSeekable(seekable); });
+    connect(m_player, &QMediaPlayer::playbackRateChanged, this, [this](qreal rate) { updateRate(rate); });
+
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
+        // Track lists only become valid once the media is loaded.
+        if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia)
+            rebuildTrackCache();
+        updateMediaStatus(toMediaStatus(status));
+    });
 
     connect(m_player, &QMediaPlayer::tracksChanged, this, [this] {
         rebuildTrackCache();
@@ -143,18 +161,28 @@ QtEngine::QtEngine(QObject *parent)
 
     connect(m_player, &QMediaPlayer::metaDataChanged, this, &QtEngine::publishMetaData);
 
-    connect(m_player, &QMediaPlayer::errorOccurred, this,
-            [this](QMediaPlayer::Error error, const QString &message) {
-                if (error == QMediaPlayer::NoError)
-                    return;
-                reportError(toErrorKind(error),
-                            message.isEmpty() ? describe(toErrorKind(error)) : message);
-            });
+    connect(m_player, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &message) {
+        if (error == QMediaPlayer::NoError)
+            return;
+        reportError(toErrorKind(error), message.isEmpty() ? describe(toErrorKind(error)) : message);
+    });
 
-    connect(m_audioOutput, &QAudioOutput::volumeChanged, this,
-            [this](float volume) { updateVolume(volume); });
-    connect(m_audioOutput, &QAudioOutput::mutedChanged, this,
-            [this](bool muted) { updateMuted(muted); });
+    connect(m_audioOutput, &QAudioOutput::volumeChanged, this, [this](float volume) { updateVolume(volume); });
+    connect(m_audioOutput, &QAudioOutput::mutedChanged, this, [this](bool muted) { updateMuted(muted); });
+
+    m_mediaDevices = new QMediaDevices(this);
+    connect(m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, [this] {
+        // Following the default means following it through hotplug, not
+        // pinning whatever was default at startup.
+        if (m_followSystemDefaultAudioDevice) {
+            m_audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
+        } else if (m_audioOutput->device().isNull()) {
+            // The chosen device went away. Fall back rather than going silent.
+            m_followSystemDefaultAudioDevice = true;
+            m_audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
+        }
+        emit audioDevicesChanged();
+    });
 
     updateVolume(m_audioOutput->volume());
     updateMuted(m_audioOutput->isMuted());
@@ -176,13 +204,14 @@ Capabilities QtEngine::capabilities() const
     // chipmunked. The UI greys out the rate control's higher steps rather
     // than letting the engine silently disappoint.
     caps.pitchCorrection = false;
-    caps.externalSubtitles = false;
+    caps.externalSubtitles = true;
     caps.gapless = false;
     caps.hardwareDecode = true;
     caps.audioTrackSelection = true;
     caps.subtitleTrackSelection = true;
+    caps.audioDeviceSelection = true;
     caps.video = true;
-    caps.rateRange = {0.25, 4.0};
+    caps.rateRange = {0.05, 10.0};
     return caps;
 }
 
@@ -274,6 +303,13 @@ void QtEngine::selectTrack(TrackType type, const QString &id)
     emit tracksChanged();
 }
 
+bool QtEngine::loadExternalSubtitle(const QUrl &url)
+{
+    m_subtitleTrack = new SubtitleTrack(this);
+    m_subtitleTrack->loadSrt(url.toLocalFile());
+    return true;
+}
+
 bool QtEngine::attachOutput(VideoOutput *output)
 {
     if (!output) {
@@ -298,6 +334,64 @@ void QtEngine::detachOutput()
     if (auto *out = output())
         out->clearSurface();
     setOutputPointer(nullptr);
+}
+
+QVector<AudioDeviceInfo> QtEngine::audioDevices() const
+{
+    const QAudioDevice defaultDevice = QMediaDevices::defaultAudioOutput();
+    const QList<QAudioDevice> outputs = QMediaDevices::audioOutputs();
+
+    QVector<AudioDeviceInfo> result;
+    result.reserve(outputs.size());
+    for (const QAudioDevice &device : outputs) {
+        AudioDeviceInfo info;
+        info.id = QString::fromUtf8(device.id());
+        info.description = device.description();
+        info.isDefault = device.id() == defaultDevice.id();
+        result.append(info);
+    }
+    return result;
+}
+
+QString QtEngine::activeAudioDevice() const
+{
+    if (m_followSystemDefaultAudioDevice)
+        return {};
+    return QString::fromUtf8(m_audioOutput->device().id());
+}
+
+void QtEngine::setAudioDevice(const QString &id)
+{
+    if (id.isEmpty()) {
+        m_followSystemDefaultAudioDevice = true;
+        m_audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
+        emit audioDevicesChanged();
+        return;
+    }
+
+    const QByteArray wanted = id.toUtf8();
+    for (const QAudioDevice &device : QMediaDevices::audioOutputs()) {
+        if (device.id() != wanted)
+            continue;
+        m_followSystemDefaultAudioDevice = false;
+        m_audioOutput->setDevice(device);
+        emit audioDevicesChanged();
+        return;
+    }
+    // Unknown id: ignore, matching selectTrack()'s behaviour.
+}
+
+void QtEngine::videoFrameChanged(const QVideoFrame &frame)
+{
+    if (!m_subtitleTrack)
+        return;
+
+    //if (!m_subtitlesEnabled)
+    //    return;
+
+    const qint64 ms = frame.startTime() / 1000;
+    m_currentCue = m_subtitleTrack->cueAt(ms + m_subtitleOffsetMs);
+    m_videoSink->setSubtitleText(m_currentCue ? m_currentCue->lines.join('\n') : QString());
 }
 
 void QtEngine::rebuildTrackCache()

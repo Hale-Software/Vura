@@ -12,16 +12,13 @@ target_sources(
         libvura
         PUBLIC
         libvura/constants.h
-        #libvura/engine.h
         libvura/enums.h
         libvura/libvura.h
         libvura/helpers.h
         libvura/hotkeys.h
-        #libvura/media-controller.h
         libvura/settings.h
         libvura/settings-manager.h
         libvura/theme-manager.h
-        #libvura/video-output.h
 
         PRIVATE
         libvura/constants.cpp
@@ -164,11 +161,11 @@ target_sources(
     libvura
     PUBLIC
     #libvura/playback/playback-controller.h
-    #libvura/playback/subtitle-track.h
+    libvura/playback/subtitle-track.h
 
     PRIVATE
     #libvura/playback/playback-controller.cpp
-    #libvura/playback/subtitle-track.cpp
+    libvura/playback/subtitle-track.cpp
 )
 
 # playlist Directory
@@ -201,12 +198,12 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
-        libvura/video-marker/video-marker-controller.h
+        #libvura/video-marker/video-marker-controller.h
         libvura/video-marker/video-markers.h
         libvura/video-marker/VideoMarker.h
 
         PRIVATE
-        libvura/video-marker/video-marker-controller.cpp
+        #libvura/video-marker/video-marker-controller.cpp
         libvura/video-marker/video-markers.cpp
         libvura/video-marker/VideoMarker.cpp
 )

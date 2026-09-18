@@ -29,6 +29,18 @@ bool Engine::loadExternalSubtitle(const QUrl &)
     return false;
 }
 
+QVector<AudioDeviceInfo> Engine::audioDevices() const
+{
+    return {};
+}
+
+QString Engine::activeAudioDevice() const
+{
+    return {};
+}
+
+void Engine::setAudioDevice(const QString &) {}
+
 void Engine::updateSource(const QUrl &url)
 {
     if (m_source == url)

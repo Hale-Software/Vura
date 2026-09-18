@@ -53,6 +53,15 @@ QString TrackInfo::displayName(int fallbackIndex) const
     return parts.join(QLatin1Char(' '));
 }
 
+QString AudioDeviceInfo::displayName() const
+{
+    if (description.isEmpty())
+        return QCoreApplication::translate("media", "Unnamed device");
+    if (isDefault)
+        return QCoreApplication::translate("media", "%1 (default)").arg(description);
+    return description;
+}
+
 QString formatTime(Msec ms)
 {
     if (ms < 0)
