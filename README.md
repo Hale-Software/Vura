@@ -15,7 +15,7 @@ version) - see the accompanying COPYING file for more details.
 Quick Links
 -----------
 
-- Publishing: [Guide](docs/PUBLISHING.md)
+- Creating a Release: [Guide](docs/RELEASE_PIPELINE.md)
 
 - Help/Documentation/Guides: https://github.com/Hale-Software/Vura/wiki
 
