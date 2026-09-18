@@ -1,19 +1,16 @@
-Vura
-=======================================================================
+# Vura
 
 [![Vura Build Status](https://github.com/Hale-Software/Vura/actions/workflows/push.yml/badge.svg)]
 [![Vura Translation Project Progress](https://badges.crowdin.net/vura/localized.svg)](https://crowdin.com/project/vura)
 
-What is Vura?
--------------------
+## What is Vura?
 
 Vura is a free and open source video player and editor designed for customization
 
 It's distributed under the GNU General Public License v3 (or any later
 version) - see the accompanying COPYING file for more details.
 
-Quick Links
------------
+## Quick Links
 
 - Creating a Release: [Guide](docs/RELEASE_PIPELINE.md)
 
@@ -29,8 +26,13 @@ Quick Links
 
 - Bug Tracker: https://github.com/Hale-Software/Vura/issues
 
-Contributing
-------------
+## Localization
+
+- [x] English
+- [ ] Spanish
+- [ ] German
+
+## Contributing
 
 - If you would like to help fund or sponsor the project, you can do so
   via `Patreon <https://www.patreon.com/vura>`_, `OpenCollective
