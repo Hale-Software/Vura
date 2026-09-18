@@ -39,8 +39,8 @@ public:
 
     void checkForPreviousCrashes();
 
-    signals:
-        void scanFinished(bool crashFileExists);
+signals:
+    void scanFinished(bool crashFileExists);
     void uploadStarted();
     void finished(bool success, const QString& message);
 

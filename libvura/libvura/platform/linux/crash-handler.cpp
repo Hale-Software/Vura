@@ -24,7 +24,13 @@ char CrashHandler::s_crashLogPath[1024] = {0};
 
 void CrashHandler::install()
 {
-    const QString crashDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug/crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    bool isDebugging = false;
+    if (QString(VURA_BUILD_TYPE) == "Debug")
+        isDebugging = true;
+    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
+        isDebugging = true;
+
+    const QString crashDir = isDebugging ? "debug/crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
 
     // Ensure the crash directory exists safely before a crash happens
     if (!QDir().mkpath(crashDir)) {

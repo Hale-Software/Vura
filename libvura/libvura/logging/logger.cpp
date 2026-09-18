@@ -53,8 +53,13 @@ void Logger::initLogFile()
     const QSettings settings;
     const int maxLogs = settings.value("maxLogFiles", 10).toInt();
 
-    const QString baseDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug" :
-                        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    bool isDebugging = false;
+    if (QString(VURA_BUILD_TYPE) == "Debug")
+        isDebugging = true;
+    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
+        isDebugging = true;
+
+    const QString baseDir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QDir logDir(baseDir + "/logs");
 
     if (!logDir.exists() && !logDir.mkpath(".")) {
@@ -119,6 +124,8 @@ void Logger::clearLogFile()
 
 QString Logger::formatMessage(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
+    QSettings settings;
+
     QString typeStr;
     switch (type) {
         case QtDebugMsg:    typeStr = "[DEBUG]"; break;
@@ -128,12 +135,44 @@ QString Logger::formatMessage(const QtMsgType type, const QMessageLogContext& co
         case QtFatalMsg:    typeStr = "[FATAL]"; break;
     }
 
-    return QString("[%1] [%2] [%3] [%4] %5 - %6")
-        .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
-        .arg(context.file ? context.file : "unknown")
-        .arg(context.line)
-        .arg(context.function ? context.function : "unknown")
-        .arg(typeStr, msg);
+    // Style 0: Very detailed.
+    // Style 1: Simplified.
+    // Style 2: Minimal.
+    // Default: Style 0.
+    const int logStyle = settings.value("logStyle", 0).toInt();
+    switch (logStyle) {
+        case 0:
+            return QString("[%1] [%2] [%3] [%4] %5 - %6")
+                    .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
+                    .arg(context.file ? context.file : "unknown")
+                    .arg(context.line)
+                    .arg(context.function ? context.function : "unknown")
+                    .arg(typeStr)
+                    .arg(msg);
+
+        case 1:
+            return QString("[%1] [%2] [%3] %4 - %5")
+                    .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
+                    .arg(context.file ? context.file : "unknown")
+                    .arg(context.line)
+                    .arg(typeStr)
+                    .arg(msg);
+
+        case 2:
+            return QString("[%1] %2 - %3")
+                    .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
+                    .arg(typeStr)
+                    .arg(msg);
+
+        default:
+            return QString("[%1] [%2] [%3] [%4] %5 - %6")
+                    .arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz"))
+                    .arg(context.file ? context.file : "unknown")
+                    .arg(context.line)
+                    .arg(context.function ? context.function : "unknown")
+                    .arg(typeStr)
+                    .arg(msg);
+    }
 }
 
 QList<LogMessage> Logger::getLogMessages() const
@@ -145,6 +184,15 @@ QList<LogMessage> Logger::getLogMessages() const
 
 void Logger::messageHandler(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
+    QSettings settings;
+    if (!settings.value("logQtMessages", false).toBool()) {
+        if (msg.contains("Using Qt multimedia with FFmpeg"))
+            return;
+
+        if (msg.contains("QVideoSink") && msg.contains("invalid nullptr parameter"))
+            return;
+    }
+
     Logger* logger = instance();
     const QString output = formatMessage(type, context, msg);
 

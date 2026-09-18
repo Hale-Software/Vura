@@ -26,8 +26,13 @@ void CrashReporter::checkForPreviousCrashes()
 {
     qDebug() << "Checking for previous application crashes...";
 
-    const QString crashDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug/crashes"
-        : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    bool isDebugging = false;
+    if (QString(VURA_BUILD_TYPE) == "Debug")
+        isDebugging = true;
+    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
+        isDebugging = true;
+
+    const QString crashDir = isDebugging ? "debug/crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
 
     const QDir dir(crashDir);
     if (!dir.exists()) {

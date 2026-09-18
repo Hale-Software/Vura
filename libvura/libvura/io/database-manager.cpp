@@ -40,8 +40,13 @@ bool DatabaseManager::initializeDatabase()
 {
     qDebug() << "Initializing database...";
 
-    const QString databaseDir = (QString(VURA_BUILD_TYPE) == "Debug") ? "debug"
-                                 : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    bool isDebugging = false;
+    if (QString(VURA_BUILD_TYPE) == "Debug")
+        isDebugging = true;
+    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
+        isDebugging = true;
+
+    const QString databaseDir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
     if (!QDir().mkpath(databaseDir)) {
         qCritical() << "Failed to create database directory: " << databaseDir;
