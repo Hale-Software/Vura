@@ -186,15 +186,10 @@ void VideoControlWidget::volumeLabelClicked()
     emit changeMuting(!m_playerMuted);
 }
 
-void VideoControlWidget::settingsButtonClicked()
-{
-
-}
+void VideoControlWidget::settingsButtonClicked() {}
 
 QIcon VideoControlWidget::setButtonIcon(const QString &buttonName, const int &theme)
 {
-    qDebug() << "Setting button icon...";
-
     if (buttonName == "play") {
         return QIcon(":/icons/play-white.png");
     }

@@ -69,8 +69,7 @@ HotkeysSettings::HotkeysSettings(QWidget *parent) : QWidget(parent), ui(new Ui::
     connect(ui->searchScope, &QComboBox::currentIndexChanged, this, &HotkeysSettings::searchScope_Changed);
     connect(ui->clearButton, &QPushButton::clicked, this, &HotkeysSettings::clearHotkey_Clicked);
     connect(ui->restoreButton, &QPushButton::clicked, this, &HotkeysSettings::restoreDefault_Clicked);
-    connect(ui->hotkeyView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &HotkeysSettings::selection_Changed);
+    connect(ui->hotkeyView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &HotkeysSettings::selection_Changed);
 
     connect(m_model, &HotkeyModel::modified, this, &HotkeysSettings::model_Modified);
     connect(m_model, &HotkeyModel::errorMessage, this, &HotkeysSettings::model_ErrorMessage);

@@ -73,7 +73,6 @@ bool AdvancedSettings::unsavedChanges()
         m_unsavedChanges = true;
     }
 
-    qDebug() << "Advanced Settings Unsaved Changes:" << m_unsavedChanges;
     return m_unsavedChanges;
 }
 

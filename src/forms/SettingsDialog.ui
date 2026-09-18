@@ -1,22 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  -     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
-  -
-  -     This program is free software: you can redistribute it and/or modify
-  -     it under the terms of the GNU General Public License as published by
-  -     the Free Software Foundation, either version 3 of the License, or
-  -     (at your option) any later version.
-  -
-  -     This program is distributed in the hope that it will be useful,
-  -     but WITHOUT ANY WARRANTY; without even the implied warranty of
-  -     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  -     GNU General Public License for more details.
-  -
-  -     You should have received a copy of the GNU General Public License
-  -     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -
-  -->
-
 <ui version="4.0">
  <class>SettingsDialog</class>
  <widget class="QDialog" name="SettingsDialog">
@@ -118,7 +100,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/general-settings.svg</normaloff>:/images/general-settings.svg</iconset>
+          <normaloff>:/icons/general-white.png</normaloff>:/icons/general-white.png</iconset>
         </property>
        </item>
        <item>
@@ -132,7 +114,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/player-settings.svg</normaloff>:/images/player-settings.svg</iconset>
+          <normaloff>:/icons/player2-white.png</normaloff>:/icons/player2-white.png</iconset>
         </property>
        </item>
        <item>
@@ -146,7 +128,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/playback-settings.svg</normaloff>:/images/playback-settings.svg</iconset>
+          <normaloff>:/icons/playback-white.png</normaloff>:/icons/playback-white.png</iconset>
         </property>
        </item>
        <item>
@@ -160,7 +142,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/interface-settings.svg</normaloff>:/images/interface-settings.svg</iconset>
+          <normaloff>:/icons/interface-white.png</normaloff>:/icons/interface-white.png</iconset>
         </property>
        </item>
        <item>
@@ -174,7 +156,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/hotkey-settings.svg</normaloff>:/images/hotkey-settings.svg</iconset>
+          <normaloff>:/icons/hotkeys-white.png</normaloff>:/icons/hotkeys-white.png</iconset>
         </property>
        </item>
        <item>
@@ -188,7 +170,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/playlist-settings.svg</normaloff>:/images/playlist-settings.svg</iconset>
+          <normaloff>:/icons/playlist-settings-white.png</normaloff>:/icons/playlist-settings-white.png</iconset>
         </property>
        </item>
        <item>
@@ -202,7 +184,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/association-settings.svg</normaloff>:/images/association-settings.svg</iconset>
+          <normaloff>:/icons/associations-white.png</normaloff>:/icons/associations-white.png</iconset>
         </property>
        </item>
        <item>
@@ -216,7 +198,7 @@
         </property>
         <property name="icon">
          <iconset resource="vura.qrc">
-          <normaloff>:/images/advanced-settings.svg</normaloff>:/images/advanced-settings.svg</iconset>
+          <normaloff>:/icons/advanced-white.png</normaloff>:/icons/advanced-white.png</iconset>
         </property>
        </item>
       </widget>

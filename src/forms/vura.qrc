@@ -21,11 +21,16 @@
         <file>styles/dark.qss</file>
         <file>styles/light.qss</file>
         <file>styles/nova.qss</file>
+        <file>icons/advanced-white.png</file>
+        <file>icons/associations-white.png</file>
         <file>icons/back-black.png</file>
         <file>icons/back-cyan.png</file>
         <file>icons/back-grey.png</file>
         <file>icons/back-white.png</file>
         <file>icons/file-drop.png</file>
+        <file>icons/general-white.png</file>
+        <file>icons/hotkeys-white.png</file>
+        <file>icons/interface-white.png</file>
         <file>icons/low-volume-black.png</file>
         <file>icons/low-volume-cyan.png</file>
         <file>icons/low-volume-grey.png</file>
@@ -54,9 +59,13 @@
         <file>icons/play-cyan.png</file>
         <file>icons/play-grey.png</file>
         <file>icons/play-white.png</file>
+        <file>icons/playback-white.png</file>
+        <file>icons/player2-white.png</file>
+        <file>icons/player-white.png</file>
         <file>icons/playlist-black.png</file>
         <file>icons/playlist-cyan.png</file>
         <file>icons/playlist-grey.png</file>
+        <file>icons/playlist-settings-white.png</file>
         <file>icons/playlist-white.png</file>
         <file>icons/question-orange.png</file>
         <file>icons/repeat-black.png</file>
