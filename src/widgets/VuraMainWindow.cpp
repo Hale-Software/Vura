@@ -23,6 +23,7 @@
 
 #include <ui-config.h>
 
+#include <libvura/io/playlist-io.h>
 #include <libvura/logging/logger.h>
 #include <libvura/media-controller.h>
 #include <libvura/models/playlist.h>
@@ -375,11 +376,6 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     //}
 }
 
-void VuraMainWindow::durationChanged(const qint64 duration)
-{
-
-}
-
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
 {
     qCCritical(Core) << "MediaPlayer Error: " << errorMessage;
@@ -594,12 +590,40 @@ void VuraMainWindow::actionFileOpenFolder()
 
 void VuraMainWindow::actionFileOpenPlaylist()
 {
+    QSettings settings;
 
+    const QString fileName = QFileDialog::getOpenFileName(
+        this,
+        tr("Open File"),
+        settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
+        "XSPF playlist (*.xspf);;M3U playlist (*.m3u);;M3U8 playlist (*.m3u8);;All Files (*.*)");
+
+    if (!fileName.isEmpty()) {
+        settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
+
+        QString error;
+        if (!playlistio::loadInto(m_controller->playlist(), fileName, &error)) {
+            qWarning() << "Error loading playlist: " << error;
+        }
+    }
 }
 
 void VuraMainWindow::actionFileSavePlaylist()
 {
+    QSettings settings;
 
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Playlist As"),
+        settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
+        tr("XSPF playlist (*.xspf);;M3U playlist (*.m3u);;M3U8 playlist (*.m3u8);;All Files (*.*)"));
+
+    if (!fileName.isEmpty()) {
+        QString error;
+        if (!playlistio::saveFrom(m_controller->playlist(), fileName, &error)) {
+            qWarning() << "Error saving playlist: " << error;
+        }
+    }
 }
 
 void VuraMainWindow::actionFileOpenRecentClear()
@@ -1440,7 +1464,7 @@ void VuraMainWindow::connectController()
 
     connect(m_controller, &MediaController::durationChanged, this, [this](media::Msec ms) {
         //m_videoSlider->setMaximum(ms);
-        durationChanged(ms);
+        //durationChanged(ms);
         m_videoSlider->setRange(0, int(ms));
         m_videoSliderWidget->durationChanged(ms);
     });

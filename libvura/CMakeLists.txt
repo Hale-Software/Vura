@@ -58,11 +58,13 @@ target_sources(
     libvura
     PUBLIC
     libvura/io/database-manager.h
+    libvura/io/playlist-io.h
     libvura/io/remuxer-thread.h
     #libvura/io/video-converter.h
 
     PRIVATE
     libvura/io/database-manager.cpp
+    libvura/io/playlist-io.cpp
     libvura/io/remuxer-thread.cpp
     #libvura/io/video-converter.cpp
 )

@@ -1,6 +1,5 @@
 # TODO
 
-- [ ] Playlist save/load
 - [ ] Media file/metadata information
 - [ ] Media converter
 - [ ] Save media from network url to file

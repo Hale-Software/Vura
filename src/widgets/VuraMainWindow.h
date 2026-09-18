@@ -171,7 +171,6 @@ public slots:
     void openPaths(const QList<QUrl> &urls);
     void stateChanged(media::PlaybackState state);
     void sourceChanged(const QUrl &source);
-    void durationChanged(qint64 duration);
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
     void resetVideoSliderVisibility();
