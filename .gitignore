@@ -37,5 +37,6 @@
 /cmake/.CMakeBuildNumber
 
 /scripts/.env
+/scripts/.idea
 
 *__pycache__*
