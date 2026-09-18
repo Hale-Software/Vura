@@ -24,7 +24,6 @@
 #include <QSize>
 
 #include <libvura/models/video-marker-record.h>
-#include <libvura/video-marker/video-marker-controller.h>
 
 
 class VideoSlider : public QWidget
@@ -32,7 +31,7 @@ class VideoSlider : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSlider(VideoMarkerController *videoMarkerController, QWidget *parent = nullptr);
+    explicit VideoSlider(QWidget *parent = nullptr);
 
     QSize minimumSizeHint() const override;
 
@@ -51,9 +50,17 @@ signals:
     void scrubFinished(qint64 ms);
     void requestThumbnail(int64_t hoverTimestamp);
 
+    /// Emitted when a marker is left-clicked. The seek itself is already
+    /// requested via scrubFinished(); this is for anything extra the window
+    /// wants to do (status bar text, selection highlight, ...).
+    void markerActivated(const VideoMarkerRecord &marker);
+    void markerEditRequested(const VideoMarkerRecord &marker);
+    void markerDeleteRequested(const VideoMarkerRecord &marker);
+    void markerTypeHidden(const QString &markerType);
+
 public slots:
-    void loadVideoMarkers();
-    void updateVideoSlider();
+    void loadVideoMarkers(QList<VideoMarkerRecord> markers);
+    void updateVideoSlider(QList<VideoMarkerRecord> markers);
     void setValue(int val);
     void setMinimum(int minimum);
     void setMaximum(int maximum);
@@ -64,22 +71,35 @@ public slots:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-
-    QRectF carrotHandleRect() const;
-    QRectF handleRect(int value) const;
+    void contextMenuEvent(QContextMenuEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    bool event(QEvent *event) override;
 
 private:
-    int valueForPosition(int x) const;
-    int validLength() const;
-    int valueFromPos(int x) const;
+    // Track geometry. Everything that maps between pixels and time goes
+    // through these so the playhead, the markers and the hit testing can
+    // never drift apart again.
+    int trackPadding() const;
+    int trackWidth() const;
+    int xForPercent(double percent) const;
+    double percentForX(int x) const;
 
-    VideoMarkerController *m_videoMarkerController;
+    int valueForPosition(int x) const;
+    qint64 msForMarker(const VideoMarkerRecord &marker) const;
+
+    /// Index into m_videoMarkers of the visible marker under pos, or -1.
+    int markerIndexAt(const QPoint &pos) const;
+    QString markerToolTip(const VideoMarkerRecord &marker) const;
+    void seekToMarker(const VideoMarkerRecord &marker);
+
     QList<VideoMarkerRecord> m_videoMarkers;
-    float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
+    float m_sliderPercent = 0.0f;
     int m_minimum;
     int m_maximum;
     int m_value;
+    int m_hoveredMarker = -1;
     bool m_showingMarkers;
     bool m_showingCumshotMarkers;
     bool m_showingCyanMarkers;
@@ -88,9 +108,6 @@ private:
     bool m_showingOrangeMarkers;
     bool m_showingSceneMarkers;
     bool m_showingStripMarkers;
-    int m_delta;
-    int m_interval;
-    double m_sliderBarHeightValue;
     bool m_scrubbing = false;
 
 };

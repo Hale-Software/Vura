@@ -19,7 +19,6 @@
 #include "VuraMainWindow.h"
 #include "ui_VuraMainWindow.h"
 
-#include "Slider.h"
 #include "PlaylistEmptyStateWidget.h"
 
 #include <ui-config.h>
@@ -97,13 +96,7 @@ int linearToSlider(qreal linear)
     return int(qRound(fraction * 100.0));
 }
 
-const QStringList kMediaFilters = {
-    QStringLiteral("Media files (*.mp4 *.mkv *.avi *.mov *.webm *.mp3 *.flac *.m4a *.ogg *.opus "
-                   "*.wav *.aac *.wmv *.mpg *.mpeg *.ts)"),
-    QStringLiteral("All files (*)"),
-};
-
-} // namespace
+}
 
 
 VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
@@ -116,7 +109,7 @@ VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
     setAcceptDrops(true);
 
     m_stage = new VideoStage(this);
-    setCentralWidget(m_stage);
+    ui->verticalLayout->addWidget(m_stage);
 
     m_controller->setVideoOutputProvider([this](media::Engine *engine) { return m_stage->outputFor(engine); });
 
@@ -143,7 +136,7 @@ void VuraMainWindow::closeEvent(QCloseEvent *event)
 {
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
-    //m_videoMarkerController->saveVideoMarkers();
+    m_videoMarkerController->saveVideoMarkers();
     event->accept();
 }
 
@@ -158,7 +151,7 @@ bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qin
         const auto msg = static_cast<MSG *>(message);
         if (msg->message == WM_NCLBUTTONDBLCLK)
         {
-            this->resize(1200, 700);
+            resize(887, 530);
             return true;
         }
     }
@@ -181,8 +174,7 @@ void VuraMainWindow::dropEvent(QDropEvent *event)
     if (urls.isEmpty())
         return;
 
-    bool replacePlaylist = false;
-    if (replacePlaylist)
+    if (m_replacePlaylist)
         openPaths(urls);
     else
         m_controller->enqueue(urls);
@@ -229,7 +221,7 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
         this->unsetCursor();
         m_videoSliderWidget->show();
         if (m_controller->playbackState() == media::PlaybackState::Playing) {
-            //m_videoSliderHideTimer->start();
+            m_videoSliderHideTimer->start();
         }
     } else if (event->type() == QEvent::MouseButtonDblClick) {
         if (m_controller->playbackState() == media::PlaybackState::Playing) {
@@ -244,16 +236,16 @@ bool VuraMainWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void VuraMainWindow::maximized()
 {
-    this->setWindowState(this->windowState() | Qt::WindowMaximized);
+    setWindowState(windowState() | Qt::WindowMaximized);
 }
 
 void VuraMainWindow::setMainWindowVisibility(const bool state)
 {
     if (state) {
-        this->show();
-        this->showNormal();
-        this->raise();
-        this->activateWindow();
+        show();
+        showNormal();
+        raise();
+        activateWindow();
     }
 }
 
@@ -265,8 +257,7 @@ void VuraMainWindow::openFile(const QString &file)
     }
     qDebug() << "Open file requested. File: " << file;
 
-    bool replacePlaylist = false;
-    if (replacePlaylist)
+    if (m_replacePlaylist)
         openPaths({QUrl::fromLocalFile(file)});
     else
         m_controller->enqueue({QUrl::fromLocalFile(file)});
@@ -287,8 +278,7 @@ void VuraMainWindow::openFolder(const QString &path)
         urls.append(QUrl::fromLocalFile(folderIterator.filePath()));
     }
 
-    bool replacePlaylist = false;
-    if (replacePlaylist)
+    if (m_replacePlaylist)
         openPaths(urls);
     else
         m_controller->enqueue(urls);
@@ -306,8 +296,7 @@ void VuraMainWindow::openNetworkStream(const QString& networkUrl)
     const QString formattedUrl = Helpers::networkUrlFormatter(networkUrl);
     qDebug() << "Cleaned Network URL: " << formattedUrl;
 
-    bool replacePlaylist = false;
-    if (replacePlaylist)
+    if (m_replacePlaylist)
         openPaths({QUrl(formattedUrl)});
     else
         m_controller->enqueue({QUrl(formattedUrl)});
@@ -315,13 +304,13 @@ void VuraMainWindow::openNetworkStream(const QString& networkUrl)
 
 void VuraMainWindow::stateChanged(const media::PlaybackState state)
 {
-    //if (state == media::PlaybackState::Playing && !m_videoSliderHideTimer->isActive()) {
-    //    m_videoSliderHideTimer->start();
-    //} else {
-    //    m_videoSliderHideTimer->stop();
-    //    m_videoSliderWidget->show();
-    //    this->unsetCursor();
-    //}
+    if (state == media::PlaybackState::Playing && !m_videoSliderHideTimer->isActive()) {
+        m_videoSliderHideTimer->start();
+    } else {
+        m_videoSliderHideTimer->stop();
+        m_videoSliderWidget->show();
+        this->unsetCursor();
+    }
 }
 
 void VuraMainWindow::sourceChanged(const QUrl &source)
@@ -333,6 +322,26 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     m_currentSource = source;
     m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
+
+    // Media Change Alert
+    const int showMediaChangeNotification = settings.value("showMediaChangeNotification", 1).toInt();
+    switch (showMediaChangeNotification) {
+        // Never alert
+        case 0:
+            break;
+            // Alert when minimized
+        case 1:
+            if (windowState() & Qt::WindowMinimized) {
+                QApplication::alert(this);
+            }
+            break;
+            // Always alert
+        case 2:
+            QApplication::alert(this);
+            break;
+        default:
+            break;
+    }
 
     // Continue playback
     //if (source.isLocalFile()) {
@@ -362,36 +371,16 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     //        }
     //    }
     //}
-
-    // Media Change Alert
-    const int showMediaChangeNotification = settings.value("showMediaChangeNotification", 1).toInt();
-    switch (showMediaChangeNotification) {
-        // Never alert
-        case 0:
-            break;
-        // Alert when minimized
-        case 1:
-            if (this->windowState() & Qt::WindowMinimized) {
-                QApplication::alert(this);
-            }
-            break;
-        // Always alert
-        case 2:
-            QApplication::alert(this);
-            break;
-        default:
-            break;
-    }
 }
 
 void VuraMainWindow::durationChanged(const qint64 duration)
 {
-    m_duration = static_cast<int>(duration) / 1000;
+
 }
 
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
 {
-    qCCritical(Core) << "QMediaPlayer Error: " << errorMessage;
+    qCCritical(Core) << "MediaPlayer Error: " << errorMessage;
     QMessageBox::critical(this, "Media Player Error", errorMessage);
 }
 
@@ -407,19 +396,19 @@ void VuraMainWindow::hideVideoSlider()
         case 0:
             break;
         case 1:
-            if (this->isFullScreen()) {
+            if (isFullScreen()) {
                 m_videoSliderWidget->hide();
-                this->setCursor(Qt::BlankCursor);
+                setCursor(Qt::BlankCursor);
             }
             break;
         case 2:
-            if (this->isMaximized()) {
+            if (isMaximized()) {
                 m_videoSliderWidget->hide();
-                this->setCursor(Qt::BlankCursor);
+                setCursor(Qt::BlankCursor);
             }
         case 3:
             m_videoSliderWidget->hide();
-            this->setCursor(Qt::BlankCursor);
+            setCursor(Qt::BlankCursor);
             break;
         default:
             break;
@@ -428,12 +417,12 @@ void VuraMainWindow::hideVideoSlider()
 
 void VuraMainWindow::resetVideoSliderVisibility()
 {
-    //m_videoSliderHideTimer->stop();
+    m_videoSliderHideTimer->stop();
     m_videoSliderWidget->show();
-    this->unsetCursor();
+    unsetCursor();
 
-    //if (m_controller->playbackState() == media::PlaybackState::Playing && !m_videoSliderHideTimer->isActive())
-    //    m_videoSliderHideTimer->start();
+    if (m_controller->playbackState() == media::PlaybackState::Playing && !m_videoSliderHideTimer->isActive())
+        m_videoSliderHideTimer->start();
 }
 
 void VuraMainWindow::updateCheckReplyFinished(QNetworkReply *reply)
@@ -492,8 +481,8 @@ void VuraMainWindow::openRecentFile()
             return;
         }
         qDebug() << "Open recent file requested. File: " << fileName;
-        bool replacePlaylist = false;
-        if (replacePlaylist)
+
+        if (m_replacePlaylist)
             openPaths({QUrl::fromLocalFile(fileName)});
         else
             m_controller->enqueue({QUrl::fromLocalFile(fileName)});
@@ -536,8 +525,8 @@ void VuraMainWindow::actionFileOpenFile()
 
     if (!fileName.isEmpty()) {
         settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
-        bool replacePlaylist = false;
-        if (replacePlaylist)
+
+        if (m_replacePlaylist)
             openPaths({QUrl::fromLocalFile(fileName)});
         else
             m_controller->enqueue({QUrl::fromLocalFile(fileName)});
@@ -564,8 +553,7 @@ void VuraMainWindow::actionFileOpenMultipleFiles()
         const QString& lastFile = files.last();
         settings.setValue("lastFileDirectory", QFileInfo(lastFile).path());
 
-        bool replacePlaylist = false;
-        if (replacePlaylist)
+        if (m_replacePlaylist)
             openPaths(urls);
         else
             m_controller->enqueue(urls);
@@ -595,8 +583,7 @@ void VuraMainWindow::actionFileOpenFolder()
         }
         settings.setValue("lastFileDirectory", QFileInfo(dir).path());
 
-        bool replacePlaylist = false;
-        if (replacePlaylist)
+        if (m_replacePlaylist)
             openPaths(urls);
         else
             m_controller->enqueue(urls);
@@ -616,9 +603,7 @@ void VuraMainWindow::actionFileSavePlaylist()
 void VuraMainWindow::actionFileOpenRecentClear()
 {
     QSettings settings;
-
     settings.remove("recentFileList");
-
     updateRecentFileActions();
 }
 
@@ -644,7 +629,11 @@ void VuraMainWindow::actionHelpCheckForUpdates()
 
 void VuraMainWindow::actionTestFunction()
 {
-    qDebug() << "Current Height: " << QString::number(height()) << ". Current Width: " << QString::number(width());
+    //qDebug() << "Current Height: " << QString::number(height()) << ". Current Width: " << QString::number(width());
+    if (m_replacePlaylist)
+        openPaths({QUrl::fromLocalFile("C:\\Users\\halea\\Vura-Testing\\test1.mp4")});
+    else
+        m_controller->enqueue({QUrl::fromLocalFile("C:\\Users\\halea\\Vura-Testing\\test1.mp4")});
 }
 
 void VuraMainWindow::actionOpenNetworkStream()
@@ -658,8 +647,7 @@ void VuraMainWindow::actionOpenNetworkStream()
             &ok);
 
     if (ok && !networkUrl.isEmpty()) {
-        bool replacePlaylist = false;
-        if (replacePlaylist)
+        if (m_replacePlaylist)
             openPaths({QUrl(networkUrl)});
         else
             m_controller->enqueue({QUrl(networkUrl)});
@@ -669,7 +657,7 @@ void VuraMainWindow::actionOpenNetworkStream()
 void VuraMainWindow::actionEmergencyClose()
 {
     m_controller->pause();
-    this->setWindowState(Qt::WindowMinimized);
+    setWindowState(Qt::WindowMinimized);
 }
 
 void VuraMainWindow::actionShowLogViewer()
@@ -686,20 +674,24 @@ void VuraMainWindow::actionToggleFullscreen()
 {
     if (isFullScreen()) {
         showNormal();
+        if (m_wasMaximized)
+            showMaximized();
 
+        unsetCursor();
         ui->menubar->show();
         m_videoSliderWidget->show();
         if (m_wasPlaylistShowing)
             m_playlistDock->show();
 
-    } else {
-        m_wasPlaylistShowing = m_playlistDock->isVisible();
-        showFullScreen();
-
-        ui->menubar->hide();
-        m_videoSliderWidget->hide();
-        m_playlistDock->hide();
+        return;
     }
+
+    m_wasMaximized = isMaximized();
+    m_wasPlaylistShowing = m_playlistDock->isVisible();
+    ui->menubar->hide();
+    m_videoSliderWidget->hide();
+    m_playlistDock->hide();
+    showFullScreen();
 }
 
 void VuraMainWindow::actionShowSettings()
@@ -713,7 +705,7 @@ void VuraMainWindow::actionShowSettings()
 
     connect(m_settingsDialog, &SettingsDialog::updateRequested, this, &VuraMainWindow::onUpdateConfirmed);
     connect(m_settingsDialog, &SettingsDialog::requiresRestart, this, [this]() {
-        emit restartProgram();
+        restartApplication();
     });
 }
 
@@ -752,55 +744,27 @@ void VuraMainWindow::actionViewTogglePlaylist()
 void VuraMainWindow::actionToggleVideoControls()
 {
     if (m_showingVideoControls) {
-        //ui->verticalLayout->removeWidget(m_videoControlWidget);
-        //delete m_videoControlWidget;
+        ui->verticalLayout->removeWidget(m_videoControlWidget);
+        delete m_videoControlWidget;
         m_showingVideoControls = false;
     } else {
-        //m_videoControlWidget = new VideoControlWidget(this);
-        //m_videoControlWidget->setMuted(m_controller->isMuted());
-        //m_videoControlWidget->setVolume(m_controller->volume());
+        m_videoControlWidget = new VideoControlWidget(this);
+        m_videoControlWidget->setMuted(m_controller->isMuted());
+        m_videoControlWidget->setVolume(m_controller->volume());
 
-        //ui->verticalLayout->addWidget(m_videoControlWidget);
+        ui->verticalLayout->addWidget(m_videoControlWidget);
 
-        //connect(m_controller, &MediaController::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
-        //connect(m_videoControlWidget, &VideoControlWidget::play, m_controller, &MediaController::play);
-        //connect(m_videoControlWidget, &VideoControlWidget::pause, m_controller, &MediaController::pause);
-        //connect(m_videoControlWidget, &VideoControlWidget::stop, m_controller, &MediaController::stop);
-        //connect(m_videoControlWidget, &VideoControlWidget::changeVolume, this, [this](int value) {
-        //    m_controller->setVolume(sliderToLinear(value));
-        //});
+        connect(m_controller, &MediaController::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
+        connect(m_videoControlWidget, &VideoControlWidget::play, m_controller, &MediaController::play);
+        connect(m_videoControlWidget, &VideoControlWidget::pause, m_controller, &MediaController::pause);
+        connect(m_videoControlWidget, &VideoControlWidget::stop, m_controller, &MediaController::stop);
+        connect(m_videoControlWidget, &VideoControlWidget::changeVolume, this, [this](int value) {
+            m_controller->setVolume(sliderToLinear(value));
+        });
 
         m_showingVideoControls = true;
     }
     ui->actionViewToggleVideoControls->setChecked(m_showingVideoControls);
-}
-
-void VuraMainWindow::populateAudioDevicesMenu()
-{
-    /*
-    ui->menuAudioDevice->clear();
-
-    auto* deviceGroup = new QActionGroup(this);
-    deviceGroup->setExclusive(true);
-
-    const QAudioDevice currentDevice = m_playbackController->getAudioOutput()->device();
-
-    for (const QAudioDevice &device : QMediaDevices::audioOutputs()) {
-        auto *action = new QAction(device.description(), this);
-        action->setCheckable(true);
-
-        if (device.id() == currentDevice.id()) {
-            action->setChecked(true);
-        }
-
-        deviceGroup->addAction(action);
-        ui->menuAudioDevice->addAction(action);
-
-        connect(action, &QAction::triggered, this, [this, device]() {
-            m_playbackController->getAudioOutput()->setDevice(device);
-        });
-    }
-    */
 }
 
 void VuraMainWindow::actionViewToggleStatusBar() const
@@ -822,6 +786,8 @@ void VuraMainWindow::actionViewToggleVideoResolution()
 
 void VuraMainWindow::actionViewMediaInformation()
 {
+    QMessageBox::information(this, tr("Information"), tr("This function is not implemented yet."));
+    return;
     if (m_mediaInformationDialog)
         m_mediaInformationDialog->close();
 
@@ -831,186 +797,6 @@ void VuraMainWindow::actionViewMediaInformation()
     //    m_mediaInformationDialog->setMetaData(*m_playbackController->getMetadata());
 
     m_mediaInformationDialog->show();
-}
-
-void VuraMainWindow::actionViewToggleMarkersCumshotMarkers()
-{
-    m_cumshotMarkerVisible = !m_cumshotMarkerVisible;
-    ui->actionViewToggleMarkersCumshotMarkers->setChecked(m_cumshotMarkerVisible);
-    m_videoMarkerController->setCumshotMarkerVisibility(m_cumshotMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("cumshot", m_cumshotMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersCyanMarkers()
-{
-    m_cyanMarkerVisible = !m_cyanMarkerVisible;
-    ui->actionViewToggleMarkersCyanMarkers->setChecked(m_cyanMarkerVisible);
-    m_videoMarkerController->setCyanMarkerVisibility(m_cyanMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("cyan", m_cyanMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersDialogMarkers()
-{
-    m_dialogMarkerVisible = !m_dialogMarkerVisible;
-    ui->actionViewToggleMarkersDialogMarkers->setChecked(m_dialogMarkerVisible);
-    m_videoMarkerController->setDialogMarkerVisibility(m_dialogMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("dialog", m_dialogMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersMagentaMarkers()
-{
-    m_magentaMarkerVisible = !m_magentaMarkerVisible;
-    ui->actionViewToggleMarkersMagentaMarkers->setChecked(m_magentaMarkerVisible);
-    m_videoMarkerController->setMagentaMarkerVisibility(m_magentaMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("magenta", m_magentaMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersMarkers()
-{
-    m_markerVisible = !m_markerVisible;
-    ui->actionViewToggleMarkersMarkers->setChecked(m_markerVisible);
-    m_videoMarkerController->setMarkerVisibility(m_markerVisible);
-    m_videoSlider->setMarkerTypeVisible("marker", m_markerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersOrangeMarkers()
-{
-    m_orangeMarkerVisible = !m_orangeMarkerVisible;
-    ui->actionViewToggleMarkersOrangeMarkers->setChecked(m_orangeMarkerVisible);
-    m_videoMarkerController->setOrangeMarkerVisibility(m_orangeMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("orange", m_orangeMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersSceneMarkers()
-{
-    m_sceneMarkerVisible = !m_sceneMarkerVisible;
-    ui->actionViewToggleMarkersSceneMarkers->setChecked(m_sceneMarkerVisible);
-    m_videoMarkerController->setSceneMarkerVisibility(m_sceneMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("scene", m_sceneMarkerVisible);
-}
-
-void VuraMainWindow::actionViewToggleMarkersStripMarkers()
-{
-    m_stripMarkerVisible = !m_stripMarkerVisible;
-    ui->actionViewToggleMarkersStripMarkers->setChecked(m_stripMarkerVisible);
-    m_videoMarkerController->setStripMarkerVisibility(m_stripMarkerVisible);
-    m_videoSlider->setMarkerTypeVisible("strip", m_stripMarkerVisible);
-}
-
-void VuraMainWindow::actionPlaybackModeDoNotLoopPlaylist()
-{
-    /*
-    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
-    if (mode == PlaylistController::DoNotLoopPlaylist) {
-        ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
-        return;
-    }
-
-    m_playlistController->setPlaybackMode(PlaylistController::DoNotLoopPlaylist);
-    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(true);
-    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
-    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeShuffle->setChecked(false);
-    */
-}
-
-void VuraMainWindow::actionPlaybackModeLoopCurrentTrack()
-{
-    /*
-    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
-    if (mode == PlaylistController::LoopCurrentVideo) {
-        ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
-        return;
-    }
-
-    m_playlistController->setPlaybackMode(PlaylistController::LoopCurrentVideo);
-    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeLoopCurrentTrack->setChecked(true);
-    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeShuffle->setChecked(false);
-    */
-}
-
-void VuraMainWindow::actionPlaybackModeLoopPlaylist()
-{
-    /*
-    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
-    if (mode == PlaylistController::LoopPlaylist) {
-        ui->actionPlaybackModeLoopPlaylist->setChecked(true);
-        return;
-    }
-
-    m_playlistController->setPlaybackMode(PlaylistController::LoopPlaylist);
-    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
-    ui->actionPlaybackModeLoopPlaylist->setChecked(true);
-    ui->actionPlaybackModeShuffle->setChecked(false);
-    */
-}
-
-void VuraMainWindow::actionPlaybackModeShuffle()
-{
-    /*
-    PlaylistController::PlaybackMode mode = m_playlistController->playbackMode();
-    if (mode == PlaylistController::Shuffle) {
-        ui->actionPlaybackModeShuffle->setChecked(true);
-        return;
-    }
-
-    m_playlistController->setPlaybackMode(PlaylistController::Shuffle);
-    ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
-    ui->actionPlaybackModeLoopPlaylist->setChecked(false);
-    ui->actionPlaybackModeShuffle->setChecked(true);
-    */
-}
-
-void VuraMainWindow::actionMarkersAddCumshotMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addCumshotMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddCyanMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addCyanMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddDialogMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addDialogMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddMagentaMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addMagentaMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddOrangeMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addOrangeMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddSceneMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addSceneMarker(sliderPercent);
-}
-
-void VuraMainWindow::actionMarkersAddStripMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoMarkerController->addStripMarker(sliderPercent);
 }
 
 void VuraMainWindow::actionMarkersClearIn() {}
@@ -1033,22 +819,16 @@ void VuraMainWindow::actionMarkersClearMarkers()
 
 void VuraMainWindow::actionMarkersClearOut() {}
 
-void VuraMainWindow::actionMarkersClearSelectedMarker()
-{
-    m_videoMarkerController->clearSelectedMarker(getSliderPercent());
-}
-
 void VuraMainWindow::actionMarkersEditSelectedMarker()
 {
-    qDebug() << "Current duration: " << m_duration;
-    const VideoMarkerRecord marker = m_videoMarkerController->getSelectedMarker(getSliderPercent());
+    const VideoMarkerRecord marker = m_videoMarkerController->getSelectedMarker();
     if (marker.id <= 0)
         return;
 
     if (m_markerEditDialog)
         m_markerEditDialog->close();
 
-    m_markerEditDialog = new MarkerEditDialog(marker, m_duration, this);
+    m_markerEditDialog = new MarkerEditDialog(marker, m_controller->duration(), this);
     m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
     m_markerEditDialog->show();
 
@@ -1063,19 +843,7 @@ void VuraMainWindow::actionMarkersEditSelectedMarker()
 
 void VuraMainWindow::actionMarkersGoToIn() {}
 
-void VuraMainWindow::actionMarkersGoToNextMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoSlider->goToNextMarker(sliderPercent);
-}
-
 void VuraMainWindow::actionMarkersGoToOut() {}
-
-void VuraMainWindow::actionMarkersGoToPreviousMarker() const
-{
-    const double sliderPercent = getSliderPercent();
-    m_videoSlider->goToPreviousMarker(sliderPercent);
-}
 
 void VuraMainWindow::actionMarkersMarkIn() {}
 
@@ -1083,20 +851,28 @@ void VuraMainWindow::actionMarkersMarkOut() {}
 
 void VuraMainWindow::actionSubtitlesOpenSubtitlesFile()
 {
-    QString filePath = QFileDialog::getOpenFileName(
+    QSettings settings;
+
+    const QString fileName = QFileDialog::getOpenFileName(
         this,
         tr("Open Subtitle File"),
-        "/home",
-        tr("All Files (*.*)")
-        );
+        settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString(),
+        tr("Subtitles (*.srt *.ass *.ssa *.vtt *.sub);;All files (*)"));
 
-    //if (!filePath.isEmpty())
-        //m_playbackController->setSubtitleFile(filePath);
+    if (fileName.isEmpty())
+        return;
+
+    if (m_controller->loadExternalSubtitle(QUrl::fromLocalFile(fileName)))
+        qDebug() << "Loaded external subtitle file: " << fileName;
+    else
+        qWarning() << "Failed to load external subtitle file: " << fileName;
+
+    settings.setValue("lastFileDirectory", QFileInfo(fileName).path());
 }
 
 void VuraMainWindow::actionSubtitlesToggleSubtitles(bool checked)
 {
-    //m_playbackController->setSubtitleEnabled(checked);
+    m_subtitlesEnabled = checked;
 }
 
 void VuraMainWindow::setCurrentFile(const QUrl &mediaUrl)
@@ -1106,6 +882,12 @@ void VuraMainWindow::setCurrentFile(const QUrl &mediaUrl)
     } else {
         updateRecentFilesList(mediaUrl.toString());
     }
+}
+
+void VuraMainWindow::restartApplication()
+{
+    qInfo() << "Restarting application...";
+    qApp->exit(0xA1);
 }
 
 void VuraMainWindow::openPaths(const QList<QUrl> &urls)
@@ -1154,19 +936,39 @@ void VuraMainWindow::buildMenus()
 
     updateRecentFileActions();
     
-    connect(ui->actionPlaybackModeDoNotLoopPlaylist, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeDoNotLoopPlaylist);
+    connect(ui->actionPlaybackModeDoNotLoopPlaylist, &QAction::toggled, this, [this](bool checked) {
+        if (checked) {
+            ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+            ui->actionPlaybackModeLoopPlaylist->setEnabled(false);
+            m_controller->playlist()->setRepeatMode(Playlist::RepeatMode::RepeatNone);
+        }
+    });
     this->addAction(ui->actionPlaybackModeDoNotLoopPlaylist);
     ui->actionPlaybackModeDoNotLoopPlaylist->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionPlaybackModeLoopCurrentTrack, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeLoopCurrentTrack);
+    connect(ui->actionPlaybackModeLoopCurrentTrack, &QAction::toggled, this, [this](bool checked) {
+        if (checked) {
+            ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+            ui->actionPlaybackModeLoopPlaylist->setEnabled(false);
+            m_controller->playlist()->setRepeatMode(Playlist::RepeatMode::RepeatOne);
+        }
+    });
     this->addAction(ui->actionPlaybackModeLoopCurrentTrack);
     ui->actionPlaybackModeLoopCurrentTrack->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionPlaybackModeLoopPlaylist, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeLoopPlaylist);
+    connect(ui->actionPlaybackModeLoopPlaylist, &QAction::toggled, this, [this](bool checked) {
+        if (checked) {
+            ui->actionPlaybackModeDoNotLoopPlaylist->setChecked(false);
+            ui->actionPlaybackModeLoopCurrentTrack->setChecked(false);
+            m_controller->playlist()->setRepeatMode(Playlist::RepeatMode::RepeatAll);
+        }
+    });
     this->addAction(ui->actionPlaybackModeLoopPlaylist);
     ui->actionPlaybackModeLoopPlaylist->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionPlaybackModeShuffle, &QAction::triggered, this, &VuraMainWindow::actionPlaybackModeShuffle);
+    connect(ui->actionPlaybackModeShuffle, &QAction::toggled, this, [this](bool checked) {
+        m_controller->playlist()->setShuffled(checked);
+    });
     this->addAction(ui->actionPlaybackModeShuffle);
     ui->actionPlaybackModeShuffle->setShortcutContext(Qt::WindowShortcut);
 
@@ -1453,38 +1255,6 @@ void VuraMainWindow::buildMenus()
     ui->actionPlaybackSpeedSlower->setShortcutContext(Qt::WindowShortcut);
 
 
-    // Marker Actions
-    connect(ui->actionMarkersAddCumshotMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddCumshotMarker);
-    this->addAction(ui->actionMarkersAddCumshotMarker);
-    ui->actionMarkersAddCumshotMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddCyanMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddCyanMarker);
-    this->addAction(ui->actionMarkersAddCyanMarker);
-    ui->actionMarkersAddCyanMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddDialogMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddDialogMarker);
-    this->addAction(ui->actionMarkersAddDialogMarker);
-    ui->actionMarkersAddDialogMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddMagentaMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddMagentaMarker);
-    this->addAction(ui->actionMarkersAddMagentaMarker);
-    ui->actionMarkersAddMagentaMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddMarker);
-    this->addAction(ui->actionMarkersAddMarker);
-    ui->actionMarkersAddMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddOrangeMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddOrangeMarker);
-    this->addAction(ui->actionMarkersAddOrangeMarker);
-    ui->actionMarkersAddOrangeMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddSceneMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddSceneMarker);
-    this->addAction(ui->actionMarkersAddSceneMarker);
-    ui->actionMarkersAddSceneMarker->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersAddStripMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersAddStripMarker);
-    this->addAction(ui->actionMarkersAddStripMarker);
-    ui->actionMarkersAddStripMarker->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionMarkersClearIn, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearIn);
     this->addAction(ui->actionMarkersClearIn);
@@ -1502,9 +1272,6 @@ void VuraMainWindow::buildMenus()
     this->addAction(ui->actionMarkersClearOut);
     ui->actionMarkersClearOut->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionMarkersClearSelectedMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersClearSelectedMarker);
-    this->addAction(ui->actionMarkersClearSelectedMarker);
-    ui->actionMarkersClearSelectedMarker->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionMarkersEditSelectedMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersEditSelectedMarker);
     this->addAction(ui->actionMarkersEditSelectedMarker);
@@ -1514,17 +1281,9 @@ void VuraMainWindow::buildMenus()
     this->addAction(ui->actionMarkersGoToIn);
     ui->actionMarkersGoToIn->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionMarkersGoToNextMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToNextMarker);
-    this->addAction(ui->actionMarkersGoToNextMarker);
-    ui->actionMarkersGoToNextMarker->setShortcutContext(Qt::WindowShortcut);
-
     connect(ui->actionMarkersGoToOut, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToOut);
     this->addAction(ui->actionMarkersGoToOut);
     ui->actionMarkersGoToOut->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionMarkersGoToPreviousMarker, &QAction::triggered, this, &VuraMainWindow::actionMarkersGoToPreviousMarker);
-    this->addAction(ui->actionMarkersGoToPreviousMarker);
-    ui->actionMarkersGoToPreviousMarker->setShortcutContext(Qt::WindowShortcut);
 
     connect(ui->actionMarkersMarkIn, &QAction::triggered, this, &VuraMainWindow::actionMarkersMarkIn);
     this->addAction(ui->actionMarkersMarkIn);
@@ -1538,38 +1297,6 @@ void VuraMainWindow::buildMenus()
     this->addAction(ui->actionFileConvertSave);
     ui->actionFileConvertSave->setShortcutContext(Qt::WindowShortcut);
 
-    connect(ui->actionViewToggleMarkersCumshotMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersCumshotMarkers);
-    this->addAction(ui->actionViewToggleMarkersCumshotMarkers);
-    ui->actionViewToggleMarkersCumshotMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersCyanMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersCyanMarkers);
-    this->addAction(ui->actionViewToggleMarkersCyanMarkers);
-    ui->actionViewToggleMarkersCyanMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersDialogMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersDialogMarkers);
-    this->addAction(ui->actionViewToggleMarkersDialogMarkers);
-    ui->actionViewToggleMarkersDialogMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersMagentaMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersMagentaMarkers);
-    this->addAction(ui->actionViewToggleMarkersMagentaMarkers);
-    ui->actionViewToggleMarkersMagentaMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersMarkers);
-    this->addAction(ui->actionViewToggleMarkersMarkers);
-    ui->actionViewToggleMarkersMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersOrangeMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersOrangeMarkers);
-    this->addAction(ui->actionViewToggleMarkersOrangeMarkers);
-    ui->actionViewToggleMarkersOrangeMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersSceneMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersSceneMarkers);
-    this->addAction(ui->actionViewToggleMarkersSceneMarkers);
-    ui->actionViewToggleMarkersSceneMarkers->setShortcutContext(Qt::WindowShortcut);
-
-    connect(ui->actionViewToggleMarkersStripMarkers, &QAction::triggered, this, &VuraMainWindow::actionViewToggleMarkersStripMarkers);
-    this->addAction(ui->actionViewToggleMarkersStripMarkers);
-    ui->actionViewToggleMarkersStripMarkers->setShortcutContext(Qt::WindowShortcut);
-
     connect(ui->actionSubtitlesOpenSubtitlesFile, &QAction::triggered, this, &VuraMainWindow::actionSubtitlesOpenSubtitlesFile);
     this->addAction(ui->actionSubtitlesOpenSubtitlesFile);
     ui->actionSubtitlesOpenSubtitlesFile->setShortcutContext(Qt::WindowShortcut);
@@ -1577,13 +1304,12 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionSubtitlesToggleSubtitles, &QAction::toggled, this, &VuraMainWindow::actionSubtitlesToggleSubtitles);
     this->addAction(ui->actionSubtitlesToggleSubtitles);
     ui->actionSubtitlesToggleSubtitles->setShortcutContext(Qt::WindowShortcut);
-
-    connect(&m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &VuraMainWindow::populateAudioDevicesMenu);
-    populateAudioDevicesMenu();
 }
 
 void VuraMainWindow::buildPlaylistDock()
 {
+    QSettings settings;
+
     m_playlistDock = new QDockWidget(tr("Playlist"), this);
     m_playlistDock->setObjectName(QStringLiteral("playlistDock"));
 
@@ -1597,17 +1323,21 @@ void VuraMainWindow::buildPlaylistDock()
     m_playlistDock->setWidget(m_playlistWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_playlistDock);
 
-    ui->actionViewTogglePlaylist->setChecked(m_playlistDock->isVisible());
+    if (settings.value("showPlaylistOnStart", true).toBool()) {
+        m_playlistDock->show();
+        ui->actionViewTogglePlaylist->setChecked(true);
+    } else {
+        m_playlistDock->hide();
+        ui->actionViewTogglePlaylist->setChecked(false);
+    }
 }
 
 void VuraMainWindow::initUI()
 {
     QSettings settings;
 
-    //ui->playlistWidget->setStyleSheet("QStackedWidget { border: 1px solid #878787; border-right: none; border-bottom: none; }");
-
-    const int defaultWindowHeight = settings.value("defaultWindowHeight", 550).toInt();
-    const int defaultWindowWidth = settings.value("defaultWindowWidth", 955).toInt();
+    const int defaultWindowHeight = settings.value("defaultWindowHeight", 530).toInt();
+    const int defaultWindowWidth = settings.value("defaultWindowWidth", 887).toInt();
     resize(defaultWindowWidth, defaultWindowHeight);
 
     if (settings.value("rememberWindowSize", false).toBool()) {
@@ -1615,51 +1345,81 @@ void VuraMainWindow::initUI()
         restoreGeometry(settings.value("geometry").toByteArray());
     }
 
-    m_videoMarkerController = new VideoMarkerController(this);
-    m_videoSlider = new VideoSlider(m_videoMarkerController, this);
-    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, this);
-    connect(m_videoMarkerController, &VideoMarkerController::markerAdded, m_videoSlider, &VideoSlider::updateVideoSlider);
-    connect(m_videoMarkerController, &VideoMarkerController::markersLoaded, m_videoSlider, &VideoSlider::loadVideoMarkers);
-    connect(m_videoMarkerController, &VideoMarkerController::markersUpdated, m_videoSlider, &VideoSlider::updateVideoSlider);
-    
+    m_videoSlider = new VideoSlider(this);
     connect(m_videoSlider, &VideoSlider::scrubbed, m_controller, [this](qint64 ms) {
         m_controller->seek(ms);
     });
     connect(m_videoSlider, &VideoSlider::scrubFinished, m_controller, [this](qint64 ms) {
         m_controller->seek(ms);
     });
+    connect(m_videoSlider, &VideoSlider::markerDeleteRequested, m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
+    connect(m_videoSlider, &VideoSlider::markerEditRequested, this, [this](const VideoMarkerRecord &marker) {
+        if (m_markerEditDialog)
+            m_markerEditDialog->close();
 
-    m_videoSliderDock = new QDockWidget(this);
-    m_videoSliderDock->setObjectName(QStringLiteral("videoSliderDock"));
+        m_markerEditDialog = new MarkerEditDialog(marker, m_controller->duration(), this);
+        m_markerEditDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        m_markerEditDialog->show();
 
-    m_videoSliderDock->setWidget(m_videoSliderWidget);
-    m_videoSliderDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
-    addDockWidget(Qt::BottomDockWidgetArea, m_videoSliderDock);
+        connect(m_markerEditDialog, &MarkerEditDialog::markerEdited, this, [this](const VideoMarkerRecord &m) {
+            m_videoMarkerController->addVideoMarker(m);
+        });
+        connect(m_markerEditDialog, &MarkerEditDialog::markerDeleted, this, [this](const VideoMarkerRecord &m) {
+            m_videoMarkerController->deleteVideoMarker(m);
+        });
+    });
+    connect(m_videoSlider, &VideoSlider::markerTypeHidden, this, [this](const QString &type) {
+        static const QHash<QString, QAction*> actions = {
+            {"marker",  ui->actionViewToggleMarkersMarkers},
+            {"cumshot", ui->actionViewToggleMarkersCumshotMarkers},
+            { "cyan", ui->actionViewToggleMarkersCyanMarkers},
+            { "dialog", ui->actionViewToggleMarkersDialogMarkers},
+            { "magenta", ui->actionViewToggleMarkersMagentaMarkers},
+            { "orange", ui->actionViewToggleMarkersOrangeMarkers},
+            { "scene", ui->actionViewToggleMarkersSceneMarkers},
+            { "strip", ui->actionViewToggleMarkersStripMarkers},
+        };
+        if (QAction *action = actions.value(type))
+            action->setChecked(false);
+    });
 
-    //ui->verticalLayout->addWidget(m_videoSliderWidget);
-    //ui->verticalLayout->setStretch(0, 1);
+    m_videoMarkerController = new VideoMarkerController(*m_videoSlider, this);
+    connect(ui->actionViewToggleMarkersCumshotMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setCumshotMarkerVisibility);
+    connect(ui->actionViewToggleMarkersCyanMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setCyanMarkerVisibility);
+    connect(ui->actionViewToggleMarkersDialogMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setDialogMarkerVisibility);
+    connect(ui->actionViewToggleMarkersMagentaMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setMagentaMarkerVisibility);
+    connect(ui->actionViewToggleMarkersMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setMarkerVisibility);
+    connect(ui->actionViewToggleMarkersOrangeMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setOrangeMarkerVisibility);
+    connect(ui->actionViewToggleMarkersSceneMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setSceneMarkerVisibility);
+    connect(ui->actionViewToggleMarkersStripMarkers, &QAction::toggled, m_videoMarkerController, &VideoMarkerController::setStripMarkerVisibility);
+    connect(ui->actionMarkersAddCumshotMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addCumshotMarker);
+    connect(ui->actionMarkersAddCyanMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addCyanMarker);
+    connect(ui->actionMarkersAddDialogMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addDialogMarker);
+    connect(ui->actionMarkersAddMagentaMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addMagentaMarker);
+    connect(ui->actionMarkersAddMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addMarker);
+    connect(ui->actionMarkersAddOrangeMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addOrangeMarker);
+    connect(ui->actionMarkersAddSceneMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addSceneMarker);
+    connect(ui->actionMarkersAddStripMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::addStripMarker);
+    connect(ui->actionMarkersClearSelectedMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::clearSelectedMarker);
+    connect(ui->actionMarkersGoToNextMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::goToNextMarker);
+    connect(ui->actionMarkersGoToPreviousMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::goToPreviousMarker);
 
-    //m_videoControlWidget = new VideoControlWidget(this);
-    //m_videoControlWidget->setMuted(m_controller->isMuted());
-    //m_videoControlWidget->setVolume(m_controller->volume());
 
-    //ui->verticalLayout->addWidget(m_videoControlWidget);
+    m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, this);
+    connect(m_controller, &MediaController::rateChanged, m_videoSliderWidget, &VideoSliderWidget::playbackRateChanged);
 
-    //connect(m_controller, &MediaController::playbackStateChanged, m_videoControlWidget, &VideoControlWidget::setState);
-    //connect(m_videoControlWidget, &VideoControlWidget::play, m_controller, &MediaController::play);
-    //connect(m_videoControlWidget, &VideoControlWidget::pause, m_controller, &MediaController::pause);
-    //connect(m_videoControlWidget, &VideoControlWidget::stop, m_controller, &MediaController::stop);
-    //connect(m_videoControlWidget, &VideoControlWidget::changeVolume, this, [this](int value) {
-    //    m_controller->setVolume(sliderToLinear(value));
-    //});
 
-    m_showingVideoControls = false;
-    ui->actionViewToggleVideoControls->setChecked(m_showingVideoControls);
+    ui->verticalLayout->addWidget(m_videoSliderWidget);
+    ui->verticalLayout->setStretch(0, 1);
 
-    //m_videoControlDock = new QDockWidget(tr("Video Control"), this);
-    //m_videoControlDock->setObjectName(QStringLiteral("videoControlDock"));
-    //m_videoControlDock->setWidget(m_videoControlWidget);
-    //addDockWidget(Qt::BottomDockWidgetArea, m_videoControlDock);
+    const int autoHideTimer = settings.value("sliderAutohideTime", 5).toInt() * 1000;
+    m_videoSliderHideTimer = new QTimer(this);
+    m_videoSliderHideTimer->setInterval(autoHideTimer);
+    m_videoSliderHideTimer->setSingleShot(true);
+    connect(m_videoSliderHideTimer, &QTimer::timeout, this, &VuraMainWindow::hideVideoSlider);
+
+    if (settings.value("showVideoControlsOnStart", false).toBool())
+        actionToggleVideoControls();
 }
 
 void VuraMainWindow::connectController()
@@ -1709,7 +1469,8 @@ void VuraMainWindow::connectController()
                 break;
 
             case media::MediaStatus::Invalid:
-                qCDebug(Playback) << "Media Status Changed: Invalid";
+                qCWarning(Playback) << "This file could not be played.";
+                QMessageBox::critical(this, tr("Error"), tr("This file could not be played."));
                 break;
 
             default:
@@ -1717,6 +1478,10 @@ void VuraMainWindow::connectController()
         }
     });
 
+    connect(m_controller, &MediaController::tracksChanged, this, &VuraMainWindow::rebuildTrackMenus);
+    connect(m_controller, &MediaController::audioDevicesChanged, this, &VuraMainWindow::rebuildAudioDeviceMenu);
+    connect(m_controller, &MediaController::backendChanged, this, [this] { rebuildAudioDeviceMenu(); });
+    rebuildAudioDeviceMenu();
     connect(m_controller, &MediaController::capabilitiesChanged, this, &VuraMainWindow::applyCapabilities);
 
     connect(m_controller, &MediaController::currentItemChanged, this, [this](const PlaylistItem &item) {
@@ -1743,7 +1508,8 @@ void VuraMainWindow::applyCapabilities(const media::Capabilities &capabilities)
 {
     ui->menuVideoTrack->setEnabled(capabilities.videoTrackSelection);
     ui->menuAudioTrack->setEnabled(capabilities.audioTrackSelection);
-    ui->menuSubtitleTrack->setEnabled(capabilities.subtitleTrackSelection);
+    //ui->menuSubtitleTrack->setEnabled(capabilities.subtitleTrackSelection);
+    ui->menuAudioDevice->setEnabled(capabilities.audioDeviceSelection);
 }
 
 void VuraMainWindow::rebuildTrackMenus()
@@ -1784,6 +1550,40 @@ void VuraMainWindow::rebuildTrackMenus()
     populate(ui->menuVideoTrack, media::TrackType::Video, true);
     populate(ui->menuAudioTrack, media::TrackType::Audio, true);
     populate(ui->menuSubtitleTrack, media::TrackType::Subtitle, true);
+}
+
+void VuraMainWindow::rebuildAudioDeviceMenu()
+{
+    QMenu *menu = ui->menuAudioDevice;
+    menu->clear();
+
+    auto *group = new QActionGroup(menu);
+    const QString active = m_controller->activeAudioDevice();
+
+    QAction *systemDefault = menu->addAction(tr("System Default"));
+    systemDefault->setCheckable(true);
+    systemDefault->setChecked(active.isEmpty());
+    group->addAction(systemDefault);
+    connect(systemDefault, &QAction::triggered, this,
+            [this] { m_controller->setAudioDevice({}); });
+
+    const auto devices = m_controller->audioDevices();
+    if (!devices.isEmpty())
+        menu->addSeparator();
+
+    for (const media::AudioDeviceInfo &device : devices) {
+        QAction *action = menu->addAction(device.displayName());
+        action->setCheckable(true);
+        action->setChecked(device.id == active);
+        group->addAction(action);
+        connect(action, &QAction::triggered, this,
+                [this, id = device.id] { m_controller->setAudioDevice(id); });
+    }
+
+    if (devices.isEmpty())
+        menu->addAction(tr("No audio devices"))->setEnabled(false);
+
+    menu->setEnabled(m_controller->capabilities().audioDeviceSelection);
 }
 
 void VuraMainWindow::updateRecentFilesList(const QString &fileName)
@@ -1835,98 +1635,7 @@ QString VuraMainWindow::trackName(const QMediaMetaData &metaData, const int inde
 
 void VuraMainWindow::updateMarkerMenuItems()
 {
-    ui->actionMarkersEditSelectedMarker->setEnabled(checkMarkerProximity());
-}
-
-VideoMarkerRecord VuraMainWindow::findNearestVisibleMarker(const double sliderPercent, const double markerRange) const
-{
-    VideoMarkerRecord best;
-    best.timestampMs = std::numeric_limits<double>::quiet_NaN();
-
-    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
-        if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) continue;
-        const double dist = std::abs(marker.timestampMs - sliderPercent);
-        if (dist > markerRange) continue;
-        if (std::isnan(best.timestampMs) || dist < std::abs(best.timestampMs - sliderPercent))
-            best = marker;
-    }
-    return best;
-}
-
-double VuraMainWindow::getSliderPercent() const
-{
-    const double distanceFromMin = m_videoSlider->value() - m_videoSlider->minimum();
-    const double sliderRange = m_videoSlider->maximum() - m_videoSlider->minimum();
-    return distanceFromMin / sliderRange;
-}
-
-bool VuraMainWindow::checkMarkerProximity() const
-{
-    const QSettings settings;
-    const double sliderPercent = getSliderPercent();
-    double markerProximityThreshold = settings.value("markerProximityThreshold", 0.005).toDouble();
-
-    const auto isVisibleMarkerNearSlider = [this, sliderPercent, markerProximityThreshold](const VideoMarkerRecord &marker) {
-        if (!m_videoSlider->getMarkerTypesVisible(marker.markerType)) {
-            return false;
-        }
-
-        const double distanceToSlider = std::abs(marker.timestampMs - sliderPercent);
-        return distanceToSlider <= markerProximityThreshold;
-    };
-
-    return std::any_of(
-        m_videoMarkerController->getVideoMarkers().cbegin(),
-        m_videoMarkerController->getVideoMarkers().cend(),
-        isVisibleMarkerNearSlider);
-}
-
-bool VuraMainWindow::isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const
-{
-    VideoMarkerRecord previousMarker;
-    previousMarker.timestampMs = std::numeric_limits<double>::quiet_NaN();
-
-    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
-        if (marker.timestampMs < videoMarker.timestampMs) {
-            if (std::isnan(previousMarker.timestampMs)) {
-                previousMarker = marker;
-
-            } else {
-                if (marker.timestampMs > previousMarker.timestampMs) {
-                    previousMarker = marker;
-                }
-            }
-        }
-    }
-
-    if (std::isnan(previousMarker.timestampMs)) {
-        return false;
-    }
-    return true;
-}
-
-bool VuraMainWindow::isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const
-{
-    VideoMarkerRecord nextMarker;
-    nextMarker.timestampMs = std::numeric_limits<double>::quiet_NaN();
-
-    for (const VideoMarkerRecord &marker : m_videoMarkerController->getVideoMarkers()) {
-        if (marker.timestampMs > videoMarker.timestampMs) {
-            if (std::isnan(nextMarker.timestampMs)) {
-                nextMarker = marker;
-
-            } else {
-                if (marker.timestampMs < nextMarker.timestampMs) {
-                    nextMarker = marker;
-                }
-            }
-        }
-    }
-
-    if (std::isnan(nextMarker.timestampMs)) {
-        return false;
-    }
-    return true;
+    ui->actionMarkersEditSelectedMarker->setEnabled(m_videoMarkerController->checkMarkerProximity());
 }
 
 void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash)
@@ -2043,13 +1752,9 @@ void VuraMainWindow::configureUpdater()
 void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
 {
     QSettings settings;
-    if (m_continuePlaybackDock) {
-        m_continuePlaybackDock->deleteLater();
-        m_continuePlaybackDock = nullptr;
-    }
 
-    m_continuePlaybackDock = new QDockWidget(tr("Continue Playback"), this);
-    m_continuePlaybackDock->setObjectName(QStringLiteral("continuePlaybackDock"));
+    if (m_continuePlaybackWidget)
+        m_continuePlaybackWidget->deleteLater();
 
     m_continuePlaybackWidget = new ContinuePlaybackWidget(savedPosition, this);
     connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::continuePlayback, this, &VuraMainWindow::continuePlaybackAccepted);
@@ -2069,11 +1774,8 @@ void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
         }
     });
 
-    m_continuePlaybackDock->setWidget(m_continuePlaybackWidget);
-    addDockWidget(Qt::TopDockWidgetArea, m_continuePlaybackDock);
-
-    //ui->verticalLayout->insertWidget(0, m_continuePlaybackWidget);
-    //ui->verticalLayout->setStretch(1, 1);
+    ui->verticalLayout->insertWidget(0, m_continuePlaybackWidget);
+    ui->verticalLayout->setStretch(1, 1);
 
     if (m_continuePlaybackBannerTimer) {
         m_continuePlaybackBannerTimer->stop();
@@ -2102,37 +1804,33 @@ void VuraMainWindow::continuePlaybackAccepted(const qint64 savedPosition)
 
 void VuraMainWindow::continuePlaybackDelete()
 {
-    if (m_continuePlaybackDock) {
-        m_continuePlaybackDock->deleteLater();
-        m_continuePlaybackDock = nullptr;
-    }
-    //if (ui->verticalLayout->indexOf(m_continuePlaybackWidget) != -1)
-    //    ui->verticalLayout->removeWidget(m_continuePlaybackWidget);
+    if (ui->verticalLayout->indexOf(m_continuePlaybackWidget) != -1)
+        ui->verticalLayout->removeWidget(m_continuePlaybackWidget);
 
-    //if (m_continuePlaybackWidget) {
-    //    m_continuePlaybackWidget->deleteLater();
-    //    m_continuePlaybackWidget = nullptr;
-    //}
+    if (m_continuePlaybackWidget) {
+        m_continuePlaybackWidget->deleteLater();
+        m_continuePlaybackWidget = nullptr;
+    }
 }
 
 void VuraMainWindow::systemTray_Clicked()
 {
-    if (this->isHidden() || this->isMinimized()) {
-        this->showNormal();
-        this->activateWindow();
+    if (isHidden() || isMinimized()) {
+        showNormal();
+        activateWindow();
     }
 }
 
 void VuraMainWindow::systemTray_Hide(const bool hiding)
 {
     if (hiding) {
-        this->hide();
+        hide();
         m_controller->pause();
 
     } else {
-        this->show();
-        this->showNormal();
-        this->raise();
-        this->activateWindow();
+        show();
+        showNormal();
+        raise();
+        activateWindow();
     }
 }

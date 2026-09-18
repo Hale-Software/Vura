@@ -1,0 +1,98 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
+#pragma once
+
+#include <QObject>
+#include <QStandardPaths>
+#include <QDebug>
+
+#include <libvura/io/database-manager.h>
+#include <libvura/models/video-marker-record.h>
+#include <libvura/util/crypto.h>
+
+#include "VideoSlider.h"
+
+
+class VideoMarkerController : public QObject
+{
+    Q_OBJECT
+public:
+    explicit VideoMarkerController(VideoSlider &slider, QObject* parent = nullptr);
+
+    QList<VideoMarkerRecord> getVideoMarkers() const;
+    bool checkMarkerProximity() const;
+
+signals:
+    void markerEdited(const VideoMarkerRecord &videoMarker);
+    void loadMarkers(QList<VideoMarkerRecord> markers);
+    void updateVideoSlider(QList<VideoMarkerRecord> markers);
+
+public slots:
+    void setCumshotMarkerVisibility(bool visible);
+    void setCyanMarkerVisibility(bool visible);
+    void setDialogMarkerVisibility(bool visible);
+    void setMagentaMarkerVisibility(bool visible);
+    void setMarkerVisibility(bool visible);
+    void setOrangeMarkerVisibility(bool visible);
+    void setSceneMarkerVisibility(bool visible);
+    void setStripMarkerVisibility(bool visible);
+    void saveVideoMarkers() const;
+    void loadVideoMarkers(const QUrl &source);
+    void addCumshotMarker();
+    void addCyanMarker();
+    void addDialogMarker();
+    void addMagentaMarker();
+    void addMarker();
+    void addOrangeMarker();
+    void addSceneMarker();
+    void addStripMarker();
+    void addVideoMarker(const VideoMarkerRecord &videoMarker);
+    VideoMarkerRecord getSelectedMarker();
+    void deleteVideoMarker(const VideoMarkerRecord &videoMarker);
+    void clearSelectedMarker();
+    void clearMarkers();
+    void goToNextMarker();
+    void goToPreviousMarker();
+
+
+private:
+    VideoMarkerRecord findNearestVisibleMarker(double sliderPercent, double markerRange) const;
+    double getSliderPercent() const;
+    bool isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
+    bool isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
+    VideoMarkerRecord findNearestMarker(double sliderPercent);
+    void refreshVideoMarkers();
+
+    VideoSlider *m_slider = nullptr;
+    DatabaseManager *m_databaseManager = nullptr;
+
+    QList<VideoMarkerRecord> m_videoMarkers;
+    QString m_videoMarkersFile;
+    QString m_sourceName;
+
+    bool m_cumshotMarkerVisible = true;
+    bool m_cyanMarkerVisible = true;
+    bool m_dialogMarkerVisible = true;
+    bool m_magentaMarkerVisible = true;
+    bool m_markerVisible = true;
+    bool m_orangeMarkerVisible = true;
+    bool m_sceneMarkerVisible = true;
+    bool m_stripMarkerVisible = true;
+
+};

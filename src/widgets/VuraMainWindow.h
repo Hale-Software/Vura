@@ -21,18 +21,17 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QMimeData>
-#include <QMediaDevices>
-#include <QAudioDevice>
 
 #include <libvura/libvura.h>
 #include <libvura/settings.h>
 #include <libvura/hotkeys/hotkey-manager.h>
-#include <libvura/video-marker/video-marker-controller.h>
 #include <libvura/models/video-marker-record.h>
 #include <libvura/platform/updater.h>
 #include <libvura/helpers.h>
 #include <libvura/media/types.h>
 #include <libvura/media/engine-factory.h>
+#include <libvura/models/subtitle-cue.h>
+#include <libvura/playback/subtitle-track.h>
 
 #include "HelpDialog.h"
 #include "AboutDialog.h"
@@ -45,6 +44,7 @@
 #include "MediaInformationDialog.h"
 #include "UpdateChecker.h"
 
+#include "VideoMarkerController.h"
 #include "VideoSlider.h"
 #include "PlaylistWidget.h"
 #include "SystemTrayWidget.h"
@@ -109,7 +109,6 @@ protected:
     void changeEvent(QEvent *event) override;
 
 signals:
-    void restartProgram();
     void quitProgram();
 
 private slots:
@@ -136,45 +135,21 @@ private slots:
     void actionViewToggleStatusBar() const;
     void actionViewToggleVideoResolution();
     void actionViewMediaInformation();
-    void actionViewToggleMarkersCumshotMarkers();
-    void actionViewToggleMarkersCyanMarkers();
-    void actionViewToggleMarkersDialogMarkers();
-    void actionViewToggleMarkersMagentaMarkers();
-    void actionViewToggleMarkersMarkers();
-    void actionViewToggleMarkersOrangeMarkers();
-    void actionViewToggleMarkersSceneMarkers();
-    void actionViewToggleMarkersStripMarkers();
 
     // Playback Menu
-    void actionPlaybackModeDoNotLoopPlaylist();
-    void actionPlaybackModeLoopCurrentTrack();
-    void actionPlaybackModeLoopPlaylist();
-    void actionPlaybackModeShuffle();
 
     // Markers Menu
-    void actionMarkersAddCumshotMarker() const;
-    void actionMarkersAddCyanMarker() const;
-    void actionMarkersAddDialogMarker() const;
-    void actionMarkersAddMagentaMarker() const;
-    void actionMarkersAddMarker() const;
-    void actionMarkersAddOrangeMarker() const;
-    void actionMarkersAddSceneMarker() const;
-    void actionMarkersAddStripMarker() const;
     void actionMarkersClearIn();
     void actionMarkersClearInOut();
     void actionMarkersClearMarkers();
     void actionMarkersClearOut();
-    void actionMarkersClearSelectedMarker();
     void actionMarkersEditSelectedMarker();
     void actionMarkersGoToIn();
-    void actionMarkersGoToNextMarker() const;
     void actionMarkersGoToOut();
-    void actionMarkersGoToPreviousMarker() const;
     void actionMarkersMarkIn();
     void actionMarkersMarkOut();
 
     // Audio Menu
-    void populateAudioDevicesMenu();
 
     // Video Menu
     void actionToggleFullscreen();
@@ -192,6 +167,7 @@ private slots:
 
 
 public slots:
+    void restartApplication();
     void openPaths(const QList<QUrl> &urls);
     void stateChanged(media::PlaybackState state);
     void sourceChanged(const QUrl &source);
@@ -220,6 +196,7 @@ private:
 
     void applyCapabilities(const media::Capabilities &capabilities);
     void rebuildTrackMenus();
+    void rebuildAudioDeviceMenu();
 
     void updateRecentFilesList(const QString &fileName);
 
@@ -228,11 +205,6 @@ private:
     void setApplicationWindowTitle();
 
     void updateMarkerMenuItems();
-    VideoMarkerRecord findNearestVisibleMarker(double sliderPercent, double markerRange) const;
-    double getSliderPercent() const;
-    bool checkMarkerProximity() const;
-    bool isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
-    bool isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
 
     void configureUpdater();
     void showResumeOverlay(qint64 savedPosition);
@@ -243,30 +215,44 @@ private:
     SleepInhibitor *m_sleepInhibitor = nullptr;
     VideoStage *m_stage = nullptr;
     QDockWidget *m_playlistDock = nullptr;
-    QDockWidget *m_videoSliderDock = nullptr;
-    QDockWidget *m_videoControlDock = nullptr;
-    QDockWidget *m_continuePlaybackDock = nullptr;
     PlaylistWidget *m_playlistWidget = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
     ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
     VideoMarkerController *m_videoMarkerController = nullptr;
     VideoSlider *m_videoSlider = nullptr;
-
-    bool m_wasMaximized = false;
-
+    SubtitleTrack* m_subtitleTrack = nullptr;
+    SubtitleCue* m_currentCue = nullptr;
+    CrashReporter *m_crashReporter = nullptr;
 
     QNetworkAccessManager *m_updateNetworkManager = nullptr;
+    QAction *m_recentFileActions[10];
+    QAction *m_recentFilesSeparator;
+    QTimer *m_videoSliderHideTimer = nullptr;
+    QTimer *m_continuePlaybackBannerTimer = nullptr;
+    QUrl m_currentSource;
+    QPointer<QFrame> m_resumeOverlay;
 
-    //VideoMarkerController *m_videoMarkerController = nullptr;
-    //VideoSlider *m_videoSlider = nullptr;
-    //VideoSliderWidget *m_videoSliderWidget = nullptr;
-    //VideoControlWidget *m_videoControlWidget = nullptr;
-    //ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
-
-    //PlaylistController *m_playlistController = nullptr;
-    //PlaybackController *m_playbackController = nullptr;
-    //SystemTrayWidget *m_systemTray = nullptr;
+    bool m_replacePlaylist = false;
+    bool m_wasMaximized = false;
+    bool m_subtitlesEnabled = false;
+    bool m_showingVideoControls = false;
+    bool m_wasPlaylistShowing = false;
+    bool m_cumshotMarkerVisible = true;
+    bool m_cyanMarkerVisible = true;
+    bool m_dialogMarkerVisible = true;
+    bool m_magentaMarkerVisible = true;
+    bool m_markerVisible = true;
+    bool m_orangeMarkerVisible = true;
+    bool m_sceneMarkerVisible = true;
+    bool m_stripMarkerVisible = true;
+    qint64 m_lastPosition = 0;
+    qint64 m_subtitleOffsetMs = 0;
+    static const int MaxRecentFiles = 10;
+    int m_inMarker = 0;
+    int m_outMarker = 0;
+    QString m_trackInfo;
+    QString m_statusInfo;
 
     QPointer<HelpDialog> m_helpDialog;
     QPointer<AboutDialog> m_aboutDialog;
@@ -277,35 +263,5 @@ private:
     QPointer<MarkerEditDialog> m_markerEditDialog;
     QPointer<ConvertMediaDialog> m_convertMediaDialog;
     QPointer<MediaInformationDialog> m_mediaInformationDialog;
-
-    QAction *m_recentFileActions[10];
-    QAction *m_recentFilesSeparator;
-    //QTimer *m_videoSliderHideTimer = nullptr;
-    QTimer *m_continuePlaybackBannerTimer = nullptr;
-    QMediaDevices m_mediaDevices;
-    static const int MaxRecentFiles = 10;
-    QString m_trackInfo;
-    QString m_statusInfo;
-    qint64 m_lastPosition = 0;
-    bool m_showingVideoControls = false;
-    bool m_wasPlaylistShowing = false;
-    int m_inMarker = 0;
-    int m_outMarker = 0;
-    int m_duration = 0;
-    //PlaybackState m_currentPlaybackState = Stopped;
-    QUrl m_currentSource;
-    QPointer<QFrame> m_resumeOverlay;
-
-    //VuraMediaEngine *m_openGLWidget = nullptr;
-    CrashReporter *m_crashReporter = nullptr;
-
-    bool m_cumshotMarkerVisible = true;
-    bool m_cyanMarkerVisible = true;
-    bool m_dialogMarkerVisible = true;
-    bool m_magentaMarkerVisible = true;
-    bool m_markerVisible = true;
-    bool m_orangeMarkerVisible = true;
-    bool m_sceneMarkerVisible = true;
-    bool m_stripMarkerVisible = true;
 
 };

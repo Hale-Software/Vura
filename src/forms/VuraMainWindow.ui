@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>955</width>
-    <height>550</height>
+    <width>887</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,13 +21,37 @@
    <property name="acceptDrops">
     <bool>true</bool>
    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>955</width>
+     <width>887</width>
      <height>33</height>
     </rect>
    </property>
@@ -197,7 +221,7 @@
     </widget>
     <widget class="QMenu" name="menuAudioTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Audio Track</string>
@@ -216,7 +240,7 @@
     </property>
     <widget class="QMenu" name="menuVideoTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Video Track</string>
@@ -276,7 +300,7 @@
     </property>
     <widget class="QMenu" name="menuSubtitleTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Subtitle Track</string>
