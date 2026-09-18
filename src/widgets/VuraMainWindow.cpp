@@ -119,8 +119,8 @@ VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
     initSystemTray();
     buildMenus();
     buildPlaylistDock();
-    connectController();
     initUI();
+    connectController();
     initMisc();
 
     applyCapabilities(m_controller->capabilities());
@@ -404,6 +404,7 @@ void VuraMainWindow::hideVideoSlider()
                 m_videoSliderWidget->hide();
                 setCursor(Qt::BlankCursor);
             }
+            break;
         case 3:
             m_videoSliderWidget->hide();
             setCursor(Qt::BlankCursor);
@@ -1378,7 +1379,6 @@ void VuraMainWindow::initUI()
     connect(m_videoSlider, &VideoSlider::scrubFinished, m_controller, [this](qint64 ms) {
         m_controller->seek(ms);
     });
-    connect(m_videoSlider, &VideoSlider::markerDeleteRequested, m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
     connect(m_videoSlider, &VideoSlider::markerEditRequested, this, [this](const VideoMarkerRecord &marker) {
         if (m_markerEditDialog)
             m_markerEditDialog->close();
@@ -1429,6 +1429,8 @@ void VuraMainWindow::initUI()
     connect(ui->actionMarkersClearSelectedMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::clearSelectedMarker);
     connect(ui->actionMarkersGoToNextMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::goToNextMarker);
     connect(ui->actionMarkersGoToPreviousMarker, &QAction::triggered, m_videoMarkerController, &VideoMarkerController::goToPreviousMarker);
+
+    connect(m_videoSlider, &VideoSlider::markerDeleteRequested, m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
 
 
     m_videoSliderWidget = new VideoSliderWidget(*m_videoSlider, this);
@@ -1513,6 +1515,10 @@ void VuraMainWindow::connectController()
     connect(m_controller, &MediaController::currentItemChanged, this, [this](const PlaylistItem &item) {
         sourceChanged(item.url);
         m_stage->setCaption(item.displayTitle());
+        setApplicationWindowTitle();
+    });
+
+    connect(m_controller, &MediaController::metaDataChanged, this, [this](const QVariantMap &) {
         setApplicationWindowTitle();
     });
 
@@ -1630,7 +1636,7 @@ void VuraMainWindow::updateRecentFilesList(const QString &fileName)
 void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 {
     m_trackInfo = trackInfo;
-    this->setWindowTitle("Vura - " + trackInfo);
+    //this->setWindowTitle("Vura - " + trackInfo);
 }
 
 void VuraMainWindow::setApplicationWindowTitle()

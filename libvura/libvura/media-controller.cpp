@@ -46,10 +46,6 @@ MediaController::MediaController(QObject *parent)
     m_seekTimer->setInterval(kSeekCoalesceMs);
     connect(m_seekTimer, &QTimer::timeout, this, &MediaController::flushSeek);
 
-    connect(m_playlist, &Playlist::currentIndexChanged, this, [this](int index) {
-        emit currentItemChanged(m_playlist->itemAt(index));
-    });
-
     QString error;
     setBackend(media::Backend::Auto, &error);
 }
@@ -265,9 +261,18 @@ void MediaController::loadCurrentItem(bool autoPlay)
     if (item.url.isEmpty())
         return;
 
+    m_seekTimer->stop();
+    m_pendingSeek = -1;
+    m_position = 0;
+    m_duration = 0;
     m_lastEmittedPosition = -1;
+    m_currentUrl = item.url;                   // new member
+    m_currentTitle = item.displayTitle();      // new member
     m_autoPlayPending = autoPlay;
     m_resumeTarget = m_resumeStore->positionFor(item.url);
+
+    emit positionChanged(0);
+    emit durationChanged(0);
 
     m_engine->setSource(item.url);
     emit currentItemChanged(item);
@@ -482,9 +487,9 @@ void MediaController::setAudioDevice(const QString &id)
 
 void MediaController::rememberPosition()
 {
-    if (!m_engine || m_engine->source().isEmpty())
+    if (m_currentUrl.isEmpty() || m_duration <= 0)
         return;
-    m_resumeStore->remember(m_engine->source(), m_position, m_duration);
+    m_resumeStore->remember(m_currentUrl, m_position, m_duration);
 }
 
 media::PlaybackState MediaController::playbackState() const
@@ -505,15 +510,4 @@ bool MediaController::isSeekable() const
 qreal MediaController::rate() const
 {
     return m_engine ? m_engine->rate() : 1.0;
-}
-
-QString MediaController::currentTitle() const
-{
-    if (m_engine) {
-        const QString title =
-                m_engine->metadata().value(QLatin1String(media::meta::Title)).toString();
-        if (!title.isEmpty())
-            return title;
-    }
-    return m_playlist->currentItem().displayTitle();
 }

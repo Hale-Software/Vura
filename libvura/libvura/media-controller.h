@@ -83,7 +83,7 @@ public:
     qreal rate() const;
     qreal volume() const { return m_volume; }
     bool isMuted() const { return m_muted; }
-    QString currentTitle() const;
+    QString currentTitle() const { return m_currentTitle; }
     QVector<media::AudioDeviceInfo> audioDevices() const;
     QString activeAudioDevice() const;
 
@@ -150,6 +150,8 @@ private:
     media::Msec m_position = 0;
     media::Msec m_duration = 0;
     media::Msec m_lastEmittedPosition = -1;
+    QUrl m_currentUrl = QUrl();
+    QString m_currentTitle = QString();
     qreal m_volume = 1.0;
     bool m_muted = false;
 
