@@ -100,7 +100,8 @@ python "$PSScriptRoot\publish.py" `
     --channel $Channel `
     --version $Version `
     --platform windows `
-    --file $InstallerFile
+    --dir $DeployDir
+    #--file $InstallerFile
 
 if ($LASTEXITCODE -ne 0) { throw "publish.py failed" }
 
