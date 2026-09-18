@@ -18,7 +18,7 @@
 
 #include "media-controller.h"
 
-#include "resume-store.h"
+#include "util/resume-store.h"
 
 #include <QDebug>
 #include <QTimer>

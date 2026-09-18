@@ -3,20 +3,10 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#if defined(Q_OS_WIN)
-#include <windows.h>
-#elif defined(Q_OS_MACOS)
-#include <IOKit/pwr_mgt/IOPMLib.h>
-#elif defined(Q_OS_LINUX) && defined(MEDIA_HAVE_DBUS)
+#if defined(MEDIA_HAVE_DBUS)
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
-#endif
-
-#if defined(Q_OS_MACOS)
-namespace {
-IOPMAssertionID g_assertionId = 0;
-}
 #endif
 
 
@@ -43,17 +33,7 @@ void SleepInhibitor::setInhibited(bool inhibited, const QString &reason)
 
 void SleepInhibitor::acquire(const QString &reason)
 {
-#if defined(Q_OS_WIN)
-    Q_UNUSED(reason)
-    SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
-
-#elif defined(Q_OS_MACOS)
-    CFStringRef cfReason = CFStringCreateWithCString(kCFAllocatorDefault, reason.toUtf8().constData(), kCFStringEncodingUTF8);
-    IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, cfReason, &g_assertionId);
-    if (cfReason)
-        CFRelease(cfReason);
-
-#elif defined(Q_OS_LINUX) && defined(MEDIA_HAVE_DBUS)
+#if defined(MEDIA_HAVE_DBUS)
     QDBusInterface screensaver(QStringLiteral("org.freedesktop.ScreenSaver"),
                                QStringLiteral("/org/freedesktop/ScreenSaver"),
                                QStringLiteral("org.freedesktop.ScreenSaver"),
@@ -74,16 +54,7 @@ void SleepInhibitor::acquire(const QString &reason)
 
 void SleepInhibitor::release()
 {
-#if defined(Q_OS_WIN)
-    SetThreadExecutionState(ES_CONTINUOUS);
-
-#elif defined(Q_OS_MACOS)
-    if (g_assertionId != 0) {
-        IOPMAssertionRelease(g_assertionId);
-        g_assertionId = 0;
-    }
-
-#elif defined(Q_OS_LINUX) && defined(MEDIA_HAVE_DBUS)
+#if defined(MEDIA_HAVE_DBUS)
     if (m_cookie == 0)
         return;
 

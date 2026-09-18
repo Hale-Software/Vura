@@ -28,10 +28,10 @@
 #include <libvura/models/video-marker-record.h>
 #include <libvura/platform/updater.h>
 #include <libvura/helpers.h>
-#include <libvura/media/types.h>
-#include <libvura/media/engine-factory.h>
+#include <libvura/models/types.h>
+#include <libvura/media-engine/engine-factory.h>
 #include <libvura/models/subtitle-cue.h>
-#include <libvura/playback/subtitle-track.h>
+#include <libvura/subtitles/subtitle-track.h>
 
 #include "HelpDialog.h"
 #include "AboutDialog.h"

@@ -89,9 +89,9 @@ void ConvertMediaDialog::convertFile(QString outFile)
     //connect(m_remuxerThread, &RemuxerThread::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
     //connect(m_remuxerThread, &RemuxerThread::conversionFinished, this, &ConvertMediaDialog::conversionFinished);
     //m_remuxerThread->start();
-    m_converter = new VideoConverter(this);
-    m_converter->convert(ui->fileToConvert->text(), outFile, ui->comboBox_2->currentIndex());
-    connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
+    //m_converter = new VideoConverter(this);
+    //m_converter->convert(ui->fileToConvert->text(), outFile, ui->comboBox_2->currentIndex());
+    //connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
 }
 
 void ConvertMediaDialog::convertNetwork(QString outFile)
@@ -100,7 +100,7 @@ void ConvertMediaDialog::convertNetwork(QString outFile)
     //connect(m_remuxerThread, &RemuxerThread::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
     //connect(m_remuxerThread, &RemuxerThread::conversionFinished, this, &ConvertMediaDialog::conversionFinished);
     //m_remuxerThread->start();
-    m_converter = new VideoConverter(this);
-    m_converter->convert(ui->networkURL->text(), outFile, ui->comboBox_2->currentIndex());
-    connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
+    //m_converter = new VideoConverter(this);
+    //m_converter->convert(ui->networkURL->text(), outFile, ui->comboBox_2->currentIndex());
+    //connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
 }

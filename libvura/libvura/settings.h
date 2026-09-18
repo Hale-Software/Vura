@@ -24,7 +24,7 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#include "video-marker/video-markers.h"
+//#include "video-marker/video-markers.h"
 
 
 class VuraSettings : public QObject

@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "playlist.h"
-#include "engine-factory.h"
-#include "engine.h"
+#include "models/playlist.h"
+#include "media-engine/engine-factory.h"
+#include "media-engine/engine.h"
 
 #include <QObject>
 #include <QUrl>

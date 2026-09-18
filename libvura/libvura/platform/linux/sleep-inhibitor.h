@@ -20,5 +20,5 @@ private:
 
     bool m_inhibited = false;
     quint32 m_cookie = 0;
-    
+
 };

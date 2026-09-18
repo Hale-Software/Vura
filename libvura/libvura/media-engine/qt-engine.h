@@ -19,7 +19,7 @@
 #pragma once
 
 #include "engine.h"
-#include "../playback/subtitle-track.h"
+#include "../subtitles/subtitle-track.h"
 #include "../models/subtitle-cue.h"
 
 #include <QHash>

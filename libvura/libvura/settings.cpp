@@ -41,7 +41,7 @@ void VuraSettings::loadSettings()
 
     if (!QFile::exists(m_markerFile)) {
         qDebug() << "Marker data file doesn't exist. Creating blank marker data file.";
-        VideoMarkers::createBlankFile(m_markerFile);
+        //VideoMarkers::createBlankFile(m_markerFile);
     }
 
     m_locale = settings.value("language", "en-US").toString();

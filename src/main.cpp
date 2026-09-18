@@ -36,12 +36,11 @@
 #include <libvura/platform/platform.h>
 #include <libvura/exceptions/error-service.h>
 #include <libvura/util/single-instance-controller.h>
-#include <libvura/media/media-controller.h>
-#include <libvura/media/engine-factory.h>
+#include <libvura/media-controller.h>
+#include <libvura/media-engine/engine-factory.h>
 
 #include <ui-config.h>
 #include "VuraMainWindow.h"
-//#include "MainWindow.h"
 
 
 constexpr int RESTART_CODE = 0xA1;

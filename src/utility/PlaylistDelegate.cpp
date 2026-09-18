@@ -1,6 +1,6 @@
 #include "PlaylistDelegate.h"
 
-#include <libvura/media/playlist.h>
+#include <libvura/models/playlist.h>
 
 #include <QApplication>
 #include <QFontMetrics>

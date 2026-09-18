@@ -21,7 +21,7 @@
 #include <QWidget>
 #include <QIcon>
 
-#include <libvura/media/types.h>
+#include <libvura/models/types.h>
 
 #include "ClickableLabel.h"
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "types.h"
+#include "../models/types.h"
 #include "video-output.h"
 
 #include <QObject>

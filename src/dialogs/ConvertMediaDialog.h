@@ -26,7 +26,7 @@
 #include <QMessageBox>
 
 #include <libvura/io/remuxer-thread.h>
-#include <libvura/io/video-converter.h>
+//#include <libvura/io/video-converter.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -55,7 +55,7 @@ private:
     Ui::ConvertMediaDialog *ui;
     QString m_initialOption = "Convert/Save";
     RemuxerThread *m_remuxerThread = nullptr;
-    VideoConverter *m_converter = nullptr;
+    //VideoConverter *m_converter = nullptr;
 
     void convertFile(QString outFile);
     void convertNetwork(QString outFile);

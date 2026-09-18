@@ -13,19 +13,21 @@ target_sources(
         PUBLIC
         libvura/constants.h
         libvura/enums.h
-        libvura/libvura.h
         libvura/helpers.h
         libvura/hotkeys.h
+        libvura/libvura.h
+        libvura/media-controller.h
         libvura/settings.h
         libvura/settings-manager.h
         libvura/theme-manager.h
 
         PRIVATE
         libvura/constants.cpp
-        libvura/libvura.cpp
         libvura/defs.h
         libvura/helpers.cpp
         libvura/hotkeys.cpp
+        libvura/libvura.cpp
+        libvura/media-controller.cpp
         libvura/settings.cpp
         libvura/settings-manager.cpp
         libvura/theme-manager.cpp
@@ -57,12 +59,12 @@ target_sources(
     PUBLIC
     libvura/io/database-manager.h
     libvura/io/remuxer-thread.h
-    libvura/io/video-converter.h
+    #libvura/io/video-converter.h
 
     PRIVATE
     libvura/io/database-manager.cpp
     libvura/io/remuxer-thread.cpp
-    libvura/io/video-converter.cpp
+    #libvura/io/video-converter.cpp
 )
 
 # logging Directory
@@ -79,38 +81,47 @@ target_sources(
         libvura/logging/logger.cpp
 )
 
-# media Directory
+# media-engine Directory
 target_sources(
     libvura
     PUBLIC
-    libvura/media/engine.h
-    libvura/media/engine-factory.h
-    libvura/media/media-controller.h
-    #libvura/media/mpv-engine.h
-    libvura/media/null-engine.h
-    libvura/media/playlist.h
-    libvura/media/qt-engine.h
-    libvura/media/resume-store.h
-    libvura/media/sleep-inhibitor.h
-    libvura/media/types.h
-    libvura/media/video-output.h
-    libvura/media/video-stage.h
+    libvura/media-engine/engine.h
+    libvura/media-engine/engine-factory.h
+    #libvura/media-engine/mpv-engine.h
+    libvura/media-engine/null-engine.h
+    libvura/media-engine/qt-engine.h
+    libvura/media-engine/video-output.h
+    libvura/media-engine/video-stage.h
 
     PRIVATE
-    libvura/media/engine.cpp
-    libvura/media/engine-factory.cpp
-    libvura/media/media-controller.cpp
-    #libvura/media/mpv-engine.cpp
-    libvura/media/null-engine.cpp
-    libvura/media/playlist.cpp
-    libvura/media/qt-engine.cpp
-    libvura/media/resume-store.cpp
-    libvura/media/sleep-inhibitor.cpp
-    libvura/media/types.cpp
-    libvura/media/video-stage.cpp
+    libvura/media-engine/engine.cpp
+    libvura/media-engine/engine-factory.cpp
+    #libvura/media-engine/mpv-engine.cpp
+    libvura/media-engine/null-engine.cpp
+    libvura/media-engine/qt-engine.cpp
+    libvura/media-engine/video-stage.cpp
 )
 
-# media-engine Directory
+# models Directory
+target_sources(
+        libvura
+        PUBLIC
+        libvura/models/hotkey-model.h
+        libvura/models/log-message.h
+        libvura/models/metadata.h
+        libvura/models/playlist.h
+        libvura/models/subtitle-cue.h
+        libvura/models/types.h
+        libvura/models/version.h
+        libvura/models/video-marker-record.h
+
+        PRIVATE
+        libvura/models/hotkey-model.cpp
+        libvura/models/playlist.cpp
+        libvura/models/types.cpp
+)
+
+# opengl Directory
 #target_sources(
 #        libvura
 #        PUBLIC
@@ -136,48 +147,14 @@ target_sources(
 #        libvura/media-engine/video-widget.cpp
 #)
 
-# models Directory
-target_sources(
-        libvura
-        PUBLIC
-#        libvura/models/capabilities.h
-        libvura/models/hotkey-model.h
-        libvura/models/log-message.h
-#        libvura/models/metadata.h
-#        libvura/models/playlist-item.h
-#        libvura/models/playlist-model.cpp
-#        libvura/models/playlist-model.h
-        libvura/models/subtitle-cue.h
-#        libvura/models/track-info.h
-        libvura/models/version.h
-        libvura/models/video-marker-record.h
-
-        PRIVATE
-        libvura/models/hotkey-model.cpp
-)
-
-# playback Directory
+# subtitles Directory
 target_sources(
     libvura
     PUBLIC
-    #libvura/playback/playback-controller.h
-    libvura/playback/subtitle-track.h
+    libvura/subtitles/subtitle-track.h
 
     PRIVATE
-    #libvura/playback/playback-controller.cpp
-    libvura/playback/subtitle-track.cpp
-)
-
-# playlist Directory
-target_sources(
-        libvura
-        PUBLIC
-        #libvura/playlist/playlist-controller.h
-        #libvura/playlist/playlist-delegate.h
-
-        PRIVATE
-        #libvura/playlist/playlist-controller.cpp
-        #libvura/playlist/playlist-delegate.cpp
+    libvura/subtitles/subtitle-track.cpp
 )
 
 # util Directory
@@ -186,26 +163,14 @@ target_sources(
         PUBLIC
         libvura/util/crash-reporter.h
         libvura/util/crypto.h
+        libvura/util/resume-store.h
         libvura/util/single-instance-controller.h
 
         PRIVATE
         libvura/util/crash-reporter.cpp
         libvura/util/crypto.cpp
+        libvura/util/resume-store.cpp
         libvura/util/single-instance-controller.cpp
-)
-
-# video-marker Directory
-target_sources(
-        libvura
-        PUBLIC
-        #libvura/video-marker/video-marker-controller.h
-        libvura/video-marker/video-markers.h
-        libvura/video-marker/VideoMarker.h
-
-        PRIVATE
-        #libvura/video-marker/video-marker-controller.cpp
-        libvura/video-marker/video-markers.cpp
-        libvura/video-marker/VideoMarker.cpp
 )
 
 target_link_libraries(
@@ -235,29 +200,45 @@ if(WIN32)
         libvura/platform/updater.h
         libvura/platform/windows/crash-handler.h
         libvura/platform/windows/keyboard-handler.h
+        libvura/platform/windows/sleep-inhibitor.h
 
         PRIVATE
         libvura/platform/platform-windows.cpp
         libvura/platform/updater.cpp
         libvura/platform/windows/crash-handler.cpp
         libvura/platform/windows/keyboard-handler.cpp
+        libvura/platform/windows/sleep-inhibitor.cpp
     )
 
     target_link_libraries(libvura PRIVATE dbghelp ole32 oleaut32 wbemuuid)
 
-else()
+elseif(APPLE)
+
+    target_sources(
+        libvura
+        PUBLIC
+        libvura/platform/platform.h
+        libvura/platform/macos/crash-handler.h
+        libvura/platform/macos/sleep-inhibitor.h
+
+        PRIVATE
+        libvura/platform/platform-macos.cpp
+        libvura/platform/macos/crash-handler.cpp
+        libvura/platform/macos/sleep-inhibitor.cpp
+    )
+
+elseif(UNIX)
     target_sources(
         libvura
         PUBLIC
         libvura/platform/platform.h
         libvura/platform/linux/crash-handler.h
-        libvura/platform/macos/crash-handler.h
+        libvura/platform/linux/sleep-inhibitor.h
 
         PRIVATE
         libvura/platform/platform-linux.cpp
-        libvura/platform/platform-macos.cpp
         libvura/platform/linux/crash-handler.cpp
-        libvura/platform/macos/crash-handler.cpp
+        libvura/platform/linux/sleep-inhibitor.cpp
     )
 endif()
 

@@ -27,16 +27,15 @@
 #include <QOperatingSystemVersion>
 #include <QDebug>
 
-#ifdef Q_OS_WIN
-
+#if defined(Q_OS_WIN)
 #include "windows/crash-handler.h"
-
-#else
-
+#include "windows/sleep-inhibitor.h"
+#elif defined(Q_OS_MACOS)
 #include "macos/crash-handler.h"
+#include "macos/sleep-inhibitor.h"
+#elif defined(Q_OS_LINUX)
 #include "linux/crash-handler.h"
-
+#include "linux/sleep-inhibitor.h"
 #endif
-
 
 static void logDeviceInfo();

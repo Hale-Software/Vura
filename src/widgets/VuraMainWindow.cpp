@@ -24,10 +24,10 @@
 #include <ui-config.h>
 
 #include <libvura/logging/logger.h>
-#include <libvura/media/media-controller.h>
-#include <libvura/media/playlist.h>
-#include <libvura/media/video-stage.h>
-#include <libvura/media/sleep-inhibitor.h>
+#include <libvura/media-controller.h>
+#include <libvura/models/playlist.h>
+#include <libvura/media-engine/video-stage.h>
+#include <libvura/platform/platform.h>
 
 #include <QActionGroup>
 #include <QApplication>
@@ -58,6 +58,8 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 
 #ifdef MEDIA_HAVE_QTMULTIMEDIA

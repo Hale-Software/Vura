@@ -21,7 +21,7 @@
 
 #include <QWidget>
 
-#include <libvura/media/playlist.h>
+#include <libvura/models/playlist.h>
 
 
 QT_BEGIN_NAMESPACE
