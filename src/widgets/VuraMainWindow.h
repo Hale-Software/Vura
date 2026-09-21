@@ -21,16 +21,17 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QMimeData>
+#include <QProgressDialog>
 
 #include <libvura/libvura.h>
 #include <libvura/settings.h>
 #include <libvura/hotkeys/hotkey-manager.h>
 #include <libvura/models/video-marker-record.h>
-#include <libvura/platform/updater.h>
 #include <libvura/helpers.h>
 #include <libvura/models/types.h>
 #include <libvura/media-engine/engine-factory.h>
 #include <libvura/models/subtitle-cue.h>
+#include <libvura/platform/platform.h>
 #include <libvura/subtitles/subtitle-track.h>
 
 #include "HelpDialog.h"
@@ -112,7 +113,6 @@ signals:
     void quitProgram();
 
 private slots:
-    void updateCheckReplyFinished(QNetworkReply *reply);
     void updateRecentFileActions() const;
 
     // File Menu
@@ -174,7 +174,6 @@ public slots:
     void errorOccurred(const QString &errorMessage);
     void hideVideoSlider();
     void resetVideoSliderVisibility();
-    void onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash);
     void crashReportScanFinished(bool crashFileExists);
     void crashReportUploadStarted();
     void crashReportUploadFinished(bool success, const QString& message);
@@ -184,6 +183,10 @@ public slots:
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
     void setCurrentFile(const QUrl &mediaUrl);
+    void updaterErrorOccurred(QString errorMessage);
+    void updateAvailable(bool available);
+    void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void updateDownloadFinished(bool success, const QString &message);
 
 private:
     void initSystemTray();
@@ -223,8 +226,9 @@ private:
     SubtitleTrack* m_subtitleTrack = nullptr;
     SubtitleCue* m_currentCue = nullptr;
     CrashReporter *m_crashReporter = nullptr;
+    UpdateManager *m_updateManager = nullptr;
+    QProgressDialog *m_updateProgressDialog = nullptr;
 
-    QNetworkAccessManager *m_updateNetworkManager = nullptr;
     QAction *m_recentFileActions[10];
     QAction *m_recentFilesSeparator;
     QTimer *m_videoSliderHideTimer = nullptr;

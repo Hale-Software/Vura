@@ -108,6 +108,7 @@ target_sources(
 target_sources(
         libvura
         PUBLIC
+        libvura/models/file-entry.h
         libvura/models/hotkey-model.h
         libvura/models/log-message.h
         libvura/models/metadata.h
@@ -203,6 +204,7 @@ if(WIN32)
         libvura/platform/windows/crash-handler.h
         libvura/platform/windows/keyboard-handler.h
         libvura/platform/windows/sleep-inhibitor.h
+        libvura/platform/windows/update-manager.h
 
         PRIVATE
         libvura/platform/platform-windows.cpp
@@ -210,6 +212,7 @@ if(WIN32)
         libvura/platform/windows/crash-handler.cpp
         libvura/platform/windows/keyboard-handler.cpp
         libvura/platform/windows/sleep-inhibitor.cpp
+        libvura/platform/windows/update-manager.cpp
     )
 
     target_link_libraries(libvura PRIVATE dbghelp ole32 oleaut32 wbemuuid)
@@ -222,11 +225,13 @@ elseif(APPLE)
         libvura/platform/platform.h
         libvura/platform/macos/crash-handler.h
         libvura/platform/macos/sleep-inhibitor.h
+        libvura/platform/macos/update-manager.h
 
         PRIVATE
         libvura/platform/platform-macos.cpp
         libvura/platform/macos/crash-handler.cpp
         libvura/platform/macos/sleep-inhibitor.cpp
+        libvura/platform/macos/update-manager.cpp
     )
 
 elseif(UNIX)
@@ -236,11 +241,13 @@ elseif(UNIX)
         libvura/platform/platform.h
         libvura/platform/linux/crash-handler.h
         libvura/platform/linux/sleep-inhibitor.h
+        libvura/platform/linux/update-manager.h
 
         PRIVATE
         libvura/platform/platform-linux.cpp
         libvura/platform/linux/crash-handler.cpp
         libvura/platform/linux/sleep-inhibitor.cpp
+        libvura/platform/linux/update-manager.cpp
     )
 endif()
 

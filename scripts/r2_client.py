@@ -206,7 +206,7 @@ PLATFORM_KEYS = ("windows", "mac", "linux")
 
 
 def merge_manifest(existing: Optional[dict], *, version: str, is_beta: bool,
-                    changelog_url: str, platform_updates: dict) -> dict:
+                    changelog_url: str, installer: dict, platform_updates: dict) -> dict:
     """
     Build the manifest object matching what VuraMainWindow::updateCheckReplyFinished
     parses:
@@ -227,6 +227,7 @@ def merge_manifest(existing: Optional[dict], *, version: str, is_beta: bool,
             "is_beta": is_beta,
             "release_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "changelog_url": changelog_url,
+            "installer": installer,
             "platforms": {},
         }
 
@@ -234,6 +235,7 @@ def merge_manifest(existing: Optional[dict], *, version: str, is_beta: bool,
     if changelog_url:
         manifest["changelog_url"] = changelog_url
     manifest.setdefault("platforms", {})
+    manifest["installer"] = installer
 
     for plat, info in platform_updates.items():
         if plat not in PLATFORM_KEYS:

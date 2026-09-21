@@ -28,7 +28,6 @@
 #include <libvura/media-controller.h>
 #include <libvura/models/playlist.h>
 #include <libvura/media-engine/video-stage.h>
-#include <libvura/platform/platform.h>
 
 #include <QActionGroup>
 #include <QApplication>
@@ -55,12 +54,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QtMath>
-#include <QProgressDialog>
 #include <QDir>
 #include <QDirIterator>
 #include <QTimer>
-#include <QJsonDocument>
-#include <QJsonObject>
 
 
 #ifdef MEDIA_HAVE_QTMULTIMEDIA
@@ -424,53 +420,6 @@ void VuraMainWindow::resetVideoSliderVisibility()
         m_videoSliderHideTimer->start();
 }
 
-void VuraMainWindow::updateCheckReplyFinished(QNetworkReply *reply)
-{
-    if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << "Network Error:" << reply->errorString();
-        return;
-    }
-
-    const QByteArray response = reply->readAll();
-    const QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
-    QJsonObject jsonObj = jsonDoc.object();
-
-    bool isRemoteBeta = jsonObj["is_beta"].toBool();
-    const QString remoteVersion = jsonObj["version"].toString();
-    const QString releaseDate = jsonObj["release_date"].toString();
-
-    if (remoteVersion != VURA_VERSION_STRING) {
-        QJsonObject platforms = jsonObj["platforms"].toObject();
-
-#if defined(Q_OS_WIN)
-        QJsonObject currentPlatform = platforms["windows"].toObject();
-#elif defined(Q_OS_MAC)
-        QJsonObject currentPlatform = platforms["mac"].toObject();
-#else
-        QJsonObject currentPlatform = platforms["linux"].toObject();
-#endif
-
-        const QString downloadUrl = currentPlatform["url"].toString();
-        const QString expectedHash = currentPlatform["sha256"].toString();
-        const QString changelogUrl = jsonObj["changelog_url"].toString();
-
-
-        const QSettings settings;
-        const QString lastCheckedVersion = settings.value("lastCheckedVersion", "").toString();
-        if (remoteVersion != lastCheckedVersion) {
-            if (m_updateDialog)
-                m_updateDialog->close();
-
-            m_updateDialog = new UpdateDialog(remoteVersion, releaseDate, downloadUrl, changelogUrl, expectedHash, this);
-            connect(m_updateDialog, &UpdateDialog::updateNow, this, &VuraMainWindow::onUpdateConfirmed);
-            m_updateDialog->show();
-            m_updateDialog->setAttribute(Qt::WA_DeleteOnClose, true);
-        }
-    }
-
-    reply->deleteLater();
-}
-
 void VuraMainWindow::openRecentFile()
 {
     if (QAction *action = qobject_cast<QAction *>(sender())) {
@@ -636,22 +585,12 @@ void VuraMainWindow::actionFileOpenRecentClear()
 
 void VuraMainWindow::actionHelpCheckForUpdates()
 {
-    const QSettings settings;
-    QString manifestFile = "stable.json";
-
-    int updateBranch = settings.value("updateBranch", 0).toInt();
-    if (updateBranch == 1) {
-        manifestFile = "beta.json";
-    }
-
-    m_updateNetworkManager = new QNetworkAccessManager(this);
-    connect(m_updateNetworkManager, &QNetworkAccessManager::finished, this, &VuraMainWindow::updateCheckReplyFinished);
-
-    const QUrl url(QString("https://vura.hale-software.com/%1").arg(manifestFile));
-    const QNetworkRequest request(url);
-
-    qDebug() << "Checking for updates using URL: " << url << "...";
-    m_updateNetworkManager->get(request);
+    m_updateManager = new UpdateManager(this);
+    connect(m_updateManager, &UpdateManager::errorOccurred, this, &VuraMainWindow::updaterErrorOccurred);
+    connect(m_updateManager, &UpdateManager::updateAvailable, this, &VuraMainWindow::updateAvailable);
+    connect(m_updateManager, &UpdateManager::downloadProgress, this, &VuraMainWindow::updateDownloadProgress);
+    connect(m_updateManager, &UpdateManager::downloadFinished, this, &VuraMainWindow::updateDownloadFinished);
+    m_updateManager->checkForUpdates();
 }
 
 void VuraMainWindow::actionTestFunction()
@@ -730,7 +669,7 @@ void VuraMainWindow::actionShowSettings()
     m_settingsDialog->show();
     m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
-    connect(m_settingsDialog, &SettingsDialog::updateRequested, this, &VuraMainWindow::onUpdateConfirmed);
+    //connect(m_settingsDialog, &SettingsDialog::updateRequested, this, &VuraMainWindow::onUpdateConfirmed);
     connect(m_settingsDialog, &SettingsDialog::requiresRestart, this, [this]() {
         restartApplication();
     });
@@ -1331,6 +1270,10 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionSubtitlesToggleSubtitles, &QAction::toggled, this, &VuraMainWindow::actionSubtitlesToggleSubtitles);
     this->addAction(ui->actionSubtitlesToggleSubtitles);
     ui->actionSubtitlesToggleSubtitles->setShortcutContext(Qt::WindowShortcut);
+
+    connect(ui->actionHelpCheckForUpdates, &QAction::triggered, this, &VuraMainWindow::actionHelpCheckForUpdates);
+    this->addAction(ui->actionHelpCheckForUpdates);
+    ui->actionHelpCheckForUpdates->setShortcutContext(Qt::WindowShortcut);
 }
 
 void VuraMainWindow::buildPlaylistDock()
@@ -1670,34 +1613,6 @@ void VuraMainWindow::updateMarkerMenuItems()
     ui->actionMarkersEditSelectedMarker->setEnabled(m_videoMarkerController->checkMarkerProximity());
 }
 
-void VuraMainWindow::onUpdateConfirmed(const QString &targetDownloadUrl, const QString &expectedHash)
-{
-    auto *progressDialog = new QProgressDialog(tr("Downloading Update..."), tr("Cancel"), 0, 100, this);
-    progressDialog->setWindowModality(Qt::WindowModal);
-
-    auto *updater = new Updater(this);
-
-    connect(updater, &Updater::downloadProgress, this, [progressDialog](const qint64 received, const qint64 total) {
-        if (total > 0) {
-            const int percentage = static_cast<int>((received * 100) / total);
-            progressDialog->setValue(percentage);
-        }
-    });
-
-    connect(progressDialog, &QProgressDialog::canceled, updater, []() {
-        // Handle download abortion if necessary
-    });
-
-    connect(updater, &Updater::downloadFinished, this, [progressDialog](const bool success, const QString &message) {
-        progressDialog->close();
-        if (!success) {
-            QMessageBox::critical(nullptr, tr("Update Error"), message);
-        }
-    });
-
-    updater->startDownload(targetDownloadUrl, expectedHash);
-}
-
 void VuraMainWindow::crashReportScanFinished(const bool crashFileExists)
 {
     if (crashFileExists) {
@@ -1864,5 +1779,55 @@ void VuraMainWindow::systemTray_Hide(const bool hiding)
         showNormal();
         raise();
         activateWindow();
+    }
+}
+
+void VuraMainWindow::updaterErrorOccurred(QString errorMessage)
+{
+    QMessageBox::critical(this, "Update Error", errorMessage);
+}
+
+void VuraMainWindow::updateAvailable(bool available)
+{
+    if (available) {
+        QMessageBox::StandardButton reply;
+
+        reply = QMessageBox::question(this, "Update Available", "Download newest update?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Ignore);
+
+        if (reply == QMessageBox::Yes) {
+            m_updateProgressDialog = new QProgressDialog("Downloading update...", "Cancel", 0, 100, this);
+            m_updateProgressDialog->setWindowModality(Qt::WindowModal);
+            m_updateManager->downloadUpdate();
+        } else if (reply == QMessageBox::No) {
+
+        } else if (reply == QMessageBox::Ignore) {
+            //QSettings settings;
+            //settings.setValue("lastCheckedVersion", "")
+        } else {
+
+        }
+    } else {
+        QMessageBox::information(this, "Update", "No Update Available");
+    }
+}
+
+void VuraMainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    if (!m_updateProgressDialog)
+        return;
+
+    if (bytesTotal > 0) {
+        const int percentage = static_cast<int>((bytesReceived * 100) / bytesTotal);
+        m_updateProgressDialog->setValue(percentage);
+    }
+}
+
+void VuraMainWindow::updateDownloadFinished(bool success, const QString &message)
+{
+    if (m_updateProgressDialog)
+        m_updateProgressDialog->close();
+
+    if (success) {
+        QMessageBox::information(this, "Update Finished", "Finished downloading update");
     }
 }

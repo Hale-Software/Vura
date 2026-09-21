@@ -30,12 +30,15 @@
 #if defined(Q_OS_WIN)
 #include "windows/crash-handler.h"
 #include "windows/sleep-inhibitor.h"
+#include "windows/update-manager.h"
 #elif defined(Q_OS_MACOS)
 #include "macos/crash-handler.h"
 #include "macos/sleep-inhibitor.h"
+#include "macos/update-manager.h"
 #elif defined(Q_OS_LINUX)
 #include "linux/crash-handler.h"
 #include "linux/sleep-inhibitor.h"
+#include "linux/update-manager.h"
 #endif
 
 static void logDeviceInfo();
