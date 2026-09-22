@@ -61,10 +61,10 @@ public slots:
 
 private slots:
     void language_Changed(int index);
-    void systemTrayIcon_Checked(int state);
+    void systemTrayIcon_Checked(Qt::CheckState state);
     void updateBranch_Changed(int index);
     void checkForUpdates_Clicked();
-    void enableAutomaticUpdates_Checked(int state);
+    void enableAutomaticUpdates_Checked(Qt::CheckState state);
     void updateCheckReplyFinished(QNetworkReply *reply);
 
 private:

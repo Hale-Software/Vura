@@ -67,12 +67,12 @@ InterfaceSettings::InterfaceSettings(QWidget *parent) : QWidget(parent), ui(new 
 
     connect(ui->currentTheme, &QComboBox::currentIndexChanged, this, &InterfaceSettings::currentTheme_Changed);
     connect(ui->showMaximizedOnStart, &QComboBox::currentIndexChanged, this, &InterfaceSettings::showMaximizedOnStart_Changed);
-    connect(ui->rememberWindowSize, &QCheckBox::stateChanged, this, &InterfaceSettings::rememberWindowSize_Checked);
-    connect(ui->showPlaylistOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showPlaylistOnStart_Checked);
-    connect(ui->showVideoControlsOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showVideoControlsOnStart_Checked);
-    connect(ui->showStatusBarOnStart, &QCheckBox::stateChanged, this, &InterfaceSettings::showStatusBarOnStart_Checked);
+    connect(ui->rememberWindowSize, &QCheckBox::checkStateChanged, this, &InterfaceSettings::rememberWindowSize_Checked);
+    connect(ui->showPlaylistOnStart, &QCheckBox::checkStateChanged, this, &InterfaceSettings::showPlaylistOnStart_Checked);
+    connect(ui->showVideoControlsOnStart, &QCheckBox::checkStateChanged, this, &InterfaceSettings::showVideoControlsOnStart_Checked);
+    connect(ui->showStatusBarOnStart, &QCheckBox::checkStateChanged, this, &InterfaceSettings::showStatusBarOnStart_Checked);
     connect(ui->autohideSlider, &QComboBox::currentIndexChanged, this, &InterfaceSettings::autohideSlider_Changed);
-    connect(ui->unhideSliderOnHotkey, &QCheckBox::stateChanged, this, &InterfaceSettings::unhideSliderOnHotkey_Checked);
+    connect(ui->unhideSliderOnHotkey, &QCheckBox::checkStateChanged, this, &InterfaceSettings::unhideSliderOnHotkey_Checked);
     connect(ui->sliderAutohideTimer, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderAutohideTimer_ValueChanged);
     connect(ui->sliderHeight, &QSpinBox::valueChanged, this, &InterfaceSettings::sliderHeight_ValueChanged);
     connect(ui->videoMarkerHeight, &QSpinBox::valueChanged, this, &InterfaceSettings::videoMarkerHeight_ValueChanged);
@@ -279,25 +279,25 @@ void InterfaceSettings::showMaximizedOnStart_Changed(int index)
     emit settingsChanged();
 }
 
-void InterfaceSettings::rememberWindowSize_Checked(int state)
+void InterfaceSettings::rememberWindowSize_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
 }
 
-void InterfaceSettings::showPlaylistOnStart_Checked(int state)
+void InterfaceSettings::showPlaylistOnStart_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
 }
 
-void InterfaceSettings::showVideoControlsOnStart_Checked(int state)
+void InterfaceSettings::showVideoControlsOnStart_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
 }
 
-void InterfaceSettings::showStatusBarOnStart_Checked(int state)
+void InterfaceSettings::showStatusBarOnStart_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
@@ -309,7 +309,7 @@ void InterfaceSettings::autohideSlider_Changed(int index)
     emit settingsChanged();
 }
 
-void InterfaceSettings::unhideSliderOnHotkey_Checked(int state)
+void InterfaceSettings::unhideSliderOnHotkey_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();

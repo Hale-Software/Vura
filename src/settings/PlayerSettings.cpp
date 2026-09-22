@@ -42,12 +42,12 @@ PlayerSettings::PlayerSettings(QWidget *parent) : QWidget(parent), ui(new Ui::Pl
     ui->defaultVideoContrast->setEnabled(settings.value("useHardwareAcceleration", false).toBool());
     ui->defaultAspectRatio->setEnabled(settings.value("useHardwareAcceleration", false).toBool());
 
-    connect(ui->allowOnlyOneInstance, &QCheckBox::stateChanged, this, &PlayerSettings::allowOnlyOneInstance_Checked);
+    connect(ui->allowOnlyOneInstance, &QCheckBox::checkStateChanged, this, &PlayerSettings::allowOnlyOneInstance_Checked);
     connect(ui->showMediaChangeNotification, &QComboBox::currentIndexChanged, this, &PlayerSettings::showMediaChangeNotification_Changed);
     connect(ui->continueVideoPlayback, &QComboBox::currentIndexChanged, this, &PlayerSettings::continueVideoPlayback_Changed);
-    connect(ui->pausePlaybackWhenMinimized, &QCheckBox::stateChanged, this, &PlayerSettings::pausePlaybackWhenMinimized_Checked);
-    connect(ui->pauseOnLastVideoFrame, &QCheckBox::stateChanged, this, &PlayerSettings::pauseOnLastFrameOfVideo_Checked);
-    connect(ui->useHardwareAcceleration, &QCheckBox::stateChanged, this, &PlayerSettings::useHardwareAcceleration_Checked);
+    connect(ui->pausePlaybackWhenMinimized, &QCheckBox::checkStateChanged, this, &PlayerSettings::pausePlaybackWhenMinimized_Checked);
+    connect(ui->pauseOnLastVideoFrame, &QCheckBox::checkStateChanged, this, &PlayerSettings::pauseOnLastFrameOfVideo_Checked);
+    connect(ui->useHardwareAcceleration, &QCheckBox::checkStateChanged, this, &PlayerSettings::useHardwareAcceleration_Checked);
     connect(ui->defaultVideoContrast, &QSlider::valueChanged, this, &PlayerSettings::defaultVideoContrast_ValueChanged);
     connect(ui->defaultAspectRatio, &QComboBox::currentIndexChanged, this, &PlayerSettings::defaultAspectRatio_Changed);
 }
@@ -111,7 +111,7 @@ void PlayerSettings::saveSettings()
     m_unsavedChanges = false;
 }
 
-void PlayerSettings::allowOnlyOneInstance_Checked(int state)
+void PlayerSettings::allowOnlyOneInstance_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
@@ -129,19 +129,19 @@ void PlayerSettings::continueVideoPlayback_Changed(int state)
     emit settingsChanged();
 }
 
-void PlayerSettings::pausePlaybackWhenMinimized_Checked(int state)
+void PlayerSettings::pausePlaybackWhenMinimized_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
 }
 
-void PlayerSettings::pauseOnLastFrameOfVideo_Checked(int state)
+void PlayerSettings::pauseOnLastFrameOfVideo_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
 }
 
-void PlayerSettings::useHardwareAcceleration_Checked(const int state)
+void PlayerSettings::useHardwareAcceleration_Checked(Qt::CheckState state)
 {
     if (state == Qt::Checked) {
         ui->defaultVideoContrast->setEnabled(true);

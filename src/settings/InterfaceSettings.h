@@ -56,12 +56,12 @@ public slots:
 private slots:
     void currentTheme_Changed(int index);
     void showMaximizedOnStart_Changed(int index);
-    void rememberWindowSize_Checked(int state);
-    void showPlaylistOnStart_Checked(int state);
-    void showVideoControlsOnStart_Checked(int state);
-    void showStatusBarOnStart_Checked(int state);
+    void rememberWindowSize_Checked(Qt::CheckState state);
+    void showPlaylistOnStart_Checked(Qt::CheckState state);
+    void showVideoControlsOnStart_Checked(Qt::CheckState state);
+    void showStatusBarOnStart_Checked(Qt::CheckState state);
     void autohideSlider_Changed(int index);
-    void unhideSliderOnHotkey_Checked(int state);
+    void unhideSliderOnHotkey_Checked(Qt::CheckState state);
     void sliderAutohideTimer_ValueChanged(int value);
     void sliderHeight_ValueChanged(int value);
     void videoMarkerHeight_ValueChanged(int value);

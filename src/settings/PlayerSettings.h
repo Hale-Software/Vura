@@ -52,12 +52,12 @@ public slots:
     void saveSettings();
 
 private slots:
-    void allowOnlyOneInstance_Checked(int state);
+    void allowOnlyOneInstance_Checked(Qt::CheckState state);
     void showMediaChangeNotification_Changed(int state);
     void continueVideoPlayback_Changed(int state);
-    void pausePlaybackWhenMinimized_Checked(int state);
-    void pauseOnLastFrameOfVideo_Checked(int state);
-    void useHardwareAcceleration_Checked(int state);
+    void pausePlaybackWhenMinimized_Checked(Qt::CheckState state);
+    void pauseOnLastFrameOfVideo_Checked(Qt::CheckState state);
+    void useHardwareAcceleration_Checked(Qt::CheckState state);
     void defaultVideoContrast_ValueChanged(int value);
     void defaultAspectRatio_Changed(int index);
 

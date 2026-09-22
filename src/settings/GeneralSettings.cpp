@@ -38,10 +38,10 @@ GeneralSettings::GeneralSettings(QWidget *parent) : QWidget(parent), ui(new Ui::
     ui->setupUi(this);
 
     connect(ui->language, &QComboBox::currentIndexChanged, this, &GeneralSettings::language_Changed);
-    connect(ui->systemTray, &QCheckBox::stateChanged, this, &GeneralSettings::systemTrayIcon_Checked);
+    connect(ui->systemTray, &QCheckBox::checkStateChanged, this, &GeneralSettings::systemTrayIcon_Checked);
     connect(ui->updateBranch, &QComboBox::currentIndexChanged, this, &GeneralSettings::updateBranch_Changed);
     connect(ui->checkForUpdate, &QPushButton::clicked, this, &GeneralSettings::checkForUpdates_Clicked);
-    connect(ui->automaticUpdates, &QCheckBox::stateChanged, this, &GeneralSettings::enableAutomaticUpdates_Checked);
+    connect(ui->automaticUpdates, &QCheckBox::checkStateChanged, this, &GeneralSettings::enableAutomaticUpdates_Checked);
 
     const QSettings settings;
     ui->language->setCurrentIndex(settings.value("language", 0).toInt());
@@ -95,7 +95,7 @@ void GeneralSettings::language_Changed(int index)
     emit settingsChanged();
 }
 
-void GeneralSettings::systemTrayIcon_Checked(int state)
+void GeneralSettings::systemTrayIcon_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
@@ -127,7 +127,7 @@ void GeneralSettings::checkForUpdates_Clicked()
     m_updateNetworkManager->get(request);
 }
 
-void GeneralSettings::enableAutomaticUpdates_Checked(int state)
+void GeneralSettings::enableAutomaticUpdates_Checked(Qt::CheckState state)
 {
     unsavedChanges();
     emit settingsChanged();
