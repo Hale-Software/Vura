@@ -8,8 +8,8 @@ target_sources(
         components/MonitoredTextEdit.h
         components/PlaylistEmptyStateWidget.cpp
         components/PlaylistEmptyStateWidget.h
-        components/Slider.cpp
-        components/Slider.h
+        components/RecentFilesMenu.cpp
+        components/RecentFilesMenu.h
         components/SliderIgnoreScroll.cpp
         components/SliderIgnoreScroll.h
         components/SpinBoxIgnoreWheel.h

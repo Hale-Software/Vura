@@ -18,6 +18,24 @@
 
 #include "helpers.h"
 
+#include <QFileInfo>
+#include <QByteArray>
+#include <QStringList>
+#include <QDir>
+#include <QFile>
+#include <QUrl>
+#include <QStandardPaths>
+#include <QFileInfo>
+#include <QRegularExpression>
+#include <QTime>
+#include <QMediaMetaData>
+#include <QSize>
+#include <QSettings>
+
+#ifdef VURA_HAVE_QTMULTIMEDIA
+#include <QAudio>
+#endif
+
 
 void Helpers::simulateApplicationCrash()
 {
@@ -148,4 +166,37 @@ QString Helpers::videoResolutionString(const QMediaMetaData &metaData)
     }
 
     return "UNKNOWN";
+}
+
+QString Helpers::getLastOpenedDirectory()
+{
+    return QSettings().value("lastFileDirectory", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)).toString();
+}
+
+void Helpers::setLastOpenedDirectory(const QString &dir)
+{
+    if (dir.isEmpty())
+        return;
+
+    QSettings().setValue("lastFileDirectory", dir);
+}
+
+qreal Helpers::sliderToLinear(const int &sliderValue)
+{
+    const qreal fraction = qreal(sliderValue) / 100.0;
+#ifdef VURA_HAVE_QTMULTIMEDIA
+    return QAudio::convertVolume(fraction, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
+#else
+    return fraction * fraction * fraction;
+#endif
+}
+
+int Helpers::linearToSlider(qreal linear)
+{
+#ifdef VURA_HAVE_QTMULTIMEDIA
+    const qreal fraction = QAudio::convertVolume(linear, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
+#else
+    const qreal fraction = std::cbrt(linear);
+#endif
+    return int(qRound(fraction * 100.0));
 }

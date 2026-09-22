@@ -18,19 +18,10 @@
 
 #pragma once
 
-#include <QFileInfo>
 #include <QString>
-#include <QByteArray>
-#include <QStringList>
-#include <QDir>
-#include <QFile>
-#include <QUrl>
-#include <QStandardPaths>
-#include <QFileInfo>
-#include <QRegularExpression>
-#include <QTime>
-#include <QMediaMetaData>
-#include <QSize>
+
+class QMediaMetaData;
+class QUrl;
 
 
 class Helpers
@@ -47,6 +38,10 @@ public:
     static QString timestampString(qint64 position, qint64 duration);
     static QString networkUrlFormatter(QString networkUrl);
     static QString videoResolutionString(const QMediaMetaData &metaData);
+    static QString getLastOpenedDirectory();
+    static void setLastOpenedDirectory(const QString &dir);
+    static qreal sliderToLinear(const int &sliderValue);
+    int linearToSlider(qreal linear);
 
 };
 

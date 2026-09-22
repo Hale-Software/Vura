@@ -18,24 +18,28 @@
 
 #pragma once
 
+#include <QList>
 #include <QObject>
-#include <QStandardPaths>
-#include <QDebug>
+#include <QString>
 
 #include <libvura/io/database-manager.h>
 #include <libvura/models/video-marker-record.h>
-#include <libvura/util/crypto.h>
 
-#include "VideoSlider.h"
+class QUrl;
+class VideoSlider;
 
 
 class VideoMarkerController : public QObject
 {
     Q_OBJECT
 public:
-    explicit VideoMarkerController(VideoSlider &slider, QObject* parent = nullptr);
+    explicit VideoMarkerController(VideoSlider &slider, QObject *parent = nullptr);
 
     QList<VideoMarkerRecord> getVideoMarkers() const;
+
+    /// The nearest visible marker within the proximity threshold of the
+    /// playhead, or a default record (id <= 0) if there isn't one.
+    VideoMarkerRecord getSelectedMarker() const;
     bool checkMarkerProximity() const;
 
 signals:
@@ -44,55 +48,30 @@ signals:
     void updateVideoSlider(QList<VideoMarkerRecord> markers);
 
 public slots:
-    void setCumshotMarkerVisibility(bool visible);
-    void setCyanMarkerVisibility(bool visible);
-    void setDialogMarkerVisibility(bool visible);
-    void setMagentaMarkerVisibility(bool visible);
-    void setMarkerVisibility(bool visible);
-    void setOrangeMarkerVisibility(bool visible);
-    void setSceneMarkerVisibility(bool visible);
-    void setStripMarkerVisibility(bool visible);
-    void saveVideoMarkers() const;
-    void loadVideoMarkers(const QUrl &source);
-    void addCumshotMarker();
-    void addCyanMarker();
-    void addDialogMarker();
-    void addMagentaMarker();
-    void addMarker();
-    void addOrangeMarker();
-    void addSceneMarker();
-    void addStripMarker();
+    void setTypeVisible(const QString &type, bool visible);
+    void addMarkerOfType(const QString &type);
+
     void addVideoMarker(const VideoMarkerRecord &videoMarker);
-    VideoMarkerRecord getSelectedMarker();
     void deleteVideoMarker(const VideoMarkerRecord &videoMarker);
     void clearSelectedMarker();
     void clearMarkers();
+
+    void saveVideoMarkers() const;
+    void loadVideoMarkers(const QUrl &source);
+
     void goToNextMarker();
     void goToPreviousMarker();
 
-
 private:
-    VideoMarkerRecord findNearestVisibleMarker(double sliderPercent, double markerRange) const;
     double getSliderPercent() const;
-    bool isPreviousMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
-    bool isNextMarkerAvailable(const VideoMarkerRecord &videoMarker) const;
-    VideoMarkerRecord findNearestMarker(double sliderPercent);
+    VideoMarkerRecord findNearestVisibleMarker(double sliderPercent) const;
     void refreshVideoMarkers();
+    void reloadAndRepaint();
 
     VideoSlider *m_slider = nullptr;
     DatabaseManager *m_databaseManager = nullptr;
 
     QList<VideoMarkerRecord> m_videoMarkers;
-    QString m_videoMarkersFile;
     QString m_sourceName;
-
-    bool m_cumshotMarkerVisible = true;
-    bool m_cyanMarkerVisible = true;
-    bool m_dialogMarkerVisible = true;
-    bool m_magentaMarkerVisible = true;
-    bool m_markerVisible = true;
-    bool m_orangeMarkerVisible = true;
-    bool m_sceneMarkerVisible = true;
-    bool m_stripMarkerVisible = true;
-
+    
 };

@@ -34,6 +34,8 @@
 #include <libvura/platform/platform.h>
 #include <libvura/subtitles/subtitle-track.h>
 
+#include <utility>
+
 #include "HelpDialog.h"
 #include "AboutDialog.h"
 #include "UpdateDialog.h"
@@ -69,6 +71,7 @@ class MediaController;
 class SeekSlider;
 class SleepInhibitor;
 class VideoStage;
+class RecentFilesMenu;
 
 
 namespace Ui {
@@ -113,15 +116,11 @@ signals:
     void quitProgram();
 
 private slots:
-    void updateRecentFileActions() const;
-
     // File Menu
     void actionFileOpenFile();
     void actionFileOpenMultipleFiles();
     void actionFileOpenFolder();
     void actionOpenNetworkStream();
-    void openRecentFile();
-    void actionFileOpenRecentClear();
     void actionFileOpenPlaylist();
     void actionFileSavePlaylist();
     void actionEmergencyClose();
@@ -182,7 +181,6 @@ public slots:
     void continuePlaybackDelete();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
-    void setCurrentFile(const QUrl &mediaUrl);
     void updaterErrorOccurred(QString errorMessage);
     void updateAvailable(bool available);
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
@@ -200,16 +198,28 @@ private:
     void rebuildTrackMenus();
     void rebuildAudioDeviceMenu();
 
-    void updateRecentFilesList(const QString &fileName);
-
     void setTrackInfo(const QString &trackInfo);
     static QString trackName(const QMediaMetaData &metaData, int index);
     void setApplicationWindowTitle();
 
     void updateMarkerMenuItems();
 
-    void configureUpdater();
     void showResumeOverlay(qint64 savedPosition);
+    void addMedia(const QList<QUrl> &mediaList);
+
+    template <typename Dialog, typename... Args>
+    Dialog *showDialog(QPointer<Dialog> &slot, Args &&...args)
+    {
+        if (slot)
+            slot->close();
+
+        slot = new Dialog(std::forward<Args>(args)...);
+        slot->setAttribute(Qt::WA_DeleteOnClose);
+        slot->show();
+        return slot;
+    }
+
+    void openMarkerEditor(const VideoMarkerRecord &marker);
 
     Ui::VuraMainWindow *ui;
     SystemTrayWidget *m_systemTray = nullptr;
@@ -227,31 +237,22 @@ private:
     SubtitleCue* m_currentCue = nullptr;
     CrashReporter *m_crashReporter = nullptr;
     UpdateManager *m_updateManager = nullptr;
+    RecentFilesMenu *m_recentFiles = nullptr;
     QProgressDialog *m_updateProgressDialog = nullptr;
 
-    QAction *m_recentFileActions[10];
-    QAction *m_recentFilesSeparator;
     QTimer *m_videoSliderHideTimer = nullptr;
     QTimer *m_continuePlaybackBannerTimer = nullptr;
     QUrl m_currentSource;
     QPointer<QFrame> m_resumeOverlay;
+    QHash<QString, QAction *> m_markerToggleActions;
 
     bool m_replacePlaylist = false;
     bool m_wasMaximized = false;
     bool m_subtitlesEnabled = false;
     bool m_showingVideoControls = false;
     bool m_wasPlaylistShowing = false;
-    bool m_cumshotMarkerVisible = true;
-    bool m_cyanMarkerVisible = true;
-    bool m_dialogMarkerVisible = true;
-    bool m_magentaMarkerVisible = true;
-    bool m_markerVisible = true;
-    bool m_orangeMarkerVisible = true;
-    bool m_sceneMarkerVisible = true;
-    bool m_stripMarkerVisible = true;
     qint64 m_lastPosition = 0;
     qint64 m_subtitleOffsetMs = 0;
-    static const int MaxRecentFiles = 10;
     int m_inMarker = 0;
     int m_outMarker = 0;
     QString m_trackInfo;
