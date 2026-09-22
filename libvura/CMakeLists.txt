@@ -89,18 +89,14 @@ target_sources(
     PUBLIC
     libvura/media-engine/engine.h
     libvura/media-engine/engine-factory.h
-    #libvura/media-engine/mpv-engine.h
     libvura/media-engine/null-engine.h
-    libvura/media-engine/qt-engine.h
     libvura/media-engine/video-output.h
     libvura/media-engine/video-stage.h
 
     PRIVATE
     libvura/media-engine/engine.cpp
     libvura/media-engine/engine-factory.cpp
-    #libvura/media-engine/mpv-engine.cpp
     libvura/media-engine/null-engine.cpp
-    libvura/media-engine/qt-engine.cpp
     libvura/media-engine/video-stage.cpp
 )
 
@@ -250,6 +246,10 @@ if (VURA_ENABLE_QTMULTIMEDIA)
     target_sources(
         libvura
         PUBLIC
+        libvura/media-engine/qt-engine.h
+
+        PRIVATE
+        libvura/media-engine/qt-engine.cpp
     )
 
     target_link_libraries(
@@ -257,18 +257,26 @@ if (VURA_ENABLE_QTMULTIMEDIA)
         Qt6::Multimedia
         Qt6::MultimediaWidgets
     )
+
+    target_compile_definitions(libvura PRIVATE VURA_HAVE_QTMULTIMEDIA)
 endif ()
 
 if (VURA_ENABLE_MPV)
     target_sources(
         libvura
         PUBLIC
+        libvura/media-engine/mpv-engine.h
+
+        PRIVATE
+        libvura/media-engine/mpv-engine.cpp
     )
 
     target_link_libraries(
         libvura PRIVATE
         PkgConfig::MPV
     )
+
+    target_compile_definitions(libvura PRIVATE VURA_HAVE_MPV)
 endif ()
 
 if (VURA_ENABLE_OPENGL)
@@ -283,6 +291,8 @@ if (VURA_ENABLE_OPENGL)
         Qt6::MultimediaWidgets
         Qt6::OpenGLWidgets
     )
+
+    target_compile_definitions(libvura PRIVATE VURA_HAVE_OPENGL)
 endif ()
 
 target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)

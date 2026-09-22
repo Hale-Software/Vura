@@ -162,19 +162,16 @@
      <addaction name="actionPlaybackModeLoopCurrentTrack"/>
      <addaction name="actionPlaybackModeShuffle"/>
     </widget>
-    <widget class="QMenu" name="menuEngine">
+    <widget class="QMenu" name="menuPlaybackEngine">
      <property name="title">
       <string>Engine</string>
      </property>
-     <addaction name="actionPlaybackEngineQMediaPlayer"/>
-     <addaction name="actionPlaybackEngineOpenGL"/>
-     <addaction name="actionPlaybackEngineMPV"/>
     </widget>
     <addaction name="menuSpeed"/>
     <addaction name="separator"/>
     <addaction name="menuPlaybackMode"/>
     <addaction name="separator"/>
-    <addaction name="menuEngine"/>
+    <addaction name="menuPlaybackEngine"/>
     <addaction name="separator"/>
     <addaction name="actionPlaybackNextFrame"/>
     <addaction name="actionPlaybackPreviousFrame"/>
@@ -1390,7 +1387,7 @@
     <string>OpenGL</string>
    </property>
   </action>
-  <action name="actionPlaybackEngineMPV">
+  <action name="action_2">
    <property name="checkable">
     <bool>true</bool>
    </property>

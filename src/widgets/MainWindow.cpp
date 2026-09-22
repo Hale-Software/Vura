@@ -51,7 +51,7 @@
 #include <QWidget>
 #include <QtMath>
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
 #include <QAudio>
 #endif
 
@@ -63,7 +63,7 @@ namespace {
 qreal sliderToLinear(int sliderValue)
 {
     const qreal fraction = qreal(sliderValue) / 100.0;
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
     return QAudio::convertVolume(fraction, QAudio::LogarithmicVolumeScale,
                                  QAudio::LinearVolumeScale);
 #else
@@ -73,7 +73,7 @@ qreal sliderToLinear(int sliderValue)
 
 int linearToSlider(qreal linear)
 {
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
     const qreal fraction = QAudio::convertVolume(linear, QAudio::LinearVolumeScale,
                                                  QAudio::LogarithmicVolumeScale);
 #else

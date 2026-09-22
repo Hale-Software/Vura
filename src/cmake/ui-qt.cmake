@@ -14,6 +14,8 @@ if (VURA_ENABLE_QTMULTIMEDIA)
         Qt6::Multimedia
         Qt6::MultimediaWidgets
     )
+
+    target_compile_definitions(vura PRIVATE VURA_HAVE_QTMULTIMEDIA)
 endif ()
 
 if (VURA_ENABLE_MPV)
@@ -21,6 +23,8 @@ if (VURA_ENABLE_MPV)
         vura PRIVATE
         PkgConfig::MPV
     )
+
+    target_compile_definitions(vura PRIVATE VURA_HAVE_MPV)
 
     # OS-Specific system libraries linking
     if(WIN32)
@@ -41,6 +45,8 @@ if (VURA_ENABLE_OPENGL)
         Qt6::MultimediaWidgets
         Qt6::OpenGLWidgets
     )
+
+    target_compile_definitions(vura PRIVATE VURA_HAVE_OPENGL)
 
     # OS-Specific system libraries linking
     if(WIN32)

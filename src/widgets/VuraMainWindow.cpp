@@ -59,7 +59,7 @@
 #include <QTimer>
 
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
 #include <QAudio>
 #endif
 
@@ -76,9 +76,8 @@ namespace {
 qreal sliderToLinear(int sliderValue)
 {
     const qreal fraction = qreal(sliderValue) / 100.0;
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
-    return QAudio::convertVolume(fraction, QAudio::LogarithmicVolumeScale,
-                                 QAudio::LinearVolumeScale);
+#ifdef VURA_HAVE_QTMULTIMEDIA
+    return QAudio::convertVolume(fraction, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
 #else
     return fraction * fraction * fraction;
 #endif
@@ -86,9 +85,8 @@ qreal sliderToLinear(int sliderValue)
 
 int linearToSlider(qreal linear)
 {
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
-    const qreal fraction = QAudio::convertVolume(linear, QAudio::LinearVolumeScale,
-                                                 QAudio::LogarithmicVolumeScale);
+#ifdef VURA_HAVE_QTMULTIMEDIA
+    const qreal fraction = QAudio::convertVolume(linear, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
 #else
     const qreal fraction = std::cbrt(linear);
 #endif
@@ -886,6 +884,25 @@ void VuraMainWindow::initSystemTray()
 void VuraMainWindow::buildMenus()
 {
     const QSettings settings;
+
+    auto *backendGroup = new QActionGroup(this);
+    for (const media::BackendInfo &info : media::availableBackends()) {
+        QAction *action = ui->menuPlaybackEngine->addAction(info.displayName);
+        action->setCheckable(true);
+        action->setEnabled(info.available);
+        action->setChecked(info.backend == m_controller->backend());
+        backendGroup->addAction(action);
+
+        connect(action, &QAction::triggered, this, [this, info] {
+            QString error;
+            if (!m_controller->setBackend(info.backend, &error))
+                qCritical() << "Could not switch backend: " << error;
+            else if (!error.isEmpty())
+                qCritical() << error;
+            else
+                qInfo() << "Now using the " << info.displayName << " backend.";
+        });
+    }
 
     m_recentFilesSeparator = ui->menuFileOpenRecent->addSeparator();
 

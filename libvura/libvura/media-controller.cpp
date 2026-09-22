@@ -17,33 +17,45 @@
  ******************************************************************************/
 
 #include "media-controller.h"
-
 #include "util/resume-store.h"
 
-#include <QDebug>
 #include <QTimer>
+#include <QSettings>
+#include <QDebug>
 
 #include <algorithm>
 
-namespace {
-/// Backends report position far more often than a UI can use. 250 ms keeps
-/// the clock honest without waking the whole widget tree 60 times a second.
-constexpr media::Msec kPositionEmitThreshold = 250;
 
-/// Seeks issued while dragging are coalesced into one per interval.
-constexpr int kSeekCoalesceMs = 60;
+int positionEmitThreshold()
+{
+    // Backends report position far more often than a UI can use.
+    // Keeps the clock honest without waking the whole widget tree 60 times a second.
+    QSettings settings;
+    return settings.value("positionEmitThreshold", 250).toInt();
+}
 
-constexpr int kMaxRetriesPerItem = 1;
-} // namespace
+int seekCoalesceMs()
+{
+    // Seeks issued while dragging are coalesced into one per interval.
+    QSettings settings;
+    return settings.value("seekCoalesceMs", 60).toInt();
+}
+
+int mediaControllerMaxRetriesPerItem()
+{
+    QSettings settings;
+    return settings.value("mediaControllerMaxRetriesPerItem", 1).toInt();
+}
+
 
 MediaController::MediaController(QObject *parent)
-    : QObject(parent)
-    , m_playlist(new Playlist(this))
-    , m_resumeStore(new ResumeStore(this))
-    , m_seekTimer(new QTimer(this))
+    : QObject(parent),
+      m_playlist(new Playlist(this)),
+      m_resumeStore(new ResumeStore(this)),
+      m_seekTimer(new QTimer(this))
 {
     m_seekTimer->setSingleShot(true);
-    m_seekTimer->setInterval(kSeekCoalesceMs);
+    m_seekTimer->setInterval(seekCoalesceMs());
     connect(m_seekTimer, &QTimer::timeout, this, &MediaController::flushSeek);
 
     QString error;
@@ -147,8 +159,7 @@ void MediaController::connectEngine()
         m_position = ms;
         // A backwards jump is a seek and must show immediately; otherwise
         // throttle so the UI is not flooded.
-        if (m_lastEmittedPosition < 0 || ms < m_lastEmittedPosition
-            || ms - m_lastEmittedPosition >= kPositionEmitThreshold) {
+        if (m_lastEmittedPosition < 0 || ms < m_lastEmittedPosition || ms - m_lastEmittedPosition >= positionEmitThreshold()) {
             m_lastEmittedPosition = ms;
             emit positionChanged(ms);
         }
@@ -160,15 +171,13 @@ void MediaController::connectEngine()
         emit durationChanged(ms);
     });
 
-    connect(engine, &media::Engine::playbackStateChanged, this,
-            [this](media::PlaybackState state) {
+    connect(engine, &media::Engine::playbackStateChanged, this, [this](media::PlaybackState state) {
                 if (state != media::PlaybackState::Playing)
                     rememberPosition();
                 emit playbackStateChanged(state);
             });
 
-    connect(engine, &media::Engine::mediaStatusChanged, this,
-            &MediaController::handleMediaStatus);
+    connect(engine, &media::Engine::mediaStatusChanged, this, &MediaController::handleMediaStatus);
     connect(engine, &media::Engine::errorOccurred, this, &MediaController::handleError);
     connect(engine, &media::Engine::seekableChanged, this, &MediaController::seekableChanged);
     connect(engine, &media::Engine::rateChanged, this, &MediaController::rateChanged);
@@ -184,17 +193,14 @@ void MediaController::connectEngine()
     });
 
     connect(engine, &media::Engine::metaDataChanged, this, [this](const QVariantMap &data) {
-        m_playlist->updateItemInfo(m_playlist->currentIndex(),
-                                   data.value(QLatin1String(media::meta::Title)).toString(),
-                                   m_duration);
+        m_playlist->updateItemInfo(m_playlist->currentIndex(), data.value(QLatin1String(media::meta::Title)).toString(), m_duration);
         emit metaDataChanged(data);
     });
 
     connect(engine, &media::Engine::audioDevicesChanged, this, &MediaController::audioDevicesChanged);
 }
 
-void MediaController::setVideoOutputProvider(
-        std::function<media::VideoOutput *(media::Engine *)> provider)
+void MediaController::setVideoOutputProvider(std::function<media::VideoOutput *(media::Engine *)> provider)
 {
     m_outputProvider = std::move(provider);
     attachOutput();
@@ -210,8 +216,7 @@ void MediaController::attachOutput()
         return;
 
     if (!m_engine->attachOutput(output)) {
-        qWarning() << "Engine" << m_engine->name()
-                   << "rejected the supplied video output kind";
+        qWarning() << "Engine" << m_engine->name() << "rejected the supplied video output kind";
     }
 }
 
@@ -329,7 +334,7 @@ void MediaController::handleError(media::ErrorKind kind, const QString &detail)
 
     // Recovery policy lives here rather than in the adapters: a network
     // stall is worth one retry, a missing codec is not.
-    if (media::isRecoverable(kind) && m_retriesForCurrentItem < kMaxRetriesPerItem) {
+    if (media::isRecoverable(kind) && m_retriesForCurrentItem < mediaControllerMaxRetriesPerItem()) {
         ++m_retriesForCurrentItem;
         const media::Msec resumeAt = m_position;
         QTimer::singleShot(1000, this, [this, resumeAt] {

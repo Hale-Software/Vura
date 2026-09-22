@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "video-stage.h"
 
 #include "engine.h"
@@ -6,12 +24,16 @@
 #include <QPainter>
 #include <QResizeEvent>
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
 #include <QVideoSink>
 #endif
 
-#ifdef MEDIA_HAVE_MPV
+#ifdef VURA_HAVE_MPV
 #include <QOpenGLContext>
+#endif
+
+#ifdef VURA_HAVE_OPENGL
+
 #endif
 
 // ---------------------------------------------------------------- idle ----
@@ -61,9 +83,7 @@ void IdleVideoWidget::paintEvent(QPaintEvent *)
 
     if (!m_cover.isNull()) {
         const QSize scaled = m_cover.size().scaled(size() * 0.8, Qt::KeepAspectRatio);
-        const QRect target(QPoint((width() - scaled.width()) / 2,
-                                  (height() - scaled.height()) / 2),
-                           scaled);
+        const QRect target(QPoint((width() - scaled.width()) / 2, (height() - scaled.height()) / 2), scaled);
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
         painter.drawImage(target, m_cover);
         return;
@@ -78,9 +98,8 @@ void IdleVideoWidget::paintEvent(QPaintEvent *)
 
 // ---------------------------------------------------------------- sink ----
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
-SinkVideoWidget::SinkVideoWidget(QWidget *parent)
-    : QVideoWidget(parent)
+#ifdef VURA_HAVE_QTMULTIMEDIA
+SinkVideoWidget::SinkVideoWidget(QWidget *parent) : QVideoWidget(parent)
 {
     setMinimumSize(320, 180);
     setAspectRatioMode(Qt::KeepAspectRatio);
@@ -109,9 +128,8 @@ void SinkVideoWidget::clearSurface()
 
 // ------------------------------------------------------------------ gl ----
 
-#ifdef MEDIA_HAVE_MPV
-GLVideoWidget::GLVideoWidget(QWidget *parent)
-    : QOpenGLWidget(parent)
+#ifdef VURA_HAVE_MPV
+GLVideoWidget::GLVideoWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     setMinimumSize(320, 180);
     setUpdateBehavior(QOpenGLWidget::PartialUpdate);
@@ -183,8 +201,7 @@ void GLVideoWidget::paintGL()
 
 // --------------------------------------------------------------- stage ----
 
-VideoStage::VideoStage(QWidget *parent)
-    : QStackedWidget(parent)
+VideoStage::VideoStage(QWidget *parent) : QStackedWidget(parent)
 {
     // Only the idle surface is built up front. A GL widget spins up a real
     // context the moment it is constructed, so building one for a backend
@@ -205,7 +222,7 @@ media::VideoOutput *VideoStage::outputFor(media::Engine *engine)
     // here at all.
     switch (engine->requiredOutput()) {
     case media::OutputKind::VideoSink:
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
         if (!m_sink) {
             m_sink = new SinkVideoWidget(this);
             addWidget(m_sink);
@@ -217,7 +234,7 @@ media::VideoOutput *VideoStage::outputFor(media::Engine *engine)
 #endif
 
     case media::OutputKind::OpenGL:
-#ifdef MEDIA_HAVE_MPV
+#ifdef VURA_HAVE_MPV
         if (!m_gl) {
             m_gl = new GLVideoWidget(this);
             addWidget(m_gl);

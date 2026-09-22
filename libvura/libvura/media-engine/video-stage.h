@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #pragma once
 
 #include "video-output.h"
@@ -5,12 +23,16 @@
 #include <QStackedWidget>
 #include <QWidget>
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
 #include <QVideoWidget>
 #endif
 
-#ifdef MEDIA_HAVE_MPV
+#ifdef VURA_HAVE_MPV
 #include <QOpenGLWidget>
+#endif
+
+#ifdef VURA_HAVE_OPENGL
+
 #endif
 
 #include <QMutex>
@@ -47,7 +69,7 @@ private:
     QString m_caption;
 };
 
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
 /// Output for engines that push QVideoFrames into a sink Qt owns.
 class SinkVideoWidget : public QVideoWidget, public media::VideoSinkOutput
 {
@@ -63,7 +85,7 @@ public:
 };
 #endif
 
-#ifdef MEDIA_HAVE_MPV
+#ifdef VURA_HAVE_MPV
 /// Output for engines that render into our GL framebuffer themselves.
 ///
 /// This widget knows nothing about mpv. The engine installs a render
@@ -128,10 +150,10 @@ private:
 
     // Created on first use by outputFor(); see the note in the constructor.
     IdleVideoWidget *m_idle = nullptr;
-#ifdef MEDIA_HAVE_QTMULTIMEDIA
+#ifdef VURA_HAVE_QTMULTIMEDIA
     SinkVideoWidget *m_sink = nullptr;
 #endif
-#ifdef MEDIA_HAVE_MPV
+#ifdef VURA_HAVE_MPV
     GLVideoWidget *m_gl = nullptr;
 #endif
 };
