@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network Multimedia MultimediaWidgets OpenGLWidgets Sql)
+#find_package(Qt6 REQUIRED COMPONENTS Widgets Network Multimedia MultimediaWidgets OpenGLWidgets Sql)
 
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
@@ -176,24 +176,6 @@ target_sources(
         libvura/util/single-instance-controller.cpp
 )
 
-target_link_libraries(
-        libvura PRIVATE
-        Qt6::Widgets
-        Qt6::Network
-        Qt6::Multimedia
-        Qt6::MultimediaWidgets
-        Qt6::OpenGLWidgets
-        Qt6::Sql
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
-)
-
-target_compile_definitions(libvura PUBLIC MEDIA_HAVE_QTMULTIMEDIA)
-
 # Platform specific files
 if(WIN32)
     target_sources(
@@ -250,5 +232,57 @@ elseif(UNIX)
         libvura/platform/linux/update-manager.cpp
     )
 endif()
+
+target_link_libraries(
+        libvura PRIVATE
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::Sql
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
+)
+
+if (VURA_ENABLE_QTMULTIMEDIA)
+    target_sources(
+        libvura
+        PUBLIC
+    )
+
+    target_link_libraries(
+        libvura PRIVATE
+        Qt6::Multimedia
+        Qt6::MultimediaWidgets
+    )
+endif ()
+
+if (VURA_ENABLE_MPV)
+    target_sources(
+        libvura
+        PUBLIC
+    )
+
+    target_link_libraries(
+        libvura PRIVATE
+        PkgConfig::MPV
+    )
+endif ()
+
+if (VURA_ENABLE_OPENGL)
+    target_sources(
+        libvura
+        PUBLIC
+    )
+
+    target_link_libraries(
+        libvura PRIVATE
+        Qt6::Multimedia
+        Qt6::MultimediaWidgets
+        Qt6::OpenGLWidgets
+    )
+endif ()
 
 target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)

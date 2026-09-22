@@ -162,9 +162,19 @@
      <addaction name="actionPlaybackModeLoopCurrentTrack"/>
      <addaction name="actionPlaybackModeShuffle"/>
     </widget>
+    <widget class="QMenu" name="menuEngine">
+     <property name="title">
+      <string>Engine</string>
+     </property>
+     <addaction name="actionPlaybackEngineQMediaPlayer"/>
+     <addaction name="actionPlaybackEngineOpenGL"/>
+     <addaction name="actionPlaybackEngineMPV"/>
+    </widget>
     <addaction name="menuSpeed"/>
     <addaction name="separator"/>
     <addaction name="menuPlaybackMode"/>
+    <addaction name="separator"/>
+    <addaction name="menuEngine"/>
     <addaction name="separator"/>
     <addaction name="actionPlaybackNextFrame"/>
     <addaction name="actionPlaybackPreviousFrame"/>
@@ -1356,6 +1366,39 @@
    </property>
    <property name="text">
     <string>Toggle Video Resolution in Titlebar</string>
+   </property>
+  </action>
+  <action name="actionPlaybackEngineQMediaPlayer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>QMediaPlayer</string>
+   </property>
+  </action>
+  <action name="actionPlaybackEngineOpenGL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>OpenGL</string>
+   </property>
+  </action>
+  <action name="actionPlaybackEngineMPV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>MPV</string>
    </property>
   </action>
  </widget>

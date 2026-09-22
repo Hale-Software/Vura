@@ -1,14 +1,58 @@
-find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg Sql)
+#find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg Sql)
 
 target_link_libraries(
         vura PRIVATE
         Qt6::Widgets
-        Qt6::MultimediaWidgets
         Qt6::Network
-        Qt6::OpenGLWidgets
         Qt6::Svg
         Qt6::Sql
 )
+
+if (VURA_ENABLE_QTMULTIMEDIA)
+    target_link_libraries(
+        vura PRIVATE
+        Qt6::Multimedia
+        Qt6::MultimediaWidgets
+    )
+endif ()
+
+if (VURA_ENABLE_MPV)
+    target_link_libraries(
+        vura PRIVATE
+        PkgConfig::MPV
+    )
+
+    # OS-Specific system libraries linking
+    if(WIN32)
+        target_link_libraries(vura PRIVATE Opengl32)
+    elseif(APPLE)
+        # Target macOS native OpenGL Framework wrapper
+        find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+        target_link_libraries(vura PRIVATE ${OPENGL_LIBRARY})
+    elseif(UNIX AND NOT APPLE)
+        target_link_libraries(vura PRIVATE GL)
+    endif()
+endif ()
+
+if (VURA_ENABLE_OPENGL)
+    target_link_libraries(
+        vura PRIVATE
+        Qt6::Multimedia
+        Qt6::MultimediaWidgets
+        Qt6::OpenGLWidgets
+    )
+
+    # OS-Specific system libraries linking
+    if(WIN32)
+        target_link_libraries(vura PRIVATE Opengl32)
+    elseif(APPLE)
+        # Target macOS native OpenGL Framework wrapper
+        find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+        target_link_libraries(vura PRIVATE ${OPENGL_LIBRARY})
+    elseif(UNIX AND NOT APPLE)
+        target_link_libraries(vura PRIVATE GL)
+    endif()
+endif ()
 
 set_target_properties(
         vura
@@ -44,14 +88,3 @@ target_sources(
         forms/VuraMainWindow.ui
         forms/WhatsNewDialog.ui
 )
-
-# OS-Specific system libraries linking
-if(WIN32)
-    target_link_libraries(vura PRIVATE Opengl32)
-elseif(APPLE)
-    # Target macOS native OpenGL Framework wrapper
-    find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-    target_link_libraries(vura PRIVATE ${OPENGL_LIBRARY})
-elseif(UNIX AND NOT APPLE)
-    target_link_libraries(vura PRIVATE GL)
-endif()
