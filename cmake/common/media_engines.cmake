@@ -3,7 +3,7 @@
 include_guard(GLOBAL)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network Sql Svg)
-find_package(Qt6 QUIET COMPONENTS Multimedia MultimediaWidgets OpenGLWidgets DBus Test)
+find_package(Qt6 QUIET COMPONENTS Multimedia MultimediaWidgets OpenGL OpenGLWidgets DBus Test)
 
 # Backend detection
 

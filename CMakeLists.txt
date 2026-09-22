@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28...3.30)
 
 option(MEDIA_ENABLE_MPV "Build the libmpv backend when it is available" OFF)
 option(MEDIA_ENABLE_QTMULTIMEDIA "Build the Qt Multimedia backend when available" ON)
-option(MEDIA_ENABLE_OPENGL "Build the OpenGL backend when available" OFF)
+option(MEDIA_ENABLE_OPENGL "Build the OpenGL backend when available" ON)
 
 option(LIBVURA_BUILD_TESTS "Build the tests for libvura" OFF)
 option(UI_BUILD_TESTS "Build the tests for UI" OFF)

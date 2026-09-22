@@ -64,6 +64,7 @@ enum class ErrorKind {
     NetworkFailure,
     DecodeFailure,
     Internal,
+    Resource
 };
 Q_ENUM_NS(ErrorKind)
 

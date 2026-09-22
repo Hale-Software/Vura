@@ -33,7 +33,7 @@
 #endif
 
 #ifdef VURA_HAVE_OPENGL
-
+#include "opengl-engine.h"
 #endif
 
 #include <stdexcept>

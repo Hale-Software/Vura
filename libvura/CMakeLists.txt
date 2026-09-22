@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-#find_package(Qt6 REQUIRED COMPONENTS Widgets Network Multimedia MultimediaWidgets OpenGLWidgets Sql)
-
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
 
@@ -119,32 +117,6 @@ target_sources(
         libvura/models/playlist.cpp
         libvura/models/types.cpp
 )
-
-# opengl Directory
-#target_sources(
-#        libvura
-#        PUBLIC
-#        libvura/media-engine/audio-decoder.h
-#        libvura/media-engine/audio-output.h
-#        libvura/media-engine/decoder-thread.h
-#        libvura/media-engine/demuxer-thread.h
-#        libvura/media-engine/fragment.glsl
-#        libvura/media-engine/frame-queue.h
-#        libvura/media-engine/media-engine.h
-#        libvura/media-engine/packet-queue.h
-#        libvura/media-engine/vertex.glsl
-#        libvura/media-engine/video-widget.h
-
-#        PRIVATE
-#        libvura/media-engine/audio-decoder.cpp
-#        libvura/media-engine/audio-output.cpp
-#        libvura/media-engine/decoder-thread.cpp
-#        libvura/media-engine/demuxer-thread.cpp
-#        libvura/media-engine/frame-queue.cpp
-#        libvura/media-engine/media-engine.cpp
-#        libvura/media-engine/packet-queue.cpp
-#        libvura/media-engine/video-widget.cpp
-#)
 
 # subtitles Directory
 target_sources(
@@ -283,12 +255,21 @@ if (VURA_ENABLE_OPENGL)
     target_sources(
         libvura
         PUBLIC
+        libvura/media-engine/ffmpeg-pipeline.h
+        libvura/media-engine/gl-yuv-renderer.h
+        libvura/media-engine/opengl-engine.h
+
+        PRIVATE
+        libvura/media-engine/ffmpeg-pipeline.cpp
+        libvura/media-engine/gl-yuv-renderer.cpp
+        libvura/media-engine/opengl-engine.cpp
     )
 
     target_link_libraries(
         libvura PRIVATE
         Qt6::Multimedia
         Qt6::MultimediaWidgets
+        Qt6::OpenGL
         Qt6::OpenGLWidgets
     )
 

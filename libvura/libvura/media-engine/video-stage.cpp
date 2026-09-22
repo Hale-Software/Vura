@@ -28,12 +28,8 @@
 #include <QVideoSink>
 #endif
 
-#ifdef VURA_HAVE_MPV
+#ifdef VURA_HAVE_GL_OUTPUT
 #include <QOpenGLContext>
-#endif
-
-#ifdef VURA_HAVE_OPENGL
-
 #endif
 
 // ---------------------------------------------------------------- idle ----
@@ -128,7 +124,7 @@ void SinkVideoWidget::clearSurface()
 
 // ------------------------------------------------------------------ gl ----
 
-#ifdef VURA_HAVE_MPV
+#ifdef VURA_HAVE_GL_OUTPUT
 GLVideoWidget::GLVideoWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     setMinimumSize(320, 180);
@@ -234,7 +230,7 @@ media::VideoOutput *VideoStage::outputFor(media::Engine *engine)
 #endif
 
     case media::OutputKind::OpenGL:
-#ifdef VURA_HAVE_MPV
+#ifdef VURA_HAVE_GL_OUTPUT
         if (!m_gl) {
             m_gl = new GLVideoWidget(this);
             addWidget(m_gl);

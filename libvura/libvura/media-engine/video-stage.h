@@ -27,12 +27,10 @@
 #include <QVideoWidget>
 #endif
 
-#ifdef VURA_HAVE_MPV
+// Any backend that renders through GLVideoOutput needs the GL widget.
+#if defined(VURA_HAVE_MPV) || defined(VURA_HAVE_OPENGL)
+#define VURA_HAVE_GL_OUTPUT 1
 #include <QOpenGLWidget>
-#endif
-
-#ifdef VURA_HAVE_OPENGL
-
 #endif
 
 #include <QMutex>
@@ -85,12 +83,12 @@ public:
 };
 #endif
 
-#ifdef VURA_HAVE_MPV
+#ifdef VURA_HAVE_GL_OUTPUT
 /// Output for engines that render into our GL framebuffer themselves.
 ///
-/// This widget knows nothing about mpv. The engine installs a render
-/// callback on attach and we invoke it from paintGL(), which keeps
-/// mpv/render_gl.h out of the UI translation units entirely.
+/// This widget knows nothing about mpv or FFmpeg. The engine installs a
+/// render callback on attach and we invoke it from paintGL(), which keeps
+/// mpv/render_gl.h and the FFmpeg headers out of the UI translation units.
 class GLVideoWidget : public QOpenGLWidget, public media::GLVideoOutput
 {
     Q_OBJECT
@@ -153,7 +151,7 @@ private:
 #ifdef VURA_HAVE_QTMULTIMEDIA
     SinkVideoWidget *m_sink = nullptr;
 #endif
-#ifdef VURA_HAVE_MPV
+#ifdef VURA_HAVE_GL_OUTPUT
     GLVideoWidget *m_gl = nullptr;
 #endif
 };
