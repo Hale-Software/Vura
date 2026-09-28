@@ -37,7 +37,9 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QMimeData>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardItemModel>
 #include <QStatusBar>
@@ -388,50 +390,124 @@ void VuraMainWindow::actionFileOpenFolder()
 
 void VuraMainWindow::actionFileOpenPlaylist()
 {
-    QSettings settings;
-
     const QString fileName = QFileDialog::getOpenFileName(
         this,
-        tr("Open File"),
+        tr("Open Playlist"),
         Helpers::getLastOpenedDirectory(),
-        "XSPF playlist (*.xspf);;M3U playlist (*.m3u);;M3U8 playlist (*.m3u8);;All Files (*.*)");
+        playlistio::openFileFilter() + QStringLiteral(";;") + tr("All Files (*)"));
 
-    if (!fileName.isEmpty()) {
-        Helpers::setLastOpenedDirectory(QFileInfo(fileName).path());
+    if (fileName.isEmpty())
+        return;
 
-        QString error;
-        if (!playlistio::loadInto(m_controller->playlist(), fileName, &error)) {
-            qWarning() << "Error loading playlist: " << error;
-        }
+    Helpers::setLastOpenedDirectory(QFileInfo(fileName).path());
+
+    QString error;
+    if (!playlistio::loadInto(m_controller->playlist(), fileName, &error)) {
+        qWarning() << "Error loading playlist:" << error;
+        QMessageBox::warning(this, tr("Open Playlist"),
+                             tr("Could not open \"%1\":\n%2").arg(QDir::toNativeSeparators(fileName), error));
+        return;
     }
+
+    // Must come after loadInto(): its clear() resets the model, which clears m_playlistPath.
+    m_playlistPath = QFileInfo(fileName).absoluteFilePath();
 }
 
+// Save: write back to the playlist's own file. If it has never been saved,
+// behave exactly like Save As.
 void VuraMainWindow::actionFileSavePlaylist()
 {
-    QSettings settings;
-
-    QString fileName = QFileDialog::getSaveFileName(
-        this,
-        tr("Save Playlist As"),
-        Helpers::getLastOpenedDirectory(),
-        tr("XSPF playlist (*.xspf);;M3U playlist (*.m3u);;M3U8 playlist (*.m3u8);;All Files (*.*)"));
-
-    if (!fileName.isEmpty()) {
-        QString error;
-        if (!playlistio::saveFrom(m_controller->playlist(), fileName, &error)) {
-            qWarning() << "Error saving playlist: " << error;
-        }
+    if (m_playlistPath.isEmpty()) {
+        actionFileSavePlaylistAs();
+        return;
     }
+    writePlaylist(m_playlistPath);
 }
 
+// Save As: pick a new file, write it, and from now on that file IS the playlist.
 void VuraMainWindow::actionFileSavePlaylistAs()
 {
+    const QString path = askPlaylistSavePath(tr("Save Playlist As"));
+    if (path.isEmpty())
+        return;
 
+    if (writePlaylist(path))
+        m_playlistPath = path;
 }
 
+// Save a Copy: pick a file and write it, but keep working on the original.
+// The only difference from Save As is that m_playlistPath is left alone.
 void VuraMainWindow::actionFileSaveACopy()
 {
+    const QString path = askPlaylistSavePath(tr("Save a Copy of Playlist"));
+    if (path.isEmpty())
+        return;
 
+    writePlaylist(path);
+}
+
+QString VuraMainWindow::askPlaylistSavePath(const QString &caption)
+{
+    const QStringList filters = playlistio::saveFileFilters();
+
+    // Start from the current playlist file if there is one, so Save As / Save a
+    // Copy open in the right folder with the right format preselected.
+    QString startPath = QDir(Helpers::getLastOpenedDirectory()).filePath(tr("Untitled.m3u8"));
+    QString selectedFilter = filters.first();
+
+    if (!m_playlistPath.isEmpty()) {
+        startPath = m_playlistPath;
+        if (const auto format = playlistio::formatForFile(m_playlistPath)) {
+            // Match "(*.ext)" including the parenthesis, otherwise "*.m3u" also matches "*.m3u8".
+            const QString pattern = QStringLiteral("(*.%1)").arg(playlistio::defaultSuffix(*format));
+            for (const QString &filter : filters) {
+                if (filter.contains(pattern)) {
+                    selectedFilter = filter;
+                    break;
+                }
+            }
+        }
+    }
+
+    QString path = QFileDialog::getSaveFileName(this, caption, startPath,
+                                                filters.join(QStringLiteral(";;")), &selectedFilter);
+    if (path.isEmpty())
+        return {};
+
+    // playlistio::save() picks the format from the suffix, so a name typed
+    // without one ("my list") would fail. Take the suffix from the chosen filter.
+    if (!playlistio::formatForFile(path)) {
+        static const QRegularExpression suffixRe(QStringLiteral(R"(\*\.(\w+))"));
+        const QRegularExpressionMatch match = suffixRe.match(selectedFilter);
+        path += QLatin1Char('.') + (match.hasMatch() ? match.captured(1) : QStringLiteral("m3u8"));
+
+        // The dialog's overwrite prompt only saw the name without the suffix.
+        if (QFileInfo::exists(path)) {
+            const auto answer = QMessageBox::question(
+                this, caption,
+                tr("\"%1\" already exists.\nDo you want to replace it?").arg(QFileInfo(path).fileName()),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+            if (answer != QMessageBox::Yes)
+                return {};
+        }
+    }
+
+    return QFileInfo(path).absoluteFilePath();
+}
+
+bool VuraMainWindow::writePlaylist(const QString &path)
+{
+    QString error;
+    if (!playlistio::saveFrom(m_controller->playlist(), path, &error)) {
+        qWarning() << "Error saving playlist:" << error;
+        QMessageBox::warning(this, tr("Save Playlist"),
+                             tr("Could not save \"%1\":\n%2").arg(QDir::toNativeSeparators(path), error));
+        return false;
+    }
+
+    Helpers::setLastOpenedDirectory(QFileInfo(path).path());
+    statusBar()->showMessage(tr("Playlist saved to %1").arg(QDir::toNativeSeparators(path)), 3000);
+    return true;
 }
 
 void VuraMainWindow::actionHelpCheckForUpdates()
@@ -702,6 +778,26 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionFileOpenNetworkStream, &QAction::triggered, this, &VuraMainWindow::actionOpenNetworkStream);
     connect(ui->actionFileOpenMultipleFiles, &QAction::triggered, this, &VuraMainWindow::actionFileOpenMultipleFiles);
     connect(ui->actionFileSavePlaylist, &QAction::triggered, this, &VuraMainWindow::actionFileSavePlaylist);
+    connect(ui->actionFileSavePlaylistAs, &QAction::triggered, this, &VuraMainWindow::actionFileSavePlaylistAs);
+    connect(ui->actionFileSaveACopy, &QAction::triggered, this, &VuraMainWindow::actionFileSaveACopy);
+
+    // Nothing to save in an empty queue.
+    const auto updateSaveActions = [this] {
+        const bool hasItems = !m_controller->playlist()->isEmpty();
+        ui->actionFileSavePlaylist->setEnabled(hasItems);
+        ui->actionFileSavePlaylistAs->setEnabled(hasItems);
+        ui->actionFileSaveACopy->setEnabled(hasItems);
+    };
+    connect(m_controller->playlist(), &QAbstractItemModel::rowsInserted, this, updateSaveActions);
+    connect(m_controller->playlist(), &QAbstractItemModel::rowsRemoved, this, updateSaveActions);
+    connect(m_controller->playlist(), &QAbstractItemModel::modelReset, this, updateSaveActions);
+    updateSaveActions();
+
+    // Playlist::clear() resets the model. Once the queue is replaced, "Save"
+    // must not silently overwrite the file the old queue came from.
+    connect(m_controller->playlist(), &QAbstractItemModel::modelReset, this, [this] {
+        m_playlistPath.clear();
+    });
     connect(ui->actionFileOpenPlaylist, &QAction::triggered, this, &VuraMainWindow::actionFileOpenPlaylist);
     connect(ui->actionFileConvertSave, &QAction::triggered, this, &VuraMainWindow::actionShowConvertMedia);
 

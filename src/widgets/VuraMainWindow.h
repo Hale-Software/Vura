@@ -206,6 +206,9 @@ private:
 
     void addMedia(const QList<QUrl> &mediaList) const;
 
+    QString askPlaylistSavePath(const QString &caption);
+    bool writePlaylist(const QString &path);
+
     template <typename Dialog, typename... Args>
     Dialog *showDialog(QPointer<Dialog> &slot, Args &&...args)
     {
@@ -242,6 +245,7 @@ private:
     QTimer *m_videoSliderHideTimer = nullptr;
     QTimer *m_continuePlaybackBannerTimer = nullptr;
     QUrl m_currentSource;
+    QString m_playlistPath;   ///< File the queue was opened from / last "Save As"-ed to; empty if never saved
     QPointer<QFrame> m_resumeOverlay;
     QHash<QString, QAction *> m_markerToggleActions;
 
