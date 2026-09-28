@@ -44,6 +44,7 @@ class GLVideoOutput : public VideoOutput
 {
 public:
     using RenderFn = std::function<void(const QSize &sizeInPixels, unsigned int fbo)>;
+    using TeardownFn = std::function<void()>;
 
     OutputKind kind() const override { return OutputKind::OpenGL; }
 
@@ -52,6 +53,8 @@ public:
     virtual void *glProcAddress(const char *name) = 0;
 
     virtual void setRenderCallback(RenderFn fn) = 0;
+
+    virtual void setTeardownCallback(TeardownFn fn) = 0;
 };
 
 }

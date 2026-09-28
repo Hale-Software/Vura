@@ -421,6 +421,10 @@ void QtEngine::publishMetaData()
     if (cover.isValid())
         out[QLatin1String(meta::CoverArt)] = cover;
 
+    const QVariant res = md.value(QMediaMetaData::Resolution);
+    if (res.isValid() && !res.toSize().isEmpty())
+        out[QLatin1String(meta::Resolution)] = res.toSize();
+
     updateMetaData(out);
 }
 

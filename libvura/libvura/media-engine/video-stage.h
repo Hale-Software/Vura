@@ -104,6 +104,7 @@ public:
     void executeWithContext(const std::function<void()> &fn) override;
     void *glProcAddress(const char *name) override;
     void setRenderCallback(RenderFn fn) override;
+    void setTeardownCallback(TeardownFn fn) override;
 
 protected:
     void initializeGL() override;
@@ -112,6 +113,7 @@ protected:
 private:
     bool m_initialized = false;
     RenderFn m_render;
+    TeardownFn m_teardown;
 
     /// Engines may attach before the widget has ever been shown, at which
     /// point there is no context to make current. Those operations are held

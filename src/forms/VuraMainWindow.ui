@@ -76,8 +76,7 @@
     <addaction name="separator"/>
     <addaction name="actionFileOpenPlaylist"/>
     <addaction name="actionFileSavePlaylist"/>
-    <addaction name="actionFileSave"/>
-    <addaction name="actionFileSaveAs"/>
+    <addaction name="actionFileSavePlaylistAs"/>
     <addaction name="actionFileSaveACopy"/>
     <addaction name="separator"/>
     <addaction name="actionFileRenameCurrentFile"/>
@@ -114,8 +113,6 @@
     <addaction name="menuViewToggleMarkers"/>
     <addaction name="separator"/>
     <addaction name="actionViewMediaInformation"/>
-    <addaction name="separator"/>
-    <addaction name="actionViewShowVideoResolutionInTitlebar"/>
     <addaction name="separator"/>
     <addaction name="actionViewPreferences"/>
    </widget>
@@ -640,9 +637,9 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionFileSaveAs">
+  <action name="actionFileSavePlaylistAs">
    <property name="text">
-    <string>Save As...</string>
+    <string>Save Playlist As...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>

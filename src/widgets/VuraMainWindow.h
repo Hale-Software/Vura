@@ -24,7 +24,6 @@
 #include <QProgressDialog>
 
 #include <libvura/libvura.h>
-#include <libvura/settings.h>
 #include <libvura/hotkeys/hotkey-manager.h>
 #include <libvura/models/video-marker-record.h>
 #include <libvura/helpers.h>
@@ -45,7 +44,6 @@
 #include "MarkerEditDialog.h"
 #include "ConvertMediaDialog.h"
 #include "MediaInformationDialog.h"
-#include "UpdateChecker.h"
 
 #include "VideoMarkerController.h"
 #include "VideoSlider.h"
@@ -123,16 +121,17 @@ private slots:
     void actionOpenNetworkStream();
     void actionFileOpenPlaylist();
     void actionFileSavePlaylist();
+    void actionFileSavePlaylistAs();
+    void actionFileSaveACopy();
     void actionEmergencyClose();
     void actionShowConvertMedia();
     void actionExit();
 
     // View Menu
-    void actionViewTogglePlaylist();
+    void actionViewTogglePlaylist() const;
     void actionShowSettings();
     void actionToggleVideoControls();
     void actionViewToggleStatusBar() const;
-    void actionViewToggleVideoResolution();
     void actionViewMediaInformation();
 
     // Playback Menu
@@ -166,8 +165,8 @@ private slots:
 
 
 public slots:
-    void restartApplication();
-    void openPaths(const QList<QUrl> &urls);
+    static void restartApplication();
+    void openPaths(const QList<QUrl> &urls) const;
     void stateChanged(media::PlaybackState state);
     void sourceChanged(const QUrl &source);
     void errorOccurred(const QString &errorMessage);
@@ -181,10 +180,11 @@ public slots:
     void continuePlaybackDelete();
     void systemTray_Clicked();
     void systemTray_Hide(bool hiding);
-    void updaterErrorOccurred(QString errorMessage);
+    void updaterErrorOccurred(const QString &errorMessage);
     void updateAvailable(bool available);
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void updateDownloadFinished(bool success, const QString &message);
+    void showResumeOverlay(media::Msec ms);
 
 private:
     void initSystemTray();
@@ -204,8 +204,7 @@ private:
 
     void updateMarkerMenuItems();
 
-    void showResumeOverlay(qint64 savedPosition);
-    void addMedia(const QList<QUrl> &mediaList);
+    void addMedia(const QList<QUrl> &mediaList) const;
 
     template <typename Dialog, typename... Args>
     Dialog *showDialog(QPointer<Dialog> &slot, Args &&...args)

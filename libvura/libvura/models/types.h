@@ -145,6 +145,7 @@ struct Capabilities {
 namespace meta {
 inline constexpr auto Title = "title";
 inline constexpr auto Artist = "artist";
+inline constexpr const char *Resolution = "resolution";
 inline constexpr auto Album = "album";
 inline constexpr auto CoverArt = "coverArt"; // QImage
 } // namespace meta

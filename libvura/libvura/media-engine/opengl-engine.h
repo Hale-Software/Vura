@@ -74,6 +74,7 @@ private:
     void stopPipeline();
     void onOpened(quint64 generation, const ffmpeg::OpenResult &result);
     void onFailed(quint64 generation, ErrorKind kind, const QString &message);
+    void onOutputDestroyed();
     void leaveEndOfMedia();
     void applyVolume();
     void tick();

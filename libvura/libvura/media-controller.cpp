@@ -193,6 +193,7 @@ void MediaController::connectEngine()
     });
 
     connect(engine, &media::Engine::metaDataChanged, this, [this](const QVariantMap &data) {
+        m_metaData = data;
         m_playlist->updateItemInfo(m_playlist->currentIndex(), data.value(QLatin1String(media::meta::Title)).toString(), m_duration);
         emit metaDataChanged(data);
     });
@@ -281,6 +282,25 @@ void MediaController::loadCurrentItem(bool autoPlay)
 
     m_engine->setSource(item.url);
     emit currentItemChanged(item);
+
+    if (m_resumeTarget > 0) {
+        const int continuePlayback = QSettings().value("continuePlayback", 1).toInt();
+        switch (continuePlayback) {
+            case 0:
+                // Never continue
+                break;
+            case 1:
+                // Ask user
+                emit resumeDataAvailable(m_resumeTarget);
+                break;
+            case 2:
+                // Always continue
+                seek(m_resumeTarget);
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void MediaController::handleMediaStatus(media::MediaStatus status)
@@ -455,6 +475,22 @@ void MediaController::setRate(qreal rate)
 void MediaController::setVolume(qreal linear)
 {
     m_volume = std::clamp<qreal>(linear, 0.0, 1.0);
+    if (m_engine)
+        m_engine->setVolume(m_volume);
+}
+
+void MediaController::volumeDown()
+{
+    const qreal cur = m_volume;
+    m_volume = std::clamp<qreal>((cur - QSettings().value("volumeStep", 0.10).toDouble()), 0.0, 1.0);
+    if (m_engine)
+        m_engine->setVolume(m_volume);
+}
+
+void MediaController::volumeUp()
+{
+    const qreal cur = m_volume;
+    m_volume = std::clamp<qreal>((cur + QSettings().value("volumeStep", 0.10).toDouble()), 0.0, 1.0);
     if (m_engine)
         m_engine->setVolume(m_volume);
 }

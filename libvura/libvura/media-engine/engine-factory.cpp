@@ -124,9 +124,9 @@ std::unique_ptr<Engine> tryCreate(Backend backend, QString *errorOut)
 QVector<BackendInfo> availableBackends()
 {
     return {
-        {Backend::Mpv, QStringLiteral("mpv"), QCoreApplication::translate("media", "mpv"), hasMpv()},
         {Backend::QtMultimedia, QStringLiteral("qtmultimedia"),QCoreApplication::translate("media", "Qt Multimedia"), hasQtMultimedia()},
         {Backend::OpenGL, QStringLiteral("opengl"), QCoreApplication::translate("media", "opengl"), hasOpenGL()},
+        {Backend::Mpv, QStringLiteral("mpv"), QCoreApplication::translate("media", "mpv"), hasMpv()},
         {Backend::Null, QStringLiteral("null"),
          QCoreApplication::translate("media", "None (simulated)"), true},
     };
@@ -168,7 +168,7 @@ std::unique_ptr<Engine> createEngine(Backend backend, QString *errorOut)
         qWarning() << "Backend" << idForBackend(backend) << "unavailable:" << error;
     }
 
-    // Preference order for Auto and for fallback. mpv first because it is
+    // Preference order for Auto and for fallback. qtmultimedia first because it is
     // the most capable; the null engine is the floor and always works.
     for (Backend candidate : {Backend::QtMultimedia, Backend::OpenGL, Backend::Mpv, Backend::Null}) {
         if (candidate == backend)

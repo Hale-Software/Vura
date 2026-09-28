@@ -37,7 +37,9 @@ constexpr int kTickMs = 40;
 }
 
 OpenGLEngine::OpenGLEngine(QObject *parent)
-    : Engine(parent), m_tick(new QTimer(this)), m_frameTimer(new QTimer(this))
+    : Engine(parent),
+      m_tick(new QTimer(this)),
+      m_frameTimer(new QTimer(this))
 {
     m_tick->setInterval(kTickMs);
     connect(m_tick, &QTimer::timeout, this, &OpenGLEngine::tick);
@@ -150,6 +152,19 @@ void OpenGLEngine::onFailed(quint64 generation, ErrorKind kind, const QString &m
     updatePlaybackState(PlaybackState::Stopped);
     updateMediaStatus(MediaStatus::Invalid);
     reportError(kind, message);
+}
+
+void OpenGLEngine::onOutputDestroyed()
+{
+    m_frameTimer->stop();
+    if (m_renderer) {
+        GLYuvRenderer *renderer = m_renderer.get();
+        m_gl->executeWithContext([renderer] { renderer->destroy(); });
+        m_renderer.reset();
+    }
+    m_gl = nullptr;
+    setOutputPointer(nullptr);
+    m_rendererFailed = false;
 }
 
 // ----------------------------------------------------------- transport ---
@@ -346,12 +361,8 @@ bool OpenGLEngine::attachOutput(VideoOutput *output)
     detachOutput();
     m_gl = static_cast<GLVideoOutput *>(output);
     setOutputPointer(output);
-
-    // GL objects are created lazily on the first render, where the context
-    // is guaranteed current. Doing it here through executeWithContext would
-    // queue a lambda holding `this` that could outlive us if the widget is
-    // never shown.
     m_gl->setRenderCallback([this](const QSize &size, unsigned int fbo) { render(size, fbo); });
+    m_gl->setTeardownCallback([this] { onOutputDestroyed(); });
     m_gl->requestRedraw();
     return true;
 }
@@ -361,6 +372,7 @@ void OpenGLEngine::detachOutput()
     if (!m_gl)
         return;
 
+    m_gl->setTeardownCallback(nullptr);
     m_gl->setRenderCallback(nullptr);
     if (m_renderer) {
         // A renderer only exists if paintGL() has run, so the widget is

@@ -87,6 +87,8 @@ public:
     QVector<media::AudioDeviceInfo> audioDevices() const;
     QString activeAudioDevice() const;
 
+    QVariantMap metaData() const { return m_metaData; }
+
 public slots:
     void play();
     void pause();
@@ -104,6 +106,8 @@ public slots:
 
     void setRate(qreal rate);
     void setVolume(qreal linear);
+    void volumeDown();
+    void volumeUp();
     void setMuted(bool muted);
     void toggleMuted();
 
@@ -129,6 +133,8 @@ signals:
     void backendChanged(media::Backend backend);
     void capabilitiesChanged(const media::Capabilities &capabilities);
     void currentItemChanged(const PlaylistItem &item);
+
+    void resumeDataAvailable(media::Msec ms);
 
 private:
     void connectEngine();
@@ -161,4 +167,6 @@ private:
     media::Msec m_resumeTarget = -1;
     bool m_autoPlayPending = false;
     int m_retriesForCurrentItem = 0;
+
+    QVariantMap m_metaData;
 };

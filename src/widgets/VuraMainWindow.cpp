@@ -32,37 +32,20 @@
 
 #include <QActionGroup>
 #include <QApplication>
-#include <QCloseEvent>
-#include <QComboBox>
 #include <QDockWidget>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QInputDialog>
-#include <QKeyEvent>
-#include <QLabel>
-#include <QListView>
 #include <QMenuBar>
 #include <QMimeData>
 #include <QSettings>
-#include <QSlider>
 #include <QStandardItemModel>
 #include <QStatusBar>
-#include <QStyle>
-#include <QToolBar>
-#include <QToolButton>
-#include <QVBoxLayout>
 #include <QWidget>
 #include <QtMath>
 #include <QDir>
 #include <QDirIterator>
 #include <QTimer>
-
-
-#ifdef VURA_HAVE_QTMULTIMEDIA
-#include <QAudio>
-#endif
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -113,20 +96,21 @@ void VuraMainWindow::closeEvent(QCloseEvent *event)
 
 bool VuraMainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
-    if (HotkeyManager::instance()->handleNativeEvent(eventType, message, result))
-        return true;
-
 #ifdef Q_OS_WIN
     if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG")
     {
         const auto msg = static_cast<MSG *>(message);
         if (msg->message == WM_NCLBUTTONDBLCLK)
         {
-            resize(887, 530);
+            resize(QSettings().value("defaultWindowWidth", 887).toInt(), QSettings().value("defaultWindowHeight", 530).toInt());
             return true;
         }
     }
 #endif
+
+    if (HotkeyManager::instance()->handleNativeEvent(eventType, message, result))
+        return true;
+
     return QWidget::nativeEvent(eventType, message, result);
 }
 
@@ -297,35 +281,6 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
         default:
             break;
     }
-
-    // Continue playback
-    //if (source.isLocalFile()) {
-    //    const QByteArray pathBytes = source.toLocalFile().toUtf8();
-    //    const QString fileHash = QCryptographicHash::hash(pathBytes, QCryptographicHash::Md5).toHex();
-    //
-    //    settings.beginGroup("ResumeData");
-    //    const qint64 savedPosition = settings.value(fileHash, 0).toLongLong();
-    //    settings.endGroup();
-    //
-    //    if (savedPosition > 5000) {
-    //        const int continuePlayback = settings.value("continuePlayback", 1).toInt();
-    //        switch (continuePlayback) {
-    //            // Never continue
-    //            case 0:
-    //                break;
-    //            // Ask user
-    //            case 1:
-    //                showResumeOverlay(savedPosition);
-    //                break;
-    //            // Always continue
-    //            case 2:
-    //                m_playbackController->seek(savedPosition);
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
-    //}
 }
 
 void VuraMainWindow::errorOccurred(const QString &errorMessage)
@@ -469,6 +424,16 @@ void VuraMainWindow::actionFileSavePlaylist()
     }
 }
 
+void VuraMainWindow::actionFileSavePlaylistAs()
+{
+
+}
+
+void VuraMainWindow::actionFileSaveACopy()
+{
+
+}
+
 void VuraMainWindow::actionHelpCheckForUpdates()
 {
     m_updateManager = new UpdateManager(this);
@@ -536,7 +501,7 @@ void VuraMainWindow::actionToggleFullscreen()
 
 void VuraMainWindow::actionShowSettings()
 {
-    auto *dialog = showDialog(m_settingsDialog, this);
+    const auto *dialog = showDialog(m_settingsDialog, this);
     connect(dialog, &SettingsDialog::requiresRestart, this, &VuraMainWindow::restartApplication);
 }
 
@@ -557,7 +522,7 @@ void VuraMainWindow::actionExit()
     }
 }
 
-void VuraMainWindow::actionViewTogglePlaylist()
+void VuraMainWindow::actionViewTogglePlaylist() const
 {
     if (m_playlistDock->isVisible())
         m_playlistDock->hide();
@@ -603,13 +568,6 @@ void VuraMainWindow::actionViewToggleStatusBar() const
     ui->actionViewToggleStatusBar->setChecked(ui->statusBar->isVisible());
 }
 
-void VuraMainWindow::actionViewToggleVideoResolution()
-{
-    QSettings settings;
-    settings.setValue("showVideoResolutionOnStart", ui->actionViewToggleVideoResolution->isChecked());
-    setApplicationWindowTitle();
-}
-
 void VuraMainWindow::actionViewMediaInformation()
 {
     QMessageBox::information(this, tr("Information"), tr("This function is not implemented yet."));
@@ -619,7 +577,17 @@ void VuraMainWindow::actionViewMediaInformation()
     //dialog->setMetaData(*m_playbackController->getMetadata());
 }
 
+void VuraMainWindow::actionMarkersMarkIn() {}
+
+void VuraMainWindow::actionMarkersMarkOut() {}
+
+void VuraMainWindow::actionMarkersGoToIn() {}
+
+void VuraMainWindow::actionMarkersGoToOut() {}
+
 void VuraMainWindow::actionMarkersClearIn() {}
+
+void VuraMainWindow::actionMarkersClearOut() {}
 
 void VuraMainWindow::actionMarkersClearInOut() {}
 
@@ -637,22 +605,12 @@ void VuraMainWindow::actionMarkersClearMarkers()
     }
 }
 
-void VuraMainWindow::actionMarkersClearOut() {}
-
 void VuraMainWindow::actionMarkersEditSelectedMarker()
 {
     const VideoMarkerRecord marker = m_videoMarkerController->getSelectedMarker();
     if (marker.id > 0)
         openMarkerEditor(marker);
 }
-
-void VuraMainWindow::actionMarkersGoToIn() {}
-
-void VuraMainWindow::actionMarkersGoToOut() {}
-
-void VuraMainWindow::actionMarkersMarkIn() {}
-
-void VuraMainWindow::actionMarkersMarkOut() {}
 
 void VuraMainWindow::actionSubtitlesOpenSubtitlesFile()
 {
@@ -686,7 +644,7 @@ void VuraMainWindow::restartApplication()
     qApp->exit(0xA1);
 }
 
-void VuraMainWindow::openPaths(const QList<QUrl> &urls)
+void VuraMainWindow::openPaths(const QList<QUrl> &urls) const
 {
     if (urls.isEmpty())
         return;
@@ -695,7 +653,7 @@ void VuraMainWindow::openPaths(const QList<QUrl> &urls)
 
 void VuraMainWindow::initSystemTray()
 {
-    QSettings settings;
+    const QSettings settings;
 
     m_systemTray = new SystemTrayWidget(this);
 
@@ -709,7 +667,7 @@ void VuraMainWindow::initSystemTray()
     connect(m_systemTray, &SystemTrayWidget::toggleFullscreen, this, &VuraMainWindow::actionToggleFullscreen);
     connect(m_systemTray, &SystemTrayWidget::exit, this, &VuraMainWindow::actionExit);
 
-    bool systemTrayIcon = settings.value("systemTrayIcon", true).toBool();
+    const bool systemTrayIcon = settings.value("systemTrayIcon", true).toBool();
     m_systemTray->setVisibility(systemTrayIcon);
 }
 
@@ -735,10 +693,6 @@ void VuraMainWindow::buildMenus()
                 qInfo() << "Now using the " << info.displayName << " backend.";
         });
     }
-
-    connect(ui->actionPlaybackModeShuffle, &QAction::toggled, this, [this](bool checked) {
-        m_controller->playlist()->setShuffled(checked);
-    });
 
     // File Actions
     connect(ui->actionFileEmergencyClose, &QAction::triggered, this, &VuraMainWindow::actionEmergencyClose);
@@ -767,13 +721,17 @@ void VuraMainWindow::buildMenus()
         ui->statusBar->hide();
     }
 
-    connect(ui->actionViewToggleVideoResolution, &QAction::triggered, this, &VuraMainWindow::actionViewToggleVideoResolution);
+    connect(ui->actionViewToggleVideoResolution, &QAction::toggled, this, [this](bool checked) {
+        QSettings().setValue("showVideoResolutionOnStart", checked);
+        setApplicationWindowTitle();
+    });
     if (settings.value("showVideoResolutionOnStart", false).toBool()) {
         ui->actionViewToggleVideoResolution->setChecked(true);
     } else {
         ui->actionViewToggleVideoResolution->setChecked(false);
     }
 
+    connect(ui->actionViewTogglePlaylist, &QAction::triggered, this, &VuraMainWindow::actionViewTogglePlaylist);
     connect(ui->actionViewToggleVideoControls, &QAction::triggered, this, &VuraMainWindow::actionToggleVideoControls);
     connect(ui->actionViewMediaInformation, &QAction::triggered, this, &VuraMainWindow::actionViewMediaInformation);
     connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
@@ -784,7 +742,6 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionPlaybackPrevious, &QAction::triggered, m_controller, &MediaController::previous);
     connect(ui->actionPlaybackTogglePlay, &QAction::triggered, m_controller, &MediaController::togglePlayPause);
     connect(ui->actionPlaybackRestartVideo, &QAction::triggered, m_controller, &MediaController::restart);
-    connect(ui->actionViewTogglePlaylist, &QAction::triggered, this, &VuraMainWindow::actionViewTogglePlaylist);
 
     auto *repeatGroup = new QActionGroup(this);   // exclusive by default
     for (auto [action, mode] : {
@@ -797,6 +754,10 @@ void VuraMainWindow::buildMenus()
             m_controller->playlist()->setRepeatMode(mode);
         });
     }
+
+    connect(ui->actionPlaybackModeShuffle, &QAction::toggled, this, [this](const bool checked) {
+        m_controller->playlist()->setShuffled(checked);
+    });
 
     struct Jump { QAction *fwd, *back; const char *key; int def; };
     const Jump jumps[] = {
@@ -820,8 +781,7 @@ void VuraMainWindow::buildMenus()
         {ui->actionPlaybackSpeedFasterFine, ui->actionPlaybackSpeedSlowerFine, "playbackSpeedAdjustmentFine", 0.25}
     };
     for (const Rate &r : rates) {
-        auto adjust = [this, r](int sign) {
-            double maxPlaybackRate = QSettings().value("playbackSpeedMax", 10.0).toDouble();
+        auto adjust = [this, r](const int sign) {
             qreal newRate = m_controller->rate() + (sign * QSettings().value(r.key, r.def).toDouble());
             if (newRate < 0.1)
                 newRate = 0.1;
@@ -852,9 +812,8 @@ void VuraMainWindow::buildMenus()
 
     // Audio Actions
     connect(ui->actionAudioToggleMute, &QAction::toggled, m_controller, &MediaController::setMuted);
-    //connect(ui->actionAudioVolumeDown, &QAction::triggered, m_playbackController, &PlaybackController::volumeDown);
-    //connect(ui->actionAudioVolumeUp, &QAction::triggered, m_playbackController, &PlaybackController::volumeUp);
-    //m_videoMarkerController = new VideoMarkerController(this);
+    connect(ui->actionAudioVolumeDown, &QAction::triggered, m_controller, &MediaController::volumeDown);
+    connect(ui->actionAudioVolumeUp, &QAction::triggered, m_controller, &MediaController::volumeUp);
 
 
     // Video
@@ -877,7 +836,7 @@ void VuraMainWindow::buildMenus()
 
 void VuraMainWindow::buildPlaylistDock()
 {
-    QSettings settings;
+    const QSettings settings;
 
     m_playlistDock = new QDockWidget(tr("Playlist"), this);
     m_playlistDock->setObjectName(QStringLiteral("playlistDock"));
@@ -903,7 +862,7 @@ void VuraMainWindow::buildPlaylistDock()
 
 void VuraMainWindow::initUI()
 {
-    QSettings settings;
+    const QSettings settings;
 
     const int defaultWindowHeight = settings.value("defaultWindowHeight", 530).toInt();
     const int defaultWindowWidth = settings.value("defaultWindowWidth", 887).toInt();
@@ -1040,7 +999,9 @@ void VuraMainWindow::connectController()
         setApplicationWindowTitle();
     });
 
-    connect(m_controller, &MediaController::errorOccurred, this, [this](media::ErrorKind kind, const QString &detail) {
+    connect(m_controller, &MediaController::resumeDataAvailable, this, &VuraMainWindow::showResumeOverlay);
+
+    connect(m_controller, &MediaController::errorOccurred, this, [](const media::ErrorKind kind, const QString &detail) {
         qCWarning(Playback) << "Error occurred: " << QString(detail.isEmpty() ? media::describe(kind) : detail);
     });
 }
@@ -1058,7 +1019,7 @@ void VuraMainWindow::applyCapabilities(const media::Capabilities &capabilities)
 {
     ui->menuVideoTrack->setEnabled(capabilities.videoTrackSelection);
     ui->menuAudioTrack->setEnabled(capabilities.audioTrackSelection);
-    //ui->menuSubtitleTrack->setEnabled(capabilities.subtitleTrackSelection);
+    ui->menuSubtitleTrack->setEnabled(capabilities.subtitleTrackSelection);
     ui->menuAudioDevice->setEnabled(capabilities.audioDeviceSelection);
 }
 
@@ -1146,7 +1107,19 @@ void VuraMainWindow::setTrackInfo(const QString &trackInfo)
 void VuraMainWindow::setApplicationWindowTitle()
 {
     const QString title = m_controller->currentTitle();
-    setWindowTitle(title.isEmpty() ? QString("Vura %1").arg(VURA_VERSION_STRING) : QString("Vura %1 - %2").arg(VURA_VERSION_STRING).arg(title));
+
+    if (title.isEmpty()) {
+        setWindowTitle(QString("Vura %1").arg(VURA_VERSION_STRING));
+        return;
+    }
+
+    if (ui->actionViewToggleVideoResolution->isChecked()) {
+        const QSize res = m_controller->metaData().value(QLatin1String(media::meta::Resolution)).toSize();
+        setWindowTitle(res.isValid() ? QString("Vura %1 - %2 [%3x%4]").arg(VURA_VERSION_STRING).arg(title).arg(res.width()).arg(res.height()) : QString("Vura %1 - %2 [unknown]").arg(VURA_VERSION_STRING).arg(title));
+        return;
+    }
+
+    setWindowTitle(QString("Vura %1 - %2").arg(VURA_VERSION_STRING).arg(title));
 }
 
 QString VuraMainWindow::trackName(const QMediaMetaData &metaData, const int index)
@@ -1206,14 +1179,12 @@ void VuraMainWindow::crashReportUploadFinished(const bool success, const QString
     }
 }
 
-void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
+void VuraMainWindow::showResumeOverlay(const media::Msec ms)
 {
-    QSettings settings;
-
     if (m_continuePlaybackWidget)
         m_continuePlaybackWidget->deleteLater();
 
-    m_continuePlaybackWidget = new ContinuePlaybackWidget(savedPosition, this);
+    m_continuePlaybackWidget = new ContinuePlaybackWidget(ms, this);
     connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::continuePlayback, this, &VuraMainWindow::continuePlaybackAccepted);
     connect(m_continuePlaybackWidget, &ContinuePlaybackWidget::closeWidget, this, &VuraMainWindow::continuePlaybackDeclined);
 
@@ -1240,7 +1211,7 @@ void VuraMainWindow::showResumeOverlay(const qint64 savedPosition)
         m_continuePlaybackBannerTimer = nullptr;
     }
 
-    int continuePlaybackBannerTime = settings.value("continuePlaybackBannerTime", 5).toInt();
+    int continuePlaybackBannerTime = QSettings().value("continuePlaybackBannerTime", 5).toInt();
     m_continuePlaybackBannerTimer = new QTimer(this);
     m_continuePlaybackBannerTimer->setSingleShot(true);
     m_continuePlaybackBannerTimer->setInterval(continuePlaybackBannerTime * 1000);
@@ -1292,12 +1263,12 @@ void VuraMainWindow::systemTray_Hide(const bool hiding)
     }
 }
 
-void VuraMainWindow::updaterErrorOccurred(QString errorMessage)
+void VuraMainWindow::updaterErrorOccurred(const QString &errorMessage)
 {
     QMessageBox::critical(this, "Update Error", errorMessage);
 }
 
-void VuraMainWindow::updateAvailable(bool available)
+void VuraMainWindow::updateAvailable(const bool available)
 {
     if (available) {
         QMessageBox::StandardButton reply;
@@ -1321,7 +1292,7 @@ void VuraMainWindow::updateAvailable(bool available)
     }
 }
 
-void VuraMainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+void VuraMainWindow::updateDownloadProgress(const qint64 bytesReceived, const qint64 bytesTotal)
 {
     if (!m_updateProgressDialog)
         return;
@@ -1342,7 +1313,7 @@ void VuraMainWindow::updateDownloadFinished(bool success, const QString &message
     }
 }
 
-void VuraMainWindow::addMedia(const QList<QUrl> &mediaList)
+void VuraMainWindow::addMedia(const QList<QUrl> &mediaList) const
 {
     if (mediaList.isEmpty())
         return;
@@ -1355,7 +1326,7 @@ void VuraMainWindow::addMedia(const QList<QUrl> &mediaList)
 
 void VuraMainWindow::openMarkerEditor(const VideoMarkerRecord &marker)
 {
-    auto *dialog = showDialog(m_markerEditDialog, marker, m_controller->duration(), this);
+    const auto *dialog = showDialog(m_markerEditDialog, marker, m_controller->duration(), this);
     connect(dialog, &MarkerEditDialog::markerEdited, m_videoMarkerController, &VideoMarkerController::addVideoMarker);
     connect(dialog, &MarkerEditDialog::markerDeleted, m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
 }

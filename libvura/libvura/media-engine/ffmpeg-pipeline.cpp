@@ -35,6 +35,7 @@ extern "C" {
 #include <QMediaDevices>
 #endif
 
+#include <QSize>
 #include <QCoreApplication>
 #include <QDebug>
 
@@ -704,6 +705,12 @@ bool Pipeline::Impl::open(OpenResult &result, ErrorKind &kind, QString &error)
     result.audioStream = aidx;
     result.duration = fmt->duration != AV_NOPTS_VALUE ? Msec(fmt->duration / 1000) : 0;
     result.seekable = result.duration > 0 && fmt->pb && (fmt->pb->seekable & AVIO_SEEKABLE_NORMAL);
+
+    if (vctx) {
+        const AVCodecParameters *par = fmt->streams[vidx]->codecpar;
+        if (par->width > 0 && par->height > 0)
+            result.metadata.insert(QLatin1String(meta::Resolution), QSize(par->width, par->height));
+    }
 
     const QString title = tag(fmt->metadata, "title");
     if (!title.isEmpty())

@@ -131,7 +131,12 @@ GLVideoWidget::GLVideoWidget(QWidget *parent) : QOpenGLWidget(parent)
     setUpdateBehavior(QOpenGLWidget::PartialUpdate);
 }
 
-GLVideoWidget::~GLVideoWidget() = default;
+GLVideoWidget::~GLVideoWidget()
+{
+    if (auto fn = std::exchange(m_teardown, nullptr))
+        fn();
+    m_render = nullptr;
+}
 
 QSize GLVideoWidget::surfaceSize() const
 {
@@ -175,6 +180,11 @@ void *GLVideoWidget::glProcAddress(const char *name)
 void GLVideoWidget::setRenderCallback(RenderFn fn)
 {
     m_render = std::move(fn);
+}
+
+void GLVideoWidget::setTeardownCallback(TeardownFn fn)
+{
+    m_teardown = std::move(fn);
 }
 
 void GLVideoWidget::initializeGL()
