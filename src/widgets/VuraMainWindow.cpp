@@ -1218,26 +1218,6 @@ void VuraMainWindow::setApplicationWindowTitle()
     setWindowTitle(QString("Vura %1 - %2").arg(VURA_VERSION_STRING).arg(title));
 }
 
-QString VuraMainWindow::trackName(const QMediaMetaData &metaData, const int index)
-{
-    QString name;
-    const QString title = metaData.stringValue(QMediaMetaData::Title);
-    const auto lang = metaData.value(QMediaMetaData::Language).value<QLocale::Language>();
-
-    if (title.isEmpty()) {
-        if (lang == QLocale::Language::AnyLanguage)
-            name = tr("Track %1").arg(index + 1);
-        else
-            name = QLocale::languageToString(lang);
-    } else {
-        if (lang == QLocale::Language::AnyLanguage)
-            name = title;
-        else
-            name = QStringLiteral("%1 - [%2]").arg(title).arg(QLocale::languageToString(lang));
-    }
-    return name;
-}
-
 void VuraMainWindow::updateMarkerMenuItems()
 {
     ui->actionMarkersEditSelectedMarker->setEnabled(m_videoMarkerController->checkMarkerProximity());

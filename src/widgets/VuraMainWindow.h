@@ -199,7 +199,6 @@ private:
     void rebuildAudioDeviceMenu();
 
     void setTrackInfo(const QString &trackInfo);
-    static QString trackName(const QMediaMetaData &metaData, int index);
     void setApplicationWindowTitle();
 
     void updateMarkerMenuItems();
