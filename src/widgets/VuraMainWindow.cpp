@@ -646,9 +646,6 @@ void VuraMainWindow::actionViewToggleStatusBar() const
 
 void VuraMainWindow::actionViewMediaInformation()
 {
-    QMessageBox::information(this, tr("Information"), tr("This function is not implemented yet."));
-    return;
-
     auto *dialog = showDialog(m_mediaInformationDialog, this);
     dialog->setMetaData(m_controller->metaData());
 }
