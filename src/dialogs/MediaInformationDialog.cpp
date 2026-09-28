@@ -19,8 +19,12 @@
 #include "MediaInformationDialog.h"
 #include "ui_MediaInformationDialog.h"
 
+#include <QSize>
 
-MediaInformationDialog::MediaInformationDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MediaInformationDialog)
+
+MediaInformationDialog::MediaInformationDialog(QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::MediaInformationDialog)
 {
     ui->setupUi(this);
 
@@ -33,29 +37,35 @@ MediaInformationDialog::~MediaInformationDialog()
     delete ui;
 }
 
-void MediaInformationDialog::setMetaData(const MetaData &metaData)
+void MediaInformationDialog::setMetaData(const QVariantMap &metaData)
 {
-    ui->location->setText(metaData.Source.toString());
+    m_metaData = metaData;
 
-    if (!metaData.Author.isEmpty())
-        ui->author->setText(metaData.Author.join(", "));
+    //ui->location->setText(metaData.Source.toString());
 
-    ui->comments->setText(metaData.Comment);
-    ui->copyright->setText(metaData.Copyright);
-    ui->date->setText(metaData.Date.toString());
+    const QString title = metaData.value(QLatin1String(media::meta::Title)).toString();
+    if (!title.isEmpty())
+        ui->title->setText(title);
 
-    QString resolutionString = QString("%1 x %2").arg(QString::number(metaData.Resolution.width())).arg(QString::number(metaData.Resolution.height()));
-    ui->resolution->setText(resolutionString);
+    const QString artist = metaData.value(QLatin1String(media::meta::Artist)).toString();
+    if (!artist.isEmpty())
+        ui->author->setText(artist);
 
-    if (!metaData.Genre.isEmpty())
-        ui->genre->setText(metaData.Genre.join(", "));
+    //ui->comments->setText(metaData.Comment);
+    //ui->copyright->setText(metaData.Copyright);
+    //ui->date->setText(metaData.Date.toString());
 
-    ui->language->setText(QLocale::languageToString(metaData.Language));
+    const QSize res = metaData.value(QLatin1String(media::meta::Resolution)).toSize();
+    if (res.isValid())
+        ui->resolution->setText(QString("%1x%2").arg(res.width()).arg(res.height()));
 
-    ui->publisher->setText(metaData.Publisher);
-    ui->trackNumber->setText(QString::number(metaData.TrackNumber));
-    ui->title->setText(metaData.Title);
+    //if (!metaData.Genre.isEmpty())
+    //    ui->genre->setText(metaData.Genre.join(", "));
 
+    //ui->language->setText(QLocale::languageToString(metaData.Language));
+
+    //ui->publisher->setText(metaData.Publisher);
+    //ui->trackNumber->setText(QString::number(metaData.TrackNumber));
 }
 
 void MediaInformationDialog::close_Clicked()

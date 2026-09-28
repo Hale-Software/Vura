@@ -24,7 +24,7 @@
 #include <QTextBrowser>
 #include <QLocale>
 
-#include <libvura/models/metadata.h>
+#include <libvura/models/types.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -38,7 +38,7 @@ public:
     explicit MediaInformationDialog(QWidget *parent = nullptr);
     ~MediaInformationDialog() override;
 
-    void setMetaData(const MetaData &metaData);
+    void setMetaData(const QVariantMap &metaData);
 
 
 private slots:
@@ -47,5 +47,6 @@ private slots:
 
 private:
     Ui::MediaInformationDialog *ui;
+    QVariantMap m_metaData;
 
 };

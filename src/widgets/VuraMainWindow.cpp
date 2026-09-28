@@ -650,7 +650,7 @@ void VuraMainWindow::actionViewMediaInformation()
     return;
 
     auto *dialog = showDialog(m_mediaInformationDialog, this);
-    //dialog->setMetaData(*m_playbackController->getMetadata());
+    dialog->setMetaData(m_controller->metaData());
 }
 
 void VuraMainWindow::actionMarkersMarkIn() {}
