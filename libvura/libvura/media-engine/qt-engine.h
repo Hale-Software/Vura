@@ -69,6 +69,7 @@ public:
     QString activeTrack(TrackType type) const override;
     void selectTrack(TrackType type, const QString &id) override;
     bool loadExternalSubtitle(const QUrl &url) override;
+    void setSubtitlesEnabled(const bool &enabled) override;
 
     bool attachOutput(VideoOutput *output) override;
     void detachOutput() override;

@@ -154,7 +154,6 @@ private slots:
 
     // Subtitles Menu
     void actionSubtitlesOpenSubtitlesFile();
-    void actionSubtitlesToggleSubtitles(bool checked);
 
     // Tools Menu
     void actionTestFunction();

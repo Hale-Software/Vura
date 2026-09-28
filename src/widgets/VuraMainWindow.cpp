@@ -706,11 +706,6 @@ void VuraMainWindow::actionSubtitlesOpenSubtitlesFile()
     Helpers::setLastOpenedDirectory(QFileInfo(fileName).path());
 }
 
-void VuraMainWindow::actionSubtitlesToggleSubtitles(bool checked)
-{
-    m_subtitlesEnabled = checked;
-}
-
 void VuraMainWindow::restartApplication()
 {
     qInfo() << "Restarting application...";
@@ -915,7 +910,9 @@ void VuraMainWindow::buildMenus()
 
     // Subtitles
     connect(ui->actionSubtitlesOpenSubtitlesFile, &QAction::triggered, this, &VuraMainWindow::actionSubtitlesOpenSubtitlesFile);
-    connect(ui->actionSubtitlesToggleSubtitles, &QAction::toggled, this, &VuraMainWindow::actionSubtitlesToggleSubtitles);
+    connect(ui->actionSubtitlesToggleSubtitles, &QAction::toggled, this, [this](bool checked) {
+        m_controller->setSubtitlesEnabled(checked);
+    });
 
 
     // Tools

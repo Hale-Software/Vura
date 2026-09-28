@@ -310,6 +310,11 @@ bool QtEngine::loadExternalSubtitle(const QUrl &url)
     return true;
 }
 
+void QtEngine::setSubtitlesEnabled(const bool &enabled)
+{
+    m_subtitlesEnabled = enabled;
+}
+
 bool QtEngine::attachOutput(VideoOutput *output)
 {
     if (!output) {
@@ -386,8 +391,8 @@ void QtEngine::videoFrameChanged(const QVideoFrame &frame)
     if (!m_subtitleTrack)
         return;
 
-    //if (!m_subtitlesEnabled)
-    //    return;
+    if (!m_subtitlesEnabled)
+        return;
 
     const qint64 ms = frame.startTime() / 1000;
     m_currentCue = m_subtitleTrack->cueAt(ms + m_subtitleOffsetMs);
@@ -407,12 +412,10 @@ void QtEngine::publishMetaData()
     QVariantMap out;
 
     const QString title = md.stringValue(QMediaMetaData::Title);
-    out[QLatin1String(meta::Title)] =
-            title.isEmpty() ? m_player->source().fileName() : title;
+    out[QLatin1String(meta::Title)] = title.isEmpty() ? m_player->source().fileName() : title;
 
     const QString artist = md.stringValue(QMediaMetaData::ContributingArtist);
-    out[QLatin1String(meta::Artist)] =
-            artist.isEmpty() ? md.stringValue(QMediaMetaData::AlbumArtist) : artist;
+    out[QLatin1String(meta::Artist)] = artist.isEmpty() ? md.stringValue(QMediaMetaData::AlbumArtist) : artist;
     out[QLatin1String(meta::Album)] = md.stringValue(QMediaMetaData::AlbumTitle);
 
     QVariant cover = md.value(QMediaMetaData::CoverArtImage);

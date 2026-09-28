@@ -50,6 +50,7 @@ public:
     bool isMuted() const { return m_muted; }
     QVariantMap metadata() const { return m_metadata; }
     bool isSeekable() const { return m_seekable; }
+    bool isSubtitlesEnabled() const { return m_subtitlesEnabled; }
 
     virtual void setSource(const QUrl &url) = 0;
     virtual void play() = 0;
@@ -69,6 +70,7 @@ public:
     virtual void selectTrack(TrackType type, const QString &id) = 0;
 
     virtual bool loadExternalSubtitle(const QUrl &url);
+    virtual void setSubtitlesEnabled(const bool &enabled);
 
     virtual bool attachOutput(VideoOutput *output) = 0;
     virtual void detachOutput() = 0;
@@ -120,6 +122,7 @@ private:
     qreal m_volume = 1.0;
     bool m_muted = false;
     bool m_seekable = false;
+    bool m_subtitlesEnabled = false;
     QVariantMap m_metadata;
     VideoOutput *m_output = nullptr;
 

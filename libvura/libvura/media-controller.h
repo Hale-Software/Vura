@@ -80,6 +80,7 @@ public:
     media::PlaybackState playbackState() const;
     media::MediaStatus mediaStatus() const;
     bool isSeekable() const;
+    bool isSubtitlesEnabled() const;
     qreal rate() const;
     qreal volume() const { return m_volume; }
     bool isMuted() const { return m_muted; }
@@ -113,6 +114,7 @@ public slots:
 
     void selectTrack(media::TrackType type, const QString &id);
     bool loadExternalSubtitle(const QUrl &url);
+    void setSubtitlesEnabled(const bool &checked);
 
     void setAudioDevice(const QString &id);
 

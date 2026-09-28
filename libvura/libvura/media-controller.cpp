@@ -520,6 +520,13 @@ bool MediaController::loadExternalSubtitle(const QUrl &url)
     return m_engine->loadExternalSubtitle(url);
 }
 
+void MediaController::setSubtitlesEnabled(const bool &checked)
+{
+    if (!m_engine || !m_engine->capabilities().externalSubtitles)
+        return;
+    m_engine->setSubtitlesEnabled(checked);
+}
+
 void MediaController::setAudioDevice(const QString &id)
 {
     if (m_engine && m_engine->capabilities().audioDeviceSelection)
@@ -546,6 +553,11 @@ media::MediaStatus MediaController::mediaStatus() const
 bool MediaController::isSeekable() const
 {
     return m_engine && m_engine->isSeekable();
+}
+
+bool MediaController::isSubtitlesEnabled() const
+{
+    return m_engine && m_engine->isSubtitlesEnabled();
 }
 
 qreal MediaController::rate() const
