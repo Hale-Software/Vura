@@ -65,17 +65,17 @@
 | videoSliderAnimationTime         | 300     | int    |
 | logQtMessages                    | false   | bool   |
 | logStyle                         | 0       | int    |
+| mediaEngine                      | 1       | int    |
 | positionEmitThreshold            | 250     | int    |
 | seekCoalesceMs                   | 60      | int    |
 | mediaControllerMaxRetriesPerItem | 1       | int    |
 | resumeStoreIgnoreBeforeFraction  | 0.02    | double |
 | resumeStoreIgnoreAfterFraction   | 0.95    | double |
 | resumeStoreMaxEntries            | 2000    | int    |
-| mediaEngine                      | 1       | int    |
-|                                  |         |        |
-|                                  |         |        |
-|                                  |         |        |
-|                                  |         |        |
+| openGLTickMs                     | 40      | int    |
+| ffmpegMaxPacketBytes             | 16777216 | int    |
+| ffmpegEnoughPackets              | 50      | int    |
+| ffmpegMaxVideoFrames             | 6       | int    |
 |                                  |         |        |
 |                                  |         |        |
 |                                  |         |        |

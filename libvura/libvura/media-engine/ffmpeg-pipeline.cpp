@@ -37,6 +37,7 @@ extern "C" {
 
 #include <QSize>
 #include <QCoreApplication>
+#include <QSettings>
 #include <QDebug>
 
 #include <chrono>
@@ -60,9 +61,6 @@ VideoFrame::~VideoFrame()
 
 namespace {
 
-constexpr size_t kMaxPacketBytes = 16 * 1024 * 1024; // demux read-ahead ceiling
-constexpr int kEnoughPackets = 50;                    // per stream, before pausing reads
-constexpr size_t kMaxVideoFrames = 6;                 // decoded pictures held ahead
 constexpr double kNaN = std::numeric_limits<double>::quiet_NaN();
 constexpr double kNoSkip = -std::numeric_limits<double>::infinity();
 
@@ -227,7 +225,7 @@ public:
     {
         std::unique_lock lock(m_mutex);
         m_cv.wait(lock, [&] {
-            return m_abort || m_queue.size() < kMaxVideoFrames || frame->serial != currentSerial.load();
+            return m_abort || m_queue.size() < QSettings().value("ffmpegMaxVideoFrames", 6).toInt() || frame->serial != currentSerial.load();
         });
         if (m_abort || frame->serial != currentSerial.load())
             return false;
@@ -748,10 +746,10 @@ AVCodecContext *Pipeline::Impl::openDecoder(int index, QString &error)
 
 bool Pipeline::Impl::queuesFull() const
 {
-    if (videoQ.bytes() + audioQ.bytes() > kMaxPacketBytes)
+    if (videoQ.bytes() + audioQ.bytes() > QSettings().value("ffmpegMaxPacketBytes", 16777216).toInt())
         return true;
-    const bool videoEnough = !vctx || videoQ.count() > kEnoughPackets;
-    const bool audioEnough = !audioActive || audioQ.count() > kEnoughPackets;
+    const bool videoEnough = !vctx || videoQ.count() > QSettings().value("ffmpegEnoughPackets", 50).toInt();
+    const bool audioEnough = !audioActive || audioQ.count() > QSettings().value("ffmpegEnoughPackets", 50).toInt();
     return videoEnough && audioEnough;
 }
 

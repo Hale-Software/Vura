@@ -113,6 +113,7 @@ void VideoMarkerController::loadVideoMarkers(const QUrl &source)
     m_sourceName = source.toString();
     refreshVideoMarkers();
     m_slider->loadVideoMarkers(m_videoMarkers);
+    emit markersChanged(m_videoMarkers);
 }
 
 void VideoMarkerController::goToNextMarker()
@@ -161,4 +162,5 @@ void VideoMarkerController::reloadAndRepaint()
 {
     refreshVideoMarkers();
     m_slider->updateVideoSlider(m_videoMarkers);
+    emit markersChanged(m_videoMarkers);
 }

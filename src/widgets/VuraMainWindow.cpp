@@ -73,6 +73,7 @@ VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
     buildMenus();
     buildPlaylistDock();
     initUI();
+    buildMarkerDock();
     connectController();
     initMisc();
 
@@ -264,6 +265,7 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     QSettings settings;
 
     m_currentSource = source;
+    m_markerPanel->setSource(source);
     m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
 
@@ -953,6 +955,37 @@ void VuraMainWindow::buildPlaylistDock()
     }
 }
 
+void VuraMainWindow::buildMarkerDock()
+{
+    m_markerDock = new QDockWidget(tr("Markers"), this);
+    m_markerDock->setObjectName(QStringLiteral("markerDock"));
+    m_markerPanel = new MarkerPanel(this);
+    m_markerDock->setWidget(m_markerPanel);
+    addDockWidget(Qt::RightDockWidgetArea, m_markerDock);
+    tabifyDockWidget(m_playlistDock, m_markerDock);   // "Playlist | Markers" tabs like the screenshot
+
+    connect(m_videoMarkerController, &VideoMarkerController::markersChanged,
+            m_markerPanel, &MarkerPanel::setMarkers);
+    connect(m_markerPanel, &MarkerPanel::seekRequested, m_controller, [this](qint64 ms) {
+        m_controller->seek(ms);
+    });
+    connect(m_markerPanel, &MarkerPanel::editRequested, this, &VuraMainWindow::openMarkerEditor);
+    connect(m_markerPanel, &MarkerPanel::deleteRequested,
+            m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
+
+    // Keep chips <-> View menu toggles in sync (setChecked is a no-op when unchanged, so no loops)
+    connect(m_markerPanel, &MarkerPanel::typeVisibilityChanged, this, [this](const QString &type, bool v) {
+        if (QAction *a = m_markerToggleActions.value(type))
+            a->setChecked(v);
+    });
+    for (auto it = m_markerToggleActions.cbegin(); it != m_markerToggleActions.cend(); ++it) {
+        const QString type = it.key();
+        connect(it.value(), &QAction::toggled, m_markerPanel, [this, type](bool v) {
+            m_markerPanel->setTypeVisible(type, v);
+        });
+    }
+}
+
 void VuraMainWindow::initUI()
 {
     const QSettings settings;
@@ -1038,6 +1071,7 @@ void VuraMainWindow::connectController()
     connect(m_controller, &MediaController::durationChanged, this, [this](media::Msec ms) {
         m_videoSlider->setRange(0, int(ms));
         m_videoSliderWidget->durationChanged(ms);
+        m_markerPanel->setDurationMs(ms);
     });
 
     connect(m_controller, &MediaController::playbackStateChanged, this, [this](media::PlaybackState state) {

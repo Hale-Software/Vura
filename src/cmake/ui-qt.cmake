@@ -1,5 +1,3 @@
-#find_package(Qt6 REQUIRED COMPONENTS Widgets MultimediaWidgets Network OpenGLWidgets Svg Sql)
-
 target_link_libraries(
         vura PRIVATE
         Qt6::Widgets

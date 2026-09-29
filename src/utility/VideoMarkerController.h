@@ -46,6 +46,7 @@ signals:
     void markerEdited(const VideoMarkerRecord &videoMarker);
     void loadMarkers(QList<VideoMarkerRecord> markers);
     void updateVideoSlider(QList<VideoMarkerRecord> markers);
+    void markersChanged(const QList<VideoMarkerRecord> &markers);
 
 public slots:
     void setTypeVisible(const QString &type, bool visible);

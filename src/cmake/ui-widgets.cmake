@@ -2,6 +2,8 @@ target_sources(
         vura PRIVATE
         widgets/ContinuePlaybackWidget.cpp
         widgets/ContinuePlaybackWidget.h
+        widgets/MarkerPanel.cpp
+        widgets/MarkerPanel.h
         widgets/PlaylistWidget.cpp
         widgets/PlaylistWidget.h
         widgets/SeekSlider.cpp

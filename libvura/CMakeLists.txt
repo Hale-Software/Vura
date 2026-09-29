@@ -107,6 +107,9 @@ target_sources(
         libvura/models/file-entry.h
         libvura/models/hotkey-model.h
         libvura/models/log-message.h
+        libvura/models/marker-colors.h
+        libvura/models/marker-filter-proxy-model.h
+        libvura/models/marker-list-model.h
         libvura/models/metadata.h
         libvura/models/playlist.h
         libvura/models/subtitle-cue.h
@@ -116,6 +119,8 @@ target_sources(
 
         PRIVATE
         libvura/models/hotkey-model.cpp
+        libvura/models/marker-filter-proxy-model.cpp
+        libvura/models/marker-list-model.cpp
         libvura/models/playlist.cpp
         libvura/models/types.cpp
 )
@@ -136,12 +141,14 @@ target_sources(
         PUBLIC
         libvura/util/crash-reporter.h
         libvura/util/crypto.h
+        libvura/util/marker-thumbnailer.h
         libvura/util/resume-store.h
         libvura/util/single-instance-controller.h
 
         PRIVATE
         libvura/util/crash-reporter.cpp
         libvura/util/crypto.cpp
+        libvura/util/marker-thumbnailer.cpp
         libvura/util/resume-store.cpp
         libvura/util/single-instance-controller.cpp
 )

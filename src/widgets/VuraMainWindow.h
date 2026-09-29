@@ -52,6 +52,7 @@
 #include "VideoSliderWidget.h"
 #include "VideoControlWidget.h"
 #include "ContinuePlaybackWidget.h"
+#include "MarkerPanel.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -189,6 +190,7 @@ private:
     void initSystemTray();
     void buildMenus();
     void buildPlaylistDock();
+    void buildMarkerDock();
     void initUI();
     void connectController();
     void initMisc();
@@ -227,7 +229,9 @@ private:
     SleepInhibitor *m_sleepInhibitor = nullptr;
     VideoStage *m_stage = nullptr;
     QDockWidget *m_playlistDock = nullptr;
+    QDockWidget *m_markerDock = nullptr;
     PlaylistWidget *m_playlistWidget = nullptr;
+    MarkerPanel *m_markerPanel = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
     ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;

@@ -23,25 +23,19 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QTimer>
+#include <QSettings>
 
 #include <algorithm>
 #include <cmath>
 
 namespace media {
-namespace {
-
-// Position, end-of-media detection and a redraw kick. The controller
-// throttles what reaches the UI, so this only needs to be regular.
-constexpr int kTickMs = 40;
-
-}
 
 OpenGLEngine::OpenGLEngine(QObject *parent)
     : Engine(parent),
       m_tick(new QTimer(this)),
       m_frameTimer(new QTimer(this))
 {
-    m_tick->setInterval(kTickMs);
+    m_tick->setInterval(QSettings().value("openGLTickMs", 40).toInt());
     connect(m_tick, &QTimer::timeout, this, &OpenGLEngine::tick);
 
     m_frameTimer->setSingleShot(true);
