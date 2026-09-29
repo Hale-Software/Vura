@@ -71,9 +71,8 @@ VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
 
     initSystemTray();
     buildMenus();
-    buildPlaylistDock();
     initUI();
-    buildMarkerDock();
+    initSideDockWidget();
     connectController();
     initMisc();
 
@@ -240,7 +239,7 @@ void VuraMainWindow::openNetworkStream(const QString& networkUrl)
         return;
     }
     qDebug() << "Open with network stream requested. Network URL: " << networkUrl;
-    m_playlistDock->hide();
+    m_sideDockWidget->playlistWidgetHide();
 
     const QString formattedUrl = Helpers::networkUrlFormatter(networkUrl);
     qDebug() << "Cleaned Network URL: " << formattedUrl;
@@ -265,7 +264,7 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     QSettings settings;
 
     m_currentSource = source;
-    m_markerPanel->setSource(source);
+    m_sideDockWidget->markerPanel()->setSource(source);
     m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
 
@@ -566,21 +565,21 @@ void VuraMainWindow::actionToggleFullscreen()
         unsetCursor();
         ui->menubar->show();
         m_videoSliderWidget->show();
-        if (m_wasPlaylistShowing)
-            m_playlistDock->show();
+        if (m_wasSideDockShowing)
+            m_sideDock->show();
 
         return;
     }
 
     m_wasMaximized = isMaximized();
-    m_wasPlaylistShowing = m_playlistDock->isVisible();
+    m_wasSideDockShowing = m_sideDock->isVisible();
     ui->menubar->hide();
     m_videoSliderWidget->hide();
-    m_playlistDock->hide();
+    m_sideDock->hide();
     showFullScreen();
 }
 
-void VuraMainWindow::actionShowSettings()
+void VuraMainWindow::actionViewPreferences()
 {
     const auto *dialog = showDialog(m_settingsDialog, this);
     connect(dialog, &SettingsDialog::requiresRestart, this, &VuraMainWindow::restartApplication);
@@ -601,16 +600,6 @@ void VuraMainWindow::actionExit()
     if (confirmationBox == QMessageBox::Yes) {
         this->close();
     }
-}
-
-void VuraMainWindow::actionViewTogglePlaylist() const
-{
-    if (m_playlistDock->isVisible())
-        m_playlistDock->hide();
-    else
-        m_playlistDock->show();
-
-    ui->actionViewTogglePlaylist->setChecked(m_playlistDock->isVisible());
 }
 
 void VuraMainWindow::actionToggleVideoControls()
@@ -824,10 +813,9 @@ void VuraMainWindow::buildMenus()
         ui->actionViewToggleVideoResolution->setChecked(false);
     }
 
-    connect(ui->actionViewTogglePlaylist, &QAction::triggered, this, &VuraMainWindow::actionViewTogglePlaylist);
     connect(ui->actionViewToggleVideoControls, &QAction::triggered, this, &VuraMainWindow::actionToggleVideoControls);
     connect(ui->actionViewMediaInformation, &QAction::triggered, this, &VuraMainWindow::actionViewMediaInformation);
-    connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionShowSettings);
+    connect(ui->actionViewPreferences, &QAction::triggered, this, &VuraMainWindow::actionViewPreferences);
 
 
     // Playback Actions
@@ -929,63 +917,6 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionHelpCheckForUpdates, &QAction::triggered, this, &VuraMainWindow::actionHelpCheckForUpdates);
 }
 
-void VuraMainWindow::buildPlaylistDock()
-{
-    const QSettings settings;
-
-    m_playlistDock = new QDockWidget(tr("Playlist"), this);
-    m_playlistDock->setObjectName(QStringLiteral("playlistDock"));
-
-    m_playlistWidget = new PlaylistWidget(this);
-    m_playlistWidget->setPlaylistModel(m_controller->playlist());
-
-    connect(m_playlistWidget, &PlaylistWidget::doubleClicked, this, [this](const QModelIndex &index) {
-        m_controller->playIndex(index.row());
-    });
-
-    m_playlistDock->setWidget(m_playlistWidget);
-    addDockWidget(Qt::RightDockWidgetArea, m_playlistDock);
-
-    if (settings.value("showPlaylistOnStart", true).toBool()) {
-        m_playlistDock->show();
-        ui->actionViewTogglePlaylist->setChecked(true);
-    } else {
-        m_playlistDock->hide();
-        ui->actionViewTogglePlaylist->setChecked(false);
-    }
-}
-
-void VuraMainWindow::buildMarkerDock()
-{
-    m_markerDock = new QDockWidget(tr("Markers"), this);
-    m_markerDock->setObjectName(QStringLiteral("markerDock"));
-    m_markerPanel = new MarkerPanel(this);
-    m_markerDock->setWidget(m_markerPanel);
-    addDockWidget(Qt::RightDockWidgetArea, m_markerDock);
-    tabifyDockWidget(m_playlistDock, m_markerDock);   // "Playlist | Markers" tabs like the screenshot
-
-    connect(m_videoMarkerController, &VideoMarkerController::markersChanged,
-            m_markerPanel, &MarkerPanel::setMarkers);
-    connect(m_markerPanel, &MarkerPanel::seekRequested, m_controller, [this](qint64 ms) {
-        m_controller->seek(ms);
-    });
-    connect(m_markerPanel, &MarkerPanel::editRequested, this, &VuraMainWindow::openMarkerEditor);
-    connect(m_markerPanel, &MarkerPanel::deleteRequested,
-            m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
-
-    // Keep chips <-> View menu toggles in sync (setChecked is a no-op when unchanged, so no loops)
-    connect(m_markerPanel, &MarkerPanel::typeVisibilityChanged, this, [this](const QString &type, bool v) {
-        if (QAction *a = m_markerToggleActions.value(type))
-            a->setChecked(v);
-    });
-    for (auto it = m_markerToggleActions.cbegin(); it != m_markerToggleActions.cend(); ++it) {
-        const QString type = it.key();
-        connect(it.value(), &QAction::toggled, m_markerPanel, [this, type](bool v) {
-            m_markerPanel->setTypeVisible(type, v);
-        });
-    }
-}
-
 void VuraMainWindow::initUI()
 {
     const QSettings settings;
@@ -1060,6 +991,53 @@ void VuraMainWindow::initUI()
         actionToggleVideoControls();
 }
 
+void VuraMainWindow::initSideDockWidget()
+{
+    const QSettings settings;
+
+    m_sideDock = new QDockWidget(this);
+    m_sideDock->setObjectName(QStringLiteral("sideDock"));
+
+    m_sideDockWidget = new SideDockWidget(this);
+    m_sideDockWidget->playlistWidget()->setPlaylistModel(m_controller->playlist());
+    connect(m_sideDockWidget->playlistWidget(), &PlaylistWidget::doubleClicked, this, [this](const QModelIndex &index) {
+        m_controller->playIndex(index.row());
+    });
+
+    if (settings.value("showPlaylistOnStart", true).toBool()) {
+        m_sideDockWidget->playlistWidgetShow();
+        ui->actionViewTogglePlaylist->setChecked(true);
+    } else {
+        m_sideDockWidget->playlistWidgetHide();
+        ui->actionViewTogglePlaylist->setChecked(false);
+    }
+
+
+    connect(m_videoMarkerController, &VideoMarkerController::markersChanged, m_sideDockWidget->markerPanel(), &MarkerPanel::setMarkers);
+    connect(m_sideDockWidget->markerPanel(), &MarkerPanel::editRequested, this, &VuraMainWindow::openMarkerEditor);
+    connect(m_sideDockWidget->markerPanel(), &MarkerPanel::deleteRequested, m_videoMarkerController, &VideoMarkerController::deleteVideoMarker);
+    connect(m_sideDockWidget->markerPanel(), &MarkerPanel::seekRequested, m_controller, [this](const qint64 ms) {
+        m_controller->seek(ms);
+    });
+    connect(m_sideDockWidget->markerPanel(), &MarkerPanel::typeVisibilityChanged, this, [this](const QString &type, const bool v) {
+        if (QAction *a = m_markerToggleActions.value(type))
+            a->setChecked(v);
+    });
+
+    for (auto it = m_markerToggleActions.cbegin(); it != m_markerToggleActions.cend(); ++it) {
+        const QString type = it.key();
+        connect(it.value(), &QAction::toggled, m_sideDockWidget->markerPanel(), [this, type](bool v) {
+            m_sideDockWidget->markerPanel()->setTypeVisible(type, v);
+        });
+    }
+
+    connect(ui->actionViewTogglePlaylist, &QAction::toggled, m_sideDockWidget, &SideDockWidget::setPlaylistWidgetVisibility);
+    connect(ui->actionViewToggleMarkerPanel, &QAction::toggled, m_sideDockWidget, &SideDockWidget::setMarkerPanelVisibility);
+
+    m_sideDock->setWidget(m_sideDockWidget);
+    addDockWidget(Qt::RightDockWidgetArea, m_sideDock);
+}
+
 void VuraMainWindow::connectController()
 {
     connect(m_controller, &MediaController::positionChanged, this, [this](media::Msec ms) {
@@ -1071,7 +1049,7 @@ void VuraMainWindow::connectController()
     connect(m_controller, &MediaController::durationChanged, this, [this](media::Msec ms) {
         m_videoSlider->setRange(0, int(ms));
         m_videoSliderWidget->durationChanged(ms);
-        m_markerPanel->setDurationMs(ms);
+        m_sideDockWidget->markerPanel()->setDurationMs(ms);
     });
 
     connect(m_controller, &MediaController::playbackStateChanged, this, [this](media::PlaybackState state) {

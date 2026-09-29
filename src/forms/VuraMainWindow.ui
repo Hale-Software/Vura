@@ -106,6 +106,7 @@
      <addaction name="actionViewToggleMarkersStripMarkers"/>
     </widget>
     <addaction name="actionViewTogglePlaylist"/>
+    <addaction name="actionViewToggleMarkerPanel"/>
     <addaction name="actionViewToggleVideoControls"/>
     <addaction name="actionViewToggleStatusBar"/>
     <addaction name="actionViewToggleVideoResolution"/>
@@ -1393,6 +1394,14 @@
    </property>
    <property name="text">
     <string>MPV</string>
+   </property>
+  </action>
+  <action name="actionViewToggleMarkerPanel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Marker Panel</string>
    </property>
   </action>
  </widget>

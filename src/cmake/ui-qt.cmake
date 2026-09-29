@@ -86,6 +86,7 @@ target_sources(
         forms/MissingFilesDialog.ui
         forms/PlaylistWidget.ui
         forms/SettingsDialog.ui
+        forms/SideDockWidget.ui
         forms/UpdateDialog.ui
         forms/VideoControlWidget.ui
         forms/VideoSliderWidget.ui

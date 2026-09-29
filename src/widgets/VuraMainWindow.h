@@ -53,6 +53,7 @@
 #include "VideoControlWidget.h"
 #include "ContinuePlaybackWidget.h"
 #include "MarkerPanel.h"
+#include "SideDockWidget.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -129,8 +130,7 @@ private slots:
     void actionExit();
 
     // View Menu
-    void actionViewTogglePlaylist() const;
-    void actionShowSettings();
+    void actionViewPreferences();
     void actionToggleVideoControls();
     void actionViewToggleStatusBar() const;
     void actionViewMediaInformation();
@@ -189,9 +189,8 @@ public slots:
 private:
     void initSystemTray();
     void buildMenus();
-    void buildPlaylistDock();
-    void buildMarkerDock();
     void initUI();
+    void initSideDockWidget();
     void connectController();
     void initMisc();
 
@@ -228,10 +227,8 @@ private:
     MediaController *m_controller = nullptr;
     SleepInhibitor *m_sleepInhibitor = nullptr;
     VideoStage *m_stage = nullptr;
-    QDockWidget *m_playlistDock = nullptr;
-    QDockWidget *m_markerDock = nullptr;
-    PlaylistWidget *m_playlistWidget = nullptr;
-    MarkerPanel *m_markerPanel = nullptr;
+    QDockWidget *m_sideDock = nullptr;
+    SideDockWidget *m_sideDockWidget = nullptr;
     VideoSliderWidget *m_videoSliderWidget = nullptr;
     VideoControlWidget *m_videoControlWidget = nullptr;
     ContinuePlaybackWidget *m_continuePlaybackWidget = nullptr;
@@ -255,7 +252,7 @@ private:
     bool m_wasMaximized = false;
     bool m_subtitlesEnabled = false;
     bool m_showingVideoControls = false;
-    bool m_wasPlaylistShowing = false;
+    bool m_wasSideDockShowing = false;
     qint64 m_lastPosition = 0;
     qint64 m_subtitleOffsetMs = 0;
     int m_inMarker = 0;

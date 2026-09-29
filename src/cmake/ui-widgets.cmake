@@ -8,6 +8,8 @@ target_sources(
         widgets/PlaylistWidget.h
         widgets/SeekSlider.cpp
         widgets/SeekSlider.h
+        widgets/SideDockWidget.cpp
+        widgets/SideDockWidget.h
         widgets/SystemTrayWidget.cpp
         widgets/SystemTrayWidget.h
         widgets/VideoControlWidget.cpp
