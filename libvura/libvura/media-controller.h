@@ -118,6 +118,8 @@ public slots:
 
     void setAudioDevice(const QString &id);
 
+    void closeRequested();
+
 signals:
     void positionChanged(media::Msec ms);
     void durationChanged(media::Msec ms);
@@ -137,6 +139,7 @@ signals:
     void currentItemChanged(const PlaylistItem &item);
 
     void resumeDataAvailable(media::Msec ms);
+    void closeOkay();
 
 private:
     void connectEngine();

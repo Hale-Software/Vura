@@ -1,4 +1,24 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "resume-store.h"
+
+#include <libvura/config.h>
 
 #include <QCryptographicHash>
 #include <QDateTime>
@@ -10,21 +30,25 @@
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QSettings>
 
-namespace {
-constexpr qreal kIgnoreBeforeFraction = 0.02;
-constexpr qreal kIgnoreAfterFraction = 0.95;
-constexpr int kMaxEntries = 2000;
-} // namespace
 
 ResumeStore::ResumeStore(QObject *parent, const QString &path)
-    : QObject(parent)
-    , m_path(path)
-    , m_saveTimer(new QTimer(this))
+    : QObject(parent),
+      m_path(path),
+      m_saveTimer(new QTimer(this))
 {
     if (m_path.isEmpty()) {
-        const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        QDir().mkpath(dir);
+        bool isDebugging = false;
+        if (QString(VURA_BUILD_TYPE) == "Debug")
+            isDebugging = true;
+        const QString dir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        if (!QDir().mkpath(dir)) {
+            qCritical() << "Failed to create resume store directory at " << dir;
+            emit errorOccured(QString("Failed to create resume store directory at %1").arg(dir));
+            m_initialized = false;
+            return;
+        }
         m_path = dir + QStringLiteral("/resume.json");
     }
 
@@ -34,6 +58,7 @@ ResumeStore::ResumeStore(QObject *parent, const QString &path)
     m_saveTimer->setInterval(5000);
     connect(m_saveTimer, &QTimer::timeout, this, &ResumeStore::save);
 
+    m_initialized = true;
     load();
 }
 
@@ -48,15 +73,15 @@ media::Msec ResumeStore::positionFor(const QUrl &url) const
     return m_entries.value(keyFor(url)).position;
 }
 
-void ResumeStore::remember(const QUrl &url, media::Msec position, media::Msec duration)
+void ResumeStore::remember(const QUrl &url, const media::Msec position, const media::Msec duration)
 {
     if (url.isEmpty() || duration < m_minimumDuration)
         return;
 
     const QString key = keyFor(url);
-    const qreal fraction = qreal(position) / qreal(duration);
+    const qreal fraction = static_cast<qreal>(position) / static_cast<qreal>(duration);
 
-    if (fraction < kIgnoreBeforeFraction || fraction > kIgnoreAfterFraction) {
+    if (fraction < QSettings().value("resumeStoreIgnoreBeforeFraction", 0.02).toDouble() || fraction > QSettings().value("resumeStoreIgnoreAfterFraction", 0.95).toDouble()) {
         // Near either end there is nothing to resume to, and a stale entry
         // would send the next play to the wrong place.
         if (m_entries.remove(key) > 0)
@@ -96,22 +121,22 @@ void ResumeStore::save()
         return;
 
     // Trim oldest entries so the file cannot grow without bound.
-    if (m_entries.size() > kMaxEntries) {
+    if (m_entries.size() > QSettings().value("resumeStoreMaxEntries", 2000).toInt()) {
         QList<QPair<qint64, QString>> byAge;
         byAge.reserve(m_entries.size());
         for (auto it = m_entries.cbegin(); it != m_entries.cend(); ++it)
             byAge.append({it.value().savedAt, it.key()});
         std::sort(byAge.begin(), byAge.end());
-        for (int i = 0; i < byAge.size() - kMaxEntries; ++i)
+        for (int i = 0; i < byAge.size() - QSettings().value("resumeStoreMaxEntries", 2000).toInt(); ++i)
             m_entries.remove(byAge.at(i).second);
     }
 
     QJsonObject root;
     for (auto it = m_entries.cbegin(); it != m_entries.cend(); ++it) {
         QJsonObject entry;
-        entry[QStringLiteral("position")] = double(it.value().position);
-        entry[QStringLiteral("duration")] = double(it.value().duration);
-        entry[QStringLiteral("savedAt")] = double(it.value().savedAt);
+        entry[QStringLiteral("position")] = static_cast<double>(it.value().position);
+        entry[QStringLiteral("duration")] = static_cast<double>(it.value().duration);
+        entry[QStringLiteral("savedAt")] = static_cast<double>(it.value().savedAt);
         root.insert(it.key(), entry);
     }
 
@@ -133,9 +158,9 @@ void ResumeStore::load()
     for (auto it = root.constBegin(); it != root.constEnd(); ++it) {
         const QJsonObject value = it.value().toObject();
         Entry entry;
-        entry.position = media::Msec(value.value(QStringLiteral("position")).toDouble());
-        entry.duration = media::Msec(value.value(QStringLiteral("duration")).toDouble());
-        entry.savedAt = qint64(value.value(QStringLiteral("savedAt")).toDouble());
+        entry.position = static_cast<media::Msec>(value.value(QStringLiteral("position")).toDouble());
+        entry.duration = static_cast<media::Msec>(value.value(QStringLiteral("duration")).toDouble());
+        entry.savedAt = static_cast<qint64>(value.value(QStringLiteral("savedAt")).toDouble());
         m_entries.insert(it.key(), entry);
     }
 }

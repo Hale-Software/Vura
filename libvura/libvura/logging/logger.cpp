@@ -56,8 +56,6 @@ void Logger::initLogFile()
     bool isDebugging = false;
     if (QString(VURA_BUILD_TYPE) == "Debug")
         isDebugging = true;
-    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
-        isDebugging = true;
 
     const QString baseDir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QDir logDir(baseDir + "/logs");

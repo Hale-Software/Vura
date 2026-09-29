@@ -93,6 +93,10 @@ void VuraMainWindow::closeEvent(QCloseEvent *event)
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     m_videoMarkerController->saveVideoMarkers();
+
+    if (m_controller)
+        m_controller->closeRequested();
+
     event->accept();
 }
 

@@ -284,6 +284,7 @@ void MediaController::loadCurrentItem(bool autoPlay)
     emit currentItemChanged(item);
 
     if (m_resumeTarget > 0) {
+        qDebug() << "Has resume target: " << QString::number(m_resumeTarget);
         const int continuePlayback = QSettings().value("continuePlayback", 1).toInt();
         switch (continuePlayback) {
             case 0:
@@ -533,11 +534,17 @@ void MediaController::setAudioDevice(const QString &id)
         m_engine->setAudioDevice(id);
 }
 
+void MediaController::closeRequested()
+{
+    rememberPosition();
+}
+
 void MediaController::rememberPosition()
 {
     if (m_currentUrl.isEmpty() || m_duration <= 0)
         return;
     m_resumeStore->remember(m_currentUrl, m_position, m_duration);
+    emit closeOkay();
 }
 
 media::PlaybackState MediaController::playbackState() const

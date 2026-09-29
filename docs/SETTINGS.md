@@ -68,9 +68,9 @@
 | positionEmitThreshold            | 250     | int    |
 | seekCoalesceMs                   | 60      | int    |
 | mediaControllerMaxRetriesPerItem | 1       | int    |
-|                                  |         |        |
-|                                  |         |        |
-|                                  |         |        |
+| resumeStoreIgnoreBeforeFraction  | 0.02    | double |
+| resumeStoreIgnoreAfterFraction   | 0.95    | double |
+| resumeStoreMaxEntries            | 2000    | int    |
 |                                  |         |        |
 |                                  |         |        |
 |                                  |         |        |
