@@ -414,15 +414,22 @@ void QtEngine::publishMetaData()
     const QString title = md.stringValue(QMediaMetaData::Title);
     out[QLatin1String(meta::Title)] = title.isEmpty() ? m_player->source().fileName() : title;
 
-    const QString artist = md.stringValue(QMediaMetaData::ContributingArtist);
-    out[QLatin1String(meta::Artist)] = artist.isEmpty() ? md.stringValue(QMediaMetaData::AlbumArtist) : artist;
-    out[QLatin1String(meta::Album)] = md.stringValue(QMediaMetaData::AlbumTitle);
+    out[QLatin1String(meta::Author)] = md.stringValue(QMediaMetaData::Author);
+    out[QLatin1String(meta::Comment)] = md.stringValue(QMediaMetaData::Comment);
+    out[QLatin1String(meta::Description)] = md.stringValue(QMediaMetaData::Description);
+    out[QLatin1String(meta::Genre)] = md.stringValue(QMediaMetaData::Genre);
+    out[QLatin1String(meta::Date)] = md.stringValue(QMediaMetaData::Date);
+    out[QLatin1String(meta::Language)] = md.stringValue(QMediaMetaData::Language);
+    out[QLatin1String(meta::Publisher)] = md.stringValue(QMediaMetaData::Publisher);
+    out[QLatin1String(meta::Copyright)] = md.stringValue(QMediaMetaData::Copyright);
+    out[QLatin1String(meta::Url)] = m_player->source();
+    out[QLatin1String(meta::MediaType)] = md.stringValue(QMediaMetaData::MediaType);
 
     QVariant cover = md.value(QMediaMetaData::CoverArtImage);
     if (!cover.isValid())
         cover = md.value(QMediaMetaData::ThumbnailImage);
     if (cover.isValid())
-        out[QLatin1String(meta::CoverArt)] = cover;
+        out[QLatin1String(meta::CoverArtImage)] = cover;
 
     const QVariant res = md.value(QMediaMetaData::Resolution);
     if (res.isValid() && !res.toSize().isEmpty())

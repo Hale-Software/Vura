@@ -41,28 +41,41 @@ void MediaInformationDialog::setMetaData(const QVariantMap &metaData)
 {
     m_metaData = metaData;
 
-    //ui->location->setText(metaData.Source.toString());
+    const QString location = metaData.value(QLatin1String(media::meta::Url)).toString();
+    if (!location.isEmpty())
+        ui->location->setText(location);
 
     const QString title = metaData.value(QLatin1String(media::meta::Title)).toString();
     if (!title.isEmpty())
         ui->title->setText(title);
 
-    const QString artist = metaData.value(QLatin1String(media::meta::Artist)).toString();
-    if (!artist.isEmpty())
-        ui->author->setText(artist);
+    const QString author = metaData.value(QLatin1String(media::meta::Author)).toString();
+    if (!author.isEmpty())
+        ui->author->setText(author);
 
-    //ui->comments->setText(metaData.Comment);
-    //ui->copyright->setText(metaData.Copyright);
-    //ui->date->setText(metaData.Date.toString());
+    const QString comments = metaData.value(QLatin1String(media::meta::Comment)).toString();
+    if (!comments.isEmpty())
+        ui->comments->setText(comments);
+
+    const QString copyright = metaData.value(QLatin1String(media::meta::Copyright)).toString();
+    if (!copyright.isEmpty())
+        ui->copyright->setText(copyright);
+
+    const QString date = metaData.value(QLatin1String(media::meta::Date)).toString();
+    if (!date.isEmpty())
+        ui->date->setText(date);
 
     const QSize res = metaData.value(QLatin1String(media::meta::Resolution)).toSize();
     if (res.isValid())
         ui->resolution->setText(QString("%1x%2").arg(res.width()).arg(res.height()));
 
-    //if (!metaData.Genre.isEmpty())
-    //    ui->genre->setText(metaData.Genre.join(", "));
+    const QString genre = metaData.value(QLatin1String(media::meta::Genre)).toString();
+    if (!genre.isEmpty())
+        ui->genre->setText(genre);
 
-    //ui->language->setText(QLocale::languageToString(metaData.Language));
+    const QString language = metaData.value(QLatin1String(media::meta::Language)).toString();
+    if (!language.isEmpty())
+        ui->language->setText(language);
 
     //ui->publisher->setText(metaData.Publisher);
     //ui->trackNumber->setText(QString::number(metaData.TrackNumber));

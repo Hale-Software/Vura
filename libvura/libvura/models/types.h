@@ -143,11 +143,35 @@ struct Capabilities {
 /// Canonical metadata keys. Backends report wildly different key names,
 /// so each adapter normalises into these before emitting.
 namespace meta {
-inline constexpr auto Title = "title";
-inline constexpr auto Artist = "artist";
-inline constexpr const char *Resolution = "resolution";
-inline constexpr auto Album = "album";
-inline constexpr auto CoverArt = "coverArt"; // QImage
+inline constexpr auto Title = "title";                          // QString
+inline constexpr auto Author = "author";                        // QStringList
+inline constexpr auto Comment = "comment";                      // QString
+inline constexpr auto Description = "description";              // QString
+inline constexpr auto Genre = "genre";                          // QStringList
+inline constexpr auto Date = "date";                            // QDateTime
+inline constexpr auto Language = "language";                    // QLocale::Language
+inline constexpr auto Publisher = "publisher";                  // QString
+inline constexpr auto Copyright = "copyright";                  // QString
+inline constexpr auto Url = "url";                              // QUrl
+inline constexpr auto MediaType = "mediaType";                  // QString
+inline constexpr auto FileFormat = "fileFormat";                // QMediaFormat::FileFormat
+inline constexpr auto Duration = "duration";                    // qint64
+inline constexpr auto AudioBitRate = "audioBitRate";            // int
+inline constexpr auto AudioCodec = "audioCodec";                // QMediaFormat::AudioCodec
+inline constexpr auto VideoFrameRate = "videoFrameRate";        // qreal
+inline constexpr auto VideoBitRate = "videoBitRate";            // int
+inline constexpr auto VideoCodec = "videoCodec";                // QMediaFormat::VideoCodec
+inline constexpr auto HasHdrContent = "hasHdrContent";          // bool
+inline constexpr auto AlbumTitle = "albumTitle";                // QString
+inline constexpr auto AlbumArtist = "albumArtist";              // QString
+inline constexpr auto ContributingArtist = "contributingArtist"; // QStringList
+inline constexpr auto TrackNumber = "trackNumber";              // int
+inline constexpr auto Composer = "composer";                    // QStringList
+inline constexpr auto LeadPerformer = "leadPerformer";          // QStringList
+inline constexpr auto ThumbnailImage = "thumbnailImage";        // QImage
+inline constexpr auto CoverArtImage = "coverArtImage";          // QImage
+inline constexpr auto Orientation = "orientation";              // int
+inline constexpr auto Resolution = "resolution";                // QSize
 } // namespace meta
 
 /// Milliseconds are the unit at every boundary in this codebase.
