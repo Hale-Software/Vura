@@ -71,7 +71,7 @@
 | resumeStoreIgnoreBeforeFraction  | 0.02    | double |
 | resumeStoreIgnoreAfterFraction   | 0.95    | double |
 | resumeStoreMaxEntries            | 2000    | int    |
-|                                  |         |        |
+| mediaEngine                      | 1       | int    |
 |                                  |         |        |
 |                                  |         |        |
 |                                  |         |        |

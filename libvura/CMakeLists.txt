@@ -9,6 +9,7 @@ configure_file(libvura/config.h.in libvura/config.h)
 target_sources(
         libvura
         PUBLIC
+        libvura/audio.h
         libvura/constants.h
         libvura/enums.h
         libvura/helpers.h
@@ -20,6 +21,7 @@ target_sources(
         libvura/theme-manager.h
 
         PRIVATE
+        libvura/audio.cpp
         libvura/constants.cpp
         libvura/defs.h
         libvura/helpers.cpp

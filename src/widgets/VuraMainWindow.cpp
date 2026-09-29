@@ -81,8 +81,7 @@ VuraMainWindow::VuraMainWindow(MediaController *controller, QWidget *parent)
     HotkeyManager::instance()->registerWindow(this);
     HotkeyManager::instance()->load();
 
-    qCDebug(Core) << "Application Initialized!";
-    qCInfo(Core) << "Vura Version: " << VURA_VERSION_STRING;
+    qCDebug(Core) << "Main Window Initialized!";
 }
 
 VuraMainWindow::~VuraMainWindow() = default;

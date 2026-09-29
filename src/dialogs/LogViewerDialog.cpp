@@ -19,6 +19,21 @@
 #include "LogViewerDialog.h"
 #include "ui_LogViewerDialog.h"
 
+#include <QPushButton>
+#include <QPlainTextEdit>
+#include <QLineEdit>
+#include <QCheckBox>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
+#include <QSettings>
+#include <QCloseEvent>
+#include <QScrollBar>
+#include <QString>
+#include <QList>
+
 
 QString getVerbosityString(const int verbosity)
 {
@@ -68,6 +83,7 @@ LogViewerDialog::LogViewerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
     connect(ui->chkAutoScroll, &QCheckBox::toggled, this, &LogViewerDialog::onAutoScrollToggled);
     connect(ui->chkAlwaysOnTop, &QCheckBox::toggled, this, &LogViewerDialog::onAlwaysOnTopToggled);
     connect(ui->chkStyleMessages, &QCheckBox::toggled, this, &LogViewerDialog::onStyleMessagesToggled);
+    connect(ui->simplifyView, &QCheckBox::toggled, this, &LogViewerDialog::simplifyView_Toggled);
     connect(ui->btnClear, &QPushButton::clicked, this, &LogViewerDialog::clearButton_Clicked);
     connect(ui->btnExport, &QPushButton::clicked, this, &LogViewerDialog::exportButton_Clicked);
 
@@ -75,13 +91,14 @@ LogViewerDialog::LogViewerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
     connect(blogger, &Logger::newLogEntry, this, &LogViewerDialog::appendLogMessage);
 
     QList<LogMessage> previousMessages = blogger->getLogMessages();
-    for (const auto &[timestamp, level, component, message, fullText] : previousMessages) {
+    for (const auto &[timestamp, level, component, message, fullText, simpleText] : previousMessages) {
         LogEntry entry;
         entry.timestamp = timestamp;
         entry.level = level;
         entry.component = component;
         entry.message = message;
         entry.fullText = fullText;
+        entry.simpleText = simpleText;
         m_logBuffer.append(entry);
     }
     refreshLogView();
@@ -108,7 +125,13 @@ void LogViewerDialog::appendLogMessage(LogMessage message)
 
     QString levelStr = getVerbosityString(message.level);
     entry.fullText = QString("[%1] %2  \t%3")
-                        .arg(entry.timestamp, levelStr, message.message);
+                        .arg(entry.timestamp)
+                        .arg(levelStr)
+                        .arg(message.message);
+
+    entry.simpleText = QString("%1: %2")
+                        .arg(entry.timestamp)
+                        .arg(message.message);
 
     m_logBuffer.append(entry);
 
@@ -122,13 +145,13 @@ void LogViewerDialog::appendToView(const LogEntry &entry) const
     if (m_styleMessages) {
         const QString color = getLogColor(entry.level);
 
-        const QString styledMessage = QString("<font color=\"%1\">%2</font>")
+        QString styledMessage = QString("<font color=\"%1\">%2</font>")
                                 .arg(color)
-                                .arg(entry.fullText.toHtmlEscaped());
+                                .arg(m_simplifyView ? entry.simpleText.toHtmlEscaped() : entry.fullText.toHtmlEscaped());
 
         ui->logTextArea->appendHtml(styledMessage);
     } else {
-        ui->logTextArea->appendPlainText(entry.fullText);
+        ui->logTextArea->appendPlainText(m_simplifyView ? entry.simpleText : entry.fullText);
     }
 
     if (m_autoScroll) {
@@ -163,8 +186,12 @@ void LogViewerDialog::refreshLogView()
         if (entry.level == 2 && !showWarn) continue;
         if (entry.level == 3 && !showError) continue;
 
-        if (!query.isEmpty() && !entry.fullText.toLower().contains(query)) {
-            continue;
+        if (m_simplifyView) {
+            if (!query.isEmpty() && !entry.message.toLower().contains(query))
+                continue;
+        } else {
+            if (!query.isEmpty() && !entry.fullText.toLower().contains(query))
+                continue;
         }
 
         appendToView(entry);
@@ -191,6 +218,12 @@ void LogViewerDialog::onAutoScrollToggled(const bool checked)
 void LogViewerDialog::onStyleMessagesToggled(const bool checked)
 {
     m_styleMessages = checked;
+    refreshLogView();
+}
+
+void LogViewerDialog::simplifyView_Toggled(const bool checked)
+{
+    m_simplifyView = checked;
     refreshLogView();
 }
 

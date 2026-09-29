@@ -17,14 +17,172 @@
  ******************************************************************************/
 
 #include "platform.h"
+#include "../logging/categories.h"
+#include <libvura/config.h>
+
+#include <QString>
+#include <QByteArray>
+#include <QPair>
+#include <QThread>
+#include <QDateTime>
 
 #include <windows.h>
+#include <wscapi.h>
+#include <iwscapi.h>
 #include <shlobj.h>
 #include <comdef.h>
 #include <Wbemidl.h>
+#include <intrin.h>
+#include <netfw.h>
+#include <vector>
 
 
-bool isRunningAsAdmin()
+enum class DefenderState
+{
+    Active,
+    DisabledOrPassive,
+    Error
+};
+
+enum class FirewallState
+{
+    Enabled,
+    Disabled,
+    Error
+};
+
+static QString getNativeCpuName()
+{
+    // Method 1: Hardware CPUID Instruction (Works on Intel/AMD)
+    int cpuInfo[4] = { 0 };
+    __cpuid(cpuInfo, 0x80000000);
+    unsigned int nExIds = cpuInfo[0];
+
+    if (nExIds >= 0x80000004) {
+        char cpuBrandString[0x40] = { 0 };
+        __cpuid((int*)(cpuBrandString),       0x80000002);
+        __cpuid((int*)(cpuBrandString + 16),  0x80000003);
+        __cpuid((int*)(cpuBrandString + 32),  0x80000004);
+        return QString::fromUtf8(cpuBrandString).trimmed();
+    }
+
+    // Method 2: Fallback to Windows Registry
+    HKEY hKey;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, R"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        char buffer[1024];
+        DWORD bufferSize = sizeof(buffer);
+        if (RegQueryValueExA(hKey, "ProcessorNameString", nullptr, nullptr, (LPBYTE)buffer, &bufferSize) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return QString::fromUtf8(buffer).trimmed();
+        }
+        RegCloseKey(hKey);
+    }
+    return QStringLiteral("Unknown Windows CPU");
+}
+
+static int getNativeCpuSpeedMhz()
+{
+    HKEY hKey;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, R"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        DWORD mhz = 0;
+        DWORD bufferSize = sizeof(mhz);
+        if (RegQueryValueExA(hKey, "~MHz", nullptr, nullptr, (LPBYTE)&mhz, &bufferSize) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return static_cast<int>(mhz);
+        }
+        RegCloseKey(hKey);
+    }
+    return -1;
+}
+
+static QPair<int, int> getNativeCoreCounts()
+{
+    int physicalCores = 0;
+    int logicalCores = 0;
+
+    // 1. Get Logical Cores via basic system info
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    logicalCores = static_cast<int>(sysInfo.dwNumberOfProcessors);
+
+    // 2. Get Physical Cores via Logical Processor Information API
+    DWORD bufferSize = 0;
+    GetLogicalProcessorInformation(nullptr, &bufferSize);
+
+    if (bufferSize > 0) {
+        std::vector<SYSTEM_LOGICAL_PROCESSOR_INFORMATION> buffer(bufferSize / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+        if (GetLogicalProcessorInformation(buffer.data(), &bufferSize)) {
+            for (const auto& info : buffer) {
+                if (info.Relationship == RelationProcessorCore) {
+                    physicalCores++;
+                }
+            }
+        }
+    }
+
+    // Fallback safety if API fail
+    if (physicalCores == 0) physicalCores = logicalCores;
+
+    return qMakePair(physicalCores, logicalCores);
+}
+
+static QPair<qulonglong, qulonglong> getNativeRamSizes()
+{
+    qulonglong totalRam = 0;
+    qulonglong freeRam = 0;
+
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    if (GlobalMemoryStatusEx(&memInfo)) {
+        totalRam = memInfo.ullTotalPhys;
+        freeRam = memInfo.ullAvailPhys; // Returns immediately available physical memory
+    }
+
+    return qMakePair(totalRam, freeRam);
+}
+
+CpuTicks getCpuSample()
+{
+    CpuTicks sample;
+
+    FILETIME idleTime, kernelTime, userTime;
+    if (GetSystemTimes(&idleTime, &kernelTime, &userTime)) {
+        // Convert FILETIME to 64-bit unsigned integers
+        ULARGE_INTEGER liIdle, liKernel, liUser;
+        liIdle.LowPart   = idleTime.dwLowDateTime;   liIdle.HighPart   = idleTime.dwHighDateTime;
+        liKernel.LowPart = kernelTime.dwLowDateTime; liKernel.HighPart = kernelTime.dwHighDateTime;
+        liUser.LowPart   = userTime.dwLowDateTime;   liUser.HighPart   = userTime.dwHighDateTime;
+
+        sample.idle = liIdle.QuadPart;
+        // On Windows, kernelTime includes idleTime, so total is kernelTime + userTime
+        sample.total = liKernel.QuadPart + liUser.QuadPart;
+    }
+
+    return sample;
+}
+
+double getNativeCpuLoadPercentage()
+{
+    CpuTicks start = getCpuSample();
+    QThread::msleep(100);
+    CpuTicks end = getCpuSample();
+
+    const qulonglong idleDelta = end.idle - start.idle;
+    const qulonglong totalDelta = end.total - start.total;
+
+    if (totalDelta == 0)
+        return 0.0;
+
+    double usage = (1.0 - (static_cast<double>(idleDelta) / totalDelta)) * 100.0;
+    if (usage < 0.0)
+        usage = 0.0;
+    if (usage > 100.0)
+        usage = 100.0;
+
+    return usage;
+}
+
+static bool isRunningAsAdmin()
 {
     BOOL isAdmin = FALSE;
     PSID administratorsGroup = NULL;
@@ -39,137 +197,239 @@ bool isRunningAsAdmin()
     return isAdmin == TRUE;
 }
 
-bool isMicrosoftDefenderActive()
+static DefenderState getMicrosoftDefenderState()
 {
-    HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+    // Initialize COM library for the current thread
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
-        qCritical() << "Failed to initialize COM library.";
-        return false;
+        return DefenderState::Error;
     }
 
-    hr = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
-        RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-    if (FAILED(hr) && hr != RPC_E_TOO_LATE) {
-        CoUninitialize();
-        return false;
-    }
+    IWSCProductList* pProductList = nullptr;
+    hr = CoCreateInstance(__uuidof(WSCProductList), nullptr, CLSCTX_INPROC_SERVER,
+                          __uuidof(IWSCProductList), reinterpret_cast<LPVOID*>(&pProductList));
 
-    IWbemLocator *pLoc = NULL;
-    hr = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID *)&pLoc);
     if (FAILED(hr)) {
         CoUninitialize();
-        return false;
+        return DefenderState::Error;
     }
 
-    IWbemServices *pSvc = NULL;
-    // SecurityCenter2 is the correct namespace for desktop antivirus status
-    hr = pLoc->ConnectServer(_bstr_t(L"ROOT\\SecurityCenter2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
+    // Initialize list to query Antivirus Providers
+    hr = pProductList->Initialize(WSC_SECURITY_PROVIDER_ANTIVIRUS);
     if (FAILED(hr)) {
-        pLoc->Release();
+        pProductList->Release();
         CoUninitialize();
-        return false;
+        return DefenderState::Error;
     }
 
-    hr = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
-        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
-    if (FAILED(hr)) {
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
+    LONG productCount = 0;
+    pProductList->get_Count(&productCount);
 
-    IEnumWbemClassObject* pEnumerator = NULL;
-    bstr_t query("SELECT * FROM AntiVirusProduct");
-    hr = pSvc->ExecQuery(_bstr_t("WQL"), query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-
-    if (FAILED(hr)) {
-        pSvc->Release();
-        pLoc->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    IWbemClassObject *pclsObj = NULL;
-    ULONG uReturn = 0;
     bool isDefenderActive = false;
 
-    while (pEnumerator) {
-        hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (0 == uReturn) break;
+    for (LONG i = 0; i < productCount; ++i) {
+        IWscProduct* pProduct = nullptr;
+        if (SUCCEEDED(pProductList->get_Item(i, &pProduct))) {
+            BSTR bstrName = nullptr;
+            WSC_SECURITY_PRODUCT_STATE productState;
 
-        VARIANT vtProp;
-        // Check the product name
-        hr = pclsObj->Get(L"displayName", 0, &vtProp, 0, 0);
-        QString displayName = QString::fromWCharArray(vtProp.bstrVal);
-        VariantClear(&vtProp);
+            if (SUCCEEDED(pProduct->get_ProductName(&bstrName)) &&
+                SUCCEEDED(pProduct->get_ProductState(&productState))) {
 
-        if (displayName.contains("Windows Defender", Qt::CaseInsensitive) ||
-            displayName.contains("Microsoft Defender", Qt::CaseInsensitive)) {
+                QString prodName = QString::fromWCharArray(bstrName);
+                SysFreeString(bstrName);
 
-            // productState contains bits for real-time protection and enabled status
-            hr = pclsObj->Get(L"productState", 0, &vtProp, 0, 0);
-            int productState = vtProp.intVal;
-            VariantClear(&vtProp);
-
-            // Bitmask breakdown for Center2:
-            // 0x1000 = Antivirus is active/running
-            // 0x0010 = Real-time protection is enabled
-            bool isActive = (productState & 0x1000);
-            bool isRealTimeOn = (productState & 0x0010);
-
-            if (isActive && isRealTimeOn) {
-                isDefenderActive = true;
-                pclsObj->Release();
-                break;
+                // Look explicitly for Windows / Microsoft Defender
+                if (prodName.contains(QStringLiteral("Defender"), Qt::CaseInsensitive)) {
+                    // WSC_SECURITY_PRODUCT_STATE_ON means the AV engine is active and running
+                    if (productState == WSC_SECURITY_PRODUCT_STATE_ON) {
+                        isDefenderActive = true;
+                    }
+                }
             }
+            pProduct->Release();
         }
-        pclsObj->Release();
     }
 
-    pEnumerator->Release();
-    pSvc->Release();
-    pLoc->Release();
+    pProductList->Release();
     CoUninitialize();
 
-    return isDefenderActive;
+    return isDefenderActive ? DefenderState::Active : DefenderState::DisabledOrPassive;
+}
+
+static FirewallState getWindowsFirewallState()
+{
+    // 1. Initialize COM library for the current thread
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
+        return FirewallState::Error;
+    }
+
+    INetFwMgr* pFwMgr = nullptr;
+    INetFwPolicy* pFwPolicy = nullptr;
+    INetFwProfile* pFwProfile = nullptr;
+    FirewallState state = FirewallState::Error;
+
+    // 2. Instantiate the Firewall Manager
+    hr = CoCreateInstance(__uuidof(NetFwMgr), nullptr, CLSCTX_INPROC_SERVER,
+                          __uuidof(INetFwMgr), reinterpret_cast<void**>(&pFwMgr));
+
+    if (SUCCEEDED(hr)) {
+        // 3. Get the local firewall policy
+        hr = pFwMgr->get_LocalPolicy(&pFwPolicy);
+        if (SUCCEEDED(hr)) {
+            // 4. Get the currently active profile
+            hr = pFwPolicy->get_CurrentProfile(&pFwProfile);
+            if (SUCCEEDED(hr)) {
+                VARIANT_BOOL fwEnabled = VARIANT_FALSE;
+                // 5. Query if the firewall is turned on
+                hr = pFwProfile->get_FirewallEnabled(&fwEnabled);
+                if (SUCCEEDED(hr)) {
+                    state = (fwEnabled == VARIANT_TRUE) ? FirewallState::Enabled
+                                                        : FirewallState::Disabled;
+                }
+            }
+        }
+    }
+
+    // Clean up resources
+    if (pFwProfile) pFwProfile->Release();
+    if (pFwPolicy) pFwPolicy->Release();
+    if (pFwMgr) pFwMgr->Release();
+    CoUninitialize();
+
+    return state;
 }
 
 void logDeviceInfo()
 {
+    // Log CPU Name
+    QString cpuNameStr = QString("CPU Name: %1")
+                                .arg(getNativeCpuName());
+
+    // Log CPU Speed
+    QString cpuSpeedStr = QString("CPU Speed: %1MHz")
+                                 .arg(getNativeCpuSpeedMhz());
+
+    // Log CPU Core Counts
+    QPair<int, int> cpuCoreCount = getNativeCoreCounts();
+    QString cpuCoreStr = QString("Physical Cores: %1, Logical Cores: %2")
+                                .arg(cpuCoreCount.first)
+                                .arg(cpuCoreCount.second);
+
+    // Log RAM Sizes (MB)
+    QPair<qulonglong, qulonglong> ramSizes = getNativeRamSizes();
+    QString ramStr = QString("Physical Memory: %1MB Total, %2MB Free")
+                            .arg(ramSizes.first / (1024.0 * 1024.0))
+                            .arg(ramSizes.second / (1024.0 * 1024.0));
+
     // Log Operating System and Kernel
     QString osStr = QString("OS: %1 (%2)")
                         .arg(QSysInfo::prettyProductName())
                         .arg(QSysInfo::kernelType() + " " + QSysInfo::kernelVersion());
 
-    // Log CPU Architecture
-    QString cpuStr = QString("CPU Architecture: %1 (Build: %2)")
-    .arg(QSysInfo::currentCpuArchitecture())
-    .arg(QSysInfo::buildCpuArchitecture());
+    // Log Running As Administrator
+    QString adminStr = "Running As Administrator: false";
+    if (isRunningAsAdmin())
+        adminStr = "Running As Administrator: true";
 
-    // Thread Count (Good indicator of logical cores available for FFmpeg)
-    QString threadStr = QString("Logical Cores: %1")
-    .arg(QThread::idealThreadCount());
+    // Log Windows 10/11 Gaming Feature Game DVR
 
-    // Primary Display Information
-    QString screenStr = "Display: Unknown";
+    // Log Windows 10/11 Gaming Feature Game Mode
+
+    // Log Microsoft Defender Antivirus Status
+    QString microsoftDefenderStatusStr = "unknown";
+    DefenderState microsoftDefenderState = getMicrosoftDefenderState();
+    switch (microsoftDefenderState) {
+        case DefenderState::Active:
+            microsoftDefenderStatusStr = "enabled";
+            break;
+        case DefenderState::DisabledOrPassive:
+            microsoftDefenderStatusStr = "disabled/passive";
+            break;
+        case DefenderState::Error:
+            microsoftDefenderStatusStr = "error";
+            break;
+        default:
+            break;
+    }
+    QString microsoftDefenderStr = QString("Microsoft Defender Antivirus: %1")
+                                          .arg(microsoftDefenderStatusStr);
+
+    // Log Windows Firewall Status
+    QString windowsFirewallStatusStr = "unknown";
+    FirewallState windowsFirewallState = getWindowsFirewallState();
+    switch (windowsFirewallState) {
+        case FirewallState::Enabled:
+            windowsFirewallStatusStr = "enabled";
+            break;
+        case FirewallState::Disabled:
+            windowsFirewallStatusStr = "disabled";
+            break;
+        case FirewallState::Error:
+            windowsFirewallStatusStr = "error";
+            break;
+        default:
+            break;
+    }
+    QString windowsFirewallStr = QString("Windows Firewall: %1")
+                                        .arg(windowsFirewallStatusStr);
+
+    // Log Primary Display Information
+    QString primDisplayWidthStr = "unknown";
+    QString primDisplayHeightStr = "unknown";
+    QString primDisplayRefRateStr = "unknown";
     if (QScreen *primaryScreen = QGuiApplication::primaryScreen()) {
         QRect geometry = primaryScreen->geometry();
-        screenStr = QString("Display: %1x%2 @ %3Hz")
-        .arg(geometry.width())
-        .arg(geometry.height())
-        .arg(primaryScreen->refreshRate());
+        if (geometry.isValid()) {
+            primDisplayWidthStr = QString::number(geometry.width());
+            primDisplayHeightStr = QString::number(geometry.height());
+        }
+        primDisplayRefRateStr = QString("%1Hz").arg(primaryScreen->refreshRate());
     }
 
-    // Disk Space (App Data Drive)
+    // Log App Data Drive Disk Space
     QStorageInfo storage(QDir::currentPath());
     QString storageStr = QString("Storage: %1 GB Free / %2 GB Total")
-    .arg(storage.bytesAvailable() / (1024 * 1024 * 1024))
-    .arg(storage.bytesTotal() / (1024 * 1024 * 1024));
+                                .arg(storage.bytesAvailable() / (1024 * 1024 * 1024))
+                                .arg(storage.bytesTotal() / (1024 * 1024 * 1024));
 
-    // --- Write specs to log ---
-    QString finalSpecLog = QString("\n--- DEVICE SPECIFICATIONS ---\n%1\n%2\n%3\n%4\n%5\n-----------------------------")
-    .arg(osStr, cpuStr, threadStr, screenStr, storageStr);
+    // Log Current Date/Time
+    QDateTime now = QDateTime::currentDateTime();
+    QString curDateTimeStr = QString("Current Date/Time: %1, %2")
+                                    .arg(now.toString("yyyy-MM-dd"))
+                                    .arg(now.toString("hh:mm:ss"));
 
-    qDebug() << finalSpecLog;
+    // Log Application Info
+    QString applicationStr = QString("%1 %2 %3 (%4) (%5, %6)")
+                                    .arg(VURA_PRODUCT_NAME)
+                                    .arg(VURA_VERSION_CANONICAL)
+                                    .arg(VURA_BUILD_STRING)
+                                    .arg(VURA_BUILD_TYPE);
+
+    // Write to log
+    qCInfo(Core) << cpuNameStr;
+    qCInfo(Core) << cpuSpeedStr;
+    qCInfo(Core) << cpuCoreStr;
+    qCInfo(Core) << ramStr;
+    qCInfo(Core) << osStr;
+    qCInfo(Core) << adminStr;
+    qCInfo(Core) << "Windows 10/11 Gaming Features:";
+    qCInfo(Core) << "-  Game DVR: ";
+    qCInfo(Core) << "-  Game Mode: ";
+
+    qCInfo(Core) << "Sec. Software Status:";
+    qCInfo(Core) << "-  " << microsoftDefenderStr;
+    qCInfo(Core) << "-  " << windowsFirewallStr;
+    qCInfo(Core) << "-  " << storageStr;
+
+    qCInfo(Core) << "Primary Display Information:";
+    qCInfo(Core) << "-  Width: " << primDisplayWidthStr;
+    qCInfo(Core) << "-  Height: " << primDisplayHeightStr;
+    qCInfo(Core) << "-  Refresh Rate: " << primDisplayRefRateStr;
+
+    qCInfo(Core) << curDateTimeStr;
+    qCInfo(Core) << applicationStr;
+    qCInfo(Core) << "---------------------------------";
+    qCInfo(Core) << "---------------------------------";
 }

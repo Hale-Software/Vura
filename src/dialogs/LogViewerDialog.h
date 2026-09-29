@@ -19,30 +19,12 @@
 #pragma once
 
 #include <QDialog>
-#include <QPushButton>
-#include <QPlainTextEdit>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
-#include <QDateTime>
-#include <QSettings>
-#include <QCloseEvent>
-#include <QScrollBar>
-#include <QString>
-#include <QList>
 
 #include <libvura/logging/logger.h>
 
 
 QT_BEGIN_NAMESPACE
-
-namespace Ui {
-class LogViewerDialog;
-}
-
+namespace Ui { class LogViewerDialog; }
 QT_END_NAMESPACE
 
 
@@ -52,6 +34,7 @@ struct LogEntry {
     QString component;
     QString message;
     QString fullText;
+    QString simpleText;
 };
 
 class LogViewerDialog : public QDialog {
@@ -73,6 +56,7 @@ private slots:
     void onAlwaysOnTopToggled(bool checked);
     void onAutoScrollToggled(bool checked);
     void onStyleMessagesToggled(bool checked);
+    void simplifyView_Toggled(bool checked);
     void clearButton_Clicked();
     void exportButton_Clicked();
 
@@ -82,6 +66,7 @@ private:
     QList<LogEntry> m_logBuffer;
     bool m_autoScroll = true;
     bool m_styleMessages = true;
+    bool m_simplifyView = true;
 
     void refreshLogView();
     void appendToView(const LogEntry &entry) const;

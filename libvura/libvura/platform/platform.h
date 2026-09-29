@@ -41,4 +41,15 @@
 #include "linux/update-manager.h"
 #endif
 
-static void logDeviceInfo();
+
+struct CpuTicks
+{
+    qulonglong idle = 0;
+    qulonglong total = 0;
+};
+
+CpuTicks getCpuSample();
+
+double getNativeCpuLoadPercentage();
+
+void logDeviceInfo();

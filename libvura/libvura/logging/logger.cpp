@@ -87,8 +87,8 @@ void Logger::writeSessionBanner()
              QString(VURA_BUILD_NUMBER),
              QDateTime::currentDateTime().toString(Qt::ISODate));
 
-    m_logFile.write((banner + "\n").toUtf8());
-    m_logFile.flush();
+    //m_logFile.write((banner + "\n").toUtf8());
+    //m_logFile.flush();
 
     LogMessage bannerMessage;
     bannerMessage.timestamp = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
@@ -96,7 +96,8 @@ void Logger::writeSessionBanner()
     bannerMessage.component = QStringLiteral("Session");
     bannerMessage.message = banner;
     bannerMessage.fullText = banner;
-    m_logMessages.append(bannerMessage);
+    bannerMessage.simpleText = QString("%1: %2").arg(bannerMessage.timestamp).arg(banner);
+    //m_logMessages.append(bannerMessage);
 }
 
 void Logger::rotateLogs(const QDir &logDir, const int maxLogs)
@@ -210,6 +211,7 @@ void Logger::messageHandler(const QtMsgType type, const QMessageLogContext& cont
     newMessage.component = context.category ? context.category : "unknown";
     newMessage.message = msg;
     newMessage.fullText = output;
+    newMessage.simpleText = QString("%1: %2").arg(newMessage.timestamp).arg(msg);
 
     {
         QMutexLocker locker(&logger->m_mutex);
