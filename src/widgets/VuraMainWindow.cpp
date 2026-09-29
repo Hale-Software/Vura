@@ -1012,6 +1012,10 @@ void VuraMainWindow::initSideDockWidget()
         ui->actionViewTogglePlaylist->setChecked(false);
     }
 
+    connect(m_sideDockWidget, &SideDockWidget::hideSideDockWidget, this, [this] {
+        m_sideDock->hide();
+    });
+
 
     connect(m_videoMarkerController, &VideoMarkerController::markersChanged, m_sideDockWidget->markerPanel(), &MarkerPanel::setMarkers);
     connect(m_sideDockWidget->markerPanel(), &MarkerPanel::editRequested, this, &VuraMainWindow::openMarkerEditor);
@@ -1031,23 +1035,33 @@ void VuraMainWindow::initSideDockWidget()
         });
     }
 
-    connect(ui->actionViewTogglePlaylist, &QAction::toggled, m_sideDockWidget, &SideDockWidget::setPlaylistWidgetVisibility);
-    connect(ui->actionViewToggleMarkerPanel, &QAction::toggled, m_sideDockWidget, &SideDockWidget::setMarkerPanelVisibility);
+    connect(ui->actionViewTogglePlaylist, &QAction::toggled, this, [this](bool checked) {
+        if (!m_sideDock->isVisible() && checked)
+            m_sideDock->show();
+        m_sideDockWidget->setPlaylistWidgetVisibility(checked);
+    });
+    connect(ui->actionViewToggleMarkerPanel, &QAction::toggled, this, [this](bool checked) {
+        if (!m_sideDock->isVisible() && checked)
+            m_sideDock->show();
+        m_sideDockWidget->setMarkerPanelVisibility(checked);
+    });
 
     m_sideDock->setWidget(m_sideDockWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_sideDock);
+
+    m_sideDockWidget->setMarkerPanelVisibility(false);
 }
 
 void VuraMainWindow::connectController()
 {
-    connect(m_controller, &MediaController::positionChanged, this, [this](media::Msec ms) {
+    connect(m_controller, &MediaController::positionChanged, this, [this](const media::Msec ms) {
         m_lastPosition = ms;
         m_videoSlider->setPositionFromEngine(ms);
         m_videoSliderWidget->positionChanged(ms);
     });
 
-    connect(m_controller, &MediaController::durationChanged, this, [this](media::Msec ms) {
-        m_videoSlider->setRange(0, int(ms));
+    connect(m_controller, &MediaController::durationChanged, this, [this](const media::Msec ms) {
+        m_videoSlider->setRange(0, static_cast<int>(ms));
         m_videoSliderWidget->durationChanged(ms);
         m_sideDockWidget->markerPanel()->setDurationMs(ms);
     });

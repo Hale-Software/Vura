@@ -44,8 +44,10 @@ SideDockWidget::~SideDockWidget()
 
 void SideDockWidget::setPlaylistWidgetVisibility(bool visible)
 {
-    if (ui->playlistButton->isVisible() == visible)
-        return;
+    //if (ui->playlistButton->isVisible() == visible)
+    //    return;
+
+    ui->playlistButton->setVisible(visible);
 
     visibilityHandler();
 }
@@ -64,8 +66,10 @@ void SideDockWidget::playlistWidgetHide()
 
 void SideDockWidget::setMarkerPanelVisibility(bool visible)
 {
-    if (ui->markersButton->isVisible() == visible)
-        return;
+    //if (ui->markersButton->isVisible() == visible)
+    //    return;
+
+    ui->markersButton->setVisible(visible);
 
     visibilityHandler();
 }
@@ -98,17 +102,14 @@ void SideDockWidget::markersButton_Clicked()
 
 void SideDockWidget::visibilityHandler()
 {
-    if (!ui->playlistButton->isVisible() && !ui->markersButton->isVisible() && !this->isVisible()) {
-        return;
-    } else if (!ui->playlistButton->isVisible() && !ui->markersButton->isVisible() && this->isVisible()) {
-        this->hide();
+    if (!ui->playlistButton->isVisible() && !ui->markersButton->isVisible()) {
+        emit hideSideDockWidget();
     } else {
         if (!ui->playlistButton->isVisible() && ui->stackedWidget->currentIndex() == m_playlistWidgetIndex) {
             ui->stackedWidget->setCurrentIndex(m_markerPanelIndex);
         } else if (!ui->markersButton->isVisible() && ui->stackedWidget->currentIndex() == m_markerPanelIndex) {
             ui->stackedWidget->setCurrentIndex(m_playlistWidgetIndex);
         }
-        this->show();
     }
 }
 
