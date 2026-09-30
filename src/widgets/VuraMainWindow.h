@@ -253,6 +253,8 @@ private:
     bool m_subtitlesEnabled = false;
     bool m_showingVideoControls = false;
     bool m_wasSideDockShowing = false;
+    bool m_wasPlaylistShowing = false;
+    bool m_wasMarkerPanelShowing = false;
     qint64 m_lastPosition = 0;
     qint64 m_subtitleOffsetMs = 0;
     int m_inMarker = 0;

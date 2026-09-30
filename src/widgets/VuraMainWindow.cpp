@@ -574,6 +574,8 @@ void VuraMainWindow::actionToggleFullscreen()
 
     m_wasMaximized = isMaximized();
     m_wasSideDockShowing = m_sideDock->isVisible();
+    m_wasPlaylistShowing = ui->actionViewTogglePlaylist->isChecked();
+    m_wasMarkerPanelShowing = ui->actionViewToggleMarkerPanel->isChecked();
     ui->menubar->hide();
     m_videoSliderWidget->hide();
     m_sideDock->hide();
@@ -1046,6 +1048,17 @@ void VuraMainWindow::initSideDockWidget()
             m_sideDock->show();
         m_sideDockWidget->setMarkerPanelVisibility(checked);
     });
+/*
+    connect(m_sideDock, &QDockWidget::visibilityChanged, this, [this](const bool visible) {
+        if (visible) {
+            ui->actionViewTogglePlaylist->setChecked(m_wasPlaylistShowing);
+            ui->actionViewToggleMarkerPanel->setChecked(m_wasMarkerPanelShowing);
+        } else {
+            ui->actionViewTogglePlaylist->setChecked(false);
+            ui->actionViewToggleMarkerPanel->setChecked(false);
+        }
+    });
+*/
 
     m_sideDock->setWidget(m_sideDockWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_sideDock);
