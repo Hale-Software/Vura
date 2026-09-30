@@ -2,6 +2,18 @@
 
 include_guard(GLOBAL)
 
+# Common compiler configuration options
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(MSVC)
+    add_compile_options(/Zc:__cplusplus /permissive-)
+endif()
+
 # Map fallback configurations for optimized build configurations
 # gersemi: off
 set(
@@ -60,6 +72,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/common")
 include(versionconfig)
 include(buildnumber)
 include(osconfig)
+#include(media_engines)
 #include(ccache)
 
 # Enable default inclusion of targets' source and binary directory

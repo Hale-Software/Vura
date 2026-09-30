@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,20 +19,11 @@
 #pragma once
 
 #include <QWidget>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QColor>
-#include <QPen>
-#include <QBrush>
-#include <QEvent>
-#include <QTimer>
-#include <QMouseEvent>
-#include <QString>
 #include <QList>
-#include <QLabel>
-#include <QDebug>
+#include <QMouseEvent>
+#include <QSize>
 
-#include <libvura/data/video-markers.h>
+#include <libvura/models/video-marker-record.h>
 
 
 class VideoSlider : public QWidget
@@ -40,39 +31,40 @@ class VideoSlider : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSlider(QList<VuraVideoMarker> *videoMarkers, QWidget *parent = nullptr);
+    explicit VideoSlider(QWidget *parent = nullptr);
 
     QSize minimumSizeHint() const override;
 
-    int GetMinimun() const;
-    void SetMinimum(int minimum);
+    int minimum() const { return m_minimum; }
+    int maximum() const { return m_maximum; }
+    int value() const { return m_value; }
 
-    int GetMaximun() const;
-    void SetMaximum(int maximum);
-
-    int GetValue() const;
-    void SetValue(int value);
-
-    void SetRange(int minimum, int maximum);
-
-    bool GetSliderPressed() const;
-    void SetSliderPressed(bool value);
+    bool isScrubbing() const { return m_scrubbing; }
+    void setPositionFromEngine(qint64 ms);
 
     bool getMarkerTypesVisible(const QString& markerType) const;
     void setMarkerTypeVisible(const QString& markerType, bool visible);
 
-    void setSource(const QString &fileName);
-
 signals:
-    void valueChanged(int value);
-    void sliderPressed(bool pressed);
+    void scrubbed(qint64 ms);
+    void scrubFinished(qint64 ms);
     void requestThumbnail(int64_t hoverTimestamp);
 
+    /// Emitted when a marker is left-clicked. The seek itself is already
+    /// requested via scrubFinished(); this is for anything extra the window
+    /// wants to do (status bar text, selection highlight, ...).
+    void markerActivated(const VideoMarkerRecord &marker);
+    void markerEditRequested(const VideoMarkerRecord &marker);
+    void markerDeleteRequested(const VideoMarkerRecord &marker);
+    void markerTypeHidden(const QString &markerType);
+
 public slots:
-    void updateVideoSlider();
-    void setValue(int value);
+    void loadVideoMarkers(QList<VideoMarkerRecord> markers);
+    void updateVideoSlider(QList<VideoMarkerRecord> markers);
+    void setValue(int val);
     void setMinimum(int minimum);
     void setMaximum(int maximum);
+    void setRange(int minimum, int maximum);
     void goToNextMarker(double currentPercent);
     void goToPreviousMarker(double currentPercent);
 
@@ -81,20 +73,33 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-
-    QRectF carrotHandleRect() const;
-    QRectF handleRect(int value) const;
+    void contextMenuEvent(QContextMenuEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    bool event(QEvent *event) override;
 
 private:
-    int validLength() const;
-    int valueFromPos(int x) const;
+    // Track geometry. Everything that maps between pixels and time goes
+    // through these so the playhead, the markers and the hit testing can
+    // never drift apart again.
+    int trackPadding() const;
+    int trackWidth() const;
+    int xForPercent(double percent) const;
+    double percentForX(int x) const;
 
-    QString m_source = "";
-    QList<VuraVideoMarker> *m_videoMarkers;
-    float m_sliderPercent = std::clamp(0.0f, 0.0f, 1.0f);
+    int valueForPosition(int x) const;
+    qint64 msForMarker(const VideoMarkerRecord &marker) const;
+
+    /// Index into m_videoMarkers of the visible marker under pos, or -1.
+    int markerIndexAt(const QPoint &pos) const;
+    QString markerToolTip(const VideoMarkerRecord &marker) const;
+    void seekToMarker(const VideoMarkerRecord &marker);
+
+    QList<VideoMarkerRecord> m_videoMarkers;
+    float m_sliderPercent = 0.0f;
     int m_minimum;
     int m_maximum;
     int m_value;
+    int m_hoveredMarker = -1;
     bool m_showingMarkers;
     bool m_showingCumshotMarkers;
     bool m_showingCyanMarkers;
@@ -103,17 +108,6 @@ private:
     bool m_showingOrangeMarkers;
     bool m_showingSceneMarkers;
     bool m_showingStripMarkers;
-    bool m_sliderPressed;
-    QColor m_emptySliderColor;
-    QColor m_fullSliderColor;
-    QColor m_caretColor;
-    QColor m_markerColor;
-    QColor m_sceneMarkerColor;
-    QColor m_cumshotMarkerColor;
-    QColor m_stripMarkerColor;
-    QColor m_dialogMarkerColor;
-    int m_delta;
-    int m_interval;
-    double m_sliderBarHeightValue;
+    bool m_scrubbing = false;
 
 };

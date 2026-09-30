@@ -10,24 +10,16 @@ target_sources(
         dialogs/FeedbackDialog.h
         dialogs/HelpDialog.cpp
         dialogs/HelpDialog.h
-        dialogs/HotkeySettingsDialog.cpp
-        dialogs/HotkeySettingsDialog.h
         dialogs/LogUploadDialog.cpp
         dialogs/LogUploadDialog.h
         dialogs/LogViewerDialog.cpp
         dialogs/LogViewerDialog.h
-        dialogs/MarkerDialog.cpp
-        dialogs/MarkerDialog.h
         dialogs/MarkerEditDialog.cpp
         dialogs/MarkerEditDialog.h
         dialogs/MediaInformationDialog.cpp
         dialogs/MediaInformationDialog.h
         dialogs/MissingFilesDialog.cpp
         dialogs/MissingFilesDialog.h
-        dialogs/PermissionsDialog.cpp
-        dialogs/PermissionsDialog.h
-        dialogs/SettingsWindow.cpp
-        dialogs/SettingsWindow.h
         dialogs/UpdateChecker.cpp
         dialogs/UpdateChecker.h
         dialogs/UpdateDialog.cpp

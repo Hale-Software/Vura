@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
@@ -21,25 +22,24 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTextBrowser>
-#include <QMediaMetaData>
+#include <QLocale>
+
+#include <libvura/models/metadata.h>
+
 
 QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class MediaInformationDialog;
-}
-
+namespace Ui { class MediaInformationDialog; }
 QT_END_NAMESPACE
 
 
 class MediaInformationDialog : public QDialog {
     Q_OBJECT
-
 public:
     explicit MediaInformationDialog(QWidget *parent = nullptr);
     ~MediaInformationDialog() override;
 
-    void setMediaInformationDialog(const QString &filePath, const QMediaMetaData &metaData);
+    void setMetaData(const MetaData &metaData);
+
 
 private slots:
     void close_Clicked();
@@ -47,4 +47,5 @@ private slots:
 
 private:
     Ui::MediaInformationDialog *ui;
+
 };

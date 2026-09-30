@@ -53,7 +53,7 @@ class UpdateChecker : public QObject
     Q_OBJECT
 
 public:
-    static constexpr auto k_manifestUrl = "https://storage.hale-tech.net/manifest.json";
+    static constexpr auto k_manifestUrl = "https://vura.hale-software.com/manifest.json";
 
     static constexpr auto k_currentVersion = VURA_VERSION_CANONICAL;
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,22 +13,22 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
 
 #pragma once
 
 #include <QSystemTrayIcon>
-#include <QIcon>
 #include <QMenu>
 #include <QAction>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QMessageBox>
-#include <QSettings>
-#include <QDebug>
 
-#include <libvura/constants.h>
 
+class QIcon;
+class QFileDialog;
+class QFileInfo;
+class QMessageBox;
+class QSettings;
+class QDebug;
 
 class SystemTrayWidget : public QSystemTrayIcon
 {
@@ -37,26 +37,31 @@ class SystemTrayWidget : public QSystemTrayIcon
 public:
     explicit SystemTrayWidget(QWidget *parent = nullptr);
 
-    void show();
-    void hide();
+    void setVisibility(bool visible);
 
 signals:
     void clicked();
     void hiding(bool hiding);
     void stop();
     void record();
-    void changePlaybackSpeed(double rate);
-    void setPlaybackSpeedNormal();
-    void changeVolume(double volume);
+    void playbackRateFaster();
+    void playbackRateFasterFine();
+    void playbackRateNormal();
+    void playbackRateSlower();
+    void playbackRateSlowerFine();
+    void volumeUp();
+    void volumeDown();
+    void setMuted(bool muted);
     void toggleMute();
-    void openFiles(const QStringList &fileList, bool localFile = true);
+    void openFile();
     void togglePlayPause();
     void nextVideo();
     void previousVideo();
+    void toggleFullscreen();
     void exit();
 
 private slots:
-    void systemTray_Clicked(QSystemTrayIcon::ActivationReason reason);
+    void systemTray_Clicked(ActivationReason reason);
     void systemTray_Hide();
     void systemTray_Stop();
     void systemTray_Record();
@@ -67,7 +72,7 @@ private slots:
     void systemTray_Slower();
     void systemTray_IncreaseVolume();
     void systemTray_DecreaseVolume();
-    void systemTray_ToggleMute();
+    void systemTray_ToggleMute(bool value);
     void systemTray_OpenFile();
     void systemTray_TogglePlayPause();
     void systemTray_Next();
@@ -75,6 +80,9 @@ private slots:
     void systemTray_Exit();
 
 private:
+    void createContextMenu();
+    void setActionEnables() const;
+
     QSystemTrayIcon *m_systemTrayIcon = nullptr;
     QMenu *m_speedMenu = nullptr;
     QAction *m_toggleShow = nullptr;
@@ -92,11 +100,9 @@ private:
     QAction *m_decreaseVolumeAction = nullptr;
     QAction *m_muteAction = nullptr;
     QAction *m_openFileAction = nullptr;
+    QAction *m_fullScreenAction = nullptr;
     QAction *m_quitAction = nullptr;
 
     bool m_showing = true;
-
-    void createContextMenu();
-    void setActionEnables();
 
 };

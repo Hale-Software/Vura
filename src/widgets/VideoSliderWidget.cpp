@@ -20,23 +20,25 @@
 #include "ui_VideoSliderWidget.h"
 
 #include <QEasingCurve>
+#include <QTime>
 
 
-VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent)
-    : QWidget(parent), ui(new Ui::VideoSliderWidget), m_videoSlider(&videoSlider), m_playbackController(&playbackController)
+VideoSliderWidget::VideoSliderWidget(VideoSlider &videoSlider, QWidget *parent)
+    : QWidget(parent),
+      ui(new Ui::VideoSliderWidget),
+      m_videoSlider(&videoSlider)
 {
     ui->setupUi(this);
 
+    QSettings settings;
+    int videoSliderAnimationTime = settings.value("videoSliderAnimationTime", 300).toInt();
+
     animation = new QPropertyAnimation(this, "maximumHeight", this);
-    animation->setDuration(300);
+    animation->setDuration(videoSliderAnimationTime);
     animation->setEasingCurve(QEasingCurve::InOutQuad);
     connect(animation, &QPropertyAnimation::finished, this, &VideoSliderWidget::onAnimationFinished);
 
     connect(ui->position, &ClickableLabel::clicked, this, &VideoSliderWidget::positionLabel_Clicked);
-    //connect(m_playbackController, &PlaybackController::mediaStatusChanged, this, &VideoSliderWidget::statusChanged);
-    connect(m_playbackController, &PlaybackController::playbackRateChanged, this, &VideoSliderWidget::playbackRateChanged);
-    connect(m_playbackController, &PlaybackController::durationChanged, this, &VideoSliderWidget::durationChanged);
-    connect(m_playbackController, &PlaybackController::positionChanged, this, &VideoSliderWidget::positionChanged);
 
     ui->position->setToolTip(tr("Elapsed time"));
     ui->duration->setToolTip(tr("Total/Remaining time\n -Click to toggle between total and remaining time"));
@@ -60,26 +62,19 @@ void VideoSliderWidget::setVisible(const bool visible)
     }
 
     if (visible) {
-        // 1. Calculate target size before showing
         if (targetHeight <= 0) {
             targetHeight = sizeHint().height();
         }
 
-        // 2. Make it visible to Qt layout systems first
         isTransitioning = true;
         QWidget::setVisible(true);
         isTransitioning = false;
-
-        // 3. Animate up to target height
         animation->stop();
         animation->setStartValue(height());
         animation->setEndValue(targetHeight);
         animation->start();
     } else {
-        // Record current natural height before collapsing
         targetHeight = sizeHint().height();
-
-        // Animate down to 0
         animation->stop();
         animation->setStartValue(height());
         animation->setEndValue(0);
@@ -89,13 +84,10 @@ void VideoSliderWidget::setVisible(const bool visible)
 
 void VideoSliderWidget::onAnimationFinished()
 {
-    // Completely hide from layout engine ONLY when closing animation hits 0
     if (maximumHeight() == 0) {
         isTransitioning = true;
         QWidget::setVisible(false);
         isTransitioning = false;
-
-        // CRITICAL: Reset constraint so ->show() can expand it later
         setMaximumHeight(16777215);
     }
 }
@@ -104,7 +96,6 @@ void VideoSliderWidget::positionLabel_Clicked()
 {
     if (m_positionLabelShowRemainingTime) {
         m_positionLabelShowRemainingTime = false;
-
     } else {
         m_positionLabelShowRemainingTime = true;
     }
@@ -112,7 +103,7 @@ void VideoSliderWidget::positionLabel_Clicked()
     if (m_lastPosition > 0)
         updateTimestamps(m_lastPosition);
 }
-
+/*
 void VideoSliderWidget::statusChanged(const QMediaPlayer::MediaStatus status)
 {
     switch (status) {
@@ -132,7 +123,7 @@ void VideoSliderWidget::statusChanged(const QMediaPlayer::MediaStatus status)
             break;
     }
 }
-
+*/
 void VideoSliderWidget::durationChanged(const qint64 duration)
 {
     m_duration = duration / 1000;
@@ -141,15 +132,16 @@ void VideoSliderWidget::durationChanged(const qint64 duration)
 
 void VideoSliderWidget::positionChanged(const qint64 position)
 {
-    if (!m_videoSlider->GetSliderPressed())
-        m_videoSlider->setValue(static_cast<int>(position));
+    //if (!m_videoSlider->GetSliderPressed())
+    //    m_videoSlider->setValue(static_cast<int>(position));
 
     updateTimestamps(position / 1000);
 }
 
-void VideoSliderWidget::playbackRateChanged(const qreal playbackRate) const
+void VideoSliderWidget::playbackRateChanged(const qreal playbackRate)
 {
-    ui->playbackRate->setText("x" + QString::number(playbackRate));
+    m_playbackSpeed = playbackRate;
+    ui->playbackRate->setText("x" + QString::number(m_playbackSpeed));
 }
 
 void VideoSliderWidget::updateTimestamps(const qint64 currentPosition)
@@ -162,9 +154,7 @@ void VideoSliderWidget::updateTimestamps(const qint64 currentPosition)
         const int position = static_cast<int>(currentPosition);
         const int duration = static_cast<int>(m_duration);
 
-        QString format = "hh:mm:ss";
-        //if (m_duration > 3600)
-        //    format = "hh:mm:ss";
+        const QString format = "hh:mm:ss";
 
         if (m_positionLabelShowRemainingTime) {
             const int remainingInfo = duration - position;

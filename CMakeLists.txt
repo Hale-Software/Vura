@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
+option(MEDIA_ENABLE_MPV "Build the libmpv backend when it is available" OFF)
+option(MEDIA_ENABLE_QTMULTIMEDIA "Build the Qt Multimedia backend when available" ON)
+option(MEDIA_ENABLE_OPENGL "Build the OpenGL backend when available" ON)
 
+option(LIBVURA_BUILD_TESTS "Build the tests for libvura" OFF)
+option(UI_BUILD_TESTS "Build the tests for UI" OFF)
+
+option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
 option(ENABLE_CPACK "Enable building with CPack" OFF)
+
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
 
 if (ENABLE_CPACK)
     include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/cpack.cmake" NO_POLICY_SCOPE)
@@ -10,24 +19,10 @@ endif ()
 
 project(vura VERSION ${VURA_VERSION_CANONICAL} LANGUAGES CXX C)
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/media_engines.cmake" NO_POLICY_SCOPE)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(MSVC)
-    add_compile_options(/Zc:__cplusplus /permissive-)
-endif()
-
-
-option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
-
-#add_subdirectory(deps)
 add_subdirectory(libvura)
 add_subdirectory(src)
-#add_subdirectory(updater)
 
 if (ENABLE_TESTS)
     add_subdirectory(tests)

@@ -17,116 +17,189 @@
  ******************************************************************************/
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QCommandLineParser>
+#include <QCommandLineOption>
+#include <QSettings>
+#include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
 #include <QFileInfo>
 #include <QSurfaceFormat>
-#include <QMessageBox>
 #include <QDir>
+#include <QFileOpenEvent>
+#include <QUrl>
+#include <QFont>
 #include <QDebug>
 
-#include <libvura/ErrorService.h>
-//#include <libvura/util/singleinstance.h>
+#include <libvura/logging/logger.h>
+#include <libvura/platform/platform.h>
+#include <libvura/exceptions/error-service.h>
+#include <libvura/util/single-instance-controller.h>
+#include <libvura/media-controller.h>
+#include <libvura/media-engine/engine-factory.h>
 
 #include <ui-config.h>
-
-#include "SingleInstanceController.h"
 #include "VuraMainWindow.h"
+
+
+constexpr int RESTART_CODE = 0xA1;
+
+class Application : public QApplication
+{
+public:
+    Application(int &argc, char **argv) : QApplication(argc, argv) {}
+
+    void setWindow(VuraMainWindow *window)
+    {
+        m_window = window;
+    }
+
+    void setTheme(const int theme)
+    {
+        switch (theme) {
+            case 0:
+                break;
+
+            case 1:
+                break;
+
+            case 2:
+                break;
+
+            case 3:
+                QFile style(QStringLiteral(":/styles/nova.qss"));
+                if (style.open(QIODevice::ReadOnly | QIODevice::Text))
+                    this->setStyleSheet(QString::fromUtf8(style.readAll()));
+                break;
+        }
+    }
+
+private:
+    VuraMainWindow *m_window = nullptr;
+
+};
 
 
 int main(int argc, char *argv[])
 {
-    // --- Initialize your player main window UI context layer --
-    QApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
-    );
+    int rc;
 
-    QApplication app(argc, argv);
-    QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
-    QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
-    QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
+    do {
+        CrashHandler::install();
 
-    QSurfaceFormat format;
-    format.setVersion(3, 3);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    format.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(format);
+        QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
+        Application app(argc, argv);
+        QCoreApplication::setApplicationName(VURA_PRODUCT_NAME);
+        QCoreApplication::setOrganizationName(VURA_COMPANY_NAME);
+        QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
-    try {
+        qInstallMessageHandler(Logger::messageHandler);
 
-        // --- Single Instance Handling ---
-        // Use a completely unique app key identifier for the local socket name
-        QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
-        SingleInstanceController instanceController(uniqueKey);
+        QSurfaceFormat format;
+        format.setVersion(3, 3);
+        format.setProfile(QSurfaceFormat::CoreProfile);
+        format.setDepthBufferSize(24);
+        QSurfaceFormat::setDefaultFormat(format);
 
-        // If another instance exists, it receives the arguments via IPC and we exit instantly
-        if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
-            return 0;
-        }
+        try {
+            const QString uniqueKey = "Vura.SingleInstance.Gatekeeper.v1";
+            SingleInstanceController instanceController(uniqueKey);
 
-        // --- Create and show the main window ---
-        VuraMainWindow mainWindow;
-        mainWindow.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
-        mainWindow.show();
-
-        // Setup IPC slot connection to open files smoothly when incoming signals fire
-        QObject::connect(&instanceController, &SingleInstanceController::fileReceived, &mainWindow, [&mainWindow](const QString &filePath) {
-            QFileInfo checkFile(filePath);
-            if (checkFile.exists() && checkFile.isFile()) {
-                // Bring the primary window to the foreground instantly
-                mainWindow.setWindowState((mainWindow.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-                mainWindow.raise();
-                mainWindow.activateWindow();
-
-                // Load and play the file inside your pipeline
-                // Example: w.loadVideo(filePath);
-                mainWindow.openFile(filePath);
-            }
-        });
-
-        // --- Command Line Argument Parsing Configuration ---
-        QCommandLineParser parser;
-        parser.setApplicationDescription(VURA_COMMENTS);
-        parser.addHelpOption();
-        parser.addVersionOption();
-
-        // Add positional argument for capturing target media files
-        parser.addPositionalArgument("file", "The media file path to open on initialization.");
-
-        QCommandLineOption launchInFullscreenOption(QStringList() << "fullscreen", "Launch the media file directly in fullscreen mode.");
-        parser.addOption(launchInFullscreenOption);
-
-        QCommandLineOption quitterAfterFinishOption(QStringList() << "quit", "Quit the application after playback or conversion finishes.");
-        parser.addOption(quitterAfterFinishOption);
-
-        QCommandLineOption openGLOption(QStringList() << "opengl", "Enable OpenGL rendering for video playback.");
-        parser.addOption(openGLOption);
-
-        parser.process(app);
-        const QStringList positionalArguments = parser.positionalArguments();
-
-        if (!positionalArguments.isEmpty()) {
-            QString targetFilePath = positionalArguments.first();
-
-            // Confirm the file actually exists on local user storage bounds
-            QFileInfo checkFile(targetFilePath);
-            if (checkFile.exists() && checkFile.isFile()) {
-                // Pass the absolute file path into your FFmpeg decoder worker pipeline thread
-                // Example: emit w.startVideoPlayback(targetFilePath);
-                if (checkFile.isFile()) {
-                    mainWindow.openFile(targetFilePath);
-
-                } else if (checkFile.isDir()) {
-                    mainWindow.openFolder(targetFilePath);
+            const QSettings settings;
+            const bool allowOnlyOneInstance = settings.value("allowOnlyOneInstance", true).toBool();
+            if (allowOnlyOneInstance) {
+                if (instanceController.checkForExistingInstance(QCoreApplication::arguments())) {
+                    return 0;
                 }
             }
+
+            QCommandLineParser parser;
+            parser.setApplicationDescription(VURA_COMMENTS);
+
+            parser.addHelpOption();
+            parser.addVersionOption();
+
+            QCommandLineOption openFileOption(QStringList() << "f" << "file", "Specify the file to open.", "file");
+            parser.addOption(openFileOption);
+
+            QCommandLineOption openFolderOption(QStringList() << "folder", "Specify the folder to open.", "path");
+            parser.addOption(openFolderOption);
+
+            QCommandLineOption openNetworkOption(QStringList() << "network", "Open a network stream.", "url");
+            parser.addOption(openNetworkOption);
+
+            parser.process(app);
+
+            MediaController controller;
+
+            QString backendId = settings.value("backend").toString();
+            if (!backendId.isEmpty()) {
+                bool known = false;
+                const media::Backend backend = media::backendFromId(backendId, &known);
+                if (known)
+                    controller.setBackend(backend);
+            }
+
+            QObject::connect(&controller, &MediaController::backendChanged, &controller, [](media::Backend backend) {
+                QSettings().setValue("backend", media::idForBackend(backend));
+            });
+
+            VuraMainWindow window(&controller);
+            app.setWindow(&window);
+
+            int theme = settings.value("theme", 0).toInt();
+            app.setTheme(theme);
+
+
+            //VuraMainWindow mainWindow;
+            window.setWindowTitle(QString::fromUtf8(VURA_PRODUCT_NAME) + " " + QString::fromUtf8(VURA_VERSION_STRING));
+            window.show();
+
+            int showMaximizedOnStart = settings.value("showMaximizedOnStart", 1).toInt();
+
+            if (showMaximizedOnStart == 2)
+                window.maximized();
+
+            if (allowOnlyOneInstance) {
+                QObject::connect(&instanceController, &SingleInstanceController::pathReceived, [&window](const QString &requestedPath) {
+                    const QFileInfo checkFile(requestedPath);
+                    if (checkFile.exists() && checkFile.isFile()) {
+                        window.setWindowState((window.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                        window.raise();
+                        window.activateWindow();
+                        window.openFile(requestedPath);
+                    } else if (checkFile.isDir()) {
+                        window.setWindowState((window.windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+                        window.raise();
+                        window.activateWindow();
+                        window.openFolder(requestedPath);
+                    }
+                });
+            }
+
+            if (parser.isSet(openFileOption)) {
+                window.openFile(parser.value(openFileOption));
+                if (showMaximizedOnStart == 1)
+                    window.maximized();
+            } else if (parser.isSet(openFolderOption)) {
+                window.openFolder(parser.value(openFolderOption));
+                if (showMaximizedOnStart == 1)
+                    window.maximized();
+            } else if (parser.isSet(openNetworkOption)) {
+                window.openNetworkStream(parser.value(openNetworkOption));
+                if (showMaximizedOnStart == 1)
+                    window.maximized();
+            }
+
+            rc = app.exec();
+
+        } catch (const std::exception &e) {
+            qFatal() << "Fatal Crash: " << e.what();
+            ErrorService::instance().postError({.title = "Fatal Crash", .message = e.what(), .severity = ErrorSeverity::Critical});
+            return -1;
         }
-
-
-        return QApplication::exec();
-
-    } catch (const std::exception &e) {
-        ErrorService::instance().postError({"Fatal Crash", e.what(), ErrorSeverity::Critical});
-        return -1;
-    }
+    } while (rc == RESTART_CODE);
+    return rc;
 }

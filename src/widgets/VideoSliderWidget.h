@@ -21,16 +21,14 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPropertyAnimation>
+#include <QSettings>
 
-#include "PlaybackController.h"
 #include "ClickableLabel.h"
 #include "VideoSlider.h"
 
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class VideoSliderWidget;
-}
+namespace Ui { class VideoSliderWidget; }
 QT_END_NAMESPACE
 
 
@@ -39,25 +37,27 @@ class VideoSliderWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoSliderWidget(VideoSlider &videoSlider, PlaybackController &playbackController, QWidget *parent = nullptr);
+    explicit VideoSliderWidget(VideoSlider &videoSlider, QWidget *parent = nullptr);
     ~VideoSliderWidget() override;
 
     void setVisible(bool visible) override;
 
-private slots:
+signals:
+    void seek(qint64 ms);
+
+public slots:
     void onAnimationFinished();
     void positionLabel_Clicked();
-    void playbackRateChanged(qreal playbackRate) const;
+    void playbackRateChanged(qreal playbackRate);
     void updateTimestamps(qint64 currentPosition);
     void durationChanged(qint64 duration);
     void positionChanged(qint64 position);
-    void statusChanged(QMediaPlayer::MediaStatus status);
+    //void statusChanged(QMediaPlayer::MediaStatus status);
     void clearTimestamps();
 
 private:
     Ui::VideoSliderWidget *ui;
     VideoSlider *m_videoSlider;
-    PlaybackController *m_playbackController;
 
     QPropertyAnimation *animation;
     int targetHeight = 0;

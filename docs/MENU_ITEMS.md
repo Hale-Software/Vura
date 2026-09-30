@@ -1,0 +1,159 @@
+# Vura Menu Items
+
+- File
+  - Open File...
+  - Open Multiple Files...
+  - Open Folder...
+  - Open Network Stream...
+  - Open Recent
+    - *File List*
+    - Clear
+  - Close
+  - Close All
+  - Open Playlist...
+  - Save Playlist
+  - Save
+  - Save As...
+  - Save A Copy...
+  - Rename Current File...
+  - Convert/Save...
+  - Stream...
+  - Emergency Collapse
+  - Exit
+- View
+  - Toggle Playlist
+  - Toggle Video Controls
+  - Toggle Status Bar
+  - Toggle Video Resolution in Titlebar
+  - Toggle Markers
+    - Markers
+    - Cumshot Markers
+    - Cyan Markers
+    - Dialog Markers
+    - Magenta Markers
+    - Orange Markers
+    - Scene Markers
+    - Strip Markers
+  - Media Information
+  - Show Video Resolution in Titlebar
+  - Preferences
+- Playback
+  - Speed
+    - Faster
+    - Faster (fine)
+    - Normal
+    - Slower (fine)
+    - Slower
+  - Playback Mode
+    - Do Not Loop Playlist
+    - Loop Playlist
+    - Loop Current Track
+    - Shuffle
+  - Engine
+    - QMediaPlayer
+    - MPV
+    - OpenGL
+    - None
+  - Next Frame
+  - Previous Frame
+  - Jump Forward
+    - Extra Large
+    - Large
+    - Medium
+    - Small
+    - Extra Small
+  - Jump Backward
+    - Extra Large
+    - Large
+    - Medium
+    - Small
+    - Extra Small
+  - Jump to Specific Time
+  - Jump to End
+  - Play/Pause
+  - Next
+  - Previous
+  - Restart
+- Markers
+  - Mark In
+  - Mark Out
+  - Go to In
+  - Go to Out
+  - Clear In
+  - Clear Out
+  - Clear In & Out
+  - Add Marker
+  - Go to Next Marker
+  - Go to Previous Marker
+  - Clear Markers
+  - Clear Selected Marker
+  - Edit Selected Marker...
+  - Add Cumshot Marker
+  - Add Cyan Marker
+  - Add Dialog Marker
+  - Add Magenta Marker
+  - Add Orange Marker
+  - Add Scene Marker
+  - Add Strip Marker
+- Audio
+  - Audio Device
+    - *Audio Devices*
+  - Audio Track
+    - *Audio Tracks*
+  - Volume Up
+  - Volume Down
+  - Toggle Mute
+- Video
+  - Video Track
+    - *Video Tracks*
+  - Fullscreen
+  - Zoom
+    - 1:4 Quarter
+    - 1:2 Half
+    - 1:1 Original
+    - 2:1 Double
+  - Aspect Ratio
+    - Default
+    - 16:9
+    - 4:3
+    - 1:1
+    - 16:10
+    - 2.21:1
+    - 2.35:1
+    - 2.39:1
+    - 5:4
+  - Crop
+    - Default
+    - 16:10
+    - 16:9
+    - 4:3
+    - 1.85:1
+    - 2.21:1
+    - 2.35:1
+    - 2.39:1
+    - 5:3
+    - 5:4
+    - 1:1
+- Subtitles
+  - Open Subtitles File...
+  - Subtitle Track
+    - *Subtitle Tracks*
+  - Toggle Subtitles
+- Tools
+  - Make Subclip
+  - Take Snapshot
+  - Test Function
+- Help
+  - Help
+  - Provide Feedback
+  - Log Files
+    - View Current Log
+    - Show Log Files
+    - Upload Current Log File
+    - Upload Previous Log File
+  - Crash Reports
+    - Show Crash Reports
+    - Upload Previous Crash Report
+- Check for Updates...
+- Release Notes
+- About

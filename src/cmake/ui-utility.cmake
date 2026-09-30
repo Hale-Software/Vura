@@ -1,14 +1,11 @@
 target_sources(
         vura PRIVATE
-        utility/AppUpdater.cpp
-        utility/AppUpdater.h
-        utility/HotkeyDelegate.h
-        #utility/MarkerController.cpp
-        #utility/MarkerController.h
-        utility/PlaybackController.cpp
-        utility/PlaybackController.h
-        utility/PlaylistController.cpp
-        utility/PlaylistController.h
-        utility/SingleInstanceController.cpp
-        utility/SingleInstanceController.h
+        utility/Icons.cpp
+        utility/Icons.h
+        utility/KeySequenceDelegate.cpp
+        utility/KeySequenceDelegate.h
+        utility/PlaylistDelegate.cpp
+        utility/PlaylistDelegate.h
+        utility/VideoMarkerController.cpp
+        utility/VideoMarkerController.h
 )

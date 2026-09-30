@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ void VuraSettings::loadSettings()
 
     if (!QFile::exists(m_markerFile)) {
         qDebug() << "Marker data file doesn't exist. Creating blank marker data file.";
-        VideoMarkers::createBlankFile(m_markerFile);
+        //VideoMarkers::createBlankFile(m_markerFile);
     }
 
     m_locale = settings.value("language", "en-US").toString();

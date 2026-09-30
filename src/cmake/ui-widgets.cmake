@@ -1,5 +1,11 @@
 target_sources(
         vura PRIVATE
+        widgets/ContinuePlaybackWidget.cpp
+        widgets/ContinuePlaybackWidget.h
+        widgets/PlaylistWidget.cpp
+        widgets/PlaylistWidget.h
+        widgets/SeekSlider.cpp
+        widgets/SeekSlider.h
         widgets/SystemTrayWidget.cpp
         widgets/SystemTrayWidget.h
         widgets/VideoControlWidget.cpp
@@ -8,6 +14,4 @@ target_sources(
         widgets/VideoSliderWidget.h
         widgets/VuraMainWindow.cpp
         widgets/VuraMainWindow.h
-        widgets/VuraMediaEngine.cpp
-        widgets/VuraMediaEngine.h
 )

@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026. by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,28 +19,17 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
-#include <QMediaPlayer>
-#include <QSlider>
-#include <QToolButton>
-#include <QLabel>
 #include <QIcon>
-#include <QStyle>
-#include <QPixmap>
-#include <QPainter>
-#include <QColor>
-#include <QGuiApplication>
-#include <QStyleHints>
-#include <QSvgRenderer>
-#include <QDebug>
+
+#include <libvura/models/types.h>
+
+#include "ClickableLabel.h"
+
 
 QT_BEGIN_NAMESPACE
-
-namespace Ui {
-    class VideoControlWidget;
-}
-
+namespace Ui { class VideoControlWidget; }
 QT_END_NAMESPACE
+
 
 enum class LoopOption {
     LoopAll,
@@ -50,18 +39,17 @@ enum class LoopOption {
 
 class VideoControlWidget : public QWidget {
     Q_OBJECT
-
 public:
     explicit VideoControlWidget(QWidget *parent = nullptr);
     ~VideoControlWidget() override;
 
-    QMediaPlayer::PlaybackState state() const;
-    float volume() const;
+    media::PlaybackState state() const;
+    int volume() const;
     bool isMuted() const;
 
 public slots:
-    void setState(QMediaPlayer::PlaybackState state);
-    void setVolume(double volume);
+    void setState(media::PlaybackState state);
+    void setVolume(int volume);
     void setMuted(bool muted);
     void refreshUI();
 
@@ -72,30 +60,32 @@ signals:
     void next();
     void previous();
     void fullScreen();
+    void settingsRequested();
+    void subtitlesRequested();
     void togglePlaylist();
     void setLoop(int loopOption);
     void shuffle();
-    void changeVolume(double volume);
+    void changeVolume(int volume);
     void changeMuting(bool muting);
     void changeRate(qreal rate);
 
 private slots:
-    void playClicked();
+    void playButton_Clicked();
     void fullScreenClicked();
     void playlistClicked();
     void loopClicked();
     void shuffleClicked();
-    void muteClicked();
-    void onVolumeSliderValueChanged();
+    void volumeLabelClicked();
+    void settingsButtonClicked();
 
 private:
+    static QIcon setButtonIcon(const QString &buttonName, const int &theme);
+
     Ui::VideoControlWidget *ui;
-    QMediaPlayer::PlaybackState m_playerState = QMediaPlayer::StoppedState;
+    media::PlaybackState m_playerState = media::PlaybackState::Stopped;
     bool m_playerMuted = false;
     LoopOption m_loopOption = LoopOption::LoopAll;
     bool m_isShuffle = false;
     int m_volumeLevel = 100;
-
-    static QIcon setButtonIcon(const QString &buttonName, const QString &theme);
 
 };

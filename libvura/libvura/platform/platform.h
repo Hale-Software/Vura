@@ -1,0 +1,44 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
+#pragma once
+
+#include <QCoreApplication>
+#include <QSysInfo>
+#include <QScreen>
+#include <QGuiApplication>
+#include <QStorageInfo>
+#include <QThread>
+#include <QOperatingSystemVersion>
+#include <QDebug>
+
+#if defined(Q_OS_WIN)
+#include "windows/crash-handler.h"
+#include "windows/sleep-inhibitor.h"
+#include "windows/update-manager.h"
+#elif defined(Q_OS_MACOS)
+#include "macos/crash-handler.h"
+#include "macos/sleep-inhibitor.h"
+#include "macos/update-manager.h"
+#elif defined(Q_OS_LINUX)
+#include "linux/crash-handler.h"
+#include "linux/sleep-inhibitor.h"
+#include "linux/update-manager.h"
+#endif
+
+static void logDeviceInfo();

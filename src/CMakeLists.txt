@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.28...3.30)
 # Define application assets source and destination directories
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-set(FFMPEG_DIR "C:\\Users\\halea\\bin\\ffmpeg-8.1.1-full_build-shared")
 
 # Add a custom target to perform the copy operation
 add_custom_target(copy_asset_files
@@ -25,12 +24,12 @@ add_custom_command(TARGET vura POST_BUILD
 target_link_libraries(
     vura PRIVATE
     VURA::libvura
-    ${FFMPEG_DIR}/lib/avformat.lib
-    ${FFMPEG_DIR}/lib/avfilter.lib
-    ${FFMPEG_DIR}/lib/avcodec.lib
-    ${FFMPEG_DIR}/lib/avutil.lib
-    ${FFMPEG_DIR}/lib/swscale.lib
-    ${FFMPEG_DIR}/lib/swresample.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
 )
 
 target_include_directories(
@@ -43,7 +42,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/updater
     ${CMAKE_CURRENT_SOURCE_DIR}/utility
     ${CMAKE_CURRENT_SOURCE_DIR}/widgets
-    ${FFMPEG_DIR}/include
+    ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -84,12 +83,12 @@ endif ()
 
 install(TARGETS vura RUNTIME DESTINATION bin)
 
-#set_target_properties(vura PROPERTIES
-#        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-#        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-#        MACOSX_BUNDLE TRUE
-#        WIN32_EXECUTABLE TRUE
-#)
+set_target_properties(vura PROPERTIES
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE TRUE
+        WIN32_EXECUTABLE TRUE
+)
 
 #include(helpers)
 #vura_installer()

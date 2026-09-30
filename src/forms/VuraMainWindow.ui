@@ -6,22 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>955</width>
-    <height>550</height>
+    <width>887</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>VuraMainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="vura.qrc">
+   <iconset>
     <normaloff>:/img/images/vura-white.png</normaloff>:/img/images/vura-white.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="acceptDrops">
     <bool>true</bool>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -38,224 +38,11 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
       </property>
-      <widget class="QStackedWidget" name="mediaAreaWidget">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>1</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="currentIndex">
-        <number>2</number>
-       </property>
-       <widget class="QWidget" name="noVideoPage">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="pixmap">
-            <pixmap resource="vura.qrc">:/img/images/vura-white.png</pixmap>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="videoWidgetPage">
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QVideoWidget" name="videoWidget" native="true"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="openGLWidgetPage">
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-        </layout>
-       </widget>
-      </widget>
-      <widget class="QStackedWidget" name="playlistWidget">
-       <property name="acceptDrops">
-        <bool>true</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="currentIndex">
-        <number>1</number>
-       </property>
-       <widget class="QWidget" name="page">
-        <property name="acceptDrops">
-         <bool>true</bool>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QListView" name="playlistView">
-           <property name="contextMenuPolicy">
-            <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
-           </property>
-           <property name="acceptDrops">
-            <bool>true</bool>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Shadow::Plain</enum>
-           </property>
-           <property name="dragDropMode">
-            <enum>QAbstractItemView::DragDropMode::InternalMove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_2">
-        <property name="acceptDrops">
-         <bool>true</bool>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="PlaylistEmptyStateWidget" name="emptyPlaylistView" native="true">
-           <property name="acceptDrops">
-            <bool>true</bool>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="fileDropIconLabel">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap resource="vura.qrc">:/images/file-drop.png</pixmap>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="fileDropTextLabel">
-              <property name="lineWidth">
-               <number>1</number>
-              </property>
-              <property name="text">
-               <string>Drop a file here or select a media source from the menu bar.</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-              <property name="wordWrap">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </widget>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -264,7 +51,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>955</width>
+     <width>887</width>
      <height>33</height>
     </rect>
    </property>
@@ -289,8 +76,7 @@
     <addaction name="separator"/>
     <addaction name="actionFileOpenPlaylist"/>
     <addaction name="actionFileSavePlaylist"/>
-    <addaction name="actionFileSave"/>
-    <addaction name="actionFileSaveAs"/>
+    <addaction name="actionFileSavePlaylistAs"/>
     <addaction name="actionFileSaveACopy"/>
     <addaction name="separator"/>
     <addaction name="actionFileRenameCurrentFile"/>
@@ -321,12 +107,12 @@
     </widget>
     <addaction name="actionViewTogglePlaylist"/>
     <addaction name="actionViewToggleVideoControls"/>
+    <addaction name="actionViewToggleStatusBar"/>
+    <addaction name="actionViewToggleVideoResolution"/>
     <addaction name="separator"/>
     <addaction name="menuViewToggleMarkers"/>
     <addaction name="separator"/>
     <addaction name="actionViewMediaInformation"/>
-    <addaction name="separator"/>
-    <addaction name="actionViewShowVideoResolutionInTitlebar"/>
     <addaction name="separator"/>
     <addaction name="actionViewPreferences"/>
    </widget>
@@ -364,7 +150,25 @@
      <addaction name="actionPlaybackJumpBackwardSmall"/>
      <addaction name="actionPlaybackJumpBackwardExtraSmall"/>
     </widget>
+    <widget class="QMenu" name="menuPlaybackMode">
+     <property name="title">
+      <string>Playback Mode</string>
+     </property>
+     <addaction name="actionPlaybackModeDoNotLoopPlaylist"/>
+     <addaction name="actionPlaybackModeLoopPlaylist"/>
+     <addaction name="actionPlaybackModeLoopCurrentTrack"/>
+     <addaction name="actionPlaybackModeShuffle"/>
+    </widget>
+    <widget class="QMenu" name="menuPlaybackEngine">
+     <property name="title">
+      <string>Engine</string>
+     </property>
+    </widget>
     <addaction name="menuSpeed"/>
+    <addaction name="separator"/>
+    <addaction name="menuPlaybackMode"/>
+    <addaction name="separator"/>
+    <addaction name="menuPlaybackEngine"/>
     <addaction name="separator"/>
     <addaction name="actionPlaybackNextFrame"/>
     <addaction name="actionPlaybackPreviousFrame"/>
@@ -421,7 +225,7 @@
     </widget>
     <widget class="QMenu" name="menuAudioTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Audio Track</string>
@@ -440,7 +244,7 @@
     </property>
     <widget class="QMenu" name="menuVideoTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Video Track</string>
@@ -485,18 +289,10 @@
      <addaction name="actionVideoCrop5_5"/>
      <addaction name="actionVideoCrop1_2"/>
     </widget>
-    <widget class="QMenu" name="menuRenderer">
-     <property name="title">
-      <string>Renderer</string>
-     </property>
-     <addaction name="actionRendererVideoWidget"/>
-     <addaction name="actionRendererOpenGL"/>
-    </widget>
     <addaction name="menuVideoTrack"/>
     <addaction name="separator"/>
     <addaction name="actionVideoFullscreen"/>
     <addaction name="separator"/>
-    <addaction name="menuRenderer"/>
     <addaction name="separator"/>
     <addaction name="menuVideoZoom"/>
     <addaction name="menuVideoAspectRatio"/>
@@ -508,7 +304,7 @@
     </property>
     <widget class="QMenu" name="menuSubtitleTrack">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="title">
       <string>Subtitle Track</string>
@@ -570,6 +366,7 @@
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionFileOpenFile">
    <property name="text">
     <string>Open File...</string>
@@ -680,11 +477,14 @@
    </property>
   </action>
   <action name="actionAudioToggleMute">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Toggle Mute</string>
    </property>
    <property name="shortcut">
-    <string>M</string>
+    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="actiona">
@@ -837,9 +637,9 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionFileSaveAs">
+  <action name="actionFileSavePlaylistAs">
    <property name="text">
-    <string>Save As...</string>
+    <string>Save Playlist As...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -910,12 +710,18 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Markers</string>
    </property>
   </action>
   <action name="actionViewToggleMarkersCumshotMarkers">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -926,12 +732,18 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Cyan Markers</string>
    </property>
   </action>
   <action name="actionViewToggleMarkersDialogMarkers">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -942,12 +754,18 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Magenta Markers</string>
    </property>
   </action>
   <action name="actionViewToggleMarkersOrangeMarkers">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -958,12 +776,18 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Scene Markers</string>
    </property>
   </action>
   <action name="actionViewToggleMarkersStripMarkers">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -1490,21 +1314,88 @@
     <string>OpenGL</string>
    </property>
   </action>
+  <action name="actionViewToggleStatusBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Status Bar</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeDoNotLoopPlaylist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Do Not Loop Playlist</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeLoopPlaylist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop Playlist</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeLoopCurrentTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop Current Track</string>
+   </property>
+  </action>
+  <action name="actionPlaybackModeShuffle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Shuffle</string>
+   </property>
+  </action>
+  <action name="actionViewToggleVideoResolution">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Video Resolution in Titlebar</string>
+   </property>
+  </action>
+  <action name="actionPlaybackEngineQMediaPlayer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>QMediaPlayer</string>
+   </property>
+  </action>
+  <action name="actionPlaybackEngineOpenGL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>OpenGL</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>MPV</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QVideoWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">&lt;QtMultimediaWidgets&gt;</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PlaylistEmptyStateWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">PlaylistEmptyStateWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="vura.qrc"/>
  </resources>

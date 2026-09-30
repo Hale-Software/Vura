@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026.  by Andrew Hale <halea2196@gmail.com>
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -13,7 +13,15 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ******************************************************************************/
+
+#include <QIcon>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QSettings>
+#include <QDebug>
 
 #include "SystemTrayWidget.h"
 
@@ -21,24 +29,23 @@
 SystemTrayWidget::SystemTrayWidget(QWidget *parent) : QSystemTrayIcon(parent)
 {
     m_systemTrayIcon = new QSystemTrayIcon(this);
-    m_systemTrayIcon->setIcon(QIcon(":/img/images/vura-white.png"));
+    m_systemTrayIcon->setIcon(QIcon(":/icons/vura-white.png"));
 
     createContextMenu();
     setActionEnables();
 }
 
-void SystemTrayWidget::show()
+void SystemTrayWidget::setVisibility(const bool visible)
 {
-    m_systemTrayIcon->show();
-    m_showing = true;
-    setActionEnables();
-}
-
-void SystemTrayWidget::hide()
-{
-    m_systemTrayIcon->hide();
-    m_showing = false;
-    setActionEnables();
+    if (visible) {
+        m_systemTrayIcon->show();
+        m_showing = true;
+        setActionEnables();
+    } else {
+        m_systemTrayIcon->hide();
+        m_showing = false;
+        setActionEnables();
+    }
 }
 
 void SystemTrayWidget::createContextMenu()
@@ -65,9 +72,10 @@ void SystemTrayWidget::createContextMenu()
     m_decreaseVolumeAction = new QAction(this);
     m_muteAction = new QAction(this);
     m_openFileAction = new QAction(this);
+    m_fullScreenAction = new QAction(this);
     m_quitAction = new QAction(this);
 
-    QMenu *menu = new QMenu();
+    const auto menu = new QMenu();
     menu->addAction(m_toggleShow);
     menu->addSeparator();
     m_playAction = menu->addAction(tr("Play"));
@@ -88,8 +96,13 @@ void SystemTrayWidget::createContextMenu()
     m_increaseVolumeAction = menu->addAction(tr("Increase Volume"));
     m_decreaseVolumeAction = menu->addAction(tr("Decrease Volume"));
     m_muteAction = menu->addAction(tr("Mute"));
+    m_muteAction->setCheckable(true);
     menu->addSeparator();
     m_openFileAction = menu->addAction(tr("Open File"));
+    menu->addSeparator();
+    m_fullScreenAction = menu->addAction(tr("Full Screen"));
+    m_fullScreenAction->setCheckable(true);
+    menu->addSeparator();
     m_quitAction = menu->addAction(tr("Quit"));
 
     connect(m_systemTrayIcon, &QSystemTrayIcon::activated, this, &SystemTrayWidget::systemTray_Clicked);
@@ -108,13 +121,14 @@ void SystemTrayWidget::createContextMenu()
     connect(m_playAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_TogglePlayPause);
     connect(m_nextAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_Next);
     connect(m_previousAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_Previous);
-    connect(m_muteAction, &QAction::triggered, this, &SystemTrayWidget::systemTray_ToggleMute);
+    connect(m_muteAction, &QAction::toggled, this, &SystemTrayWidget::systemTray_ToggleMute);
+    connect(m_fullScreenAction, &QAction::triggered, this, &SystemTrayWidget::toggleFullscreen);
 
     m_systemTrayIcon->setContextMenu(menu);
     m_systemTrayIcon->setToolTip(tr("Vura media player"));
 }
 
-void SystemTrayWidget::setActionEnables()
+void SystemTrayWidget::setActionEnables() const
 {
     m_playAction->setEnabled(m_showing);
     m_stopAction->setEnabled(m_showing);
@@ -133,9 +147,9 @@ void SystemTrayWidget::setActionEnables()
     m_speedMenu->setEnabled(m_showing);
 }
 
-void SystemTrayWidget::systemTray_Clicked(QSystemTrayIcon::ActivationReason reason)
+void SystemTrayWidget::systemTray_Clicked(const ActivationReason reason)
 {
-    if (reason == QSystemTrayIcon::Trigger) {
+    if (reason == Trigger) {
         emit clicked();
     }
 }
@@ -146,7 +160,6 @@ void SystemTrayWidget::systemTray_Hide()
         emit hiding(true);
         m_toggleShow->setText(tr("Show Vura"));
         m_showing = false;
-
     } else {
         emit hiding(false);
         m_toggleShow->setText(tr("Hide Vura in taskbar"));
@@ -168,79 +181,47 @@ void SystemTrayWidget::systemTray_Record()
 
 void SystemTrayWidget::systemTray_Faster()
 {
-    emit changePlaybackSpeed(0.5);
+    emit playbackRateFaster();
 }
 
 void SystemTrayWidget::systemTray_FasterFine()
 {
-    emit changePlaybackSpeed(0.25);
+    emit playbackRateFasterFine();
 }
 
 void SystemTrayWidget::systemTray_NormalSpeed()
 {
-    emit setPlaybackSpeedNormal();
+    emit playbackRateNormal();
 }
 
 void SystemTrayWidget::systemTray_SlowerFine()
 {
-    emit changePlaybackSpeed(-0.25);
+    emit playbackRateSlowerFine();
 }
 
 void SystemTrayWidget::systemTray_Slower()
 {
-    emit changePlaybackSpeed(-0.5);
+    emit playbackRateSlower();
 }
 
 void SystemTrayWidget::systemTray_IncreaseVolume()
 {
-    emit changeVolume(0.10);
+    emit volumeUp();
 }
 
 void SystemTrayWidget::systemTray_DecreaseVolume()
 {
-    emit changeVolume(-0.10);
+    emit volumeDown();
 }
 
-void SystemTrayWidget::systemTray_ToggleMute()
+void SystemTrayWidget::systemTray_ToggleMute(const bool value)
 {
-    emit toggleMute();
+    emit setMuted(value);
 }
 
 void SystemTrayWidget::systemTray_OpenFile()
 {
-    QSettings settings;
-
-    // File filters
-    QStringList fileFilters;
-    fileFilters << constants::MediaFileExtensions;
-    fileFilters << constants::VideoFileExtensions;
-    fileFilters << constants::AudioFileExtensions;
-    fileFilters << constants::ApplicationFileExtensions;
-    fileFilters << constants::PlaylistFileExtensions;
-    fileFilters << "All Files (*.*)";
-
-    // Create open file dialog.
-    QFileDialog fileDialog;
-    fileDialog.setNameFilters(fileFilters);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open File"));
-    fileDialog.setDirectory(settings.value("lastFileDirectory", QStandardPaths::MoviesLocation).toString());
-
-    if (fileDialog.exec() == QDialog::Accepted) {
-        QStringList selectedFiles = fileDialog.selectedFiles();
-        if (!selectedFiles.isEmpty()) {
-            QStringList fileList;
-            for (auto &url : selectedFiles) {
-                fileList.append(url);
-            }
-
-            // Set last file directory where file was opened.
-            QString lastFileDirectory = selectedFiles.last();
-            settings.setValue("lastFileDirectory", QFileInfo(lastFileDirectory).path());
-
-            emit openFiles(fileList);
-        }
-    }
+    emit openFile();
 }
 
 void SystemTrayWidget::systemTray_TogglePlayPause()
