@@ -371,39 +371,42 @@ void MpvEngine::processEvents()
             break;
 
         switch (event->event_id) {
-        case MPV_EVENT_PROPERTY_CHANGE: {
-            auto *prop = static_cast<mpv_event_property *>(event->data);
-            handlePropertyChange(event->reply_userdata, prop->data, prop->format);
-            break;
-        }
-        case MPV_EVENT_START_FILE:
-            m_fileLoaded = false;
-            m_eofReached = false;
-            updateMediaStatus(MediaStatus::Loading);
-            break;
-        case MPV_EVENT_FILE_LOADED:
-            m_fileLoaded = true;
-            updateMediaStatus(MediaStatus::Loaded);
-            refreshStatus();
-            break;
-        case MPV_EVENT_END_FILE: {
-            auto *endFile = static_cast<mpv_event_end_file *>(event->data);
-            m_fileLoaded = false;
-            if (endFile->reason == MPV_END_FILE_REASON_ERROR) {
-                const ErrorKind kind = errorFromMpv(endFile->error);
-                updateMediaStatus(MediaStatus::Invalid);
-                reportError(kind, QString::fromUtf8(mpv_error_string(endFile->error)));
-            } else if (endFile->reason == MPV_END_FILE_REASON_EOF) {
-                updateMediaStatus(MediaStatus::EndOfMedia);
-                updatePlaybackState(PlaybackState::Stopped);
+            case MPV_EVENT_PROPERTY_CHANGE: {
+                auto *prop = static_cast<mpv_event_property *>(event->data);
+                handlePropertyChange(event->reply_userdata, prop->data, prop->format);
+                break;
             }
-            break;
-        }
-        case MPV_EVENT_SHUTDOWN:
-            reportError(ErrorKind::Internal, tr("The playback engine shut down unexpectedly."));
-            return;
-        default:
-            break;
+            case MPV_EVENT_START_FILE:
+                m_fileLoaded = false;
+                m_eofReached = false;
+                updateMediaStatus(MediaStatus::Loading);
+                break;
+            case MPV_EVENT_FILE_LOADED:
+                m_fileLoaded = true;
+                int seekable = 0;
+                if (mpv_get_property(m_mpv, "seekable", MPV_FORMAT_FLAG, &seekable) >= 0)
+                    updateSeekable(seekable != 0);
+                updateMediaStatus(MediaStatus::Loaded);
+                refreshStatus();
+                break;
+            case MPV_EVENT_END_FILE: {
+                auto *endFile = static_cast<mpv_event_end_file *>(event->data);
+                m_fileLoaded = false;
+                if (endFile->reason == MPV_END_FILE_REASON_ERROR) {
+                    const ErrorKind kind = errorFromMpv(endFile->error);
+                    updateMediaStatus(MediaStatus::Invalid);
+                    reportError(kind, QString::fromUtf8(mpv_error_string(endFile->error)));
+                } else if (endFile->reason == MPV_END_FILE_REASON_EOF) {
+                    updateMediaStatus(MediaStatus::EndOfMedia);
+                    updatePlaybackState(PlaybackState::Stopped);
+                }
+                break;
+            }
+            case MPV_EVENT_SHUTDOWN:
+                reportError(ErrorKind::Internal, tr("The playback engine shut down unexpectedly."));
+                return;
+            default:
+                break;
         }
     }
 }

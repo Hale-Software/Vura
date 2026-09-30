@@ -1,3 +1,21 @@
+/*******************************************************************************
+     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
 #include "playlist.h"
 
 #include <QFileInfo>
@@ -5,6 +23,7 @@
 
 #include <algorithm>
 #include <numeric>
+
 
 QString PlaylistItem::displayTitle() const
 {
@@ -16,35 +35,32 @@ QString PlaylistItem::displayTitle() const
     return name.isEmpty() ? url.toString() : name;
 }
 
-Playlist::Playlist(QObject *parent)
-    : QAbstractListModel(parent)
-{
-}
+Playlist::Playlist(QObject *parent) : QAbstractListModel(parent) {}
 
 int Playlist::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : int(m_items.size());
+    return parent.isValid() ? 0 : static_cast<int>(m_items.size());
 }
 
-QVariant Playlist::data(const QModelIndex &index, int role) const
+QVariant Playlist::data(const QModelIndex &index, const int role) const
 {
     if (!index.isValid() || index.row() >= m_items.size())
         return {};
 
     const PlaylistItem &item = m_items.at(index.row());
     switch (role) {
-    case Qt::DisplayRole:
-        return item.displayTitle();
-    case Qt::ToolTipRole:
-        return item.url.toDisplayString();
-    case UrlRole:
-        return item.url;
-    case DurationRole:
-        return QVariant::fromValue(item.duration);
-    case IsCurrentRole:
-        return index.row() == m_currentIndex;
-    default:
-        return {};
+        case Qt::DisplayRole:
+            return item.displayTitle();
+        case Qt::ToolTipRole:
+            return item.url.toDisplayString();
+        case UrlRole:
+            return item.url;
+        case DurationRole:
+            return QVariant::fromValue(item.duration);
+        case IsCurrentRole:
+            return index.row() == m_currentIndex;
+        default:
+            return {};
     }
 }
 
@@ -59,13 +75,13 @@ QHash<int, QByteArray> Playlist::roleNames() const
 
 Qt::ItemFlags Playlist::flags(const QModelIndex &index) const
 {
-    auto base = QAbstractListModel::flags(index);
+    const auto base = QAbstractListModel::flags(index);
     if (index.isValid())
         return base | Qt::ItemIsDragEnabled;
     return base | Qt::ItemIsDropEnabled;
 }
 
-bool Playlist::removeRows(int row, int count, const QModelIndex &parent)
+bool Playlist::removeRows(const int row, const int count, const QModelIndex &parent)
 {
     if (parent.isValid() || row < 0 || count <= 0 || row + count > m_items.size())
         return false;
@@ -93,9 +109,9 @@ void Playlist::append(const QList<QUrl> &urls)
     if (urls.isEmpty())
         return;
 
-    beginInsertRows({}, int(m_items.size()), int(m_items.size() + urls.size() - 1));
+    beginInsertRows({}, static_cast<int>(m_items.size()), static_cast<int>(m_items.size() + urls.size() - 1));
     for (const QUrl &url : urls)
-        m_items.append(PlaylistItem{url, {}, -1});
+        m_items.append(PlaylistItem{.url = url, .title = {}, .duration = -1});
     endInsertRows();
 
     rebuildShuffleOrder();
@@ -111,9 +127,9 @@ void Playlist::insertNext(const QList<QUrl> &urls)
     }
 
     const int at = m_currentIndex + 1;
-    beginInsertRows({}, at, at + int(urls.size()) - 1);
+    beginInsertRows({}, at, at + static_cast<int>(urls.size()) - 1);
     for (int i = 0; i < urls.size(); ++i)
-        m_items.insert(at + i, PlaylistItem{urls.at(i), {}, -1});
+        m_items.insert(at + i, PlaylistItem{.url = urls.at(i), .title = {}, .duration = -1});
     endInsertRows();
 
     rebuildShuffleOrder();
@@ -133,7 +149,7 @@ void Playlist::clear()
     emit currentIndexChanged(m_currentIndex);
 }
 
-void Playlist::move(int from, int to)
+void Playlist::move(const int from, const int to)
 {
     if (from == to || from < 0 || to < 0 || from >= m_items.size() || to >= m_items.size())
         return;
@@ -157,14 +173,14 @@ void Playlist::move(int from, int to)
     emit currentIndexChanged(m_currentIndex);
 }
 
-PlaylistItem Playlist::itemAt(int index) const
+PlaylistItem Playlist::itemAt(const int index) const
 {
     if (index < 0 || index >= m_items.size())
         return {};
     return m_items.at(index);
 }
 
-void Playlist::setCurrentIndex(int index)
+void Playlist::setCurrentIndex(const int index)
 {
     if (index < -1 || index >= m_items.size() || index == m_currentIndex)
         return;
@@ -184,7 +200,7 @@ void Playlist::setCurrentIndex(int index)
     emit currentIndexChanged(m_currentIndex);
 }
 
-int Playlist::nextIndex(bool manual) const
+int Playlist::nextIndex(const bool manual) const
 {
     if (m_items.isEmpty())
         return -1;
@@ -226,10 +242,10 @@ int Playlist::previousIndex() const
 
     if (m_currentIndex > 0)
         return m_currentIndex - 1;
-    return m_repeat == RepeatAll ? int(m_items.size()) - 1 : -1;
+    return m_repeat == RepeatAll ? static_cast<int>(m_items.size()) - 1 : -1;
 }
 
-void Playlist::setRepeatMode(RepeatMode mode)
+void Playlist::setRepeatMode(const RepeatMode mode)
 {
     if (m_repeat == mode)
         return;
@@ -237,7 +253,7 @@ void Playlist::setRepeatMode(RepeatMode mode)
     emit repeatModeChanged(m_repeat);
 }
 
-void Playlist::setShuffled(bool shuffle)
+void Playlist::setShuffled(const bool shuffle)
 {
     if (m_shuffle == shuffle)
         return;
@@ -246,7 +262,7 @@ void Playlist::setShuffled(bool shuffle)
     emit shuffleChanged(m_shuffle);
 }
 
-void Playlist::updateItemInfo(int index, const QString &title, media::Msec duration)
+void Playlist::updateItemInfo(const int index, const QString &title, const media::Msec duration)
 {
     if (index < 0 || index >= m_items.size())
         return;
@@ -277,7 +293,7 @@ void Playlist::rebuildShuffleOrder()
 
     m_shuffleOrder.resize(m_items.size());
     std::iota(m_shuffleOrder.begin(), m_shuffleOrder.end(), 0);
-    std::shuffle(m_shuffleOrder.begin(), m_shuffleOrder.end(), *QRandomGenerator::global());
+    std::ranges::shuffle(m_shuffleOrder, *QRandomGenerator::global());
 
     // Keep whatever is playing at the head so enabling shuffle mid-track
     // does not jump away from it.
@@ -288,8 +304,8 @@ void Playlist::rebuildShuffleOrder()
     }
 }
 
-int Playlist::shufflePositionOf(int index) const
+int Playlist::shufflePositionOf(const int index) const
 {
-    const auto it = std::find(m_shuffleOrder.cbegin(), m_shuffleOrder.cend(), index);
-    return it == m_shuffleOrder.cend() ? -1 : int(it - m_shuffleOrder.cbegin());
+    const auto it = std::ranges::find(m_shuffleOrder, index);
+    return it == m_shuffleOrder.cend() ? -1 : static_cast<int>(it - m_shuffleOrder.cbegin());
 }

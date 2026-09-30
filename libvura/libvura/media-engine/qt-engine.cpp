@@ -149,8 +149,10 @@ QtEngine::QtEngine(QObject *parent)
 
     connect(m_player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         // Track lists only become valid once the media is loaded.
-        if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia)
+        if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia) {
             rebuildTrackCache();
+            updateSeekable(m_player->isSeekable());
+        }
         updateMediaStatus(toMediaStatus(status));
     });
 

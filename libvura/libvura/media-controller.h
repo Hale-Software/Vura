@@ -105,18 +105,18 @@ public slots:
     void seek(media::Msec ms);
     void seekRelative(media::Msec deltaMs);
 
-    void setRate(qreal rate);
+    void setRate(qreal rate) const;
     void setVolume(qreal linear);
     void volumeDown();
     void volumeUp();
     void setMuted(bool muted);
     void toggleMuted();
 
-    void selectTrack(media::TrackType type, const QString &id);
-    bool loadExternalSubtitle(const QUrl &url);
-    void setSubtitlesEnabled(const bool &checked);
+    void selectTrack(media::TrackType type, const QString &id) const;
+    bool loadExternalSubtitle(const QUrl &url) const;
+    void setSubtitlesEnabled(const bool &checked) const;
 
-    void setAudioDevice(const QString &id);
+    void setAudioDevice(const QString &id) const;
 
     void closeRequested();
 
@@ -143,7 +143,7 @@ signals:
 
 private:
     void connectEngine();
-    void attachOutput();
+    void attachOutput() const;
     void loadCurrentItem(bool autoPlay);
     void handleMediaStatus(media::MediaStatus status);
     void handleError(media::ErrorKind kind, const QString &detail);

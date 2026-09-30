@@ -264,7 +264,8 @@ void VuraMainWindow::sourceChanged(const QUrl &source)
     QSettings settings;
 
     m_currentSource = source;
-    m_sideDockWidget->markerPanel()->setSource(source);
+    if (m_sideDockWidget)
+        m_sideDockWidget->markerPanel()->setSource(source);
     m_videoMarkerController->loadVideoMarkers(source);
     setApplicationWindowTitle();
 
@@ -1063,7 +1064,8 @@ void VuraMainWindow::connectController()
     connect(m_controller, &MediaController::durationChanged, this, [this](const media::Msec ms) {
         m_videoSlider->setRange(0, static_cast<int>(ms));
         m_videoSliderWidget->durationChanged(ms);
-        m_sideDockWidget->markerPanel()->setDurationMs(ms);
+        if (m_sideDockWidget)
+            m_sideDockWidget->markerPanel()->setDurationMs(ms);
     });
 
     connect(m_controller, &MediaController::playbackStateChanged, this, [this](media::PlaybackState state) {

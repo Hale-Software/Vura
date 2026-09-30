@@ -26,28 +26,6 @@
 #include <algorithm>
 
 
-int positionEmitThreshold()
-{
-    // Backends report position far more often than a UI can use.
-    // Keeps the clock honest without waking the whole widget tree 60 times a second.
-    QSettings settings;
-    return settings.value("positionEmitThreshold", 250).toInt();
-}
-
-int seekCoalesceMs()
-{
-    // Seeks issued while dragging are coalesced into one per interval.
-    QSettings settings;
-    return settings.value("seekCoalesceMs", 60).toInt();
-}
-
-int mediaControllerMaxRetriesPerItem()
-{
-    QSettings settings;
-    return settings.value("mediaControllerMaxRetriesPerItem", 1).toInt();
-}
-
-
 MediaController::MediaController(QObject *parent)
     : QObject(parent),
       m_playlist(new Playlist(this)),
@@ -55,7 +33,7 @@ MediaController::MediaController(QObject *parent)
       m_seekTimer(new QTimer(this))
 {
     m_seekTimer->setSingleShot(true);
-    m_seekTimer->setInterval(seekCoalesceMs());
+    m_seekTimer->setInterval(QSettings().value("seekCoalesceMs", 60).toInt());
     connect(m_seekTimer, &QTimer::timeout, this, &MediaController::flushSeek);
 
     QString error;
@@ -74,7 +52,7 @@ media::Capabilities MediaController::capabilities() const
     return m_engine ? m_engine->capabilities() : media::Capabilities{};
 }
 
-bool MediaController::setBackend(media::Backend backend, QString *errorOut)
+bool MediaController::setBackend(const media::Backend backend, QString *errorOut)
 {
     // Capture everything worth carrying across before the old engine dies.
     struct Snapshot {
@@ -153,29 +131,29 @@ bool MediaController::setBackend(media::Backend backend, QString *errorOut)
 
 void MediaController::connectEngine()
 {
-    media::Engine *engine = m_engine.get();
+    const media::Engine *engine = m_engine.get();
 
-    connect(engine, &media::Engine::positionChanged, this, [this](media::Msec ms) {
+    connect(engine, &media::Engine::positionChanged, this, [this](const media::Msec ms) {
         m_position = ms;
         // A backwards jump is a seek and must show immediately; otherwise
         // throttle so the UI is not flooded.
-        if (m_lastEmittedPosition < 0 || ms < m_lastEmittedPosition || ms - m_lastEmittedPosition >= positionEmitThreshold()) {
+        if (m_lastEmittedPosition < 0 || ms < m_lastEmittedPosition || ms - m_lastEmittedPosition >= QSettings().value("positionEmitThreshold", 250).toInt()) {
             m_lastEmittedPosition = ms;
             emit positionChanged(ms);
         }
     });
 
-    connect(engine, &media::Engine::durationChanged, this, [this](media::Msec ms) {
+    connect(engine, &media::Engine::durationChanged, this, [this](const media::Msec ms) {
         m_duration = ms;
         m_playlist->updateItemInfo(m_playlist->currentIndex(), currentTitle(), ms);
         emit durationChanged(ms);
     });
 
-    connect(engine, &media::Engine::playbackStateChanged, this, [this](media::PlaybackState state) {
-                if (state != media::PlaybackState::Playing)
-                    rememberPosition();
-                emit playbackStateChanged(state);
-            });
+    connect(engine, &media::Engine::playbackStateChanged, this, [this](const media::PlaybackState state) {
+        if (state != media::PlaybackState::Playing)
+            rememberPosition();
+        emit playbackStateChanged(state);
+    });
 
     connect(engine, &media::Engine::mediaStatusChanged, this, &MediaController::handleMediaStatus);
     connect(engine, &media::Engine::errorOccurred, this, &MediaController::handleError);
@@ -183,11 +161,11 @@ void MediaController::connectEngine()
     connect(engine, &media::Engine::rateChanged, this, &MediaController::rateChanged);
     connect(engine, &media::Engine::tracksChanged, this, &MediaController::tracksChanged);
 
-    connect(engine, &media::Engine::volumeChanged, this, [this](qreal volume) {
+    connect(engine, &media::Engine::volumeChanged, this, [this](const qreal volume) {
         m_volume = volume;
         emit volumeChanged(volume);
     });
-    connect(engine, &media::Engine::mutedChanged, this, [this](bool muted) {
+    connect(engine, &media::Engine::mutedChanged, this, [this](const bool muted) {
         m_muted = muted;
         emit mutedChanged(muted);
     });
@@ -207,7 +185,7 @@ void MediaController::setVideoOutputProvider(std::function<media::VideoOutput *(
     attachOutput();
 }
 
-void MediaController::attachOutput()
+void MediaController::attachOutput() const
 {
     if (!m_engine || !m_outputProvider)
         return;
@@ -248,7 +226,7 @@ void MediaController::enqueue(const QList<QUrl> &urls)
         playIndex(0);
 }
 
-void MediaController::playIndex(int index)
+void MediaController::playIndex(const int index)
 {
     if (index < 0 || index >= m_playlist->count())
         return;
@@ -258,7 +236,7 @@ void MediaController::playIndex(int index)
     loadCurrentItem(true);
 }
 
-void MediaController::loadCurrentItem(bool autoPlay)
+void MediaController::loadCurrentItem(const bool autoPlay)
 {
     if (!m_engine)
         return;
@@ -282,80 +260,66 @@ void MediaController::loadCurrentItem(bool autoPlay)
 
     m_engine->setSource(item.url);
     emit currentItemChanged(item);
-
-    if (m_resumeTarget > 0) {
-        qDebug() << "Has resume target: " << QString::number(m_resumeTarget);
-        const int continuePlayback = QSettings().value("continuePlayback", 1).toInt();
-        switch (continuePlayback) {
-            case 0:
-                // Never continue
-                break;
-            case 1:
-                // Ask user
-                emit resumeDataAvailable(m_resumeTarget);
-                break;
-            case 2:
-                // Always continue
-                seek(m_resumeTarget);
-                break;
-            default:
-                break;
-        }
-    }
 }
 
-void MediaController::handleMediaStatus(media::MediaStatus status)
+void MediaController::handleMediaStatus(const media::MediaStatus status)
 {
     switch (status) {
-    case media::MediaStatus::Loaded:
-    case media::MediaStatus::Buffered:
-        // Resume only once, and only after duration is known so the target
-        // can be validated against it.
-        if (m_resumeTarget > 0 && m_duration > 0) {
-            const media::Msec target = m_resumeTarget;
-            m_resumeTarget = -1;
-            m_engine->seek(std::min(target, m_duration));
-        }
-        if (m_autoPlayPending) {
-            m_autoPlayPending = false;
-            m_engine->play();
-        }
-        m_retriesForCurrentItem = 0;
-        break;
-
-    case media::MediaStatus::EndOfMedia: {
-        // Finishing a file clears its resume entry rather than storing a
-        // position at the very end.
-        m_resumeStore->forget(m_playlist->currentItem().url);
-        const int nextIdx = m_playlist->nextIndex(false);
-        if (nextIdx >= 0) {
-            if (nextIdx == m_playlist->currentIndex()) {
-                m_engine->seek(0);
-                m_engine->play();
-            } else {
-                playIndex(nextIdx);
+        case media::MediaStatus::Loaded:
+            break;
+        case media::MediaStatus::Buffered:
+            // Resume only once, and only after duration is known so the target
+            // can be validated against it.
+            if (m_resumeTarget > 0 && m_duration > 0) {
+                const int continuePlayback = QSettings().value("continuePlayback", 1).toInt();
+                const media::Msec target = m_resumeTarget;
+                m_resumeTarget = -1;
+                if (continuePlayback == 1) {
+                    emit resumeDataAvailable(target);
+                } else if (continuePlayback == 2) {
+                    m_engine->seek(std::min(target, m_duration));
+                }
             }
+            if (m_autoPlayPending) {
+                m_autoPlayPending = false;
+                m_engine->play();
+            }
+            m_retriesForCurrentItem = 0;
+            break;
+
+        case media::MediaStatus::EndOfMedia: {
+            // Finishing a file clears its resume entry rather than storing a
+            // position at the very end.
+            m_resumeStore->forget(m_playlist->currentItem().url);
+            const int nextIdx = m_playlist->nextIndex(false);
+            if (nextIdx >= 0) {
+                if (nextIdx == m_playlist->currentIndex()) {
+                    m_engine->seek(0);
+                    m_engine->play();
+                } else {
+                    playIndex(nextIdx);
+                }
+            }
+            break;
         }
-        break;
-    }
 
-    case media::MediaStatus::Invalid:
-        break;
+        case media::MediaStatus::Invalid:
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     emit mediaStatusChanged(status);
 }
 
-void MediaController::handleError(media::ErrorKind kind, const QString &detail)
+void MediaController::handleError(const media::ErrorKind kind, const QString &detail)
 {
     emit errorOccurred(kind, detail);
 
     // Recovery policy lives here rather than in the adapters: a network
     // stall is worth one retry, a missing codec is not.
-    if (media::isRecoverable(kind) && m_retriesForCurrentItem < mediaControllerMaxRetriesPerItem()) {
+    if (media::isRecoverable(kind) && m_retriesForCurrentItem < QSettings().value("mediaControllerMaxRetriesPerItem", 1).toInt()) {
         ++m_retriesForCurrentItem;
         const media::Msec resumeAt = m_position;
         QTimer::singleShot(1000, this, [this, resumeAt] {
@@ -436,7 +400,7 @@ void MediaController::restart()
     seek(0);
 }
 
-void MediaController::seek(media::Msec ms)
+void MediaController::seek(const media::Msec ms)
 {
     if (!m_engine || !m_engine->isSeekable())
         return;
@@ -462,18 +426,18 @@ void MediaController::flushSeek()
     m_engine->seek(target);
 }
 
-void MediaController::seekRelative(media::Msec deltaMs)
+void MediaController::seekRelative(const media::Msec deltaMs)
 {
     seek(m_position + deltaMs);
 }
 
-void MediaController::setRate(qreal rate)
+void MediaController::setRate(const qreal rate) const
 {
     if (m_engine && m_engine->capabilities().variableRate)
         m_engine->setRate(rate);
 }
 
-void MediaController::setVolume(qreal linear)
+void MediaController::setVolume(const qreal linear)
 {
     m_volume = std::clamp<qreal>(linear, 0.0, 1.0);
     if (m_engine)
@@ -496,7 +460,7 @@ void MediaController::volumeUp()
         m_engine->setVolume(m_volume);
 }
 
-void MediaController::setMuted(bool muted)
+void MediaController::setMuted(const bool muted)
 {
     m_muted = muted;
     if (m_engine)
@@ -508,27 +472,27 @@ void MediaController::toggleMuted()
     setMuted(!m_muted);
 }
 
-void MediaController::selectTrack(media::TrackType type, const QString &id)
+void MediaController::selectTrack(const media::TrackType type, const QString &id) const
 {
     if (m_engine)
         m_engine->selectTrack(type, id);
 }
 
-bool MediaController::loadExternalSubtitle(const QUrl &url)
+bool MediaController::loadExternalSubtitle(const QUrl &url) const
 {
     if (!m_engine || !m_engine->capabilities().externalSubtitles)
         return false;
     return m_engine->loadExternalSubtitle(url);
 }
 
-void MediaController::setSubtitlesEnabled(const bool &checked)
+void MediaController::setSubtitlesEnabled(const bool &checked) const
 {
     if (!m_engine || !m_engine->capabilities().externalSubtitles)
         return;
     m_engine->setSubtitlesEnabled(checked);
 }
 
-void MediaController::setAudioDevice(const QString &id)
+void MediaController::setAudioDevice(const QString &id) const
 {
     if (m_engine && m_engine->capabilities().audioDeviceSelection)
         m_engine->setAudioDevice(id);
