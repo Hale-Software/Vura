@@ -3,8 +3,8 @@
 
 # Except for default project files
 !/.github
-!/assets
 !/cmake
+!/deps
 !/docs
 !/installer/installer.nsi
 !/libvura
@@ -12,7 +12,6 @@
 !/src
 !/tests
 !.clang-format
-!.editorconfig
 !.gitmodules
 !.gitattributes
 !.gitignore
@@ -20,8 +19,6 @@
 !AUTHORS
 !buildspec.json
 !CMakeLists.txt
-!CMakePresets.json
-!COC.rst
 !COMMITMENT
 !CONTRIBUTING.md
 !COPYING
