@@ -1,0 +1,29 @@
+target_sources(
+        vura PRIVATE
+        dialogs/AboutDialog.cpp
+        dialogs/AboutDialog.h
+        dialogs/ConvertMediaDialog.cpp
+        dialogs/ConvertMediaDialog.h
+        dialogs/ErrorDialog.cpp
+        dialogs/ErrorDialog.h
+        dialogs/FeedbackDialog.cpp
+        dialogs/FeedbackDialog.h
+        dialogs/HelpDialog.cpp
+        dialogs/HelpDialog.h
+        dialogs/LogUploadDialog.cpp
+        dialogs/LogUploadDialog.h
+        dialogs/LogViewerDialog.cpp
+        dialogs/LogViewerDialog.h
+        dialogs/MarkerEditDialog.cpp
+        dialogs/MarkerEditDialog.h
+        dialogs/MediaInformationDialog.cpp
+        dialogs/MediaInformationDialog.h
+        dialogs/MissingFilesDialog.cpp
+        dialogs/MissingFilesDialog.h
+        dialogs/UpdateChecker.cpp
+        dialogs/UpdateChecker.h
+        dialogs/UpdateDialog.cpp
+        dialogs/UpdateDialog.h
+        dialogs/WhatsNewDialog.cpp
+        dialogs/WhatsNewDialog.h
+)

@@ -1,0 +1,42 @@
+# Exclude everything
+/*
+
+# Except for default project files
+!/.github
+!/assets
+!/cmake
+!/docs
+!/installer/installer.nsi
+!/libvura
+!/scripts
+!/src
+!/tests
+!.clang-format
+!.editorconfig
+!.gitmodules
+!.gitattributes
+!.gitignore
+!.mailmap
+!AUTHORS
+!buildspec.json
+!CMakeLists.txt
+!CMakePresets.json
+!COC.rst
+!COMMITMENT
+!CONTRIBUTING.md
+!COPYING
+!README.md
+
+# Exclude lock files
+*.lock.json
+
+# Exclude macOS legacy resource forks
+.DS_Store
+
+# Exclude CMake build number cache
+/cmake/.CMakeBuildNumber
+
+/scripts/.env
+/scripts/.idea
+
+*__pycache__*

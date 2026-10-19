@@ -1,0 +1,16 @@
+QDialog {
+    background-color:
+}
+
+QLabel {
+    color: #000000;
+}
+
+QToolButton {
+    border: 1px solid transparent;
+    padding: 2px;
+}
+
+QToolButton:hover {
+    border: 1px solid #008cff;
+}

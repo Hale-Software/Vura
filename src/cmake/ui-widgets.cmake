@@ -1,0 +1,19 @@
+target_sources(
+        vura PRIVATE
+        widgets/ContinuePlaybackWidget.cpp
+        widgets/ContinuePlaybackWidget.h
+        widgets/MarkerPanel.cpp
+        widgets/MarkerPanel.h
+        widgets/PlaylistWidget.cpp
+        widgets/PlaylistWidget.h
+        widgets/SideDockWidget.cpp
+        widgets/SideDockWidget.h
+        widgets/SystemTrayWidget.cpp
+        widgets/SystemTrayWidget.h
+        widgets/VideoControlWidget.cpp
+        widgets/VideoControlWidget.h
+        widgets/VideoSliderWidget.cpp
+        widgets/VideoSliderWidget.h
+        widgets/VuraMainWindow.cpp
+        widgets/VuraMainWindow.h
+)

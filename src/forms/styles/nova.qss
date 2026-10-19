@@ -1,0 +1,222 @@
+/* ------------------------------------------------------------------
+   NovaPlayer theme
+   Surfaces:  window #17161c  ·  panels #211f28  ·  stage #000
+   Accent:    #7c3aed / #8b5cf6 / #a78bfa
+   ------------------------------------------------------------------ */
+
+QMainWindow,
+QFrame#Root {
+    background: #17161c;
+}
+
+/* ---- menu bar ---------------------------------------------------- */
+
+QMenuBar {
+    background: transparent;
+    color: #c8c5d3;
+    padding: 4px 10px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+QMenuBar::item:selected,
+QMenuBar::item:pressed {
+    background: rgba(255, 255, 255, 0.09);
+    color: #ffffff;
+}
+
+QMenu {
+    background: #232129;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px;
+    color: #ddd9e6;
+}
+
+QMenu::item {
+    padding: 7px 26px 7px 16px;
+    border-radius: 6px;
+}
+
+QMenu::item:selected {
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 6px 10px;
+}
+
+/* ---- stage ------------------------------------------------------- */
+
+QFrame#VideoFrame {
+    background: #000000;
+    border-radius: 10px;
+}
+
+QLabel#VideoPlaceholder {
+    color: #5f5b6c;
+    font-size: 14px;
+}
+
+QFrame#PlaylistPanel,
+QFrame#ControlBar {
+    background: #211f28;
+    border-radius: 12px;
+}
+
+QLabel#PanelTitle {
+    color: #f2f0f7;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+}
+
+QListView#PlaylistView {
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+/* ---- scrollbar --------------------------------------------------- */
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 2px 0;
+}
+
+QScrollBar::handle:vertical {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    height: 0;
+}
+
+/* ---- labels ------------------------------------------------------ */
+
+QLabel#TimeLabel {
+    color: #a8a4b5;
+    font-size: 13px;
+}
+
+QLabel#CounterLabel {
+    color: #cbc7d6;
+    font-size: 13px;
+}
+
+/* ---- sliders ----------------------------------------------------- */
+/* handle margin is -(handle_height - groove_height) / 2 so the knob
+   stays centred on the groove.                                       */
+
+QSlider#SeekSlider::groove:horizontal {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 2px;
+}
+
+QSlider#SeekSlider::sub-page:horizontal {
+    background: #8b5cf6;
+    border-radius: 2px;
+}
+
+QSlider#SeekSlider::handle:horizontal {
+    background: #a78bfa;
+    width: 15px;
+    height: 15px;
+    margin: -6px 0;
+    border-radius: 7px;
+}
+
+QSlider#SeekSlider::handle:horizontal:hover {
+    background: #c4b5fd;
+}
+
+QSlider#VolumeSlider::groove:horizontal {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 2px;
+}
+
+QSlider#VolumeSlider::sub-page:horizontal {
+    background: #8b5cf6;
+    border-radius: 2px;
+}
+
+QSlider#VolumeSlider::handle:horizontal {
+    background: #ded7f7;
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+    border-radius: 6px;
+}
+
+/* ---- buttons ----------------------------------------------------- */
+
+QToolButton {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 7px;
+}
+
+QToolButton:hover {
+    background: rgba(255, 255, 255, 0.09);
+}
+
+QToolButton:pressed {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+QToolButton#PlayButton,
+QToolButton#FullScreenButton {
+    background: #7c3aed;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+QToolButton#PlayButton:hover,
+QToolButton#FullScreenButton:hover {
+    background: #8b5cf6;
+}
+
+QToolButton#PlayButton:pressed,
+QToolButton#FullScreenButton:pressed {
+    background: #6d28d9;
+}
+
+QToolButton#TextButton {
+    color: #c5c1d2;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+QToolButton#TextButton:checked {
+    background: rgba(139, 92, 246, 0.22);
+    color: #d8ccff;
+}
+
+QToolTip {
+    background: #2a2833;
+    color: #e7e4ef;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 5px 8px;
+}
