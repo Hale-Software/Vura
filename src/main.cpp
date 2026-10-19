@@ -32,9 +32,9 @@
 #include <QFont>
 #include <QDebug>
 
-#include <libvura/audio.h>
+//#include <libvura/audio.h>
 #include <libvura/logging/logger.h>
-#include <libvura/platform/platform.h>
+//#include <libvura/platform/platform.h>
 #include <libvura/exceptions/error-service.h>
 #include <libvura/util/single-instance-controller.h>
 #include <libvura/media-controller.h>
@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
         QCoreApplication::setApplicationVersion(VURA_VERSION_CANONICAL);
 
         qInstallMessageHandler(Logger::messageHandler);
-        logDeviceInfo();
-        logDefaultAudioDeviceSpecs();
-        qCInfo(Core) << "==== Startup complete ===============================================";
+        //logDeviceInfo();
+        //logDefaultAudioDeviceSpecs();
+        //qCInfo(Core) << "==== Startup complete ===============================================";
 
         QSurfaceFormat format;
         format.setVersion(3, 3);

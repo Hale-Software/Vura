@@ -7,30 +7,30 @@ configure_file(libvura/config.h.in libvura/config.h)
 
 # Root Directory
 target_sources(
-        libvura
-        PUBLIC
-        libvura/audio.h
-        libvura/constants.h
-        libvura/enums.h
-        libvura/helpers.h
-        libvura/hotkeys.h
-        libvura/libvura.h
-        libvura/media-controller.h
-        libvura/settings.h
-        libvura/settings-manager.h
-        libvura/theme-manager.h
+    libvura
+    PUBLIC
+    libvura/audio.h
+    libvura/constants.h
+    libvura/enums.h
+    libvura/helpers.h
+    libvura/hotkeys.h
+    libvura/libvura.h
+    libvura/media-controller.h
+    libvura/settings.h
+    libvura/settings-manager.h
+    libvura/theme-manager.h
 
-        PRIVATE
-        libvura/audio.cpp
-        libvura/constants.cpp
-        libvura/defs.h
-        libvura/helpers.cpp
-        libvura/hotkeys.cpp
-        libvura/libvura.cpp
-        libvura/media-controller.cpp
-        libvura/settings.cpp
-        libvura/settings-manager.cpp
-        libvura/theme-manager.cpp
+    PRIVATE
+    libvura/audio.cpp
+    libvura/constants.cpp
+    libvura/defs.h
+    libvura/helpers.cpp
+    libvura/hotkeys.cpp
+    libvura/libvura.cpp
+    libvura/media-controller.cpp
+    libvura/settings.cpp
+    libvura/settings-manager.cpp
+    libvura/theme-manager.cpp
 )
 
 # exceptions Directory
@@ -71,16 +71,16 @@ target_sources(
 
 # logging Directory
 target_sources(
-        libvura
-        PUBLIC
-        libvura/logging/categories.h
-        libvura/logging/log-uploader.h
-        libvura/logging/logger.h
+    libvura
+    PUBLIC
+    libvura/logging/categories.h
+    libvura/logging/log-uploader.h
+    libvura/logging/logger.h
 
-        PRIVATE
-        libvura/logging/categories.cpp
-        libvura/logging/log-uploader.cpp
-        libvura/logging/logger.cpp
+    PRIVATE
+    libvura/logging/categories.cpp
+    libvura/logging/log-uploader.cpp
+    libvura/logging/logger.cpp
 )
 
 # media-engine Directory
@@ -102,27 +102,27 @@ target_sources(
 
 # models Directory
 target_sources(
-        libvura
-        PUBLIC
-        libvura/models/file-entry.h
-        libvura/models/hotkey-model.h
-        libvura/models/log-message.h
-        libvura/models/marker-colors.h
-        libvura/models/marker-filter-proxy-model.h
-        libvura/models/marker-list-model.h
-        libvura/models/metadata.h
-        libvura/models/playlist.h
-        libvura/models/subtitle-cue.h
-        libvura/models/types.h
-        libvura/models/version.h
-        libvura/models/video-marker-record.h
+    libvura
+    PUBLIC
+    libvura/models/file-entry.h
+    libvura/models/hotkey-model.h
+    libvura/models/log-message.h
+    libvura/models/marker-colors.h
+    libvura/models/marker-filter-proxy-model.h
+    libvura/models/marker-list-model.h
+    libvura/models/metadata.h
+    libvura/models/playlist.h
+    libvura/models/subtitle-cue.h
+    libvura/models/types.h
+    libvura/models/version.h
+    libvura/models/video-marker-record.h
 
-        PRIVATE
-        libvura/models/hotkey-model.cpp
-        libvura/models/marker-filter-proxy-model.cpp
-        libvura/models/marker-list-model.cpp
-        libvura/models/playlist.cpp
-        libvura/models/types.cpp
+    PRIVATE
+    libvura/models/hotkey-model.cpp
+    libvura/models/marker-filter-proxy-model.cpp
+    libvura/models/marker-list-model.cpp
+    libvura/models/playlist.cpp
+    libvura/models/types.cpp
 )
 
 # subtitles Directory
@@ -137,20 +137,20 @@ target_sources(
 
 # util Directory
 target_sources(
-        libvura
-        PUBLIC
-        libvura/util/crash-reporter.h
-        libvura/util/crypto.h
-        libvura/util/marker-thumbnailer.h
-        libvura/util/resume-store.h
-        libvura/util/single-instance-controller.h
+    libvura
+    PUBLIC
+    libvura/util/crash-reporter.h
+    libvura/util/crypto.h
+    libvura/util/marker-thumbnailer.h
+    libvura/util/resume-store.h
+    libvura/util/single-instance-controller.h
 
-        PRIVATE
-        libvura/util/crash-reporter.cpp
-        libvura/util/crypto.cpp
-        libvura/util/marker-thumbnailer.cpp
-        libvura/util/resume-store.cpp
-        libvura/util/single-instance-controller.cpp
+    PRIVATE
+    libvura/util/crash-reporter.cpp
+    libvura/util/crypto.cpp
+    libvura/util/marker-thumbnailer.cpp
+    libvura/util/resume-store.cpp
+    libvura/util/single-instance-controller.cpp
 )
 
 # Platform specific files
@@ -174,7 +174,7 @@ if(WIN32)
         libvura/platform/windows/update-manager.cpp
     )
 
-    target_link_libraries(libvura PRIVATE dbghelp ole32 oleaut32 wbemuuid wscapi)
+    target_link_libraries(libvura PRIVATE dbghelp ole32 oleaut32 wbemuuid)
 
 elseif(APPLE)
 

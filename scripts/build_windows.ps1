@@ -55,7 +55,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # ---- paths matching your local environment -------------------------------
-$QT_BIN      = "C:\Qt\6.12.0\msvc2022_64"
+$QT_BIN      = "C:\Qt\6.12.0\mingw_64"
 $FFMPEG_BIN  = "C:\Users\halea\bin\ffmpeg-8.1.1-full_build-shared\bin"
 $NSIS_PATH   = "C:\Program Files (x86)\NSIS\makensis.exe"
 
@@ -79,15 +79,15 @@ if (Test-Path $DeployDir) { Remove-Item -Recurse -Force $DeployDir }
 New-Item -ItemType Directory -Path $DeployDir | Out-Null
 
 # ---- 2. Configure + build (Release) -----------------------------------------
-#cmake -S $RepoRoot -B $BuildDir -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QT_BIN -DMEDIA_ENABLE_QTMULTIMEDIA=$EnableQtMultimedia -DMEDIA_ENABLE_OPENGL=$EnableOpenGL -DMEDIA_ENABLE_MPV=$EnableMpv -DENABLE_FFMPEG=$EnableFFMpeg
-cmake -S $RepoRoot -B $BuildDir -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QT_BIN
+cmake -S $RepoRoot -B $BuildDir -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=$QT_BIN -DMEDIA_ENABLE_QTMULTIMEDIA=$EnableQtMultimedia -DMEDIA_ENABLE_OPENGL=$EnableOpenGL -DMEDIA_ENABLE_MPV=$EnableMpv -DENABLE_FFMPEG=$EnableFFMpeg
+#cmake -S $RepoRoot -B $BuildDir -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QT_BIN
 if ($LASTEXITCODE -ne 0) { throw "cmake configure failed" }
 
 cmake --build $BuildDir --config Release --parallel
 if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
 
 # ---- 3. Stage the deploy directory -----------------------------------------
-Copy-Item "$BuildDir\bin\Release" "$DeployDir" -Recurse
+Copy-Item "$BuildDir\bin" "$DeployDir" -Recurse
 
 & "$QT_BIN\bin\windeployqt6.exe" --dir $DeployDir "$DeployDir\vura.exe"
 

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
 option(MEDIA_ENABLE_QTMULTIMEDIA "Build the Qt Multimedia backend when available" ON)
-option(MEDIA_ENABLE_OPENGL "Build the OpenGL backend when available" OFF)
+option(MEDIA_ENABLE_OPENGL "Build the OpenGL backend when available" ON)
 option(MEDIA_ENABLE_MPV "Build the libmpv backend when it is available" OFF)
-option(ENABLE_FFMPEG "Build with FFMpeg" OFF)
+option(ENABLE_FFMPEG "Build with FFMpeg" ON)
 
 option(LIBVURA_BUILD_TESTS "Build the tests for libvura" OFF)
 option(UI_BUILD_TESTS "Build the tests for UI" OFF)
@@ -11,8 +11,7 @@ option(UI_BUILD_TESTS "Build the tests for UI" OFF)
 option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
 option(ENABLE_CPACK "Enable building with CPack" OFF)
 
-set(CMAKE_PREFIX_PATH="C:\\Qt\\6.12.0\\msvc2022_64")
-add_compile_options(/Zc:__cplusplus /permissive-)
+set(CMAKE_PREFIX_PATH "C:\\Qt\\6.12.0\\mingw_64")
 
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)

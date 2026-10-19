@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
 # Define application assets source and destination directories
-set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
-set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+#set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
+#set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Add a custom target to perform the copy operation
-add_custom_target(copy_asset_files
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${ASSETS_DIR}" "${DESTINATION_DIR}/assets"
-        COMMENT "Copying application asset files from source to build directory"
-)
+#add_custom_target(copy_asset_files
+#        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${ASSETS_DIR}" "${DESTINATION_DIR}/assets"
+#        COMMENT "Copying application asset files from source to build directory"
+#)
 
 add_executable(vura)
 add_executable(VURA::vura ALIAS vura)
-add_dependencies(vura copy_asset_files)
+#add_dependencies(vura copy_asset_files)
 
 include(cmake/utilities.cmake)
 

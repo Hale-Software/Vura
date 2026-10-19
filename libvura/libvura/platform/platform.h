@@ -1,5 +1,5 @@
 /*******************************************************************************
-     Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
+Copyright (c) 2026 by Andrew Hale <halea2196@gmail.com>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -41,15 +41,4 @@
 #include "linux/update-manager.h"
 #endif
 
-
-struct CpuTicks
-{
-    qulonglong idle = 0;
-    qulonglong total = 0;
-};
-
-CpuTicks getCpuSample();
-
-double getNativeCpuLoadPercentage();
-
-void logDeviceInfo();
+static void logDeviceInfo();
