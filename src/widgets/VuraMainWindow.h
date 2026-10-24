@@ -127,6 +127,7 @@ private slots:
     void actionFileSaveACopy();
     void actionEmergencyClose();
     void actionShowConvertMedia();
+    void actionFileConvertSave();
     void actionExit();
 
     // View Menu

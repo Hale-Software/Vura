@@ -42,7 +42,7 @@ ResumeStore::ResumeStore(QObject *parent, const QString &path)
         bool isDebugging = false;
         if (QString(VURA_BUILD_TYPE) == "Debug")
             isDebugging = true;
-        const QString dir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        const QString dir = isDebugging ? "C:\\Vura-Debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         if (!QDir().mkpath(dir)) {
             qCritical() << "Failed to create resume store directory at " << dir;
             emit errorOccured(QString("Failed to create resume store directory at %1").arg(dir));

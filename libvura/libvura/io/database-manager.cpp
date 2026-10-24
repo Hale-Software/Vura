@@ -43,10 +43,8 @@ bool DatabaseManager::initializeDatabase()
     bool isDebugging = false;
     if (QString(VURA_BUILD_TYPE) == "Debug")
         isDebugging = true;
-    if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
-        isDebugging = true;
 
-    const QString databaseDir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString databaseDir = isDebugging ? "C:\\Vura-Debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
     if (!QDir().mkpath(databaseDir)) {
         qCritical() << "Failed to create database directory: " << databaseDir;

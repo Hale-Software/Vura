@@ -273,6 +273,9 @@ void MediaController::loadCurrentItem(const bool autoPlay)
             m_engine->stop();
             break;
     }
+
+    if (m_autoPlayPending)
+        m_engine->play();
 }
 
 void MediaController::handleMediaStatus(const media::MediaStatus status)

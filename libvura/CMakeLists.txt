@@ -59,14 +59,12 @@ target_sources(
     PUBLIC
     libvura/io/database-manager.h
     libvura/io/playlist-io.h
-    #libvura/io/remuxer-thread.h
-    #libvura/io/video-converter.h
+    libvura/io/remuxer.h
 
     PRIVATE
     libvura/io/database-manager.cpp
     libvura/io/playlist-io.cpp
-    #libvura/io/remuxer-thread.cpp
-    #libvura/io/video-converter.cpp
+    libvura/io/remuxer.cpp
 )
 
 # logging Directory
@@ -215,6 +213,12 @@ target_link_libraries(
         Qt6::Widgets
         Qt6::Network
         Qt6::Sql
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
+        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
 )
 
 if (VURA_ENABLE_FFMPEG)
@@ -291,7 +295,7 @@ if (VURA_ENABLE_OPENGL)
     target_compile_definitions(libvura PRIVATE VURA_HAVE_OPENGL)
 endif ()
 
-target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)
 
 if (VURA_ENABLE_FFMPEG)
     target_include_directories(libvura PUBLIC ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)

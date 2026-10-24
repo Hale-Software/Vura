@@ -29,7 +29,7 @@ void CrashHandler::install()
     if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
         isDebugging = true;
 
-    const QString crashDir = isDebugging ? "debug/crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    const QString crashDir = isDebugging ? "C:\\Vura-Debug\\crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
 
     // Ensure the crash directory exists safely before a crash happens
     if (!QDir().mkpath(crashDir)) {

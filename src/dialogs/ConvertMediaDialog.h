@@ -19,26 +19,17 @@
 #pragma once
 
 #include <QDialog>
-#include <QProgressBar>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QFileDialog>
-#include <QMessageBox>
 
-//#include <libvura/io/remuxer-thread.h>
-//#include <libvura/io/video-converter.h>
-
+#include <libvura/io/remuxer.h>
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-    class ConvertMediaDialog;
-}
+namespace Ui { class ConvertMediaDialog; }
 QT_END_NAMESPACE
+
 
 class ConvertMediaDialog : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit ConvertMediaDialog(QWidget *parent = nullptr, const QString &initialOption = "Convert/Save");
     ~ConvertMediaDialog() override;
@@ -54,10 +45,7 @@ private slots:
 private:
     Ui::ConvertMediaDialog *ui;
     QString m_initialOption = "Convert/Save";
-    //RemuxerThread *m_remuxerThread = nullptr;
-    //VideoConverter *m_converter = nullptr;
 
-    void convertFile(QString outFile);
-    void convertNetwork(QString outFile);
+    void convertFile(const QString& inFile, const QString &outFile);
 
 };

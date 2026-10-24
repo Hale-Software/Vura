@@ -57,7 +57,7 @@ void Logger::initLogFile()
     if (QString(VURA_BUILD_TYPE) == "Debug")
         isDebugging = true;
 
-    const QString baseDir = isDebugging ? "debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString baseDir = isDebugging ? "C:\\Vura-Debug" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QDir logDir(baseDir + "/logs");
 
     if (!logDir.exists() && !logDir.mkpath(".")) {

@@ -19,9 +19,16 @@
 #include "ConvertMediaDialog.h"
 #include "ui_ConvertMediaDialog.h"
 
+#include <QThread>
+#include <QProgressBar>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDebug>
 
-ConvertMediaDialog::ConvertMediaDialog(QWidget *parent, const QString &initialOption)
-    : QDialog(parent), ui(new Ui::ConvertMediaDialog)
+
+ConvertMediaDialog::ConvertMediaDialog(QWidget *parent, const QString &initialOption) : QDialog(parent), ui(new Ui::ConvertMediaDialog)
 {
     ui->setupUi(this);
     m_initialOption = initialOption;
@@ -74,34 +81,43 @@ void ConvertMediaDialog::convert_Clicked()
         return;
 
     if (ui->tabWidget->currentIndex() == 0) {
-        convertFile(outFile);
+        //convertFile(outFile);
     } else if (ui->tabWidget->currentIndex() == 1) {
 
     } else if (ui->tabWidget->currentIndex() == 2) {
-        convertNetwork(outFile);
+        QString inFile = ui->networkURL->text();
+        convertFile(inFile.trimmed(), outFile);
     } else if (ui->tabWidget->currentIndex() == 3) {
 
     }
 }
 
-void ConvertMediaDialog::convertFile(QString outFile)
+void ConvertMediaDialog::convertFile(const QString& inFile, const QString &outFile)
 {
-    //m_remuxerThread = new RemuxerThread(ui->fileToConvert->text(), outFile);
-    //connect(m_remuxerThread, &RemuxerThread::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
-    //connect(m_remuxerThread, &RemuxerThread::conversionFinished, this, &ConvertMediaDialog::conversionFinished);
-    //m_remuxerThread->start();
-    //m_converter = new VideoConverter(this);
-    //m_converter->convert(ui->fileToConvert->text(), outFile, ui->comboBox_2->currentIndex());
-    //connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
+    auto *thread = new QThread(this);
+    auto *remuxer = new Remuxer;
+    remuxer->moveToThread(thread);
+
+    connect(thread, &QThread::started, remuxer, [=] {
+        remuxer->remux(inFile, outFile);
+    });
+
+    connect(remuxer, &Remuxer::progress, ui->progressBar, &QProgressBar::setValue);
+    connect(remuxer, &Remuxer::finished, this, [](bool ok, const QString &err) {
+        if (!ok) {
+            qWarning() << err;
+            QMessageBox::warning(nullptr, "Error Remuxing", err);
+        } else {
+            QMessageBox::information(nullptr, "Remuxing Finished", "Finished Remuxing");
+        }
+    });
+    connect(remuxer, &Remuxer::finished, thread, &QThread::quit);
+    connect(thread, &QThread::finished, remuxer, &QObject::deleteLater);
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
+
+    connect(ui->cancel, QPushButton::clicked, remuxer, [=] {
+        remuxer->cancel();
+    });
 }
 
-void ConvertMediaDialog::convertNetwork(QString outFile)
-{
-    //m_remuxerThread = new RemuxerThread(ui->networkURL->text(), outFile);
-    //connect(m_remuxerThread, &RemuxerThread::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
-    //connect(m_remuxerThread, &RemuxerThread::conversionFinished, this, &ConvertMediaDialog::conversionFinished);
-    //m_remuxerThread->start();
-    //m_converter = new VideoConverter(this);
-    //m_converter->convert(ui->networkURL->text(), outFile, ui->comboBox_2->currentIndex());
-    //connect(m_converter, &VideoConverter::progressUpdated, this, &ConvertMediaDialog::progressUpdated);
-}

@@ -32,7 +32,7 @@ void CrashReporter::checkForPreviousCrashes()
     if (QString(VURA_BUILD_TYPE) == "RelWithDebInfo")
         isDebugging = true;
 
-    const QString crashDir = isDebugging ? "debug/crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
+    const QString crashDir = isDebugging ? "C:\\Vura-Debug\\crashes" : QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/crashes";
 
     const QDir dir(crashDir);
     if (!dir.exists()) {

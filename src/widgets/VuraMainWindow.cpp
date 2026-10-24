@@ -703,6 +703,11 @@ void VuraMainWindow::actionSubtitlesOpenSubtitlesFile()
     Helpers::setLastOpenedDirectory(QFileInfo(fileName).path());
 }
 
+void VuraMainWindow::actionFileConvertSave()
+{
+    const auto *dialog = showDialog(m_convertMediaDialog, this);
+}
+
 void VuraMainWindow::restartApplication()
 {
     qInfo() << "Restarting application...";
@@ -769,6 +774,7 @@ void VuraMainWindow::buildMenus()
     connect(ui->actionFileSavePlaylist, &QAction::triggered, this, &VuraMainWindow::actionFileSavePlaylist);
     connect(ui->actionFileSavePlaylistAs, &QAction::triggered, this, &VuraMainWindow::actionFileSavePlaylistAs);
     connect(ui->actionFileSaveACopy, &QAction::triggered, this, &VuraMainWindow::actionFileSaveACopy);
+    connect(ui->actionFileConvertSave, &QAction::triggered, this, &VuraMainWindow::actionFileConvertSave);
 
     // Nothing to save in an empty queue.
     const auto updateSaveActions = [this] {
