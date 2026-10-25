@@ -6,6 +6,16 @@ add_custom_command(
     COMMENT "Copying AUTHORS file to build directory..."
 )
 
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+    libswresample
+)
+
 target_link_libraries(vura PRIVATE VURA::libvura)
 
 target_include_directories(
@@ -21,15 +31,16 @@ target_include_directories(
 if (VURA_ENABLE_FFMPEG)
     target_link_libraries(
         vura PRIVATE
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
+        PkgConfig::LIBAV
+        #/opt/homebrew/opt/ffmpeg/lib/avformat.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avfilter.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avcodec.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avutil.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swscale.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swresample.lib
     )
 
-    target_include_directories(vura PRIVATE ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)
+    target_include_directories(vura PRIVATE ${LIBAV_INCLUDE_DIRS})
 endif ()
 
 file(GLOB_RECURSE _libvura_headers CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/libvura/libvura/*.h")

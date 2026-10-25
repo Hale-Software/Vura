@@ -43,4 +43,8 @@ elseif (OS_LINUX)
     include(cmake/os-linux.cmake)
 endif ()
 
-install(TARGETS vura RUNTIME DESTINATION bin)
+#install(TARGETS vura RUNTIME DESTINATION bin)
+install(TARGETS vura
+	BUNDLE DESTINATION .
+	RUNTIME DESTINATION bin
+)

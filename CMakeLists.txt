@@ -11,7 +11,8 @@ option(UI_BUILD_TESTS "Build the tests for UI" OFF)
 option(ENABLE_TESTS "Enable building with Tests (requires Qt)" OFF)
 option(ENABLE_CPACK "Enable building with CPack" OFF)
 
-set(CMAKE_PREFIX_PATH "C:\\Qt\\6.12.0\\mingw_64")
+#set(CMAKE_PREFIX_PATH "C:\\Qt\\6.12.0\\mingw_64")
+set(CMAKE_PREFIX_PATH "/Users/drew/Qt/6.12.0/macos")
 
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)

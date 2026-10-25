@@ -341,7 +341,14 @@ void VuraMainWindow::resetVideoSliderVisibility()
 void VuraMainWindow::actionFileOpenFile()
 {
     QSettings settings;
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), Helpers::getLastOpenedDirectory(), "All Files (*)");
+    const QString fileName = QFileDialog::getOpenFileName(
+            this,
+            tr("Open File"),
+            Helpers::getLastOpenedDirectory(),
+            "All Files (*)",
+            nullptr,
+            QFileDialog::DontUseNativeDialog
+        );
 
     if (!fileName.isEmpty()) {
         Helpers::setLastOpenedDirectory(QFileInfo(fileName).path());
@@ -517,12 +524,12 @@ bool VuraMainWindow::writePlaylist(const QString &path)
 
 void VuraMainWindow::actionHelpCheckForUpdates()
 {
-    m_updateManager = new UpdateManager(this);
-    connect(m_updateManager, &UpdateManager::errorOccurred, this, &VuraMainWindow::updaterErrorOccurred);
-    connect(m_updateManager, &UpdateManager::updateAvailable, this, &VuraMainWindow::updateAvailable);
-    connect(m_updateManager, &UpdateManager::downloadProgress, this, &VuraMainWindow::updateDownloadProgress);
-    connect(m_updateManager, &UpdateManager::downloadFinished, this, &VuraMainWindow::updateDownloadFinished);
-    m_updateManager->checkForUpdates();
+    //m_updateManager = new UpdateManager(this);
+    //connect(m_updateManager, &UpdateManager::errorOccurred, this, &VuraMainWindow::updaterErrorOccurred);
+    //connect(m_updateManager, &UpdateManager::updateAvailable, this, &VuraMainWindow::updateAvailable);
+    //connect(m_updateManager, &UpdateManager::downloadProgress, this, &VuraMainWindow::updateDownloadProgress);
+    //connect(m_updateManager, &UpdateManager::downloadFinished, this, &VuraMainWindow::updateDownloadFinished);
+    //m_updateManager->checkForUpdates();
 }
 
 void VuraMainWindow::actionTestFunction()
@@ -1398,7 +1405,7 @@ void VuraMainWindow::updateAvailable(const bool available)
         if (reply == QMessageBox::Yes) {
             m_updateProgressDialog = new QProgressDialog("Downloading update...", "Cancel", 0, 100, this);
             m_updateProgressDialog->setWindowModality(Qt::WindowModal);
-            m_updateManager->downloadUpdate();
+            //m_updateManager->downloadUpdate();
         } else if (reply == QMessageBox::No) {
 
         } else if (reply == QMessageBox::Ignore) {

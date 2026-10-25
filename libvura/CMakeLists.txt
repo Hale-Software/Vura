@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+    libswresample
+)
+
 add_library(libvura STATIC)
 add_library(VURA::libvura ALIAS libvura)
 
@@ -213,23 +223,25 @@ target_link_libraries(
         Qt6::Widgets
         Qt6::Network
         Qt6::Sql
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
+        PkgConfig::LIBAV
+        #/opt/homebrew/opt/ffmpeg/lib/avformat.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avcodec.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avfilter.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avutil.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swscale.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swresample.lib
 )
 
 if (VURA_ENABLE_FFMPEG)
     target_link_libraries(
         libvura PRIVATE
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avformat.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avcodec.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avfilter.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/avutil.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swscale.lib
-        ${CMAKE_SOURCE_DIR}/deps/ffmpeg/lib/swresample.lib
+        PkgConfig::LIBAV
+        #/opt/homebrew/opt/ffmpeg/lib/avformat.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avcodec.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avfilter.lib
+        #/opt/homebrew/opt/ffmpeg/lib/avutil.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swscale.lib
+        #/opt/homebrew/opt/ffmpeg/lib/swresample.lib
     )
 endif ()
 
@@ -295,8 +307,8 @@ if (VURA_ENABLE_OPENGL)
     target_compile_definitions(libvura PRIVATE VURA_HAVE_OPENGL)
 endif ()
 
-target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)
+target_include_directories(libvura PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${LIBAV_INCLUDE_DIRS})
 
 if (VURA_ENABLE_FFMPEG)
-    target_include_directories(libvura PUBLIC ${CMAKE_SOURCE_DIR}/deps/ffmpeg/include)
+    target_include_directories(libvura PUBLIC ${LIBAV_INCLUDE_DIRS})
 endif ()

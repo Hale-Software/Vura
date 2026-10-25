@@ -238,7 +238,7 @@ private:
     SubtitleTrack* m_subtitleTrack = nullptr;
     SubtitleCue* m_currentCue = nullptr;
     CrashReporter *m_crashReporter = nullptr;
-    UpdateManager *m_updateManager = nullptr;
+    //UpdateManager *m_updateManager = nullptr;
     RecentFilesMenu *m_recentFiles = nullptr;
     QProgressDialog *m_updateProgressDialog = nullptr;
 

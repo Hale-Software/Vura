@@ -116,8 +116,8 @@ void ConvertMediaDialog::convertFile(const QString& inFile, const QString &outFi
     connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     thread->start();
 
-    connect(ui->cancel, QPushButton::clicked, remuxer, [=] {
-        remuxer->cancel();
-    });
+    //connect(ui->cancel, QPushButton::clicked, remuxer, [=] {
+    //    remuxer->cancel();
+    //});
 }
 
